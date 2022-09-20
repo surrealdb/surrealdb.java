@@ -54,6 +54,16 @@ public class Surreal {
     }
 
     @SneakyThrows
+    public <T> List<T> select(String thing, Class<? extends T> rowType){
+        Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
+
+        CompletableFuture<List<T>> future = client.rpc(resultType, "select", thing);
+        List<T> result = future.get();
+        log.debug("selected {}", result);
+        return result;
+    }
+
+    @SneakyThrows
     public <T> T create(String thing, T data){
         Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
 

@@ -71,4 +71,24 @@ public class SurrealTest {
         assertTrue(actual.get(0).getResult().size() >= 2);
     }
 
+
+    @Test
+    @Order(7)
+    public void testSelectExists() {
+        Person expected = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
+        expected.setId("person:"+personId);
+
+        List<Person> actual = surreal.select("person:"+personId, Person.class);
+
+        assertEquals(1, actual.size());
+        assertEquals(expected, actual.get(0));
+    }
+
+    @Test
+    @Order(8)
+    public void testSelectDoesNotExist() {
+        List<Person> actual = surreal.select("person:500", Person.class);
+        assertEquals(0, actual.size());
+    }
+
 }
