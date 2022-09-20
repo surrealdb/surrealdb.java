@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 public class SurrealClient extends WebSocketClient {
     private final Gson gson;
     private final Map<String, CompletableFuture<?>> callbacks;
+    private final Map<String, Type> resultTypes;
 
     @SneakyThrows
     public SurrealClient(String host, int port){
@@ -26,13 +28,17 @@ public class SurrealClient extends WebSocketClient {
 
         this.gson = new Gson();
         this.callbacks = new HashMap<>();
+        this.resultTypes = new HashMap<>();
     }
 
-    public <T> CompletableFuture<T> rpc(String method, Object... params){
+    public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
         RpcRequest request = new RpcRequest(method, params);
 
         CompletableFuture<T> callback = new CompletableFuture<>();
         callbacks.put(request.getId(), callback);
+        if(resultType != null){
+            resultTypes.put(request.getId(), resultType);
+        }
 
         String json = gson.toJson(request);
         log.debug("Sending RPC request {}", json);
@@ -52,8 +58,19 @@ public class SurrealClient extends WebSocketClient {
         if(response.getError() == null){
             log.debug("received RPC response {}", message);
             CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(response.getId());
+            Type resultType = resultTypes.get(response.getId());
             if(callback != null){
-                callback.complete(response.getResult());
+
+                // parse result
+                Object result;
+                if(resultType != null){
+                    result = gson.fromJson(response.getResult(), resultType);
+                }else{
+                    result = response.getResult();
+                }
+
+                // call the callback
+                callback.complete(result);
             }
         }else{
             log.error("received RPC error: code={} message={}", response.getError().getCode(), response.getError().getMessage());
