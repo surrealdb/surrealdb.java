@@ -1,6 +1,7 @@
 import com.surrealdb.java.Surreal;
 import com.surrealdb.java.model.QueryResult;
 import lombok.extern.slf4j.Slf4j;
+import model.PartialPerson;
 import model.Person;
 import org.junit.jupiter.api.*;
 
@@ -112,6 +113,30 @@ public class SurrealTest {
         assertTrue(actual.size() > 1);
         actual.forEach(person -> {
             assertEquals(expected.getTitle(), person.getTitle());
+        });
+    }
+
+    @Test
+    @Order(11)
+    public void testChangeOne() {
+        PartialPerson patch = new PartialPerson(false);
+
+        List<Person> actual = surreal.change("person:"+personId, patch, Person.class);
+
+        assertEquals(1, actual.size());
+        assertEquals(patch.isMarketing(), actual.get(0).isMarketing());
+    }
+
+    @Test
+    @Order(12)
+    public void testChangeAll() {
+        PartialPerson patch = new PartialPerson(false);
+
+        List<Person> actual = surreal.change("person", patch, Person.class);
+
+        assertTrue(actual.size() > 1);
+        actual.forEach(person -> {
+            assertEquals(patch.isMarketing(), person.isMarketing());
         });
     }
 
