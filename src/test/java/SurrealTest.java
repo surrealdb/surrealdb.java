@@ -9,10 +9,12 @@ import org.junit.jupiter.api.*;
 public class SurrealTest {
 
     private Surreal surreal;
+    private String personId;
 
     @BeforeAll
     public void init(){
         surreal = new Surreal("172.18.0.2", 8000);
+        personId = System.currentTimeMillis()+"";
     }
 
     @Test
@@ -38,6 +40,14 @@ public class SurrealTest {
     public void testCreateNoId() {
         Person person = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
         person = surreal.create("person", person);
+        log.info("new person {}", person);
+    }
+
+    @Test
+    @Order(5)
+    public void testCreateWithId() {
+        Person person = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
+            person = surreal.create("person:"+personId, person);
         log.info("new person {}", person);
     }
 
