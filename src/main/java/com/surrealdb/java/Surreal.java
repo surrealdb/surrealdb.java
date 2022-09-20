@@ -73,4 +73,14 @@ public class Surreal {
         return result.get(0);
     }
 
+    @SneakyThrows
+    public <T> List<T> update(String thing, T data){
+        Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
+
+        CompletableFuture<List<T>> future = client.rpc(resultType, "update", thing, data);
+        List<T> result = future.get();
+        log.debug("updated {}", result);
+        return result;
+    }
+
 }

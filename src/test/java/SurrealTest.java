@@ -90,4 +90,29 @@ public class SurrealTest {
         assertEquals(0, actual.size());
     }
 
+    @Test
+    @Order(9)
+    public void testUpdateOne() {
+        Person expected = new Person("Founder", "Tobie", "Morgan Hitchcock", true);
+        expected.setId("person:"+personId);
+
+        List<Person> actual = surreal.update("person:"+personId, expected);
+
+        assertEquals(1, actual.size());
+        assertEquals(expected, actual.get(0));
+    }
+
+    @Test
+    @Order(10)
+    public void testUpdateAll() {
+        Person expected = new Person("Founder", "Tobie", "Morgan Hitchcock", true);
+
+        List<Person> actual = surreal.update("person", expected);
+
+        assertTrue(actual.size() > 1);
+        actual.forEach(person -> {
+            assertEquals(expected.getTitle(), person.getTitle());
+        });
+    }
+
 }
