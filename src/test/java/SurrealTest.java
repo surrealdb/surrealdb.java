@@ -1,5 +1,6 @@
 import com.surrealdb.java.Surreal;
 import lombok.extern.slf4j.Slf4j;
+import model.Person;
 import org.junit.jupiter.api.*;
 
 @Slf4j
@@ -31,4 +32,13 @@ public class SurrealTest {
     public void testLet() {
         surreal.let("someKey", "someValue");
     }
+
+    @Test
+    @Order(4)
+    public void testCreateNoId() {
+        Person person = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
+        person = surreal.create("person", person);
+        log.info("new person {}", person);
+    }
+
 }

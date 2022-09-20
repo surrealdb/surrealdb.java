@@ -1,10 +1,13 @@
 package com.surrealdb.java;
 
+import com.google.gson.reflect.TypeToken;
 import com.surrealdb.java.client.SurrealClient;
 import com.surrealdb.java.model.SignIn;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -35,6 +38,17 @@ public class Surreal {
         CompletableFuture<?> future = client.rpc(null, "let", key, value);
         future.get();
         log.debug("Set key={} to value={}", key, value);
+    }
+
+
+    @SneakyThrows
+    public <T> T create(String thing, T data){
+        Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
+
+        CompletableFuture<List<T>> future = client.rpc(resultType, "create", thing, data);
+        List<T> result = future.get();
+        log.debug("created {}", result.get(0));
+        return result.get(0);
     }
 
 }
