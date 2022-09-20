@@ -1,6 +1,7 @@
 package com.surrealdb.java.client;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.surrealdb.java.client.model.RpcRequest;
 import com.surrealdb.java.client.model.RpcResponse;
 import lombok.SneakyThrows;
@@ -26,7 +27,7 @@ public class SurrealClient extends WebSocketClient {
         log.debug("Connecting to SurrealDB server {}", "ws://"+host+":"+port);
         connectBlocking();
 
-        this.gson = new Gson();
+        this.gson = new GsonBuilder().disableHtmlEscaping().create();
         this.callbacks = new HashMap<>();
         this.resultTypes = new HashMap<>();
     }
