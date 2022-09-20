@@ -46,7 +46,7 @@ public class SurrealTest {
     @Test
     @Order(4)
     public void testCreateNoId() {
-        Person person = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
+        Person person = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
         person = surreal.create("person", person);
         log.info("new person {}", person);
     }
@@ -54,7 +54,7 @@ public class SurrealTest {
     @Test
     @Order(5)
     public void testCreateWithId() {
-        Person person = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
+        Person person = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
             person = surreal.create("person:"+personId, person);
         log.info("new person {}", person);
     }
@@ -71,11 +71,10 @@ public class SurrealTest {
         assertTrue(actual.get(0).getResult().size() >= 2);
     }
 
-
     @Test
     @Order(7)
     public void testSelectExists() {
-        Person expected = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
+        Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
         expected.setId("person:"+personId);
 
         List<Person> actual = surreal.select("person:"+personId, Person.class);
