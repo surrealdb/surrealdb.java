@@ -2,12 +2,14 @@ package com.surrealdb.java;
 
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.java.client.SurrealClient;
+import com.surrealdb.java.model.QueryResult;
 import com.surrealdb.java.model.SignIn;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -40,6 +42,16 @@ public class Surreal {
         log.debug("Set key={} to value={}", key, value);
     }
 
+    @SneakyThrows
+    public <T> List<QueryResult<T>> query(String query, Map<String, String> args, Class<? extends T> rowClass){
+        Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowClass).getType();
+        Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
+
+        CompletableFuture<List<QueryResult<T>>> future = client.rpc(resultType, "query", query, args);
+        List<QueryResult<T>> result = future.get();
+        log.debug("query result {}", result);
+        return result;
+    }
 
     @SneakyThrows
     public <T> T create(String thing, T data){

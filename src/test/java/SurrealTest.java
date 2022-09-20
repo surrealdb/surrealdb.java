@@ -1,7 +1,15 @@
 import com.surrealdb.java.Surreal;
+import com.surrealdb.java.model.QueryResult;
 import lombok.extern.slf4j.Slf4j;
 import model.Person;
 import org.junit.jupiter.api.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -49,6 +57,18 @@ public class SurrealTest {
         Person person = new Person("Founder and CEO", "Tobie", "Morgan Hitchcock", true);
             person = surreal.create("person:"+personId, person);
         log.info("new person {}", person);
+    }
+
+    @Test
+    @Order(6)
+    public void testQuery() {
+        Map<String, String> args = new HashMap<>();
+        args.put("firstName", "Tobie");
+        List<QueryResult<Person>> actual = surreal.query("select * from person where name.first = $firstName", args, Person.class);
+
+        assertEquals(1, actual.size());
+        assertEquals("OK", actual.get(0).getStatus());
+        assertTrue(actual.get(0).getResult().size() >= 2);
     }
 
 }
