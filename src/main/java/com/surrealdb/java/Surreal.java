@@ -23,4 +23,11 @@ public class Surreal {
         log.debug("Signed-in successfully");
     }
 
+    @SneakyThrows
+    public void use(String namespace, String database){
+        CompletableFuture<?> future = client.rpc(null, "use", namespace, database);
+        future.get();
+        log.debug("You are now using namespace={} database={}", namespace, database);
+    }
+
 }

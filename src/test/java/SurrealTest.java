@@ -19,4 +19,11 @@ public class SurrealTest {
     public void testSignIn() {
         surreal.signIn("root", "root");
     }
+
+    @Test
+    @Order(2)
+    public void testUse() {
+        surreal.use("test", "test");
+    }
+
 }
