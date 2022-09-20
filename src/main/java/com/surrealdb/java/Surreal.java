@@ -30,4 +30,11 @@ public class Surreal {
         log.debug("You are now using namespace={} database={}", namespace, database);
     }
 
+    @SneakyThrows
+    public void let(String key, String value){
+        CompletableFuture<?> future = client.rpc(null, "let", key, value);
+        future.get();
+        log.debug("Set key={} to value={}", key, value);
+    }
+
 }

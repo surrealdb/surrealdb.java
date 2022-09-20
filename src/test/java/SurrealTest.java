@@ -26,4 +26,9 @@ public class SurrealTest {
         surreal.use("test", "test");
     }
 
+    @Test
+    @Order(3)
+    public void testLet() {
+        surreal.let("someKey", "someValue");
+    }
 }
