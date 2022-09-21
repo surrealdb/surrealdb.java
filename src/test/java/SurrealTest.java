@@ -181,4 +181,20 @@ public class SurrealTest {
         });
     }
 
+    @Test
+    @Order(15)
+    public void testDeleteOne() {
+        surreal.delete("person:"+personId);
+        List<Person> actual = surreal.select("person:"+personId, Person.class);
+        assertEquals(0, actual.size());
+    }
+
+    @Test
+    @Order(16)
+    public void testDeleteAll() {
+        surreal.delete("person");
+        List<Person> actual = surreal.select("person", Person.class);
+        assertEquals(0, actual.size());
+    }
+
 }

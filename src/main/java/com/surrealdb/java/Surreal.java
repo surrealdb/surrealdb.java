@@ -103,4 +103,13 @@ public class Surreal {
         log.debug("patched {}", result.size());
     }
 
+    @SneakyThrows
+    public void delete(String thing){
+        Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
+
+        CompletableFuture<List<Object>> future = client.rpc(resultType, "delete", thing);
+        List<Object> result = future.get();
+        log.debug("deleted {}", result.size());
+    }
+
 }
