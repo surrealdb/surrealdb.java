@@ -1,10 +1,13 @@
 import com.surrealdb.java.Surreal;
 import com.surrealdb.java.model.QueryResult;
+import com.surrealdb.java.model.patch.Patch;
+import com.surrealdb.java.model.patch.ReplacePatch;
 import lombok.extern.slf4j.Slf4j;
 import model.PartialPerson;
 import model.Person;
 import org.junit.jupiter.api.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,6 +140,44 @@ public class SurrealTest {
         assertTrue(actual.size() > 1);
         actual.forEach(person -> {
             assertEquals(patch.isMarketing(), person.isMarketing());
+        });
+    }
+
+    @Test
+    @Order(13)
+    public void testPatchOne() {
+        List<Patch> patches = Arrays.asList(
+                new ReplacePatch("/name/first", "Khalid"),
+                new ReplacePatch("/name/last", "Alharisi"),
+                new ReplacePatch("/title", "Software Engineer")
+        );
+
+        surreal.patch("person:"+personId, patches);
+        List<Person> actual = surreal.select("person:"+personId, Person.class);
+
+        assertEquals(1, actual.size());
+        assertEquals("Khalid", actual.get(0).getName().getFirst());
+        assertEquals("Alharisi", actual.get(0).getName().getLast());
+        assertEquals("Software Engineer", actual.get(0).getTitle());
+    }
+
+    @Test
+    @Order(14)
+    public void testPatchAll() {
+        List<Patch> patches = Arrays.asList(
+                new ReplacePatch("/name/first", "Khalid"),
+                new ReplacePatch("/name/last", "Alharisi"),
+                new ReplacePatch("/title", "Software Engineer")
+        );
+
+        surreal.patch("person", patches);
+        List<Person> actual = surreal.select("person", Person.class);
+
+        assertTrue(actual.size() > 1);
+        actual.forEach(person -> {
+            assertEquals("Khalid", person.getName().getFirst());
+            assertEquals("Alharisi", person.getName().getLast());
+            assertEquals("Software Engineer", person.getTitle());
         });
     }
 

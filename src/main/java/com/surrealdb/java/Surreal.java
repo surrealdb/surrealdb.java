@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.surrealdb.java.client.SurrealClient;
 import com.surrealdb.java.model.QueryResult;
 import com.surrealdb.java.model.SignIn;
+import com.surrealdb.java.model.patch.Patch;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,6 +92,15 @@ public class Surreal {
         List<T> result = future.get();
         log.debug("changed {}", result);
         return result;
+    }
+
+    @SneakyThrows
+    public void patch(String thing, List<Patch> patches){
+        Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
+
+        CompletableFuture<List<Object>> future = client.rpc(resultType, "modify", thing, patches);
+        List<Object> result = future.get();
+        log.debug("patched {}", result.size());
     }
 
 }

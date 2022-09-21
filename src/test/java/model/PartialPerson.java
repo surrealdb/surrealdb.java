@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class PartialPerson {
-    boolean marketing;
+    private boolean marketing;
 }
