@@ -1,9 +1,9 @@
-package com.surrealdb.java.client;
+package com.surrealdb.java.connection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.java.client.model.RpcRequest;
-import com.surrealdb.java.client.model.RpcResponse;
+import com.surrealdb.java.connection.model.RpcRequest;
+import com.surrealdb.java.connection.model.RpcResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
-public class SurrealClient extends WebSocketClient {
+public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
     private final Gson gson;
     private final Map<String, CompletableFuture<?>> callbacks;
     private final Map<String, Type> resultTypes;
 
     @SneakyThrows
-    public SurrealClient(String host, int port){
+    public SurrealWebSocketConnection(String host, int port){
         super(URI.create("ws://"+host+":"+port+"/rpc"));
         log.debug("Connecting to SurrealDB server {}", "ws://"+host+":"+port);
         connectBlocking();

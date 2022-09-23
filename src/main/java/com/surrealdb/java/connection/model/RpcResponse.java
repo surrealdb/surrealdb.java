@@ -1,4 +1,4 @@
-package com.surrealdb.java.client.model;
+package com.surrealdb.java.connection.model;
 
 import com.google.gson.JsonElement;
 import lombok.Data;

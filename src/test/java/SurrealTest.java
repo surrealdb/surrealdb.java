@@ -1,3 +1,4 @@
+import com.surrealdb.java.DefaultSurreal;
 import com.surrealdb.java.Surreal;
 import com.surrealdb.java.model.QueryResult;
 import com.surrealdb.java.model.patch.Patch;
@@ -25,7 +26,7 @@ public class SurrealTest {
 
     @BeforeAll
     public void init(){
-        surreal = new Surreal("172.18.0.2", 8000);
+        surreal = new DefaultSurreal("172.18.0.2", 8000);
         personId = System.currentTimeMillis()+"";
     }
 
