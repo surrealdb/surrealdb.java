@@ -28,7 +28,7 @@ public class SurrealTest {
 
     @BeforeAll
     public void init(){
-        SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.2", 8000);
+        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
         connection.connect(5);
 
         driver = new DefaultSurrealDriver(connection);

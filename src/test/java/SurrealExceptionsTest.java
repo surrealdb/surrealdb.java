@@ -16,7 +16,7 @@ public class SurrealExceptionsTest {
     @Test
     public void testBadCredentials() {
         assertThrows(SurrealAuthenticationException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.2", 8000);
+            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
             connection.connect(5);
 
             SurrealDriver driver = new DefaultSurrealDriver(connection);
@@ -27,7 +27,7 @@ public class SurrealExceptionsTest {
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.2", 8000);
+            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
             connection.connect(5);
 
             SurrealDriver driver = new DefaultSurrealDriver(connection);
