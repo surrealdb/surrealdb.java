@@ -51,4 +51,16 @@ public class SurrealSpecialOperationsTest {
         driver.let("someKey", "someValue");
     }
 
+    @Test
+    public void testPing() {
+        driver.ping();
+    }
+
+    @Test
+    public void testInfo() {
+        driver.signIn("root", "root");
+        driver.use("test", "test");
+        driver.info();
+    }
+
 }
