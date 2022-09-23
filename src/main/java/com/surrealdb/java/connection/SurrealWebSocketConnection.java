@@ -19,12 +19,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
     private final Gson gson;
     private final Map<String, CompletableFuture<?>> callbacks;
     private final Map<String, Type> resultTypes;
+
+    // precomputed private variables
+    private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
     @SneakyThrows
     public SurrealWebSocketConnection(String host, int port){
@@ -109,7 +114,12 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                 }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use")){
                     callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
                 }else{
-                    callback.completeExceptionally(new SurrealException());
+                    Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
+                    if(recordAlreadyExitsMatcher.matches()){
+                        callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
+                    }else{
+                        callback.completeExceptionally(new SurrealException());
+                    }
                 }
             }
         }finally{

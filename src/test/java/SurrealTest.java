@@ -1,5 +1,6 @@
 import com.surrealdb.java.connection.SurrealConnection;
 import com.surrealdb.java.connection.SurrealWebSocketConnection;
+import com.surrealdb.java.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.java.driver.DefaultSurrealDriver;
 import com.surrealdb.java.driver.SurrealDriver;
 import com.surrealdb.java.driver.model.QueryResult;
@@ -57,6 +58,14 @@ public class SurrealTest {
 
         person = driver.create("person:3", person);
         assertEquals("person:3", person.getId());
+    }
+
+    @Test
+    public void testCreateAlreadyExistsId() {
+        assertThrows(SurrealRecordAlreadyExitsException.class, () -> {
+            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+        });
     }
 
     @Test
