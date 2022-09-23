@@ -17,7 +17,7 @@ SurrealDB driver for Java.
 Gradle:
 ```groovy
 implementation files('libs/surrealdb-0.1.0.jar')
-- ```
+```
 
 Maven:
 ```xml
