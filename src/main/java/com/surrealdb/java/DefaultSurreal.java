@@ -36,6 +36,15 @@ public class DefaultSurreal implements Surreal {
 
     @SneakyThrows
     @Override
+    public void info(){
+        Type resultType = TypeToken.getParameterized(Map.class, String.class, String.class).getType();
+        CompletableFuture<Map<String, String>> future = connection.rpc(resultType, "info");
+        Map<String, String> result = getResultSynchronously(future);
+        log.debug("info: {}", result);
+    }
+
+    @SneakyThrows
+    @Override
     public void signIn(String username, String password){
         CompletableFuture<?> future = connection.rpc(null, "signin", new SignIn(username, password));
         getResultSynchronously(future);

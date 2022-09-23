@@ -10,6 +10,8 @@ public interface Surreal {
 
     void ping();
 
+    void info();
+
     void signIn(String username, String password);
 
     void use(String namespace, String database);
