@@ -26,7 +26,7 @@ public class SurrealTest {
 
     @BeforeAll
     public void init(){
-        surreal = new DefaultSurreal("172.18.0.2", 8000);
+        surreal = new DefaultSurreal("172.18.0.2", 8000, 5);
         personId = System.currentTimeMillis()+"";
     }
 

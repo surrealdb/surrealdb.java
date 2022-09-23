@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
@@ -24,12 +25,32 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @SneakyThrows
     public SurrealWebSocketConnection(String host, int port){
         super(URI.create("ws://"+host+":"+port+"/rpc"));
-        log.debug("Connecting to SurrealDB server {}", "ws://"+host+":"+port);
-        connectBlocking();
 
         this.gson = new GsonBuilder().disableHtmlEscaping().create();
         this.callbacks = new HashMap<>();
         this.resultTypes = new HashMap<>();
+    }
+
+    @Override
+    public void connect(int timeoutSeconds) {
+        try {
+            log.debug("Connecting to SurrealDB server {}", uri);
+            this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        if(!isOpen()){
+            throw new RuntimeException("Not connected");
+        }
+    }
+
+    @Override
+    public void disconnect() {
+        try {
+            this.closeBlocking();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){

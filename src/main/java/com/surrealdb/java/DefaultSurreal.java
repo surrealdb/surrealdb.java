@@ -19,8 +19,9 @@ public class DefaultSurreal implements Surreal {
 
     private final SurrealConnection connection;
 
-    public DefaultSurreal(String host, int port){
+    public DefaultSurreal(String host, int port, int connectionTimeoutSeconds){
         connection = new SurrealWebSocketConnection(host, port);
+        connection.connect(connectionTimeoutSeconds);
     }
 
     @SneakyThrows
