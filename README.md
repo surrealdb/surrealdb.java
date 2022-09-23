@@ -10,12 +10,16 @@ SurrealDB driver for Java.
 
 
 ### Installation
-For now, you can grab the JAR from the releases page [here](https://github.com/coder966/surrealdb.java/releases).
+- For now, you can grab the JAR from the releases page [here](https://github.com/coder966/surrealdb.java/releases).
+- Put it in `libs` folder.
+- Add the JAR to you project:
 
-#### To add the JAR to you project (Gradle):
-`implementation files('libs/surrealdb-0.1.0.jar')`
+Gradle:
+```groovy
+implementation files('libs/surrealdb-0.1.0.jar')
+- ```
 
-#### To add the JAR to you project (Maven):
+Maven:
 ```xml
 <dependency>
     <groupId>com.surrealdb.java</groupId>
@@ -29,19 +33,65 @@ For now, you can grab the JAR from the releases page [here](https://github.com/c
 
 ### Quick Start
 ```java
-SurrealConnection connection = new SurrealWebSocketConnection("127.0.0.1", 8000);
-connection.connect(30); // timeout after 30 seconds
+package org.example;
 
-SyncSurrealDriver driver = new SyncSurrealDriver(connection);
+import com.surrealdb.java.connection.SurrealConnection;
+import com.surrealdb.java.connection.SurrealWebSocketConnection;
+import com.surrealdb.java.driver.SyncSurrealDriver;
 
-driver.signIn("root", "root"); // username & password
-driver.use("test", "test"); // namespace & database
+import java.util.List;
 
-Person tobie = driver.create("person", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+public class Main {
+    public static void main(String[] args) {
+        SurrealConnection connection = new SurrealWebSocketConnection("127.0.0.1", 8000);
+        connection.connect(30); // timeout after 30 seconds
 
-List<Person> people = driver.select("person", Person.class);
+        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
 
-// for more docs, see https://surrealdb.com/docs/integration/libraries/nodejs
+        driver.signIn("root", "root"); // username & password
+        driver.use("test", "test"); // namespace & database
+
+        Person tobie = driver.create("person", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+
+        List<Person> people = driver.select("person", Person.class);
+
+        System.out.println();
+        System.out.println("Tobie = "+tobie);
+        System.out.println();
+        System.out.println("people = "+people);
+        System.out.println();
+
+        connection.disconnect();
+        
+        // for more docs, see https://surrealdb.com/docs/integration/libraries/nodejs
+    }
+}
+
+class Person {
+    String id;
+    String title;
+    String firstName;
+    String lastName;
+    boolean marketing;
+
+    public Person(String title, String firstName, String lastName, boolean marketing) {
+        this.title = title;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.marketing = marketing;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", marketing=" + marketing +
+                '}';
+    }
+}
 ```
 
 ### Planned Features
