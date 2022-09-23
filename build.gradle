@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'com.surrealdb.java'
+group 'com.surrealdb'
 version '0.1.0'
 
 repositories {
@@ -45,7 +45,7 @@ test {
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Main-Class': 'com.surrealdb.java.driver.SyncSurrealDriver'
+        attributes 'Main-Class': 'com.surrealdb.driver.SyncSurrealDriver'
     }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

@@ -1,10 +1,10 @@
 package test.driver;
 
-import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.connection.SurrealWebSocketConnection;
-import com.surrealdb.java.connection.exception.SurrealAuthenticationException;
-import com.surrealdb.java.connection.exception.SurrealNoDatabaseSelectedException;
-import com.surrealdb.java.driver.SyncSurrealDriver;
+import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.connection.exception.SurrealAuthenticationException;
+import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.driver.SyncSurrealDriver;
 import test.TestUtils;
 import test.driver.model.Person;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * @author Khalid Alharisi
+ */
 public class SurrealDriverSpecialOperationsTest {
 
     private SyncSurrealDriver driver;

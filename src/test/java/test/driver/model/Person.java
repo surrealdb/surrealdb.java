@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Data
 @NoArgsConstructor
 public class Person {

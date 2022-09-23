@@ -1,10 +1,10 @@
-package com.surrealdb.java.connection;
+package com.surrealdb.connection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.java.connection.exception.*;
-import com.surrealdb.java.connection.model.RpcRequest;
-import com.surrealdb.java.connection.model.RpcResponse;
+import com.surrealdb.connection.exception.*;
+import com.surrealdb.connection.model.RpcRequest;
+import com.surrealdb.connection.model.RpcResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
@@ -22,6 +22,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
     private final Gson gson;

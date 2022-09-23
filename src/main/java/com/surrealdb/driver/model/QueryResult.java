@@ -1,9 +1,12 @@
-package com.surrealdb.java.driver.model;
+package com.surrealdb.driver.model;
 
 import lombok.Data;
 
 import java.util.List;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Data
 public class QueryResult<T> {
     private List<T> result;

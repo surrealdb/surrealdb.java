@@ -1,15 +1,18 @@
-package com.surrealdb.java.driver;
+package com.surrealdb.driver;
 
-import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.connection.exception.SurrealException;
-import com.surrealdb.java.driver.model.QueryResult;
-import com.surrealdb.java.driver.model.patch.Patch;
+import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.driver.model.patch.Patch;
+import com.surrealdb.connection.exception.SurrealException;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * @author Khalid Alharisi
+ */
 public class SyncSurrealDriver {
 
     private final AsyncSurrealDriver asyncDriver;

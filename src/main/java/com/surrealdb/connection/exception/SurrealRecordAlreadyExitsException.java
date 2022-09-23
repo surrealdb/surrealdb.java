@@ -1,8 +1,11 @@
-package com.surrealdb.java.connection.exception;
+package com.surrealdb.connection.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * @author Khalid Alharisi
+ */
 @AllArgsConstructor
 @Getter
 public class SurrealRecordAlreadyExitsException extends SurrealException {

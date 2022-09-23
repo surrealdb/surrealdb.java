@@ -1,12 +1,12 @@
 package test.driver;
 
-import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.connection.SurrealWebSocketConnection;
-import com.surrealdb.java.connection.exception.SurrealRecordAlreadyExitsException;
-import com.surrealdb.java.driver.SyncSurrealDriver;
-import com.surrealdb.java.driver.model.QueryResult;
-import com.surrealdb.java.driver.model.patch.Patch;
-import com.surrealdb.java.driver.model.patch.ReplacePatch;
+import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
+import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.driver.model.patch.Patch;
+import com.surrealdb.driver.model.patch.ReplacePatch;
 import test.TestUtils;
 import test.driver.model.PartialPerson;
 import test.driver.model.Person;
@@ -21,6 +21,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @author Khalid Alharisi
+ */
 public class SurrealDriverTest {
 
     private SyncSurrealDriver driver;

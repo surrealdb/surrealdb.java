@@ -1,9 +1,9 @@
 package test.connection;
 
-import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.connection.SurrealWebSocketConnection;
-import com.surrealdb.java.connection.exception.SurrealConnectionTimeoutException;
-import com.surrealdb.java.connection.exception.SurrealNotConnectedException;
+import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
@@ -11,6 +11,9 @@ import test.TestUtils;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Slf4j
 public class SurrealConnectionTest {
 

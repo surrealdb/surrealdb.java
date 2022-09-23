@@ -1,16 +1,19 @@
-package com.surrealdb.java.driver;
+package com.surrealdb.driver;
 
 import com.google.gson.reflect.TypeToken;
-import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.driver.model.QueryResult;
-import com.surrealdb.java.driver.model.SignIn;
-import com.surrealdb.java.driver.model.patch.Patch;
+import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.driver.model.patch.Patch;
+import com.surrealdb.driver.model.SignIn;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author Khalid Alharisi
+ */
 public class AsyncSurrealDriver {
 
     private final SurrealConnection connection;

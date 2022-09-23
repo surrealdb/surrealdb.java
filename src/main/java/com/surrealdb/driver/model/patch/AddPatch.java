@@ -1,7 +1,10 @@
-package com.surrealdb.java.driver.model.patch;
+package com.surrealdb.driver.model.patch;
 
 import lombok.Getter;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Getter
 public class AddPatch implements Patch {
     private final String op = "add";

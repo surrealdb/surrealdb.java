@@ -22,7 +22,7 @@ implementation files('libs/surrealdb-0.1.0.jar')
 Maven:
 ```xml
 <dependency>
-    <groupId>com.surrealdb.java</groupId>
+    <groupId>com.surrealdb</groupId>
     <artifactId>driver</artifactId>
     <version>0.1.0</version>
     <scope>system</scope>
@@ -35,9 +35,9 @@ Maven:
 ```java
 package org.example;
 
-import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.connection.SurrealWebSocketConnection;
-import com.surrealdb.java.driver.SyncSurrealDriver;
+import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.driver.SyncSurrealDriver;
 
 import java.util.List;
 

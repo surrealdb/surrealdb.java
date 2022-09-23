@@ -1,8 +1,11 @@
-package com.surrealdb.java.connection.model;
+package com.surrealdb.connection.model;
 
 import com.google.gson.JsonElement;
 import lombok.Data;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Data
 public class RpcResponse {
 

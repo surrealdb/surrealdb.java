@@ -1,8 +1,11 @@
-package com.surrealdb.java.connection;
+package com.surrealdb.connection;
 
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author Khalid Alharisi
+ */
 public interface SurrealConnection {
 
     void connect(int timeoutSeconds);

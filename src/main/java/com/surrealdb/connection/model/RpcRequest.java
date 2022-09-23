@@ -1,9 +1,12 @@
-package com.surrealdb.java.connection.model;
+package com.surrealdb.connection.model;
 
 import lombok.Getter;
 
 import java.util.UUID;
 
+/**
+ * @author Khalid Alharisi
+ */
 @Getter
 public class RpcRequest {
     private final String id;
