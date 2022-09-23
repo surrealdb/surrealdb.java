@@ -1,12 +1,12 @@
-package com.surrealdb.java;
+package com.surrealdb.java.driver;
 
-import com.surrealdb.java.model.QueryResult;
-import com.surrealdb.java.model.patch.Patch;
+import com.surrealdb.java.driver.model.QueryResult;
+import com.surrealdb.java.driver.model.patch.Patch;
 
 import java.util.List;
 import java.util.Map;
 
-public interface Surreal {
+public interface SurrealDriver {
 
     void ping();
 

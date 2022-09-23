@@ -1,4 +1,4 @@
-package com.surrealdb.java.model.patch;
+package com.surrealdb.java.driver.model.patch;
 
 import lombok.Getter;
 

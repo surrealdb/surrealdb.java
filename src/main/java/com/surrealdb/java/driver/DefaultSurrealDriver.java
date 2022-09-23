@@ -1,12 +1,12 @@
-package com.surrealdb.java;
+package com.surrealdb.java.driver;
 
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.java.connection.SurrealConnection;
 import com.surrealdb.java.connection.SurrealWebSocketConnection;
 import com.surrealdb.java.connection.exception.SurrealException;
-import com.surrealdb.java.model.QueryResult;
-import com.surrealdb.java.model.SignIn;
-import com.surrealdb.java.model.patch.Patch;
+import com.surrealdb.java.driver.model.QueryResult;
+import com.surrealdb.java.driver.model.SignIn;
+import com.surrealdb.java.driver.model.patch.Patch;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,11 +17,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
-public class DefaultSurreal implements Surreal {
+public class DefaultSurrealDriver implements SurrealDriver {
 
     private final SurrealConnection connection;
 
-    public DefaultSurreal(String host, int port, int connectionTimeoutSeconds){
+    public DefaultSurrealDriver(String host, int port, int connectionTimeoutSeconds){
         connection = new SurrealWebSocketConnection(host, port);
         connection.connect(connectionTimeoutSeconds);
     }

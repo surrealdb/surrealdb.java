@@ -1,8 +1,8 @@
-import com.surrealdb.java.DefaultSurreal;
-import com.surrealdb.java.Surreal;
-import com.surrealdb.java.model.QueryResult;
-import com.surrealdb.java.model.patch.Patch;
-import com.surrealdb.java.model.patch.ReplacePatch;
+import com.surrealdb.java.driver.DefaultSurrealDriver;
+import com.surrealdb.java.driver.SurrealDriver;
+import com.surrealdb.java.driver.model.QueryResult;
+import com.surrealdb.java.driver.model.patch.Patch;
+import com.surrealdb.java.driver.model.patch.ReplacePatch;
 import lombok.extern.slf4j.Slf4j;
 import model.PartialPerson;
 import model.Person;
@@ -21,38 +21,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SurrealTest {
 
-    private Surreal surreal;
+    private SurrealDriver driver;
     private String personId;
 
     @BeforeAll
     public void init(){
-        surreal = new DefaultSurreal("172.18.0.2", 8000, 5);
+        driver = new DefaultSurrealDriver("172.18.0.2", 8000, 5);
         personId = System.currentTimeMillis()+"";
     }
 
     @Test
     @Order(1)
     public void testSignIn() {
-        surreal.signIn("root", "root");
+        driver.signIn("root", "root");
     }
 
     @Test
     @Order(2)
     public void testUse() {
-        surreal.use("test", "test");
+        driver.use("test", "test");
     }
 
     @Test
     @Order(3)
     public void testLet() {
-        surreal.let("someKey", "someValue");
+        driver.let("someKey", "someValue");
     }
 
     @Test
     @Order(4)
     public void testCreateNoId() {
         Person person = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
-        person = surreal.create("person", person);
+        person = driver.create("person", person);
         log.info("new person {}", person);
     }
 
@@ -60,7 +60,7 @@ public class SurrealTest {
     @Order(5)
     public void testCreateWithId() {
         Person person = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
-            person = surreal.create("person:"+personId, person);
+            person = driver.create("person:"+personId, person);
         log.info("new person {}", person);
     }
 
@@ -69,7 +69,7 @@ public class SurrealTest {
     public void testQuery() {
         Map<String, String> args = new HashMap<>();
         args.put("firstName", "Tobie");
-        List<QueryResult<Person>> actual = surreal.query("select * from person where name.first = $firstName", args, Person.class);
+        List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size());
         assertEquals("OK", actual.get(0).getStatus());
@@ -82,7 +82,7 @@ public class SurrealTest {
         Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
         expected.setId("person:"+personId);
 
-        List<Person> actual = surreal.select("person:"+personId, Person.class);
+        List<Person> actual = driver.select("person:"+personId, Person.class);
 
         assertEquals(1, actual.size());
         assertEquals(expected, actual.get(0));
@@ -91,7 +91,7 @@ public class SurrealTest {
     @Test
     @Order(8)
     public void testSelectDoesNotExist() {
-        List<Person> actual = surreal.select("person:500", Person.class);
+        List<Person> actual = driver.select("person:500", Person.class);
         assertEquals(0, actual.size());
     }
 
@@ -101,7 +101,7 @@ public class SurrealTest {
         Person expected = new Person("Founder", "Tobie", "Morgan Hitchcock", true);
         expected.setId("person:"+personId);
 
-        List<Person> actual = surreal.update("person:"+personId, expected);
+        List<Person> actual = driver.update("person:"+personId, expected);
 
         assertEquals(1, actual.size());
         assertEquals(expected, actual.get(0));
@@ -112,7 +112,7 @@ public class SurrealTest {
     public void testUpdateAll() {
         Person expected = new Person("Founder", "Tobie", "Morgan Hitchcock", true);
 
-        List<Person> actual = surreal.update("person", expected);
+        List<Person> actual = driver.update("person", expected);
 
         assertTrue(actual.size() > 1);
         actual.forEach(person -> {
@@ -125,7 +125,7 @@ public class SurrealTest {
     public void testChangeOne() {
         PartialPerson patch = new PartialPerson(false);
 
-        List<Person> actual = surreal.change("person:"+personId, patch, Person.class);
+        List<Person> actual = driver.change("person:"+personId, patch, Person.class);
 
         assertEquals(1, actual.size());
         assertEquals(patch.isMarketing(), actual.get(0).isMarketing());
@@ -136,7 +136,7 @@ public class SurrealTest {
     public void testChangeAll() {
         PartialPerson patch = new PartialPerson(false);
 
-        List<Person> actual = surreal.change("person", patch, Person.class);
+        List<Person> actual = driver.change("person", patch, Person.class);
 
         assertTrue(actual.size() > 1);
         actual.forEach(person -> {
@@ -153,8 +153,8 @@ public class SurrealTest {
                 new ReplacePatch("/title", "Software Engineer")
         );
 
-        surreal.patch("person:"+personId, patches);
-        List<Person> actual = surreal.select("person:"+personId, Person.class);
+        driver.patch("person:"+personId, patches);
+        List<Person> actual = driver.select("person:"+personId, Person.class);
 
         assertEquals(1, actual.size());
         assertEquals("Khalid", actual.get(0).getName().getFirst());
@@ -171,8 +171,8 @@ public class SurrealTest {
                 new ReplacePatch("/title", "Software Engineer")
         );
 
-        surreal.patch("person", patches);
-        List<Person> actual = surreal.select("person", Person.class);
+        driver.patch("person", patches);
+        List<Person> actual = driver.select("person", Person.class);
 
         assertTrue(actual.size() > 1);
         actual.forEach(person -> {
@@ -185,16 +185,16 @@ public class SurrealTest {
     @Test
     @Order(15)
     public void testDeleteOne() {
-        surreal.delete("person:"+personId);
-        List<Person> actual = surreal.select("person:"+personId, Person.class);
+        driver.delete("person:"+personId);
+        List<Person> actual = driver.select("person:"+personId, Person.class);
         assertEquals(0, actual.size());
     }
 
     @Test
     @Order(16)
     public void testDeleteAll() {
-        surreal.delete("person");
-        List<Person> actual = surreal.select("person", Person.class);
+        driver.delete("person");
+        List<Person> actual = driver.select("person", Person.class);
         assertEquals(0, actual.size());
     }
 

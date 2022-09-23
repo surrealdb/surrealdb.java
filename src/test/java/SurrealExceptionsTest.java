@@ -1,5 +1,5 @@
-import com.surrealdb.java.DefaultSurreal;
-import com.surrealdb.java.Surreal;
+import com.surrealdb.java.driver.DefaultSurrealDriver;
+import com.surrealdb.java.driver.SurrealDriver;
 import com.surrealdb.java.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.java.connection.exception.SurrealNoDatabaseSelectedException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,17 +14,17 @@ public class SurrealExceptionsTest {
     @Test
     public void testBadCredentials() {
         assertThrows(SurrealAuthenticationException.class, () -> {
-            Surreal surreal = new DefaultSurreal("172.18.0.2", 8000, 5);
-            surreal.signIn("admin", "incorrect-password");
+            SurrealDriver driver = new DefaultSurrealDriver("172.18.0.2", 8000, 5);
+            driver.signIn("admin", "incorrect-password");
         });
     }
 
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            Surreal surreal = new DefaultSurreal("172.18.0.2", 8000, 5);
-            surreal.signIn("root", "root");
-            surreal.select("person", Person.class);
+            SurrealDriver driver = new DefaultSurrealDriver("172.18.0.2", 8000, 5);
+            driver.signIn("root", "root");
+            driver.select("person", Person.class);
         });
     }
 

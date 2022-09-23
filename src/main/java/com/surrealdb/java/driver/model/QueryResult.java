@@ -1,4 +1,4 @@
-package com.surrealdb.java.model;
+package com.surrealdb.java.driver.model;
 
 import lombok.Data;
 
