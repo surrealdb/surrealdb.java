@@ -3,6 +3,7 @@ package com.surrealdb.java.connection;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.java.connection.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.java.connection.exception.SurrealException;
 import com.surrealdb.java.connection.exception.SurrealNotConnectedException;
 import com.surrealdb.java.connection.model.RpcRequest;
 import com.surrealdb.java.connection.model.RpcResponse;
@@ -58,6 +59,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         }
     }
 
+    @Override
     public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
         RpcRequest request = new RpcRequest(method, params);
         CompletableFuture<T> callback = new CompletableFuture<>();
@@ -85,32 +87,29 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onMessage(String message) {
-        RpcResponse response = gson.fromJson(message, RpcResponse.class);
-        if(response.getError() == null){
-            log.debug("received RPC response {}", message);
+        final RpcResponse response = gson.fromJson(message, RpcResponse.class);
+        final String id = response.getId();
+        final RpcResponse.Error error = response.getError();
+        final CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
 
-            String id = response.getId();
-            CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
-            Type resultType = resultTypes.get(id);
-            if(callback != null){
-                try{
-                    // parse result
-                    Object result;
-                    if(resultType != null){
-                        result = gson.fromJson(response.getResult(), resultType);
-                    }else{
-                        result = response.getResult();
-                    }
-
-                    // call the callback
-                    callback.complete(result);
-                }finally {
-                    callbacks.remove(id);
-                    resultTypes.remove(id);
+        try{
+            if(error == null){
+                log.debug("Received RPC response: {}", message);
+                Type resultType = resultTypes.get(id);
+                Object result;
+                if(resultType != null){
+                    result = gson.fromJson(response.getResult(), resultType);
+                }else{
+                    result = response.getResult();
                 }
+                callback.complete(result);
+            }else{
+                log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
+                callback.completeExceptionally(new SurrealException());
             }
-        }else{
-            log.error("received RPC error: code={} message={}", response.getError().getCode(), response.getError().getMessage());
+        }finally{
+            callbacks.remove(id);
+            resultTypes.remove(id);
         }
     }
 
