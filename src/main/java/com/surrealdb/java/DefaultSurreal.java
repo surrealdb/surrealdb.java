@@ -17,16 +17,16 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class DefaultSurreal implements Surreal {
 
-    private final SurrealConnection client;
+    private final SurrealConnection connection;
 
     public DefaultSurreal(String host, int port){
-        client = new SurrealWebSocketConnection(host, port);
+        connection = new SurrealWebSocketConnection(host, port);
     }
 
     @SneakyThrows
     @Override
     public void signIn(String username, String password){
-        CompletableFuture<?> future = client.rpc(null, "signin", new SignIn(username, password));
+        CompletableFuture<?> future = connection.rpc(null, "signin", new SignIn(username, password));
         future.get();
         log.debug("Signed-in successfully");
     }
@@ -34,7 +34,7 @@ public class DefaultSurreal implements Surreal {
     @SneakyThrows
     @Override
     public void use(String namespace, String database){
-        CompletableFuture<?> future = client.rpc(null, "use", namespace, database);
+        CompletableFuture<?> future = connection.rpc(null, "use", namespace, database);
         future.get();
         log.debug("You are now using namespace={} database={}", namespace, database);
     }
@@ -42,7 +42,7 @@ public class DefaultSurreal implements Surreal {
     @SneakyThrows
     @Override
     public void let(String key, String value){
-        CompletableFuture<?> future = client.rpc(null, "let", key, value);
+        CompletableFuture<?> future = connection.rpc(null, "let", key, value);
         future.get();
         log.debug("Set key={} to value={}", key, value);
     }
@@ -53,7 +53,7 @@ public class DefaultSurreal implements Surreal {
         Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowClass).getType();
         Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
 
-        CompletableFuture<List<QueryResult<T>>> future = client.rpc(resultType, "query", query, args);
+        CompletableFuture<List<QueryResult<T>>> future = connection.rpc(resultType, "query", query, args);
         List<QueryResult<T>> result = future.get();
         log.debug("query result {}", result);
         return result;
@@ -64,7 +64,7 @@ public class DefaultSurreal implements Surreal {
     public <T> List<T> select(String thing, Class<? extends T> rowType){
         Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
 
-        CompletableFuture<List<T>> future = client.rpc(resultType, "select", thing);
+        CompletableFuture<List<T>> future = connection.rpc(resultType, "select", thing);
         List<T> result = future.get();
         log.debug("selected {}", result);
         return result;
@@ -75,7 +75,7 @@ public class DefaultSurreal implements Surreal {
     public <T> T create(String thing, T data){
         Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
 
-        CompletableFuture<List<T>> future = client.rpc(resultType, "create", thing, data);
+        CompletableFuture<List<T>> future = connection.rpc(resultType, "create", thing, data);
         List<T> result = future.get();
         log.debug("created {}", result.get(0));
         return result.get(0);
@@ -86,7 +86,7 @@ public class DefaultSurreal implements Surreal {
     public <T> List<T> update(String thing, T data){
         Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
 
-        CompletableFuture<List<T>> future = client.rpc(resultType, "update", thing, data);
+        CompletableFuture<List<T>> future = connection.rpc(resultType, "update", thing, data);
         List<T> result = future.get();
         log.debug("updated {}", result);
         return result;
@@ -97,7 +97,7 @@ public class DefaultSurreal implements Surreal {
     public <T, P> List<T> change(String thing, P data, Class<T> rowType){
         Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
 
-        CompletableFuture<List<T>> future = client.rpc(resultType, "change", thing, data);
+        CompletableFuture<List<T>> future = connection.rpc(resultType, "change", thing, data);
         List<T> result = future.get();
         log.debug("changed {}", result);
         return result;
@@ -108,7 +108,7 @@ public class DefaultSurreal implements Surreal {
     public void patch(String thing, List<Patch> patches){
         Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
 
-        CompletableFuture<List<Object>> future = client.rpc(resultType, "modify", thing, patches);
+        CompletableFuture<List<Object>> future = connection.rpc(resultType, "modify", thing, patches);
         List<Object> result = future.get();
         log.debug("patched {}", result.size());
     }
@@ -118,7 +118,7 @@ public class DefaultSurreal implements Surreal {
     public void delete(String thing){
         Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
 
-        CompletableFuture<List<Object>> future = client.rpc(resultType, "delete", thing);
+        CompletableFuture<List<Object>> future = connection.rpc(resultType, "delete", thing);
         List<Object> result = future.get();
         log.debug("deleted {}", result.size());
     }
