@@ -18,10 +18,10 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
-      - name: Build
+      - name: Build a Fat JAR
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: assemble
+          arguments: fatJar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
