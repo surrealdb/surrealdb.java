@@ -22,7 +22,7 @@ public class SurrealSpecialOperationsTest {
 
     @Test
     public void testSignIn() {
-        driver.signIn("root", "root");
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
     }
 
     @Test
@@ -34,13 +34,13 @@ public class SurrealSpecialOperationsTest {
 
     @Test
     public void testUse() {
-        driver.use("test", "test");
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signIn("root", "root");
+            driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
             driver.select("person", Person.class);
         });
     }
@@ -57,8 +57,8 @@ public class SurrealSpecialOperationsTest {
 
     @Test
     public void testInfo() {
-        driver.signIn("root", "root");
-        driver.use("test", "test");
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
         driver.info();
     }
 
