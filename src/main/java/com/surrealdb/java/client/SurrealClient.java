@@ -58,20 +58,26 @@ public class SurrealClient extends WebSocketClient {
         RpcResponse response = gson.fromJson(message, RpcResponse.class);
         if(response.getError() == null){
             log.debug("received RPC response {}", message);
-            CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(response.getId());
-            Type resultType = resultTypes.get(response.getId());
+
+            String id = response.getId();
+            CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
+            Type resultType = resultTypes.get(id);
             if(callback != null){
+                try{
+                    // parse result
+                    Object result;
+                    if(resultType != null){
+                        result = gson.fromJson(response.getResult(), resultType);
+                    }else{
+                        result = response.getResult();
+                    }
 
-                // parse result
-                Object result;
-                if(resultType != null){
-                    result = gson.fromJson(response.getResult(), resultType);
-                }else{
-                    result = response.getResult();
+                    // call the callback
+                    callback.complete(result);
+                }finally {
+                    callbacks.remove(id);
+                    resultTypes.remove(id);
                 }
-
-                // call the callback
-                callback.complete(result);
             }
         }else{
             log.error("received RPC error: code={} message={}", response.getError().getCode(), response.getError().getMessage());
@@ -81,6 +87,8 @@ public class SurrealClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         log.debug("onClose");
+        callbacks.clear();
+        resultTypes.clear();
     }
 
     @Override
