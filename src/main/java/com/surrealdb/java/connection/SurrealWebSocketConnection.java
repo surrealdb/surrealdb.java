@@ -2,14 +2,19 @@ package com.surrealdb.java.connection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.surrealdb.java.connection.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.java.connection.exception.SurrealNotConnectedException;
 import com.surrealdb.java.connection.model.RpcRequest;
 import com.surrealdb.java.connection.model.RpcResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.lang.reflect.Type;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,10 +42,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             log.debug("Connecting to SurrealDB server {}", uri);
             this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new SurrealConnectionTimeoutException();
         }
         if(!isOpen()){
-            throw new RuntimeException("Not connected");
+            throw new SurrealConnectionTimeoutException();
         }
     }
 
@@ -55,16 +60,20 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
         RpcRequest request = new RpcRequest(method, params);
-
         CompletableFuture<T> callback = new CompletableFuture<>();
+
         callbacks.put(request.getId(), callback);
         if(resultType != null){
             resultTypes.put(request.getId(), resultType);
         }
 
-        String json = gson.toJson(request);
-        log.debug("Sending RPC request {}", json);
-        send(json);
+        try{
+            String json = gson.toJson(request);
+            log.debug("Sending RPC request {}", json);
+            send(json);
+        }catch(WebsocketNotConnectedException e){
+            throw new SurrealNotConnectedException();
+        }
 
         return callback;
     }
@@ -114,7 +123,9 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onError(Exception ex) {
-        log.error("onError", ex);
+        if(!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)){
+            log.error("onError", ex);
+        }
     }
 
 }
