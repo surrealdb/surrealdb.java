@@ -1,3 +1,5 @@
+import com.surrealdb.java.connection.SurrealConnection;
+import com.surrealdb.java.connection.SurrealWebSocketConnection;
 import com.surrealdb.java.driver.DefaultSurrealDriver;
 import com.surrealdb.java.driver.SurrealDriver;
 import com.surrealdb.java.driver.model.QueryResult;
@@ -26,7 +28,10 @@ public class SurrealTest {
 
     @BeforeAll
     public void init(){
-        driver = new DefaultSurrealDriver("172.18.0.2", 8000, 5);
+        SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.2", 8000);
+        connection.connect(5);
+
+        driver = new DefaultSurrealDriver(connection);
         personId = System.currentTimeMillis()+"";
     }
 

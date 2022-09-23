@@ -2,7 +2,6 @@ package com.surrealdb.java.driver;
 
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.java.connection.SurrealConnection;
-import com.surrealdb.java.connection.SurrealWebSocketConnection;
 import com.surrealdb.java.connection.exception.SurrealException;
 import com.surrealdb.java.driver.model.QueryResult;
 import com.surrealdb.java.driver.model.SignIn;
@@ -21,9 +20,8 @@ public class DefaultSurrealDriver implements SurrealDriver {
 
     private final SurrealConnection connection;
 
-    public DefaultSurrealDriver(String host, int port, int connectionTimeoutSeconds){
-        connection = new SurrealWebSocketConnection(host, port);
-        connection.connect(connectionTimeoutSeconds);
+    public DefaultSurrealDriver(SurrealConnection connection){
+        this.connection = connection;
     }
 
     @SneakyThrows

@@ -1,3 +1,5 @@
+import com.surrealdb.java.connection.SurrealConnection;
+import com.surrealdb.java.connection.SurrealWebSocketConnection;
 import com.surrealdb.java.driver.DefaultSurrealDriver;
 import com.surrealdb.java.driver.SurrealDriver;
 import com.surrealdb.java.connection.exception.SurrealAuthenticationException;
@@ -14,7 +16,10 @@ public class SurrealExceptionsTest {
     @Test
     public void testBadCredentials() {
         assertThrows(SurrealAuthenticationException.class, () -> {
-            SurrealDriver driver = new DefaultSurrealDriver("172.18.0.2", 8000, 5);
+            SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.2", 8000);
+            connection.connect(5);
+
+            SurrealDriver driver = new DefaultSurrealDriver(connection);
             driver.signIn("admin", "incorrect-password");
         });
     }
@@ -22,7 +27,10 @@ public class SurrealExceptionsTest {
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            SurrealDriver driver = new DefaultSurrealDriver("172.18.0.2", 8000, 5);
+            SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.2", 8000);
+            connection.connect(5);
+
+            SurrealDriver driver = new DefaultSurrealDriver(connection);
             driver.signIn("root", "root");
             driver.select("person", Person.class);
         });
