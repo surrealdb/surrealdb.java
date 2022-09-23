@@ -42,21 +42,6 @@ public class SurrealTest {
     }
 
     @Test
-    public void testSignIn() {
-        driver.signIn("root", "root");
-    }
-
-    @Test
-    public void testUse() {
-        driver.use("test", "test");
-    }
-
-    @Test
-    public void testLet() {
-        driver.let("someKey", "someValue");
-    }
-
-    @Test
     public void testCreateNoId() {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
