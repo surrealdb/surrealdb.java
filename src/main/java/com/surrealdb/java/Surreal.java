@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface Surreal {
 
+    void ping();
+
     void signIn(String username, String password);
 
     void use(String namespace, String database);

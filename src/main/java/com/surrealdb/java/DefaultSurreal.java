@@ -28,6 +28,14 @@ public class DefaultSurreal implements Surreal {
 
     @SneakyThrows
     @Override
+    public void ping(){
+        CompletableFuture<Boolean> future = connection.rpc(Boolean.class, "ping");
+        Boolean result = getResultSynchronously(future);
+        log.debug("ping result: {}", result);
+    }
+
+    @SneakyThrows
+    @Override
     public void signIn(String username, String password){
         CompletableFuture<?> future = connection.rpc(null, "signin", new SignIn(username, password));
         getResultSynchronously(future);
