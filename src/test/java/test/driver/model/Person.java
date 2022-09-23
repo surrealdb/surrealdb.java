@@ -1,4 +1,4 @@
-package model;
+package test.driver.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
