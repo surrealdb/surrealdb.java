@@ -2,10 +2,7 @@ package com.surrealdb.java.connection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.java.connection.exception.SurrealAuthenticationException;
-import com.surrealdb.java.connection.exception.SurrealConnectionTimeoutException;
-import com.surrealdb.java.connection.exception.SurrealException;
-import com.surrealdb.java.connection.exception.SurrealNotConnectedException;
+import com.surrealdb.java.connection.exception.*;
 import com.surrealdb.java.connection.model.RpcRequest;
 import com.surrealdb.java.connection.model.RpcResponse;
 import lombok.SneakyThrows;
@@ -107,8 +104,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             }else{
                 log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
 
-                if(error.getMessage().contains("There was a problem with authentication")){
+                if(error.getMessage().contains("There was a problem with authentication")) {
                     callback.completeExceptionally(new SurrealAuthenticationException());
+                }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use")){
+                    callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
                 }else{
                     callback.completeExceptionally(new SurrealException());
                 }

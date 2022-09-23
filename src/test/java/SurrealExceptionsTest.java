@@ -1,7 +1,9 @@
 import com.surrealdb.java.DefaultSurreal;
 import com.surrealdb.java.Surreal;
 import com.surrealdb.java.connection.exception.SurrealAuthenticationException;
+import com.surrealdb.java.connection.exception.SurrealNoDatabaseSelectedException;
 import lombok.extern.slf4j.Slf4j;
+import model.Person;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,6 +16,15 @@ public class SurrealExceptionsTest {
         assertThrows(SurrealAuthenticationException.class, () -> {
             Surreal surreal = new DefaultSurreal("172.18.0.2", 8000, 5);
             surreal.signIn("admin", "incorrect-password");
+        });
+    }
+
+    @Test
+    public void testNoDatabaseSelected() {
+        assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
+            Surreal surreal = new DefaultSurreal("172.18.0.2", 8000, 5);
+            surreal.signIn("root", "root");
+            surreal.select("person", Person.class);
         });
     }
 
