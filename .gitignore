@@ -21,8 +21,18 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Gradle
+/.gradle
+/build
+
+# Intellij IDEA
+/.idea
+
+
+
 # -----------------------------------
 # Files
 # -----------------------------------
 
 *.db
+
