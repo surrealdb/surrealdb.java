@@ -20,7 +20,7 @@ public class SurrealConnectionTest {
     @Test
     public void testConnectSuccessfully() {
         assertDoesNotThrow(() -> {
-            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
+            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
             connection.connect(3);
         });
     }
@@ -28,7 +28,7 @@ public class SurrealConnectionTest {
     @Test
     public void testHostNotReachable1() {
         assertThrows(SurrealConnectionTimeoutException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.10", 8000);
+            SurrealConnection connection = new SurrealWebSocketConnection("172.18.0.10", 8000, false);
             connection.connect(3);
         });
     }
@@ -36,7 +36,7 @@ public class SurrealConnectionTest {
     @Test
     public void testHostNotReachable2() {
         assertThrows(SurrealConnectionTimeoutException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection("localhost", 9999);
+            SurrealConnection connection = new SurrealWebSocketConnection("localhost", 9999, false);
             connection.connect(3);
         });
     }
@@ -44,7 +44,7 @@ public class SurrealConnectionTest {
     @Test
     public void testInvalidHostname() {
         assertThrows(SurrealConnectionTimeoutException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection("some_hostname", 8000);
+            SurrealConnection connection = new SurrealWebSocketConnection("some_hostname", 8000, false);
             connection.connect(3);
         });
     }
@@ -52,7 +52,7 @@ public class SurrealConnectionTest {
     @Test
     public void testUserForgotToConnect() {
         assertThrows(SurrealNotConnectedException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
+            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
             connection.rpc(null, "let", "some_key", "some_val");
         });
     }
@@ -60,7 +60,7 @@ public class SurrealConnectionTest {
     @Test
     public void testUserConnectsThenDisconnects() {
         assertThrows(SurrealNotConnectedException.class, () -> {
-            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
+            SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
             connection.connect(3);
             connection.disconnect();
             connection.rpc(null, "let", "some_key", "some_val");

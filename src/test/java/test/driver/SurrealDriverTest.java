@@ -30,7 +30,7 @@ public class SurrealDriverTest {
 
     @BeforeEach
     public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort());
+        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
         connection.connect(5);
 
         driver = new SyncSurrealDriver(connection);

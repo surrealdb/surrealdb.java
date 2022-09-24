@@ -35,8 +35,8 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
     @SneakyThrows
-    public SurrealWebSocketConnection(String host, int port){
-        super(URI.create("ws://"+host+":"+port+"/rpc"));
+    public SurrealWebSocketConnection(String host, int port, boolean useTls){
+        super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
         this.gson = new GsonBuilder().disableHtmlEscaping().create();
         this.callbacks = new HashMap<>();
