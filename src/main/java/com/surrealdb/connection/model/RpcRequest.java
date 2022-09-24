@@ -13,8 +13,8 @@ public class RpcRequest {
     private final String method;
     private final Object[] params;
 
-    public RpcRequest(String method, Object... params) {
-        id = UUID.randomUUID().toString(); // TODO: change to a faster random ID
+    public RpcRequest(String id, String method, Object... params) {
+        this.id = id;
         this.method = method;
         this.params = params;
     }

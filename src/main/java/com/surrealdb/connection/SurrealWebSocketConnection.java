@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
+	private final AtomicLong lastRequestId;
     private final Gson gson;
     private final Map<String, CompletableFuture<?>> callbacks;
     private final Map<String, Type> resultTypes;
@@ -38,6 +40,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     public SurrealWebSocketConnection(String host, int port, boolean useTls){
         super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
+        this.lastRequestId = new AtomicLong(0);
         this.gson = new GsonBuilder().disableHtmlEscaping().create();
         this.callbacks = new HashMap<>();
         this.resultTypes = new HashMap<>();
@@ -67,7 +70,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
-        RpcRequest request = new RpcRequest(method, params);
+        RpcRequest request = new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
         CompletableFuture<T> callback = new CompletableFuture<>();
 
         callbacks.put(request.getId(), callback);
