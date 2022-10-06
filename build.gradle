@@ -4,7 +4,6 @@ plugins {
 }
 
 group 'com.surrealdb'
-version '0.1.0'
 
 repositories {
     mavenCentral()
