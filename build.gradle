@@ -36,7 +36,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    environment('TEST_SURREAL_HOST', '172.18.0.2')
+    environment('TEST_SURREAL_HOST', 'localhost')
     environment('TEST_SURREAL_PORT', 8000)
     environment('TEST_SURREAL_USERNAME', 'root')
     environment('TEST_SURREAL_PASSWORD', 'root')
