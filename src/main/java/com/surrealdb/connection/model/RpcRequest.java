@@ -2,8 +2,6 @@ package com.surrealdb.connection.model;
 
 import lombok.Getter;
 
-import java.util.UUID;
-
 /**
  * @author Khalid Alharisi
  */

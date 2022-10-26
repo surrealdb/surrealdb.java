@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
-	private final AtomicLong lastRequestId;
+
+    private final AtomicLong lastRequestId;
     private final Gson gson;
     private final Map<String, CompletableFuture<?>> callbacks;
     private final Map<String, Type> resultTypes;
@@ -35,23 +36,23 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     /**
      * @param protocol the protocol to use (ws or wss)
-     * @param host   The host to connect to
-     * @param port   The port to connect to
+     * @param host     The host to connect to
+     * @param port     The port to connect to
      * @deprecated Use {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} instead
      */
-	@Deprecated
+    @Deprecated
     public SurrealWebSocketConnection(SurrealConnectionProtocol protocol, String host, int port) {
         this(SurrealConnectionSettings.builder().setUriFromComponents(protocol, host, port).build());
     }
 
-	protected SurrealWebSocketConnection(SurrealConnectionSettings settings) {
-		super(settings.getUri());
+    protected SurrealWebSocketConnection(SurrealConnectionSettings settings) {
+        super(settings.getUri());
 
         this.lastRequestId = new AtomicLong(0);
         this.gson = settings.getGson();
         this.callbacks = new HashMap<>();
-		this.resultTypes = new HashMap<>();
-	}
+        this.resultTypes = new HashMap<>();
+    }
 
     @Override
     public void connect(int timeoutSeconds) {
@@ -61,7 +62,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         } catch (InterruptedException e) {
             throw new SurrealConnectionTimeoutException();
         }
-        if(!isOpen()){
+        if (!isOpen()) {
             throw new SurrealConnectionTimeoutException();
         }
     }
@@ -76,20 +77,20 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     @Override
-    public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
+    public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params) {
         RpcRequest request = new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
         CompletableFuture<T> callback = new CompletableFuture<>();
 
         callbacks.put(request.getId(), callback);
-        if(resultType != null){
+        if (resultType != null) {
             resultTypes.put(request.getId(), resultType);
         }
 
-        try{
+        try {
             String json = gson.toJson(request);
             log.debug("Sending RPC request [method: {}, body: {}]", method, json);
             send(json);
-        }catch(WebsocketNotConnectedException e){
+        } catch (WebsocketNotConnectedException e) {
             throw new SurrealNotConnectedException();
         }
 
@@ -108,34 +109,34 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         final RpcResponse.Error error = response.getError();
         final CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
 
-        try{
-            if(error == null){
+        try {
+            if (error == null) {
                 log.debug("Received RPC response: {}", message);
                 Type resultType = resultTypes.get(id);
 
-                if(resultType != null){
+                if (resultType != null) {
                     Object result = gson.fromJson(response.getResult(), resultType);
                     callback.complete(result);
-                }else{
+                } else {
                     callback.complete(null);
                 }
-            }else{
+            } else {
                 log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
 
-                if(error.getMessage().contains("There was a problem with authentication")) {
+                if (error.getMessage().contains("There was a problem with authentication")) {
                     callback.completeExceptionally(new SurrealAuthenticationException());
-                }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use")){
+                } else if (error.getMessage().contains("There was a problem with the database: Specify a namespace to use")) {
                     callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
-                }else{
+                } else {
                     Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
-                    if(recordAlreadyExitsMatcher.matches()){
+                    if (recordAlreadyExitsMatcher.matches()) {
                         callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
-                    }else{
+                    } else {
                         callback.completeExceptionally(new SurrealException());
                     }
                 }
             }
-        }finally{
+        } finally {
             callbacks.remove(id);
             resultTypes.remove(id);
         }
@@ -150,7 +151,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onError(Exception ex) {
-        if(!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)){
+        if (!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)) {
             log.error("Connection error", ex);
         }
     }

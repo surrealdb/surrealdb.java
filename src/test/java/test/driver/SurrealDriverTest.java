@@ -4,18 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealConnectionSettings;
-import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import test.TestUtils;
-import test.driver.model.PartialPerson;
-import test.driver.model.Person;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import test.TestUtils;
+import test.driver.model.PartialPerson;
+import test.driver.model.Person;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,7 +31,7 @@ public class SurrealDriverTest {
     private SyncSurrealDriver driver;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
 
@@ -46,7 +45,7 @@ public class SurrealDriverTest {
     }
 
     @AfterEach
-    public void teardown(){
+    public void teardown() {
         driver.delete("person");
     }
 
@@ -152,9 +151,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchOne() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person:1", patches);
@@ -169,9 +168,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchAll() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person", patches);
@@ -215,7 +214,7 @@ public class SurrealDriverTest {
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
         var person = new Person("Contributor", "Damian", "Kocher", false);
-        assertDoesNotThrow(() ->driver.create("person:damian", person));
+        assertDoesNotThrow(() -> driver.create("person:damian", person));
     }
 
 }
