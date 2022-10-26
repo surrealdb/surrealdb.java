@@ -35,6 +35,12 @@ public class SurrealConnectionSettings {
     @lombok.Builder.Default
     private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
+    @lombok.Builder.Default
+    private boolean autoConnect = false;
+
+    @lombok.Builder.Default
+    private int defaultConnectTimeoutSeconds = 5;
+
     public static class Builder {
 
         public Builder setUriFromComponents(String host, int port, boolean useTls) {

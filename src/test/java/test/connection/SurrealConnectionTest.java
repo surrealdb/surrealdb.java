@@ -1,6 +1,7 @@
 package test.connection;
 
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.SurrealConnectionSettings;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
@@ -67,5 +68,18 @@ public class SurrealConnectionTest {
         });
     }
 
+    @Test
+    void testAutoConnect() {
+        assertDoesNotThrow(() -> {
+            SurrealConnectionSettings settings = TestUtils.createConnectionSettingsBuilderWithDefaults()
+                .setAutoConnect(true)
+                .build();
+
+            SurrealConnection connection = SurrealConnection.create(settings);
+            // Normally, the user would have to call connect() to connect to the server.
+            // However, since we set autoConnect to true, the connection will be established automatically.
+            connection.rpc(null, "let", "some_key", "some_val");
+        });
+    }
 
 }
