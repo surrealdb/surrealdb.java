@@ -4,11 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.With;
 
 import java.net.URI;
 
 /**
- * This class holds all the settings {@link SurrealConnection} needs to connect to a SurrealDB server.
+ * A container for all the settings {@link SurrealConnection} needs to connect to a SurrealDB server.
  * Since this class is immutable, it's safe to share it between multiple threads.
  * <p></p>
  * Use {@code SurrealConnectionSettings.builder()} to create a new instance.
@@ -27,6 +28,7 @@ import java.net.URI;
  */
 @Builder(builderClassName = "Builder", setterPrefix = "set")
 @Getter
+@With
 public class SurrealConnectionSettings {
 
     /**
@@ -36,16 +38,16 @@ public class SurrealConnectionSettings {
     public static final SurrealConnectionSettings LOCAL_DEFAULT = SurrealConnectionSettings.builder().build();
 
     @lombok.Builder.Default
-    private URI uri = URI.create("ws://localhost:8000/rpc");
+    private final URI uri = URI.create("ws://localhost:8000/rpc");
 
     @lombok.Builder.Default
-    private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     @lombok.Builder.Default
-    private boolean autoConnect = false;
+    private final boolean autoConnect = false;
 
     @lombok.Builder.Default
-    private int defaultConnectTimeoutSeconds = 15;
+    private final int defaultConnectTimeoutSeconds = 15;
 
     public static class Builder {
 

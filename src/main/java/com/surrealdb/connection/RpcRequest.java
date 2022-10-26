@@ -1,23 +1,17 @@
 package com.surrealdb.connection;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * An internal representation of an RPC request.
  *
  * @author Khalid Alharisi
  */
-@Getter
-@ToString
-@EqualsAndHashCode
-@AllArgsConstructor
+@Value
 class RpcRequest {
 
-    private final String id;
-    private final String method;
-    private final Object[] params;
+    String id;
+    String method;
+    Object[] params;
 
 }

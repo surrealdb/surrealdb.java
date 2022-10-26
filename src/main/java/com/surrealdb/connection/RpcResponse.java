@@ -1,33 +1,24 @@
 package com.surrealdb.connection;
 
 import com.google.gson.JsonElement;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * An internal representation of an RPC response.
  *
  * @author Khalid Alharisi
  */
-@Getter
-@ToString
-@EqualsAndHashCode
-@AllArgsConstructor
+@Value
 class RpcResponse {
 
-    private final String id;
-    private final JsonElement result;
-    private final Error error;
+    String id;
+    JsonElement result;
+    Error error;
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
-    @AllArgsConstructor
+    @Value
     static class Error {
-        private int code;
-        private String message;
+        int code;
+        String message;
     }
 
     public boolean isSuccessful() {
