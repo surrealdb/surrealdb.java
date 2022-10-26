@@ -15,7 +15,13 @@ public interface SurrealConnection {
     <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params);
 
     static SurrealConnection create(SurrealConnectionSettings settings) {
-        return new SurrealWebSocketConnection(settings);
+        SurrealConnection surrealConnection = new SurrealWebSocketConnection(settings);
+
+        if (settings.isAutoConnect()) {
+            surrealConnection.connect(settings.getDefaultConnectTimeoutSeconds());
+        }
+
+        return surrealConnection;
     }
 
     static SurrealConnection create(String host, int port, boolean useTls) {

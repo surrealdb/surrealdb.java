@@ -45,10 +45,6 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         this.gson = settings.getGson();
         this.callbacks = new HashMap<>();
 		this.resultTypes = new HashMap<>();
-
-        if (settings.isAutoConnect()) {
-            connect(settings.getDefaultConnectTimeoutSeconds());
-        }
 	}
 
     @Override
