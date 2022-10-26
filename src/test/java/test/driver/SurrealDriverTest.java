@@ -1,9 +1,6 @@
 package test.driver;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.connection.SurrealConnectionSettings;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.model.QueryResult;
@@ -197,24 +194,4 @@ public class SurrealDriverTest {
         List<Person> actual = driver.select("person", Person.class);
         assertEquals(0, actual.size());
     }
-
-    @Test
-    void testCustomGsonWithPrettyPrintingEnabledDoesNotThrow() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        SurrealConnectionSettings connectionSettings = TestUtils.createConnectionSettingsBuilderWithDefaults()
-            .setGson(gson)
-            .build();
-
-        SurrealConnection connection = SurrealConnection.create(connectionSettings);
-        connection.connect(5);
-
-        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
-
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-
-        var person = new Person("Contributor", "Damian", "Kocher", false);
-        assertDoesNotThrow(() -> driver.create("person:damian", person));
-    }
-
 }
