@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
  * Used to store result type for deserialization, as well as a future to callback.
  *
  * @param <T> The type of the result
- *
  * @author Damian Kocher
  */
 @Value

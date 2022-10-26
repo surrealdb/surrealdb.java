@@ -17,7 +17,7 @@ The official SurrealDB library for Java.
 
 Gradle:
 ```groovy
-implementation files('libs/surrealdb-0.1.0.jar')
+implementation files('libs/surrealdb-0.2.0.jar')
 ```
 
 Maven:
@@ -25,9 +25,9 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>driver</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <scope>system</scope>
-    <systemPath>${basedir}/libs/surrealdb-0.1.0.jar</systemPath>
+    <systemPath>${basedir}/libs/surrealdb-0.2.0.jar</systemPath>
 </dependency>
 ```
 
@@ -44,7 +44,12 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        SurrealConnection connection = SurrealConnection.create(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000);
+        SurrealConnectionSettings connectionSettings = SurrealConnectionSettings.Builder()
+            .setUriFromComponents(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000)
+            .setAutoConnect(false)
+            .build();
+        
+        SurrealConnection connection = SurrealConnection.create(connectionSettings);
         connection.connect(30); // timeout after 30 seconds
 
         SyncSurrealDriver driver = new SyncSurrealDriver(connection);
