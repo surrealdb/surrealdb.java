@@ -1,19 +1,15 @@
 package com.surrealdb.driver.model.patch;
 
-import lombok.Getter;
+import lombok.Value;
 
 /**
  * @author Khalid Alharisi
  */
-@Getter
+@Value
 public class AddPatch implements Patch {
-    private final String op = "add";
-    private final String path;
-    private final String value;
 
-    public AddPatch(String path, String value) {
-        this.path = path;
-        this.value = value;
-    }
+    String op = "add";
+    String path;
+    String value;
 
 }

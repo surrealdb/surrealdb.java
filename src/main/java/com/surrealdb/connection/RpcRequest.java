@@ -1,6 +1,6 @@
 package com.surrealdb.connection;
 
-import lombok.*;
+import lombok.Value;
 
 /**
  * An internal representation of an RPC request.

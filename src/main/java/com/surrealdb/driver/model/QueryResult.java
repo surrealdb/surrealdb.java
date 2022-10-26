@@ -1,15 +1,17 @@
 package com.surrealdb.driver.model;
 
-import lombok.Data;
+import lombok.Value;
 
 import java.util.List;
 
 /**
  * @author Khalid Alharisi
  */
-@Data
+@Value
 public class QueryResult<T> {
-    private List<T> result;
-    private String status;
-    private String time;
+
+    List<T> result;
+    String status;
+    String time;
+
 }

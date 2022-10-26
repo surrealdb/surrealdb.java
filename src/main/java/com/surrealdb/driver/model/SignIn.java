@@ -1,14 +1,14 @@
 package com.surrealdb.driver.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Value;
 
 /**
  * @author Khalid Alharisi
  */
-@Data
-@AllArgsConstructor
+@Value
 public class SignIn {
-    private String user;
-    private String pass;
+
+    String user;
+    String pass;
+
 }

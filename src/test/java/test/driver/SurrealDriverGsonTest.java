@@ -13,6 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class SurrealDriverGsonTest {
 
+    private static SurrealConnectionSettings getConnectionSettings(Gson gson) {
+        return TestUtils.createConnectionSettingsBuilderWithDefaults()
+            .setAutoConnect(true)
+            .setGson(gson)
+            .build();
+    }
+
     @Test
     void testCustomGsonWithPrettyPrintingEnabledDoesNotThrow() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -28,12 +35,5 @@ public class SurrealDriverGsonTest {
                 driver.delete("person:damian");
             }
         );
-    }
-
-    private static SurrealConnectionSettings getConnectionSettings(Gson gson) {
-        return TestUtils.createConnectionSettingsBuilderWithDefaults()
-            .setAutoConnect(true)
-            .setGson(gson)
-            .build();
     }
 }

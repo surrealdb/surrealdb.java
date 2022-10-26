@@ -1,7 +1,7 @@
 package com.surrealdb.connection;
 
 import com.google.gson.JsonElement;
-import lombok.*;
+import lombok.Value;
 
 /**
  * An internal representation of an RPC response.
@@ -15,13 +15,13 @@ class RpcResponse {
     JsonElement result;
     Error error;
 
+    public boolean isSuccessful() {
+        return error == null;
+    }
+
     @Value
     static class Error {
         int code;
         String message;
-    }
-
-    public boolean isSuccessful() {
-        return error == null;
     }
 }

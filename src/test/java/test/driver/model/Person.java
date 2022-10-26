@@ -15,6 +15,7 @@ public class Person {
     private String title;
     private Name name;
     private boolean marketing;
+
     public Person(String title, String firstName, String lastName, boolean marketing) {
         this.title = title;
         this.name = new Name(firstName, lastName);

@@ -1,17 +1,14 @@
 package com.surrealdb.driver.model.patch;
 
-import lombok.Getter;
+import lombok.Value;
 
 /**
  * @author Khalid Alharisi
  */
-@Getter
+@Value
 public class RemovePatch implements Patch {
-    private final String op = "remove";
-    private final String path;
 
-    public RemovePatch(String path) {
-        this.path = path;
-    }
+    String op = "remove";
+    String path;
 
 }
