@@ -15,10 +15,12 @@ import java.net.URI;
  * If the builder is not configured, it will use the default values.
  * Default values are:
  * <ul>
+ *     <li>Protocol: {@link SurrealConnectionProtocol#WEB_SOCKET}</li>
  *     <li>host: localhost</li>
- *     <li>port: 8080</li>
- *     <li>useTls: false</li>
+ *     <li>port: 8000</li>
  *     <li>gson: GSON with HTML escaping disabled</li>
+ *     <li>auto connect: false</li>
+ *     <li>reconnectInterval: 15 seconds</li>
  * </ul>
  *
  * @author Damian Kocher
@@ -27,6 +29,10 @@ import java.net.URI;
 @Getter
 public class SurrealConnectionSettings {
 
+    /**
+     * A connection settings instance set to connect to a local SurrealDB server using the default
+     * port (8000).
+     */
     public static final SurrealConnectionSettings LOCAL_DEFAULT = SurrealConnectionSettings.builder().build();
 
     @lombok.Builder.Default
@@ -39,7 +45,7 @@ public class SurrealConnectionSettings {
     private boolean autoConnect = false;
 
     @lombok.Builder.Default
-    private int defaultConnectTimeoutSeconds = 5;
+    private int defaultConnectTimeoutSeconds = 15;
 
     public static class Builder {
 

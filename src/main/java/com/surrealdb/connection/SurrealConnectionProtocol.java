@@ -5,7 +5,14 @@ package com.surrealdb.connection;
  */
 public enum SurrealConnectionProtocol {
 
+    /**
+     * WebSocket protocol.
+     */
     WEB_SOCKET("ws"),
+
+    /**
+     * Secure WebSocket protocol.
+     */
     WEB_SOCKET_SECURE("wss");
 
     private final String scheme;

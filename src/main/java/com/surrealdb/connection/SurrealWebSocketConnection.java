@@ -58,6 +58,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         this.lastRequestId = new AtomicLong(0);
         this.gson = settings.getGson();
         this.pendingRequests = new HashMap<>();
+
+        if (settings.isAutoConnect()) {
+            connect(settings.getDefaultConnectTimeoutSeconds());
+        }
     }
 
     @Override
