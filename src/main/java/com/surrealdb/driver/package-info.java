@@ -1,3 +1,6 @@
+/**
+ * A package containing everything related to SurrealDB drivers.
+ */
 @ParametersAreNonnullByDefault
 package com.surrealdb.driver;
 

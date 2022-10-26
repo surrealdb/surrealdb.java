@@ -11,7 +11,7 @@ import java.net.URI;
 /**
  * A container for all the settings {@link SurrealConnection} needs to connect to a SurrealDB server.
  * Since this class is immutable, it's safe to share it between multiple threads.
- * <p></p>
+ * <p>
  * Use {@code SurrealConnectionSettings.builder()} to create a new instance.
  * If the builder is not configured, it will use the default values.
  * Default values are:
@@ -49,8 +49,22 @@ public class SurrealConnectionSettings {
     @lombok.Builder.Default
     private final int defaultConnectTimeoutSeconds = 15;
 
+    /**
+     * A builder class for creating a {@link SurrealConnectionSettings} instance. Use {@code SurrealConnectionSettings.builder()}
+     * to create a new instance.
+     */
     public static class Builder {
 
+        /**
+         * Generates and sets the URI from the provided components. This method will override any
+         * previously set URI. This method is preferable to {@code .setUri(URI)} because it will ensure
+         * the generated URI follows SurrealDB's URI format.
+         *
+         * @param protocol The protocol to use
+         * @param host     The host to connect to
+         * @param port     The port to connect to
+         * @return this builder
+         */
         public Builder setUriFromComponents(SurrealConnectionProtocol protocol, String host, int port) {
             setUri(URI.create(String.format("%s://%s:%d/rpc", protocol.getScheme(), host, port)));
             return this;

@@ -12,16 +12,32 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * An asynchronous SurrealDB driver. This driver is used in conjunction with a
+ * {@link SurrealConnection} to communicate with the server. The driver provides methods for
+ * signing in to the server executing queries, and subscribing to data (coming soon). All methods in this
+ * class are asynchronous and return a {@link CompletableFuture} that will be completed when
+ * the operation is finished.
+ *
  * @author Khalid Alharisi
  */
 public class AsyncSurrealDriver {
 
     private final SurrealConnection connection;
 
+    /**
+     * Creates a new {@link AsyncSurrealDriver} instance using the provided connection. The connection
+     * must connect to a SurrealDB server before any driver methods are called.
+     *
+     * @param connection The connection to use for communication with the server
+     */
     public AsyncSurrealDriver(SurrealConnection connection) {
         this.connection = connection;
     }
 
+    /**
+     * @return a {@link CompletableFuture} that will complete once the SurrealDB server has
+     * responded to the ping. If an error occurs, the future will complete exceptionally.
+     */
     public CompletableFuture<Void> ping() {
         return connection.rpc("ping");
     }
@@ -31,10 +47,22 @@ public class AsyncSurrealDriver {
         return connection.rpc(resultType, "info");
     }
 
+    /**
+     * @param username The username to sign in with
+     * @param password The password to sign in with
+     * @return a {@link CompletableFuture} that will complete with the result of the sign in
+     * operation. If an error occurs, the future will complete exceptionally.
+     */
     public CompletableFuture<Void> signIn(String username, String password) {
         return connection.rpc("signin", new SignIn(username, password));
     }
 
+    /**
+     * @param namespace The namespace to use
+     * @param database  The database to use
+     * @return a {@link CompletableFuture} that will complete once the SurrealDB server has
+     * responded to the use operation. If an error occurs, the future will complete exceptionally.
+     */
     public CompletableFuture<Void> use(String namespace, String database) {
         return connection.rpc("use", namespace, database);
     }
@@ -89,5 +117,4 @@ public class AsyncSurrealDriver {
         Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
         return connection.rpc(resultType, "delete", thing);
     }
-
 }

@@ -21,6 +21,13 @@ public enum SurrealConnectionProtocol {
         this.scheme = scheme;
     }
 
+    /**
+     * Returns the scheme of this protocol. This is used to construct the URI. For example, the
+     * scheme of {@link #WEB_SOCKET} is {@code ws}. When constructing a URI, the scheme is followed
+     * by a colon and two slashes.
+     *
+     * @return The scheme of this protocol.
+     */
     public String getScheme() {
         return scheme;
     }

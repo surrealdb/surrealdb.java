@@ -11,16 +11,30 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * A synchronous SurrealDB driver. This driver is used in conjunction with a
+ * {@link SurrealConnection} to communicate with the server. The driver provides methods for
+ * signing in to the server executing queries, and subscribing to data (coming soon). All methods in this
+ * class are synchronous and will block until the operation is finished.
+ *
  * @author Khalid Alharisi
  */
 public class SyncSurrealDriver {
 
     private final AsyncSurrealDriver asyncDriver;
 
+    /**
+     * Creates a new {@link SyncSurrealDriver} instance using the provided connection. The connection
+     * must connect to a SurrealDB server before any driver methods are called.
+     *
+     * @param connection The connection to use for communication with the server
+     */
     public SyncSurrealDriver(SurrealConnection connection) {
         this.asyncDriver = new AsyncSurrealDriver(connection);
     }
 
+    /**
+     * Pings the SurrealDB server. This method will block until the server responds.
+     */
     public void ping() {
         getResultSynchronously(asyncDriver.ping());
     }
@@ -29,6 +43,12 @@ public class SyncSurrealDriver {
         return getResultSynchronously(asyncDriver.info());
     }
 
+    /**
+     * Signs in to the SurrealDB server. This method will block until the server responds.
+     *
+     * @param username The username to sign in with
+     * @param password The password to sign in with
+     */
     public void signIn(String username, String password) {
         getResultSynchronously(asyncDriver.signIn(username, password));
     }

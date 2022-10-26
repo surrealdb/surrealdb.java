@@ -39,7 +39,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
      * @param host   The host to connect to
      * @param port   The port to connect to
      * @param useTls Whether to use TLS or not
-     * @deprecated use {@link SurrealConnection#create(SurrealConnectionSettings)},
+     * @deprecated use {@link SurrealWebSocketConnection#create(SurrealConnectionSettings)},
      * {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} or
      * {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} instead
      */
@@ -50,6 +50,12 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             .build());
     }
 
+    /**
+     * Creates a new connection to a SurrealDB server using the given settings. If auto connect is enabled, the connection
+     * will be established immediately, meaning that the constructor will block until the connection is established.
+     *
+     * @param settings The settings to use
+     */
     public SurrealWebSocketConnection(SurrealConnectionSettings settings) {
         super(settings.getUri());
 

@@ -59,9 +59,15 @@ public interface SurrealConnection {
     void disconnect();
 
     /**
+     * Sends an RPC request to the SurrealDB server with the given method and parameters. The
+     * request will be sent asynchronously, and the returned {@link CompletableFuture} will be
+     * completed when the response is received. If the request fails, the future will be completed
+     * exceptionally.
+     *
      * @param resultType The expected result type
      * @param method     The RPC method to call
      * @param params     The parameters to pass to the method
+     * @param <T>        A generic of the same type as the expected result type
      * @return A {@link CompletableFuture} that will be completed with the result of the RPC call,
      * or an exception if the call fails
      */

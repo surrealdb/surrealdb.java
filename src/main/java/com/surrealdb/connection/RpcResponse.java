@@ -15,10 +15,16 @@ class RpcResponse {
     JsonElement result;
     Error error;
 
+    /**
+     * @return true if the response is an error, false if successful
+     */
     public boolean isSuccessful() {
         return error == null;
     }
 
+    /**
+     * An internal representation of an RPC error.
+     */
     @Value
     static class Error {
         int code;
