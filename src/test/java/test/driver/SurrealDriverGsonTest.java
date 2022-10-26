@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import test.TestUtils;
 import test.driver.model.Person;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SurrealDriverGsonTest {
 
@@ -33,6 +33,30 @@ public class SurrealDriverGsonTest {
         assertDoesNotThrow(() -> {
                 driver.create("person:damian", person);
                 driver.delete("person:damian");
+            }
+        );
+    }
+
+    @Test
+    void testGsonWithHtmlEscapingDoesNotBreakSerialization() {
+        Gson gson = new Gson();
+        assertTrue(gson.htmlSafe());
+
+        SurrealConnection connection = SurrealConnection.create(getConnectionSettings(gson));
+        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
+
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+
+        Person person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
+        assertDoesNotThrow(() -> {
+                driver.create("person:prince", person);
+                Person deserializedPerson = driver.select("person:prince", Person.class).get(0);
+
+                // Since person overrides equals, we can use assertEquals
+                assertEquals(person.getName(), deserializedPerson.getName());
+
+                driver.delete("person:prince");
             }
         );
     }
