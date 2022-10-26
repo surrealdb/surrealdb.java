@@ -2,8 +2,6 @@ package com.surrealdb.connection;
 
 import com.google.gson.Gson;
 import com.surrealdb.connection.exception.*;
-import com.surrealdb.connection.model.RpcRequest;
-import com.surrealdb.connection.model.RpcResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
