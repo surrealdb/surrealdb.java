@@ -86,8 +86,6 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         RequestEntry<T> requestEntry = new RequestEntry<>(resultType, callback);
         pendingRequests.put(request.getId(), requestEntry);
 
-        log.warn("Sending request: {}", request);
-
         try {
             String json = gson.toJson(request);
             log.debug("Sending RPC request [method: {}, body: {}]", method, json);
