@@ -38,17 +38,21 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
     /**
-     * @param protocol the protocol to use (ws or wss)
-     * @param host     The host to connect to
-     * @param port     The port to connect to
-     * @deprecated Use {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} instead
+     * @param host The host to connect to
+     * @param port The port to connect to
+     * @param useTls Whether to use TLS or not
+     * @deprecated use {@link SurrealConnection#create(SurrealConnectionSettings)},
+     * {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} or
+     * {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} instead
      */
     @Deprecated
-    public SurrealWebSocketConnection(SurrealConnectionProtocol protocol, String host, int port) {
-        this(SurrealConnectionSettings.builder().setUriFromComponents(protocol, host, port).build());
+    public SurrealWebSocketConnection(String host, int port, boolean useTls) {
+        this(SurrealConnectionSettings.builder()
+            .setUriFromComponents(useTls ? SurrealConnectionProtocol.WEB_SOCKET_SECURE : SurrealConnectionProtocol.WEB_SOCKET, host, port)
+            .build());
     }
 
-    protected SurrealWebSocketConnection(SurrealConnectionSettings settings) {
+    public SurrealWebSocketConnection(SurrealConnectionSettings settings) {
         super(settings.getUri());
 
         this.lastRequestId = new AtomicLong(0);
