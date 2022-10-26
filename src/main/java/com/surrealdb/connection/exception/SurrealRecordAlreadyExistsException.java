@@ -8,7 +8,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 @Getter
-public class SurrealRecordAlreadyExitsException extends SurrealException {
+public class SurrealRecordAlreadyExistsException extends SurrealException {
     private String tableName;
     private String recordId;
 }

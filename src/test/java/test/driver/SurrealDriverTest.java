@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealConnectionSettings;
-import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
+import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
@@ -69,7 +69,7 @@ public class SurrealDriverTest {
 
     @Test
     public void testCreateAlreadyExistsId() {
-        assertThrows(SurrealRecordAlreadyExitsException.class, () -> {
+        assertThrows(SurrealRecordAlreadyExistsException.class, () -> {
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
         });

@@ -130,7 +130,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                 } else {
                     Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
                     if (recordAlreadyExitsMatcher.matches()) {
-                        callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
+                        callback.completeExceptionally(new SurrealRecordAlreadyExistsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
                     } else {
                         callback.completeExceptionally(new SurrealException());
                     }
