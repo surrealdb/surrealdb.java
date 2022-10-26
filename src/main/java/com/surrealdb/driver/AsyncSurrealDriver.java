@@ -22,8 +22,8 @@ public class AsyncSurrealDriver {
         this.connection = connection;
     }
 
-    public CompletableFuture<?> ping() {
-        return connection.rpc(Boolean.class, "ping");
+    public CompletableFuture<Void> ping() {
+        return connection.rpc("ping");
     }
 
     public CompletableFuture<Map<String, String>> info() {
@@ -31,16 +31,16 @@ public class AsyncSurrealDriver {
         return connection.rpc(resultType, "info");
     }
 
-    public CompletableFuture<?> signIn(String username, String password) {
-        return connection.rpc(null, "signin", new SignIn(username, password));
+    public CompletableFuture<Void> signIn(String username, String password) {
+        return connection.rpc("signin", new SignIn(username, password));
     }
 
-    public CompletableFuture<?> use(String namespace, String database) {
-        return connection.rpc(null, "use", namespace, database);
+    public CompletableFuture<Void> use(String namespace, String database) {
+        return connection.rpc("use", namespace, database);
     }
 
-    public CompletableFuture<?> let(String key, String value) {
-        return connection.rpc(null, "let", key, value);
+    public CompletableFuture<Void> let(String key, String value) {
+        return connection.rpc("let", key, value);
     }
 
     public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, String> args, Class<? extends T> rowType) {

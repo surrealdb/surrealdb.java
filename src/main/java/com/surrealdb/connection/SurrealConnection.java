@@ -1,11 +1,14 @@
 package com.surrealdb.connection;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Khalid Alharisi
  */
+@ParametersAreNonnullByDefault
 public interface SurrealConnection {
 
     static SurrealConnection create(SurrealConnectionSettings settings) {
@@ -30,5 +33,9 @@ public interface SurrealConnection {
 
     void disconnect();
 
-    <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params);
+    <T> CompletableFuture<T> rpc(@Nullable Type resultType, String method, Object... params);
+
+    default CompletableFuture<Void> rpc(String method, Object... params) {
+        return rpc(null, method, params);
+    }
 }

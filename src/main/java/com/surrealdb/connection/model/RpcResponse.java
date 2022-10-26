@@ -19,4 +19,7 @@ public class RpcResponse {
         private String message;
     }
 
+    public boolean isSuccessful() {
+        return error == null;
+    }
 }

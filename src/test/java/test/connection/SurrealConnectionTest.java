@@ -53,7 +53,7 @@ public class SurrealConnectionTest {
     public void testUserForgotToConnect() {
         assertThrows(SurrealNotConnectedException.class, () -> {
             SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
-            connection.rpc(null, "let", "some_key", "some_val");
+            connection.rpc("let", "some_key", "some_val");
         });
     }
 
@@ -63,7 +63,7 @@ public class SurrealConnectionTest {
             SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
             connection.connect(3);
             connection.disconnect();
-            connection.rpc(null, "let", "some_key", "some_val");
+            connection.rpc("let", "some_key", "some_val");
         });
     }
 
@@ -75,7 +75,7 @@ public class SurrealConnectionTest {
             SurrealConnection connection = SurrealConnection.create(settings);
             // Normally, the user would have to call connect() to connect to the server.
             // However, since we set autoConnect to true, the connection will be established automatically.
-            connection.rpc(null, "let", "some_key", "some_val");
+            connection.rpc("let", "some_key", "some_val");
         });
     }
 
