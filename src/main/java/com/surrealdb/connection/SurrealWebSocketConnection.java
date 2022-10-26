@@ -87,7 +87,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
         try{
             String json = gson.toJson(request);
-            log.debug("Sending RPC request {}", json);
+            log.debug("Sending RPC request [method: {}, body: {}]", method, json);
             send(json);
         }catch(WebsocketNotConnectedException e){
             throw new SurrealNotConnectedException();
@@ -98,7 +98,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onOpen(ServerHandshake handshake) {
-        log.debug("Connected");
+        log.debug("Connected to SurrealDB server {}", uri);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        log.debug("onClose");
+        log.debug("Connection closed: code={} reason={} remote={}", code, reason, remote);
         callbacks.clear();
         resultTypes.clear();
     }
@@ -151,7 +151,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @Override
     public void onError(Exception ex) {
         if(!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)){
-            log.error("onError", ex);
+            log.error("Connection error", ex);
         }
     }
 
