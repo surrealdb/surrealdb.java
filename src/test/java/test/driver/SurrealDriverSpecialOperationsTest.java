@@ -21,7 +21,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @BeforeEach
     public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
+        SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
         driver = new SyncSurrealDriver(connection);
     }

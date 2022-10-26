@@ -18,7 +18,7 @@ public class TestUtils {
 
     public static SurrealConnectionSettings.Builder createConnectionSettingsBuilderWithDefaults() {
         return SurrealConnectionSettings.builder()
-            .setUriFromComponents(HOST, PORT, false);
+            .setUriFromComponents(HOST, PORT, useTls());
     }
 
     public static SurrealConnectionSettings getConnectionSettings() {
@@ -47,5 +47,9 @@ public class TestUtils {
 
     public static String getDatabase() {
         return DATABASE;
+    }
+
+    public static boolean useTls() {
+        return false;
     }
 }

@@ -33,6 +33,13 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     // precomputed private variables
     private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
+    /**
+     * @deprecated Use {@link SurrealConnection#create(String, int, boolean)} )} instead
+     *
+     * @param host The host to connect to
+     * @param port The port to connect to
+     * @param useTls Whether to use TLS or not
+     */
 	@Deprecated
     public SurrealWebSocketConnection(String host, int port, boolean useTls) {
         this(SurrealConnectionSettings.builder().setUriFromComponents(host, port, useTls).build());
