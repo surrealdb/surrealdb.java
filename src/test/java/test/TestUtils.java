@@ -1,5 +1,6 @@
 package test;
 
+import com.surrealdb.connection.SurrealConnectionProtocol;
 import com.surrealdb.connection.SurrealConnectionSettings;
 
 /**
@@ -18,11 +19,15 @@ public class TestUtils {
 
     public static SurrealConnectionSettings.Builder createConnectionSettingsBuilderWithDefaults() {
         return SurrealConnectionSettings.builder()
-            .setUriFromComponents(HOST, PORT, useTls());
+            .setUriFromComponents(getProtocol(), HOST, PORT);
     }
 
     public static SurrealConnectionSettings getConnectionSettings() {
         return createConnectionSettingsBuilderWithDefaults().build();
+    }
+
+    public static SurrealConnectionProtocol getProtocol() {
+        return SurrealConnectionProtocol.WEB_SOCKET;
     }
 
     public static String getHost() {
@@ -47,9 +52,5 @@ public class TestUtils {
 
     public static String getDatabase() {
         return DATABASE;
-    }
-
-    public static boolean useTls() {
-        return false;
     }
 }

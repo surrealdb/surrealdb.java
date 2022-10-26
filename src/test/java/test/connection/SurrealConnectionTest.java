@@ -2,7 +2,6 @@ package test.connection;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealConnectionSettings;
-import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,7 @@ public class SurrealConnectionTest {
     @Test
     public void testHostNotReachable1() {
         assertThrows(SurrealConnectionTimeoutException.class, () -> {
-            SurrealConnection connection = SurrealConnection.create("0.255.255.255", TestUtils.getPort(), TestUtils.useTls());
+            SurrealConnection connection = SurrealConnection.create(TestUtils.getProtocol(), "0.255.255.255", TestUtils.getPort());
             connection.connect(3);
         });
     }
@@ -37,7 +36,7 @@ public class SurrealConnectionTest {
     @Test
     public void testHostNotReachable2() {
         assertThrows(SurrealConnectionTimeoutException.class, () -> {
-            SurrealConnection connection = SurrealConnection.create(TestUtils.getHost(), 9999, TestUtils.useTls());
+            SurrealConnection connection = SurrealConnection.create(TestUtils.getProtocol(), TestUtils.getHost(), 9999);
             connection.connect(3);
         });
     }
@@ -45,7 +44,7 @@ public class SurrealConnectionTest {
     @Test
     public void testInvalidHostname() {
         assertThrows(SurrealConnectionTimeoutException.class, () -> {
-            SurrealConnection connection = SurrealConnection.create("some_hostname", TestUtils.getPort(), TestUtils.useTls());
+            SurrealConnection connection = SurrealConnection.create(TestUtils.getProtocol(), "some_hostname", TestUtils.getPort());
             connection.connect(3);
         });
     }
@@ -71,9 +70,7 @@ public class SurrealConnectionTest {
     @Test
     void testAutoConnect() {
         assertDoesNotThrow(() -> {
-            SurrealConnectionSettings settings = TestUtils.createConnectionSettingsBuilderWithDefaults()
-                .setAutoConnect(true)
-                .build();
+            SurrealConnectionSettings settings = TestUtils.createConnectionSettingsBuilderWithDefaults().setAutoConnect(true).build();
 
             SurrealConnection connection = SurrealConnection.create(settings);
             // Normally, the user would have to call connect() to connect to the server.

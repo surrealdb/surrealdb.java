@@ -43,8 +43,8 @@ public class SurrealConnectionSettings {
 
     public static class Builder {
 
-        public Builder setUriFromComponents(String host, int port, boolean useTls) {
-            setUri(URI.create(String.format("%s://%s:%d/rpc", useTls ? "wss" : "ws", host, port)));
+        public Builder setUriFromComponents(SurrealConnectionProtocol protocol, String host, int port) {
+            setUri(URI.create(String.format("%s://%s:%d/rpc", protocol.getScheme(), host, port)));
             return this;
         }
     }

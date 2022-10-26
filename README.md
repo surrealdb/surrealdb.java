@@ -37,14 +37,14 @@ Maven:
 package org.example;
 
 import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.connection.SurrealConnectionProtocol;
 import com.surrealdb.driver.SyncSurrealDriver;
 
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        SurrealConnection connection = new SurrealWebSocketConnection("127.0.0.1", 8000);
+        SurrealConnection connection = SurrealConnection.create(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000);
         connection.connect(30); // timeout after 30 seconds
 
         SyncSurrealDriver driver = new SyncSurrealDriver(connection);
@@ -64,7 +64,7 @@ public class Main {
 
         connection.disconnect();
         
-        // for more docs, see https://surrealdb.com/docs/integration/libraries/nodejs
+        // for more docs, see https://surrealdb.com/docs/integration/libraries/java (coming soon)
     }
 }
 

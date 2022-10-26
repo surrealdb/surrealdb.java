@@ -24,9 +24,9 @@ public interface SurrealConnection {
         return surrealConnection;
     }
 
-    static SurrealConnection create(String host, int port, boolean useTls) {
+    static SurrealConnection create(SurrealConnectionProtocol protocol, String host, int port) {
         SurrealConnectionSettings settings = SurrealConnectionSettings.builder()
-            .setUriFromComponents(host, port, useTls)
+            .setUriFromComponents(protocol, host, port)
             .build();
 
         return create(settings);
