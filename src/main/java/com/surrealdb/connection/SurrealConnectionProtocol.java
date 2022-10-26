@@ -1,5 +1,8 @@
 package com.surrealdb.connection;
 
+/**
+ * @author Damian Kocher
+ */
 public enum SurrealConnectionProtocol {
 
     WEB_SOCKET("ws"),
