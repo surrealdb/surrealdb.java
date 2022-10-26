@@ -1,11 +1,9 @@
 package com.surrealdb.connection;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.exception.*;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -14,7 +12,6 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -36,15 +33,19 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     // precomputed private variables
     private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
-    @SneakyThrows
-    public SurrealWebSocketConnection(String host, int port, boolean useTls){
-        super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
+	@Deprecated
+    public SurrealWebSocketConnection(String host, int port, boolean useTls) {
+        this(SurrealConnectionSettings.builder().setUriFromComponents(host, port, useTls).build());
+    }
+
+	protected SurrealWebSocketConnection(SurrealConnectionSettings settings) {
+		super(settings.getUri());
 
         this.lastRequestId = new AtomicLong(0);
-        this.gson = new GsonBuilder().disableHtmlEscaping().create();
+        this.gson = settings.getGson();
         this.callbacks = new HashMap<>();
-        this.resultTypes = new HashMap<>();
-    }
+		this.resultTypes = new HashMap<>();
+	}
 
     @Override
     public void connect(int timeoutSeconds) {

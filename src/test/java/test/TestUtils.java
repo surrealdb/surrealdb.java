@@ -1,5 +1,7 @@
 package test;
 
+import com.surrealdb.connection.SurrealConnectionSettings;
+
 /**
  * @author Khalid Alharisi
  */
@@ -14,28 +16,36 @@ public class TestUtils {
     private static final String NAMESPACE = System.getenv("TEST_SURREAL_NAMESPACE");
     private static final String DATABASE = System.getenv("TEST_SURREAL_DATABASE");
 
-    public static String getHost(){
+    public static SurrealConnectionSettings.Builder createConnectionSettingsBuilderWithDefaults() {
+        return SurrealConnectionSettings.builder()
+            .setUriFromComponents(HOST, PORT, false);
+    }
+
+    public static SurrealConnectionSettings getConnectionSettings() {
+        return createConnectionSettingsBuilderWithDefaults().build();
+    }
+
+    public static String getHost() {
         return HOST;
     }
 
-    public static int getPort(){
+    public static int getPort() {
         return PORT;
     }
 
-    public static String getUsername(){
+    public static String getUsername() {
         return USERNAME;
     }
 
-    public static String getPassword(){
+    public static String getPassword() {
         return PASSWORD;
     }
 
-    public static String getNamespace(){
+    public static String getNamespace() {
         return NAMESPACE;
     }
 
-    public static String getDatabase(){
+    public static String getDatabase() {
         return DATABASE;
     }
-
 }
