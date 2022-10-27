@@ -134,6 +134,11 @@ public class AsyncSurrealDriver implements SurrealDriver {
     }
 
     @Override
+    public SurrealConnection getSurrealConnection() {
+        return connection;
+    }
+
+    @Override
     public ExecutorService getAsyncOperationExecutorService() {
         return asyncOperationExecutorService;
     }

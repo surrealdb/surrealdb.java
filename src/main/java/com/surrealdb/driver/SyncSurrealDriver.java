@@ -117,6 +117,11 @@ public class SyncSurrealDriver implements SurrealDriver {
     }
 
     @Override
+    public SurrealConnection getSurrealConnection() {
+        return asyncDriver.getSurrealConnection();
+    }
+
+    @Override
     public ExecutorService getAsyncOperationExecutorService() {
         return asyncDriver.getAsyncOperationExecutorService();
     }

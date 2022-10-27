@@ -14,6 +14,10 @@ public class SurrealDriverSettings {
 
     public static final SurrealDriverSettings DEFAULT = SurrealDriverSettings.builder().build();
 
+    /**
+     * The {@link ExecutorService} to use for asynchronous operations. If not provided, a
+     * {@link ForkJoinPool} will be used.
+     */
     @lombok.Builder.Default
     private final ExecutorService asyncOperationExecutorService = ForkJoinPool.commonPool();
 
