@@ -44,19 +44,21 @@ public class SurrealDriverGsonTest {
         driver = new SyncSurrealDriver(connection);
         driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-
     }
 
     @Test
-    void testCustomGsonWithPrettyPrintingEnabledDoesNotThrow() {
+    void testGsonWithPrettyPrintingDoesNotBreakSerialization() {
         val gson = new GsonBuilder().setPrettyPrinting().create();
         setupDriver(gson);
 
         val person = new Person("Contributor", "Damian", "Kocher", false);
-        assertDoesNotThrow(() -> {
-                driver.create("person:damian", person);
-            }
-        );
+        assertDoesNotThrow(() -> driver.create("person:damian", person));
+
+        val personFromDb = driver.select("person:damian", Person.class).get(0);
+
+        assertEquals(person.getTitle(), personFromDb.getTitle());
+        assertEquals(person.getName(), personFromDb.getName());
+        assertEquals(person.isMarketing(), personFromDb.isMarketing());
     }
 
     @Test
@@ -66,14 +68,11 @@ public class SurrealDriverGsonTest {
         setupDriver(gson);
 
         val person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
-        assertDoesNotThrow(() -> {
-                driver.create("person:prince", person);
-                val deserializedPerson = driver.select("person:prince", Person.class).get(0);
+        assertDoesNotThrow(() -> driver.create("person:prince", person));
 
-                // Since person.Name overrides equals, we can use assertEquals
-                assertEquals(person.getName(), deserializedPerson.getName());
-            }
-        );
+        val deserializedPerson = driver.select("person:prince", Person.class).get(0);
+        // Since person.Name overrides equals, we can use assertEquals
+        assertEquals(person.getName(), deserializedPerson.getName());
     }
 
     @Test
