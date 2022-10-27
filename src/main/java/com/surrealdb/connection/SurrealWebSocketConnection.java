@@ -91,6 +91,11 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     @Override
+    public boolean isConnected() {
+        return this.isOpen();
+    }
+
+    @Override
     public <T> CompletableFuture<T> rpc(@Nullable Type resultType, String method, Object... params) {
         RpcRequest request = new RpcRequest(Long.toString(lastRequestId.incrementAndGet()), method, params);
         CompletableFuture<T> callback = new CompletableFuture<>();

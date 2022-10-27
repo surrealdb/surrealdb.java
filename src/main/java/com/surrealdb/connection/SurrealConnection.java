@@ -59,6 +59,11 @@ public interface SurrealConnection {
     void disconnect();
 
     /**
+     * @return true if this {@link SurrealConnection} is connected to a SurrealDB server, false otherwise
+     */
+    boolean isConnected();
+
+    /**
      * Sends an RPC request to the SurrealDB server with the given method and parameters. The
      * request will be sent asynchronously, and the returned {@link CompletableFuture} will be
      * completed when the response is received. If the request fails, the future will be completed
