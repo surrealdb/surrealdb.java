@@ -9,6 +9,7 @@ import com.surrealdb.driver.model.patch.Patch;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -32,7 +33,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * any driver methods are called.
      *
      * @param connection The connection to use for communicating with the server.
-     * @param settings  The settings this driver should use.
+     * @param settings   The settings this driver should use.
      */
     public AsyncSurrealDriver(SurrealConnection connection, SurrealDriverSettings settings) {
         this.connection = connection;
@@ -92,9 +93,53 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return connection.rpc(resultType, "query", query, args);
     }
 
+    /**
+     * Runs the provided query and returns the <i>the first result</i> in the <i>first query</i> wrapped as an optional.
+     * This method is just a convenient wrapper around {@link #query(String, Map, Class)} for use cases where only a
+     * single result is needed. Therefore, it's recommended to use a limit of 1 in the query to insure only the desired
+     * result is transmitted.
+     *
+     * @param query   The query to execute
+     * @param args    The arguments to use in the query
+     * @param rowType The type of the rows in the result
+     * @param <T>     The type of the rows in the result
+     * @return a {@link CompletableFuture} that will complete with an {@link Optional} containing the first result in the query
+     * or an empty {@link Optional} if the query returned no results. If an error occurs, the future will complete exceptionally.
+     * @see #query(String, Map, Class)
+     */
+    public <T> CompletableFuture<Optional<T>> querySingle(String query, Map<String, String> args, Class<? extends T> rowType) {
+        CompletableFuture<List<QueryResult<T>>> rpcCallback = query(query, args, rowType);
+
+        return rpcCallback.thenApplyAsync(queryResults -> {
+            // If there are no query results, return an empty optional
+            if (queryResults.isEmpty()) {
+                return Optional.empty();
+            }
+            // Since there is at least one query, it's safe to get the first one
+            QueryResult<T> firstQueryResult = queryResults.get(0);
+            return getFirstElement(firstQueryResult.getResult());
+        }, asyncOperationExecutorService);
+    }
+
     public <T> CompletableFuture<List<T>> select(String thing, Class<? extends T> rowType) {
         Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
         return connection.rpc(resultType, "select", thing);
+    }
+
+    /**
+     * Selects the provided <i>thing</i> and returns the <i>first result</i> wrapped as an optional. This method is just a
+     * convenient wrapper around {@link #select(String, Class)} for use cases where only a single result is needed.
+     *
+     * @param thing   The thing to select
+     * @param rowType The type of the result
+     * @param <T>     The type of the result
+     * @return a {@link CompletableFuture} that will complete with an {@link Optional} containing the first result in the query.
+     * If an error occurs, the future will complete exceptionally.
+     * @see #select(String, Class)
+     */
+    public <T> CompletableFuture<Optional<T>> selectSingle(String thing, Class<? extends T> rowType) {
+        CompletableFuture<List<T>> result = select(thing, rowType);
+        return result.thenApplyAsync(this::getFirstElement, asyncOperationExecutorService);
     }
 
     public <T> CompletableFuture<T> create(String thing, T data) {
@@ -141,5 +186,14 @@ public class AsyncSurrealDriver implements SurrealDriver {
     @Override
     public ExecutorService getAsyncOperationExecutorService() {
         return asyncOperationExecutorService;
+    }
+
+    /**
+     * @param list The list to get the first element from
+     * @param <T>  The type of the list
+     * @return the first element in the list or an empty {@link Optional} if the list is empty
+     */
+    private <T> Optional<T> getFirstElement(List<T> list) {
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 }

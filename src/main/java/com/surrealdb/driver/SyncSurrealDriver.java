@@ -7,6 +7,7 @@ import com.surrealdb.driver.model.patch.Patch;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +30,7 @@ public class SyncSurrealDriver implements SurrealDriver {
      * driver methods are called.
      *
      * @param connection The connection to use for communicating with the server.
-     * @param settings  The settings this driver should use.
+     * @param settings   The settings this driver should use.
      */
     public SyncSurrealDriver(SurrealConnection connection, SurrealDriverSettings settings) {
         asyncDriver = new AsyncSurrealDriver(connection, settings);
@@ -78,8 +79,16 @@ public class SyncSurrealDriver implements SurrealDriver {
         return getResultSynchronously(asyncDriver.query(query, args, rowType));
     }
 
+    public <T> Optional<T> querySingle(String query, Map<String, String> args, Class<? extends T> rowType) {
+        return getResultSynchronously(asyncDriver.querySingle(query, args, rowType));
+    }
+
     public <T> List<T> select(String thing, Class<? extends T> rowType) {
         return getResultSynchronously(asyncDriver.select(thing, rowType));
+    }
+
+    public <T> Optional<T> selectSingle(String thing, Class<? extends T> rowType) {
+        return getResultSynchronously(asyncDriver.selectSingle(thing, rowType));
     }
 
     public <T> T create(String thing, T data) {

@@ -13,10 +13,7 @@ import test.TestUtils;
 import test.driver.model.PartialPerson;
 import test.driver.model.Person;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,6 +81,24 @@ public class SurrealDriverTest {
     }
 
     @Test
+    public void testQuerySingleExists() {
+        Map<String, String> args = new HashMap<>();
+        Optional<Person> person = driver.querySingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", args, Person.class);
+
+        assertTrue(person.isPresent());
+        assertEquals("Tobie", person.get().getName().getFirst());
+    }
+
+    @Test
+    public void testQuerySingleWhenWhenMatchingRecordDoesNotExist() {
+        Map<String, String> args = new HashMap<>();
+        args.put("marketing", "false");
+        Optional<Person> person = driver.querySingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", args, Person.class);
+
+        assertTrue(person.isEmpty());
+    }
+
+    @Test
     public void testSelectExists() {
         Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
         expected.setId("person:1");
@@ -98,6 +113,21 @@ public class SurrealDriverTest {
     public void testSelectDoesNotExist() {
         List<Person> actual = driver.select("person:500", Person.class);
         assertEquals(0, actual.size());
+    }
+
+    @Test
+    public void testSelectSingleExists() {
+        Optional<Person> person = driver.selectSingle("person:2", Person.class);
+
+        assertTrue(person.isPresent());
+        assertEquals("Jaime", person.get().getName().getFirst());
+    }
+
+    @Test
+    public void testSelectSingleRecordDoesNotExist() {
+        Optional<Person> person = driver.selectSingle("person:404", Person.class);
+
+        assertTrue(person.isEmpty());
     }
 
     @Test
@@ -118,9 +148,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.update("person", expected);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(expected.getTitle(), person.getTitle());
-        });
+        actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
     }
 
     @Test
@@ -140,9 +168,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.change("person", patch, Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(patch.isMarketing(), person.isMarketing());
-        });
+        actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
     }
 
     @Test
