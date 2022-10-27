@@ -168,7 +168,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     private <T> void handleError(String requestId, RpcResponse.Error error, CompletableFuture<T> callback) {
-        log.error("Received RPC error: id={} code={} message={}", requestId, error.getCode(), error.getMessage());
+        log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error.getCode(), error.getMessage());
 
         if (error.getMessage().contains("There was a problem with authentication")) {
             callback.completeExceptionally(new SurrealAuthenticationException());
