@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 
 /**
  * A synchronous SurrealDB driver. This driver is used in conjunction with a
@@ -18,9 +19,21 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Khalid Alharisi
  */
-public class SyncSurrealDriver {
+public class SyncSurrealDriver implements SurrealDriver {
 
     private final AsyncSurrealDriver asyncDriver;
+
+    /**
+     * Creates a new {@link SyncSurrealDriver} instance using the provided {@link SurrealConnection} and
+     * {@link SurrealDriverSettings}. The connection must connect to a SurrealDB server before any
+     * driver methods are called.
+     *
+     * @param connection The connection to use for communicating with the server.
+     * @param settings  The settings this driver should use.
+     */
+    public SyncSurrealDriver(SurrealConnection connection, SurrealDriverSettings settings) {
+        asyncDriver = new AsyncSurrealDriver(connection, settings);
+    }
 
     /**
      * Creates a new {@link SyncSurrealDriver} instance using the provided connection. The connection
@@ -103,4 +116,8 @@ public class SyncSurrealDriver {
         }
     }
 
+    @Override
+    public ExecutorService getAsyncOperationExecutorService() {
+        return asyncDriver.getAsyncOperationExecutorService();
+    }
 }

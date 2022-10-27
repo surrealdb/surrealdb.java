@@ -10,6 +10,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * An asynchronous SurrealDB driver. This driver is used in conjunction with a
@@ -20,9 +21,23 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author Khalid Alharisi
  */
-public class AsyncSurrealDriver {
+public class AsyncSurrealDriver implements SurrealDriver {
 
     private final SurrealConnection connection;
+    private final ExecutorService asyncOperationExecutorService;
+
+    /**
+     * Creates a new {@link AsyncSurrealDriver} instance using the provided {@link SurrealConnection}
+     * and {@link SurrealDriverSettings}. The connection must connect to a SurrealDB server before
+     * any driver methods are called.
+     *
+     * @param connection The connection to use for communicating with the server.
+     * @param settings  The settings this driver should use.
+     */
+    public AsyncSurrealDriver(SurrealConnection connection, SurrealDriverSettings settings) {
+        this.connection = connection;
+        this.asyncOperationExecutorService = settings.getAsyncOperationExecutorService();
+    }
 
     /**
      * Creates a new {@link AsyncSurrealDriver} instance using the provided connection. The connection
@@ -31,7 +46,7 @@ public class AsyncSurrealDriver {
      * @param connection The connection to use for communication with the server
      */
     public AsyncSurrealDriver(SurrealConnection connection) {
-        this.connection = connection;
+        this(connection, SurrealDriverSettings.DEFAULT);
     }
 
     /**
@@ -87,13 +102,13 @@ public class AsyncSurrealDriver {
         CompletableFuture<T> finalFuture = new CompletableFuture<>();
 
         CompletableFuture<List<T>> createFuture = connection.rpc(resultType, "create", thing, data);
-        createFuture.whenComplete((list, throwable) -> {
+        createFuture.whenCompleteAsync(((list, throwable) -> {
             if (throwable != null) {
                 finalFuture.completeExceptionally(throwable);
             } else {
                 finalFuture.complete(list.get(0));
             }
-        });
+        }), asyncOperationExecutorService);
 
         return finalFuture;
     }
@@ -116,5 +131,10 @@ public class AsyncSurrealDriver {
     public CompletableFuture<?> delete(String thing) {
         Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
         return connection.rpc(resultType, "delete", thing);
+    }
+
+    @Override
+    public ExecutorService getAsyncOperationExecutorService() {
+        return asyncOperationExecutorService;
     }
 }
