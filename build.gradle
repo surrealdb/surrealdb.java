@@ -10,11 +10,12 @@ repositories {
     mavenCentral()
 }
 
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 dependencies {
-    // https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
-    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
-
-
     // Java-WebSocket
     implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 
@@ -31,6 +32,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    // safety check annotations (@ParamsAreNonnullByDefault, @Nullable, etc.)
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
 
     // junit
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
