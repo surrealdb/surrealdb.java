@@ -3,6 +3,7 @@ package com.surrealdb.connection;
 import com.google.gson.Gson;
 import com.surrealdb.connection.exception.*;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
@@ -97,18 +98,24 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public <T> CompletableFuture<T> rpc(@Nullable Type resultType, String method, Object... params) {
-        RpcRequest request = new RpcRequest(Long.toString(lastRequestId.incrementAndGet()), method, params);
-        CompletableFuture<T> callback = new CompletableFuture<>();
-
-        RequestEntry<T> requestEntry = new RequestEntry<>(resultType, callback);
-        pendingRequests.put(request.getId(), requestEntry);
+        val requestId = Long.toString(lastRequestId.incrementAndGet());
+        val request = new RpcRequest(requestId, method, params);
+        val callback = new CompletableFuture<T>();
 
         try {
-            String json = gson.toJson(request);
+            val json = gson.toJson(request);
             log.debug("Sending RPC request [method: {}, body: {}]", method, json);
             send(json);
-        } catch (WebsocketNotConnectedException e) {
-            throw new SurrealNotConnectedException();
+        } catch (WebsocketNotConnectedException ignored) {
+            callback.completeExceptionally(new SurrealNotConnectedException());
+        } catch (Exception e) {
+            callback.completeExceptionally(e);
+        }
+
+        // Only add the request to the pending requests map if the request was sent successfully
+        if (!callback.isCompletedExceptionally()) {
+            val requestEntry = new RequestEntry<>(resultType, callback);
+            pendingRequests.put(requestId, requestEntry);
         }
 
         return callback;
