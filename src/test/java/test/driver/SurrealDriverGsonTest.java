@@ -3,61 +3,89 @@ package test.driver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.connection.SurrealConnectionSettings;
 import com.surrealdb.driver.SyncSurrealDriver;
+import lombok.val;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
+import test.driver.model.DateContainer;
 import test.driver.model.Person;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @author Damian Kocher
+ */
 public class SurrealDriverGsonTest {
 
-    private static SurrealConnectionSettings getConnectionSettings(Gson gson) {
-        return TestUtils.createConnectionSettingsBuilderWithDefaults()
-            .setAutoConnect(true)
+    private SyncSurrealDriver driver;
+
+    @AfterEach
+    void cleanup() {
+        if (driver != null) {
+            driver.delete("person");
+            driver.delete("datecontainer");
+        }
+    }
+
+    void setupDriver(Gson gson) {
+        val connectionSettings = TestUtils.createConnectionSettingsBuilderWithDefaults()
             .setGson(gson)
+            .setAutoConnect(true)
             .build();
+
+        val connection = SurrealConnection.create(connectionSettings);
+
+        driver = new SyncSurrealDriver(connection);
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+
     }
 
     @Test
     void testCustomGsonWithPrettyPrintingEnabledDoesNotThrow() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        SurrealConnection connection = SurrealConnection.create(getConnectionSettings(gson));
-        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
+        val gson = new GsonBuilder().setPrettyPrinting().create();
+        setupDriver(gson);
 
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-
-        Person person = new Person("Contributor", "Damian", "Kocher", false);
+        val person = new Person("Contributor", "Damian", "Kocher", false);
         assertDoesNotThrow(() -> {
                 driver.create("person:damian", person);
-                driver.delete("person:damian");
+
             }
         );
     }
 
     @Test
     void testGsonWithHtmlEscapingDoesNotBreakSerialization() {
-        Gson gson = new Gson();
+        val gson = new GsonBuilder().create();
         assertTrue(gson.htmlSafe());
+        setupDriver(gson);
 
-        SurrealConnection connection = SurrealConnection.create(getConnectionSettings(gson));
-        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
-
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-
-        Person person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
+        val person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
         assertDoesNotThrow(() -> {
                 driver.create("person:prince", person);
-                Person deserializedPerson = driver.select("person:prince", Person.class).get(0);
+                val deserializedPerson = driver.select("person:prince", Person.class).get(0);
 
-                // Since person overrides equals, we can use assertEquals
+                // Since person.Name overrides equals, we can use assertEquals
                 assertEquals(person.getName(), deserializedPerson.getName());
-
-                driver.delete("person:prince");
             }
         );
+    }
+
+    @Test
+    @Disabled("Disabled until I understand exactly how SurrealDB handles dates")
+    void testDateSerialization() {
+        setupDriver(new Gson());
+
+        val dateContainer = new DateContainer(Instant.now(), OffsetDateTime.now(), ZonedDateTime.now());
+        driver.create("datecontainer:now", dateContainer);
+        val deserializedDateContainer = driver.select("datecontainer:now", DateContainer.class).get(0);
+
+        assertEquals(dateContainer, deserializedDateContainer);
     }
 }
