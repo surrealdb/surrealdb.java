@@ -55,7 +55,6 @@ public class SurrealDriverGsonTest {
         val person = new Person("Contributor", "Damian", "Kocher", false);
         assertDoesNotThrow(() -> {
                 driver.create("person:damian", person);
-
             }
         );
     }
