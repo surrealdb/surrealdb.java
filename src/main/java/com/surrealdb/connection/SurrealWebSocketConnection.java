@@ -109,7 +109,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         } catch (WebsocketNotConnectedException ignored) {
             callback.completeExceptionally(new SurrealNotConnectedException());
         } catch (Exception e) {
-            callback.completeExceptionally(e);
+            callback.completeExceptionally(new SurrealException("Failed to send RPC request", e));
         }
 
         // Only add the request to the pending requests map if the request was sent successfully
@@ -179,7 +179,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             if (recordAlreadyExitsMatcher.matches()) {
                 callback.completeExceptionally(new SurrealRecordAlreadyExistsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
             } else {
-                callback.completeExceptionally(new SurrealException());
+                callback.completeExceptionally(new SurrealException(error.getMessage()));
             }
         }
     }

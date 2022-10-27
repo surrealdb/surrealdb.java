@@ -1,9 +1,12 @@
 package com.surrealdb.connection.exception;
 
+import lombok.experimental.StandardException;
+
 /**
  * {@code SurrealException} is the base class for all exceptions thrown by the SurrealDB Java client.
  *
  * @author Khalid Alharisi
  */
+@StandardException
 public class SurrealException extends RuntimeException {
 }
