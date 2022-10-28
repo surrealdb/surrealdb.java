@@ -17,55 +17,83 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class SurrealDriverSpecialOperationsTest {
 
-    private SyncSurrealDriver driver;
+	private SyncSurrealDriver driver;
 
-    @BeforeEach
-    public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
-        connection.connect(5);
-        driver = new SyncSurrealDriver(connection);
-    }
+	@BeforeEach
+	public void setup() {
+		SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
+		connection.connect(5);
+		driver = new SyncSurrealDriver(connection);
+	}
 
-    @Test
-    public void testSignIn() {
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-    }
+	@Test
+	public void testSignIn() {
+		signIn(driver);
+	}
 
-    @Test
-    public void testBadCredentials() {
-        assertThrows(SurrealAuthenticationException.class, () -> {
-            driver.signIn("admin", "incorrect-password");
-        });
-    }
+	@Test
+	public void testWrongLoginType() {
+		switch (TestUtils.getAuthenticationType()) {
+			case ROOT -> {
+				assertThrows(SurrealAuthenticationException.class, () -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), "ns"));
+				assertThrows(SurrealAuthenticationException.class, () -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), "ns", "db"));
+			}
+			case NAMESPACE -> {
+				assertThrows(SurrealAuthenticationException.class, () -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword()));
+				assertThrows(SurrealAuthenticationException.class, () -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), "ns", "db"));
+			}
+			case DATABASE -> {
+				assertThrows(SurrealAuthenticationException.class, () -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword()));
+				assertThrows(SurrealAuthenticationException.class, () -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), "ns"));
+			}
+		}
+	}
 
-    @Test
-    public void testUse() {
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-    }
+	@Test
+	public void testBadCredentials() {
+		assertThrows(SurrealAuthenticationException.class, () -> driver.signIn("admin", "incorrect-password"));
+	}
 
-    @Test
-    public void testNoDatabaseSelected() {
-        assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-            driver.select("person", Person.class);
-        });
-    }
+	@Test
+	public void testUse() {
+		driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+	}
 
-    @Test
-    public void testLet() {
-        driver.let("someKey", "someValue");
-    }
+	@Test
+	public void testNoDatabaseSelected() {
+		// When authentication on the database, the database is automatically selected
+		if (TestUtils.getAuthenticationType() == TestUtils.AuthenticationType.DATABASE) return;
 
-    @Test
-    public void testPing() {
-        driver.ping();
-    }
+		assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
+			signIn(driver);
+			driver.select("person", Person.class);
+		});
+	}
 
-    @Test
-    public void testInfo() {
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-        driver.info();
-    }
+	@Test
+	public void testLet() {
+		driver.let("someKey", "someValue");
+	}
+
+	@Test
+	public void testPing() {
+		driver.ping();
+	}
+
+	@Test
+	public void testInfo() {
+		signIn(driver);
+		driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+		driver.info();
+	}
+
+	private void signIn(SyncSurrealDriver driver) {
+		switch (TestUtils.getAuthenticationType()) {
+			case ROOT -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+			case NAMESPACE -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), TestUtils.getNamespace());
+			case DATABASE ->
+				driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), TestUtils.getNamespace(), TestUtils.getDatabase());
+		}
+	}
 
 }
