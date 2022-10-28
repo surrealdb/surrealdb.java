@@ -13,7 +13,9 @@ import test.TestUtils;
 import test.driver.model.PartialPerson;
 import test.driver.model.Person;
 
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -86,19 +88,20 @@ public class SurrealDriverTest {
     @Test
     public void testQuerySingleExists() {
         Map<String, String> args = new HashMap<>();
-        Optional<Person> person = driver.querySingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", args, Person.class);
+        Optional<Person> optionalPerson = driver.querySingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", args, Person.class);
 
-        assertTrue(person.isPresent());
-        assertEquals("Tobie", person.get().getName().getFirst());
+        assertTrue(optionalPerson.isPresent());
+        Person person = optionalPerson.get();
+        assertEquals("Tobie", person.getName().getFirst());
     }
 
     @Test
     public void testQuerySingleWhenWhenMatchingRecordDoesNotExist() {
         Map<String, String> args = new HashMap<>();
         args.put("marketing", "false");
-        Optional<Person> person = driver.querySingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", args, Person.class);
+        Optional<Person> optionalPerson = driver.querySingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", args, Person.class);
 
-        assertTrue(person.isEmpty());
+        assertFalse(optionalPerson.isPresent());
     }
 
     @Test
@@ -120,17 +123,18 @@ public class SurrealDriverTest {
 
     @Test
     public void testSelectSingleExists() {
-        Optional<Person> person = driver.selectSingle("person:2", Person.class);
+        Optional<Person> optionalPerson = driver.selectSingle("person:2", Person.class);
 
-        assertTrue(person.isPresent());
-        assertEquals("Jaime", person.get().getName().getFirst());
+        assertTrue(optionalPerson.isPresent());
+        Person person = optionalPerson.get();
+        assertEquals("Jaime", person.getName().getFirst());
     }
 
     @Test
     public void testSelectSingleRecordDoesNotExist() {
         Optional<Person> person = driver.selectSingle("person:404", Person.class);
 
-        assertTrue(person.isEmpty());
+        assertFalse(person.isPresent());
     }
 
     @Test
