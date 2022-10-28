@@ -63,10 +63,13 @@ public class SurrealDriverTest {
 
     @Test
     public void testCreateAlreadyExistsId() {
-        assertThrows(SurrealRecordAlreadyExistsException.class, () -> {
+        SurrealRecordAlreadyExistsException exception = assertThrows(SurrealRecordAlreadyExistsException.class, () -> {
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
         });
+
+        assertEquals("person", exception.getTableName());
+        assertEquals("3", exception.getRecordId());
     }
 
     @Test
