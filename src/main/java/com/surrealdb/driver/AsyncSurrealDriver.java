@@ -4,7 +4,9 @@ import com.google.gson.reflect.TypeToken;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
-import com.surrealdb.driver.model.SignIn;
+import com.surrealdb.driver.model.signin.DatabaseSignIn;
+import com.surrealdb.driver.model.signin.NamespaceSignIn;
+import com.surrealdb.driver.model.signin.SignIn;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -33,6 +35,14 @@ public class AsyncSurrealDriver {
 
     public CompletableFuture<?> signIn(String username, String password){
         return connection.rpc(null, "signin", new SignIn(username, password));
+    }
+
+    public CompletableFuture<?> signIn(String username, String password, String ns){
+        return connection.rpc(null, "signin", new NamespaceSignIn(username, password, ns));
+    }
+
+    public CompletableFuture<?> signIn(String username, String password, String ns, String db){
+        return connection.rpc(null, "signin", new DatabaseSignIn(username, password, ns, db));
     }
 
     public CompletableFuture<?> use(String namespace, String database){

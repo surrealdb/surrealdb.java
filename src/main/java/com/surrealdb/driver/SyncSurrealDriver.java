@@ -33,6 +33,14 @@ public class SyncSurrealDriver {
         getResultSynchronously(asyncDriver.signIn(username, password));
     }
 
+    public void signIn(String username, String password, String ns){
+        getResultSynchronously(asyncDriver.signIn(username, password, ns));
+    }
+
+    public void signIn(String username, String password, String ns, String db){
+        getResultSynchronously(asyncDriver.signIn(username, password, ns, db));
+    }
+
     public void use(String namespace, String database){
         getResultSynchronously(asyncDriver.use(namespace, database));
     }
