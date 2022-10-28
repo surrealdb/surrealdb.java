@@ -33,6 +33,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final Gson gson;
     private final Map<String, RequestEntry<?>> pendingRequests;
 
+    private final boolean logOutgoingMessages;
+    private final boolean logIncomingMessages;
+    private final boolean logSignInCredentials;
+
     // precomputed private variables
     private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
@@ -63,6 +67,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         this.lastRequestId = new AtomicLong(0);
         this.gson = settings.getGson();
         this.pendingRequests = new HashMap<>();
+
+        this.logOutgoingMessages = settings.isLogOutgoingMessages();
+        this.logIncomingMessages = settings.isLogIncomingMessages();
+        this.logSignInCredentials = settings.isLogSignInCredentials();
 
         if (settings.isAutoConnect()) {
             connect(settings.getDefaultConnectTimeoutSeconds());
@@ -109,7 +117,15 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
         try {
             val json = gson.toJson(request);
-            log.debug("Sending RPC request [method: {}, body: {}]", method, json);
+
+            if (logOutgoingMessages) {
+                if (method.equals("signin") && !logSignInCredentials) {
+                    log.info("Sending RPC sign in request [id: {}]", requestId);
+                } else {
+                    log.debug("Sending RPC request [request id: {}, method: {}, body: {}]", requestId, method, json);
+                }
+            }
+
             send(json);
         } catch (WebsocketNotConnectedException ignored) {
             callback.completeExceptionally(new SurrealNotConnectedException());
@@ -133,7 +149,9 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onMessage(String message) {
-        log.debug("Received message: {}", message);
+        if (logIncomingMessages) {
+            log.debug("Received message: {}", message);
+        }
 
         // deserialize the message
         RpcResponse response = gson.fromJson(message, RpcResponse.class);

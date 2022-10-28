@@ -20,8 +20,11 @@ import java.net.URI;
  *     <li>host: localhost</li>
  *     <li>port: 8000</li>
  *     <li>gson: GSON with HTML escaping disabled</li>
+ *     <li>logOutgoingRPCs: true</li>
+ *     <li>logIncomingResponses: true</li>
+ *     <li>logSignInCredentials: false</li>
  *     <li>auto connect: false</li>
- *     <li>reconnectInterval: 15 seconds</li>
+ *     <li>defaultConnectTimeoutSeconds: 15 seconds</li>
  * </ul>
  *
  * @author Damian Kocher
@@ -42,6 +45,30 @@ public class SurrealConnectionSettings {
 
     @lombok.Builder.Default
     private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+
+    /**
+     * Controls whether outgoing messages are logged through SLF4j's {@link org.slf4j.Logger#debug(String)}. If your
+     * log level is above debug, this will have no effect as log messages will not be generated at all.  The default
+     * value is {@code true}.
+     */
+    @lombok.Builder.Default
+    private final boolean logOutgoingMessages = true;
+
+    /**
+     * Controls whether incoming messages are logged through SLF4j's {@link org.slf4j.Logger#debug(String)}. If your
+     * log level is above debug, this will have no effect as log messages will not be generated at all.  The default
+     * value is {@code true}.
+     */
+    @lombok.Builder.Default
+    private final boolean logIncomingMessages = true;
+
+    /**
+     * Controls whether sign in credentials (username and password) are logged. Setting this to {@code true}
+     * could potentially pose a security risk. The default value is {@code false}. This setting is ignored if
+     * {@link #logOutgoingMessages} is false.
+     */
+    @lombok.Builder.Default
+    private final boolean logSignInCredentials = false;
 
     @lombok.Builder.Default
     private final boolean autoConnect = false;
