@@ -1,5 +1,7 @@
 package com.surrealdb.connection;
 
+import com.google.gson.Gson;
+
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
@@ -62,6 +64,12 @@ public interface SurrealConnection {
      * @return true if this {@link SurrealConnection} is connected to a SurrealDB server, false otherwise
      */
     boolean isConnected();
+
+    /**
+     * @return the {@link Gson} instance this {@link SurrealConnection} is using to serialize and deserialize
+     * data.
+     */
+    Gson getGson();
 
     /**
      * Sends an RPC request to the SurrealDB server with the given method and parameters. The

@@ -97,6 +97,11 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     @Override
+    public Gson getGson() {
+        return gson;
+    }
+
+    @Override
     public <T> CompletableFuture<T> rpc(@Nullable Type resultType, String method, Object... params) {
         val requestId = Long.toString(lastRequestId.incrementAndGet());
         val request = new RpcRequest(requestId, method, params);
