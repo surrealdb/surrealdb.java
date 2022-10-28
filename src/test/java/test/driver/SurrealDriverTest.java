@@ -26,174 +26,176 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class SurrealDriverTest {
 
-    private SyncSurrealDriver driver;
+	private SyncSurrealDriver driver;
 
-    @BeforeEach
-    public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
-        connection.connect(5);
+	@BeforeEach
+	public void setup() {
+		SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
+		connection.connect(5);
 
-        driver = new SyncSurrealDriver(connection);
+		driver = new SyncSurrealDriver(connection);
 
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+		switch (TestUtils.getAuthenticationType()) {
+			case ROOT -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+			case NAMESPACE -> driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), TestUtils.getNamespace());
+			case DATABASE ->
+				driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), TestUtils.getNamespace(), TestUtils.getDatabase());
+		}
 
-        driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
-    }
+		driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-    @AfterEach
-    public void teardown(){
-        driver.delete("person");
-    }
+		driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+		driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+	}
 
-    @Test
-    public void testCreateNoId() {
-        Person person = new Person("Engineer", "Khalid", "Alharisi", false);
-        assertNull(person.getId());
+	@AfterEach
+	public void teardown() {
+		driver.delete("person");
+	}
 
-        person = driver.create("person", person);
-        assertNotNull(person.getId());
-    }
+	@Test
+	public void testCreateNoId() {
+		Person person = new Person("Engineer", "Khalid", "Alharisi", false);
+		assertNull(person.getId());
 
-    @Test
-    public void testCreateWithId() {
-        Person person = new Person("Engineer", "Khalid", "Alharisi", false);
-        assertNull(person.getId());
+		person = driver.create("person", person);
+		assertNotNull(person.getId());
+	}
 
-        person = driver.create("person:3", person);
-        assertEquals("person:3", person.getId());
-    }
+	@Test
+	public void testCreateWithId() {
+		Person person = new Person("Engineer", "Khalid", "Alharisi", false);
+		assertNull(person.getId());
 
-    @Test
-    public void testCreateAlreadyExistsId() {
-        assertThrows(SurrealRecordAlreadyExitsException.class, () -> {
-            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-        });
-    }
+		person = driver.create("person:3", person);
+		assertEquals("person:3", person.getId());
+	}
 
-    @Test
-    public void testQuery() {
-        Map<String, String> args = new HashMap<>();
-        args.put("firstName", "Tobie");
-        List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
+	@Test
+	public void testCreateAlreadyExistsId() {
+		assertThrows(SurrealRecordAlreadyExitsException.class, () -> {
+			driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+			driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+		});
+	}
 
-        assertEquals(1, actual.size()); // number of queries
-        assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
-        assertEquals(1, actual.get(0).getResult().size()); // number of rows returned
-    }
+	@Test
+	public void testQuery() {
+		Map<String, String> args = new HashMap<>();
+		args.put("firstName", "Tobie");
+		List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
 
-    @Test
-    public void testSelectExists() {
-        Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
-        expected.setId("person:1");
+		assertEquals(1, actual.size()); // number of queries
+		assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
+		assertEquals(1, actual.get(0).getResult().size()); // number of rows returned
+	}
 
-        List<Person> actual = driver.select("person:1", Person.class);
+	@Test
+	public void testSelectExists() {
+		Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
+		expected.setId("person:1");
 
-        assertEquals(1, actual.size());
-        assertEquals(expected, actual.get(0));
-    }
+		List<Person> actual = driver.select("person:1", Person.class);
 
-    @Test
-    public void testSelectDoesNotExist() {
-        List<Person> actual = driver.select("person:500", Person.class);
-        assertEquals(0, actual.size());
-    }
+		assertEquals(1, actual.size());
+		assertEquals(expected, actual.get(0));
+	}
 
-    @Test
-    public void testUpdateOne() {
-        Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
-        expected.setId("person:1");
+	@Test
+	public void testSelectDoesNotExist() {
+		List<Person> actual = driver.select("person:500", Person.class);
+		assertEquals(0, actual.size());
+	}
 
-        List<Person> actual = driver.update("person:1", expected);
+	@Test
+	public void testUpdateOne() {
+		Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
+		expected.setId("person:1");
 
-        assertEquals(1, actual.size());
-        assertEquals(expected, actual.get(0));
-    }
+		List<Person> actual = driver.update("person:1", expected);
 
-    @Test
-    public void testUpdateAll() {
-        Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
+		assertEquals(1, actual.size());
+		assertEquals(expected, actual.get(0));
+	}
 
-        List<Person> actual = driver.update("person", expected);
+	@Test
+	public void testUpdateAll() {
+		Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
-        assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(expected.getTitle(), person.getTitle());
-        });
-    }
+		List<Person> actual = driver.update("person", expected);
 
-    @Test
-    public void testChangeOne() {
-        PartialPerson patch = new PartialPerson(false);
+		assertEquals(2, actual.size());
+		actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
+	}
 
-        List<Person> actual = driver.change("person:2", patch, Person.class);
+	@Test
+	public void testChangeOne() {
+		PartialPerson patch = new PartialPerson(false);
 
-        assertEquals(1, actual.size());
-        assertEquals(patch.isMarketing(), actual.get(0).isMarketing());
-    }
+		List<Person> actual = driver.change("person:2", patch, Person.class);
 
-    @Test
-    public void testChangeAll() {
-        PartialPerson patch = new PartialPerson(false);
+		assertEquals(1, actual.size());
+		assertEquals(patch.isMarketing(), actual.get(0).isMarketing());
+	}
 
-        List<Person> actual = driver.change("person", patch, Person.class);
+	@Test
+	public void testChangeAll() {
+		PartialPerson patch = new PartialPerson(false);
 
-        assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(patch.isMarketing(), person.isMarketing());
-        });
-    }
+		List<Person> actual = driver.change("person", patch, Person.class);
 
-    @Test
-    public void testPatchOne() {
-        List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
-        );
+		assertEquals(2, actual.size());
+		actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
+	}
 
-        driver.patch("person:1", patches);
-        List<Person> actual = driver.select("person:1", Person.class);
+	@Test
+	public void testPatchOne() {
+		List<Patch> patches = Arrays.asList(
+			new ReplacePatch("/name/first", "Khalid"),
+			new ReplacePatch("/name/last", "Alharisi"),
+			new ReplacePatch("/title", "Engineer")
+		);
 
-        assertEquals(1, actual.size());
-        assertEquals("Khalid", actual.get(0).getName().getFirst());
-        assertEquals("Alharisi", actual.get(0).getName().getLast());
-        assertEquals("Engineer", actual.get(0).getTitle());
-    }
+		driver.patch("person:1", patches);
+		List<Person> actual = driver.select("person:1", Person.class);
 
-    @Test
-    public void testPatchAll() {
-        List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
-        );
+		assertEquals(1, actual.size());
+		assertEquals("Khalid", actual.get(0).getName().getFirst());
+		assertEquals("Alharisi", actual.get(0).getName().getLast());
+		assertEquals("Engineer", actual.get(0).getTitle());
+	}
 
-        driver.patch("person", patches);
-        List<Person> actual = driver.select("person", Person.class);
+	@Test
+	public void testPatchAll() {
+		List<Patch> patches = Arrays.asList(
+			new ReplacePatch("/name/first", "Khalid"),
+			new ReplacePatch("/name/last", "Alharisi"),
+			new ReplacePatch("/title", "Engineer")
+		);
 
-        assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals("Khalid", person.getName().getFirst());
-            assertEquals("Alharisi", person.getName().getLast());
-            assertEquals("Engineer", person.getTitle());
-        });
-    }
+		driver.patch("person", patches);
+		List<Person> actual = driver.select("person", Person.class);
 
-    @Test
-    public void testDeleteOne() {
-        driver.delete("person:1");
-        List<Person> actual = driver.select("person:1", Person.class);
-        assertEquals(0, actual.size());
-    }
+		assertEquals(2, actual.size());
+		actual.forEach(person -> {
+			assertEquals("Khalid", person.getName().getFirst());
+			assertEquals("Alharisi", person.getName().getLast());
+			assertEquals("Engineer", person.getTitle());
+		});
+	}
 
-    @Test
-    public void testDeleteAll() {
-        driver.delete("person");
-        List<Person> actual = driver.select("person", Person.class);
-        assertEquals(0, actual.size());
-    }
+	@Test
+	public void testDeleteOne() {
+		driver.delete("person:1");
+		List<Person> actual = driver.select("person:1", Person.class);
+		assertEquals(0, actual.size());
+	}
+
+	@Test
+	public void testDeleteAll() {
+		driver.delete("person");
+		List<Person> actual = driver.select("person", Person.class);
+		assertEquals(0, actual.size());
+	}
 
 }

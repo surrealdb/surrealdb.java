@@ -17,7 +17,7 @@ The official SurrealDB library for Java.
 
 Gradle:
 ```groovy
-implementation files('libs/surrealdb-0.1.0.jar')
+implementation files('libs/surrealdb-0.0.0.jar')
 ```
 
 Maven:
@@ -25,9 +25,9 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>driver</artifactId>
-    <version>0.1.0</version>
+    <version>0.0.0</version>
     <scope>system</scope>
-    <systemPath>${basedir}/libs/surrealdb-0.1.0.jar</systemPath>
+    <systemPath>${basedir}/libs/surrealdb-0.0.0.jar</systemPath>
 </dependency>
 ```
 

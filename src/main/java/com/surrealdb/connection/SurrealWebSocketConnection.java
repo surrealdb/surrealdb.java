@@ -117,7 +117,8 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
                 if(error.getMessage().contains("There was a problem with authentication")) {
                     callback.completeExceptionally(new SurrealAuthenticationException());
-                }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use")){
+                }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use") ||
+					error.getMessage().contains("There was a problem with the database: Specify a database to use")){
                     callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
                 }else{
                     Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
