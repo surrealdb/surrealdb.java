@@ -10,7 +10,6 @@ import lombok.Value;
 @Value
 public class ChangePatch implements Patch {
 
-    String op = "change";
     String path;
     String value;
 

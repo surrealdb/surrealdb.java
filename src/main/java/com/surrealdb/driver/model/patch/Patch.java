@@ -5,4 +5,6 @@ package com.surrealdb.driver.model.patch;
  */
 public interface Patch {
 
+    String getPath();
+
 }

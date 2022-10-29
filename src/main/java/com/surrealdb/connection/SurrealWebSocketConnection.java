@@ -3,7 +3,7 @@ package com.surrealdb.connection;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.exception.*;
-import com.surrealdb.connection.gson.SurrealInstantAdaptor;
+import com.surrealdb.connection.gson.SurrealGsonAdaptor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.java_websocket.client.WebSocketClient;
@@ -15,7 +15,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -86,8 +85,12 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         // SurrealDB doesn't need HTML escaping
         gsonBuilder.disableHtmlEscaping();
 
-        // Gives Gson the ability to serialize and deserialize Instant objects
-        gsonBuilder.registerTypeAdapter(Instant.class, new SurrealInstantAdaptor());
+        for (SurrealGsonAdaptor<?> adaptor : SurrealGsonAdaptor.getAdaptors()) {
+            gsonBuilder.registerTypeAdapter(adaptor.getAdaptorClass(), adaptor);
+        }
+
+        // Add all the SurrealDB adapters
+        //SurrealGsonAdaptor.getAdapters().forEach(gsonBuilder::registerTypeAdapter);
 
         return gsonBuilder.create();
     }
