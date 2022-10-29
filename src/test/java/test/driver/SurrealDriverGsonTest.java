@@ -6,15 +6,13 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.SyncSurrealDriver;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
-import test.driver.model.DateContainer;
+import test.driver.model.InstantContainer;
 import test.driver.model.Person;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +27,7 @@ public class SurrealDriverGsonTest {
     void cleanup() {
         if (driver != null) {
             driver.delete("person");
-            driver.delete("datecontainer");
+            driver.delete("InstantContainer");
         }
     }
 
@@ -76,14 +74,18 @@ public class SurrealDriverGsonTest {
     }
 
     @Test
-    @Disabled("Disabled until I understand exactly how SurrealDB handles dates")
-    void testDateSerialization() {
+    void testInstantSerialization() {
         setupDriver(new Gson());
 
-        val dateContainer = new DateContainer(Instant.now(), OffsetDateTime.now(), ZonedDateTime.now());
-        driver.create("datecontainer:now", dateContainer);
-        val deserializedDateContainer = driver.select("datecontainer:now", DateContainer.class).get(0);
+        Instant now = Instant.now();
+        Instant oneDayFromNow = now.plus(1, ChronoUnit.DAYS);
 
-        assertEquals(dateContainer, deserializedDateContainer);
+        val instantContainer = InstantContainer.builder()
+            .instant(now)
+            .instant(oneDayFromNow)
+            .build();
+        val deserializedDateContainer = driver.create("InstantContainer", instantContainer);
+
+        assertEquals(instantContainer, deserializedDateContainer);
     }
 }

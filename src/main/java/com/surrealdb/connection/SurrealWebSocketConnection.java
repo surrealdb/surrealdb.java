@@ -1,7 +1,9 @@
 package com.surrealdb.connection;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.exception.*;
+import com.surrealdb.connection.gson.SurrealInstantAdaptor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.java_websocket.client.WebSocketClient;
@@ -13,6 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -65,7 +68,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         super(settings.getUri());
 
         this.lastRequestId = new AtomicLong(0);
-        this.gson = settings.getGson();
+        this.gson = makeGsonCompatibleWithSurreal(settings.getGson());
         this.pendingRequests = new HashMap<>();
 
         this.logOutgoingMessages = settings.isLogOutgoingMessages();
@@ -75,6 +78,18 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         if (settings.isAutoConnect()) {
             connect(settings.getDefaultConnectTimeoutSeconds());
         }
+    }
+
+    private Gson makeGsonCompatibleWithSurreal(Gson gson) {
+        GsonBuilder gsonBuilder = gson.newBuilder();
+
+        // SurrealDB doesn't need HTML escaping
+        gsonBuilder.disableHtmlEscaping();
+
+        // Gives Gson the ability to serialize and deserialize Instant objects
+        gsonBuilder.registerTypeAdapter(Instant.class, new SurrealInstantAdaptor());
+
+        return gsonBuilder.create();
     }
 
     @Override
@@ -120,7 +135,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
             if (logOutgoingMessages) {
                 if (method.equals("signin") && !logSignInCredentials) {
-                    log.info("Sending RPC sign in request [id: {}]", requestId);
+                    log.debug("Sending RPC sign in request [id: {}]", requestId);
                 } else {
                     log.debug("Sending RPC request [request id: {}, method: {}, body: {}]", requestId, method, json);
                 }
