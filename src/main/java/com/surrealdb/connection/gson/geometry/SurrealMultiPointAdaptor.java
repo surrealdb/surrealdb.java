@@ -1,4 +1,4 @@
-package com.surrealdb.connection.gson;
+package com.surrealdb.connection.gson.geometry;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.*;

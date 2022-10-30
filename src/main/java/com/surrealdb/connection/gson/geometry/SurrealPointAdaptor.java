@@ -1,4 +1,4 @@
-package com.surrealdb.connection.gson;
+package com.surrealdb.connection.gson.geometry;
 
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.SurrealPoint;

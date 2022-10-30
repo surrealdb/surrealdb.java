@@ -3,6 +3,7 @@ package com.surrealdb.connection.gson;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
+import com.surrealdb.connection.gson.geometry.*;
 import com.surrealdb.connection.gson.patch.SurrealAddPatchAdaptor;
 import com.surrealdb.connection.gson.patch.SurrealChangePatchAdaptor;
 import com.surrealdb.connection.gson.patch.SurrealRemovePatchAdaptor;
@@ -29,9 +30,9 @@ public interface SurrealGsonAdaptor<T> extends JsonSerializer<T>, JsonDeserializ
             new SurrealLineStringAdaptor(),
             new SurrealPolygonAdaptor(),
             new SurrealMultiPointAdaptor(),
-            new SurrealMultiLineStringAdaptor()
-//            new SurrealMultiPolygonAdaptor(),
-//            new SurrealGeometryCollectionAdaptor(),
+            new SurrealMultiLineStringAdaptor(),
+            new SurrealMultiPolygonAdaptor(),
+            new SurrealGeometryCollectionAdaptor()
         );
     }
 
