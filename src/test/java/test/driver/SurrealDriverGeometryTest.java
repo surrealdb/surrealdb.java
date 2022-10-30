@@ -23,7 +23,8 @@ public class SurrealDriverGeometryTest {
         val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);
         driver = new SyncSurrealDriver(connection);
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword(), TestUtils.getNamespace(), TestUtils.getDatabase());
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @AfterEach

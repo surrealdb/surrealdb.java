@@ -57,6 +57,14 @@ public class SyncSurrealDriver implements SurrealDriver {
         return getResultSynchronously(asyncDriver.info());
     }
 
+    public void signIn(String username, String password, String namespace, String database) {
+        getResultSynchronously(asyncDriver.signIn(username, password, namespace, database));
+    }
+
+    public void signIn(String username, String password, String namespace, String database, String token) {
+        getResultSynchronously(asyncDriver.signIn(username, password, namespace, database, token));
+    }
+
     /**
      * Signs in to the SurrealDB server. This method will block until the server responds.
      *

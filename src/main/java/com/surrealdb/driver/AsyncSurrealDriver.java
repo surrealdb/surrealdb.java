@@ -64,13 +64,30 @@ public class AsyncSurrealDriver implements SurrealDriver {
     }
 
     /**
+     * @param username  The username to sign in with
+     * @param password  The password to sign in with
+     * @param namespace The namespace to sign in with
+     * @param database  The database to sign in with
+     * @param scope     The scope to sign in with
+     * @return a {@link CompletableFuture} that will complete with the result of the sign in
+     * operation. If an error occurs, the future will complete exceptionally.
+     */
+    public CompletableFuture<Void> signIn(String username, String password, String namespace, String database, String scope) {
+        return connection.rpc("signin", new SignIn(username, password, namespace, database, scope));
+    }
+
+    public CompletableFuture<Void> signIn(String username, String password, String namespace, String database) {
+        return connection.rpc("signin", new SignIn(username, password, namespace, database, null));
+    }
+
+    /**
      * @param username The username to sign in with
      * @param password The password to sign in with
      * @return a {@link CompletableFuture} that will complete with the result of the sign in
      * operation. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> signIn(String username, String password) {
-        return connection.rpc("signin", new SignIn(username, password));
+        return connection.rpc("signin", new SignIn(username, password, null, null, null));
     }
 
     /**
