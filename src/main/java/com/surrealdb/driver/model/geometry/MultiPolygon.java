@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import lombok.Value;
 
 @Value
-public class SurrealGeometryCollection {
+public class MultiPolygon implements GeometryPrimitive {
 
-    ImmutableList<SurrealGeometryPrimitive> geometries;
+    ImmutableList<Polygon> polygons;
 
 }

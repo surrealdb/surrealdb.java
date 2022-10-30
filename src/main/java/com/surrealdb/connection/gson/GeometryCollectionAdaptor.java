@@ -2,28 +2,28 @@ package com.surrealdb.connection.gson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
-import com.surrealdb.driver.model.geometry.SurrealGeometryCollection;
-import com.surrealdb.driver.model.geometry.SurrealGeometryPrimitive;
+import com.surrealdb.driver.model.geometry.GeometryCollection;
+import com.surrealdb.driver.model.geometry.GeometryPrimitive;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-class GeometryCollectionAdaptor extends SurrealGsonAdaptor<SurrealGeometryCollection> {
+class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
 
     GeometryCollectionAdaptor() {
-        super(SurrealGeometryCollection.class);
+        super(GeometryCollection.class);
     }
 
     @Override
-    public JsonElement serialize(SurrealGeometryCollection src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(GeometryCollection src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject object = new JsonObject();
         object.addProperty("type", "GeometryCollection");
 
         JsonArray geometries = new JsonArray();
         object.add("geometries", geometries);
 
-        for (SurrealGeometryPrimitive geometry : src.getGeometries()) {
+        for (GeometryPrimitive geometry : src.getGeometries()) {
             geometries.add(context.serialize(geometry));
         }
 
@@ -31,16 +31,16 @@ class GeometryCollectionAdaptor extends SurrealGsonAdaptor<SurrealGeometryCollec
     }
 
     @Override
-    public SurrealGeometryCollection deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public GeometryCollection deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject object = json.getAsJsonObject();
         JsonArray geometries = object.getAsJsonArray("geometries");
 
-        List<SurrealGeometryPrimitive> geometryList = new ArrayList<>(geometries.size());
+        List<GeometryPrimitive> geometryList = new ArrayList<>(geometries.size());
         for (JsonElement geometry : geometries) {
-            SurrealGeometryPrimitive primitive = context.deserialize(geometry, SurrealGeometryPrimitive.class);
+            GeometryPrimitive primitive = context.deserialize(geometry, GeometryPrimitive.class);
             geometryList.add(primitive);
         }
 
-        return new SurrealGeometryCollection(ImmutableList.copyOf(geometryList));
+        return new GeometryCollection(ImmutableList.copyOf(geometryList));
     }
 }

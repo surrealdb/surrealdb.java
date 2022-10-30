@@ -12,18 +12,18 @@ public class GenericGeometryContainer {
     @NonNull
     String name;
     @Nullable
-    SurrealPoint point;
+    Point point;
     @Nullable
-    SurrealLineString lineString;
+    Line line;
     @Nullable
-    SurrealPolygon polygon;
+    Polygon polygon;
     @Nullable
-    SurrealMultiPoint multiPoint;
+    MultiPoint multiPoint;
     @Nullable
-    SurrealMultiLineString multiLineString;
+    MultiLine multiLine;
     @Nullable
-    SurrealMultiPolygon multiPolygon;
+    MultiPolygon multiPolygon;
     @Nullable
-    SurrealGeometryCollection geometryCollection;
+    GeometryCollection geometryCollection;
 
 }

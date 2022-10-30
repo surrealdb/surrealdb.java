@@ -1,23 +1,23 @@
 package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
-import com.surrealdb.driver.model.geometry.SurrealPoint;
+import com.surrealdb.driver.model.geometry.Point;
 
 import java.lang.reflect.Type;
 
-final class GeometryPointAdaptor extends GeometryAdaptor<SurrealPoint> {
+final class GeometryPointAdaptor extends GeometryAdaptor<Point> {
 
     GeometryPointAdaptor() {
-        super(SurrealPoint.class);
+        super(Point.class);
     }
 
     @Override
-    public JsonElement serialize(SurrealPoint src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(Point src, Type typeOfSrc, JsonSerializationContext context) {
         return createJsonObject("Point", serializePointToArray(src));
     }
 
     @Override
-    public SurrealPoint deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public Point deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
         return deserializePointFromArray(coordinates);
     }

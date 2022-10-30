@@ -2,9 +2,9 @@ package test.driver;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.SyncSurrealDriver;
-import com.surrealdb.driver.model.geometry.SurrealLineString;
-import com.surrealdb.driver.model.geometry.SurrealPoint;
-import com.surrealdb.driver.model.geometry.SurrealPolygon;
+import com.surrealdb.driver.model.geometry.Line;
+import com.surrealdb.driver.model.geometry.Point;
+import com.surrealdb.driver.model.geometry.Polygon;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,35 +37,35 @@ public class SurrealDriverGeometryTest {
     void testGeometrySerialization() {
         GenericGeometryContainer expected = new GenericGeometryContainer("St. Louis");
 
-        expected.setPoint(SurrealPoint.fromLatitudeLongitude(38.624813, -90.184938));
+        expected.setPoint(Point.fromLatitudeLongitude(38.624813, -90.184938));
 //         Mississippi River
-        expected.setLineString(new SurrealLineString(
+        expected.setLine(new Line(
             // McKinley Bridge
-            SurrealPoint.fromLatitudeLongitude(38.664938, -90.183063),
+            Point.fromLatitudeLongitude(38.664938, -90.183063),
             // Stan Musial Veterans Memorial Bridge
-            SurrealPoint.fromLatitudeLongitude(38.645938, -90.178562),
+            Point.fromLatitudeLongitude(38.645938, -90.178562),
             // Eads Bridge
-            SurrealPoint.fromLatitudeLongitude(38.628937, -90.178812),
+            Point.fromLatitudeLongitude(38.628937, -90.178812),
             // That one bridge near the Arch
-            SurrealPoint.fromLatitudeLongitude(38.618063, -90.182563)));
+            Point.fromLatitudeLongitude(38.618063, -90.182563)));
 
         // Forest Park
-        expected.setPolygon(SurrealPolygon.fromOuterRing(
+        expected.setPolygon(Polygon.fromOuterRing(
             // South-west corner
-            SurrealPoint.fromLatitudeLongitude(38.632662, -90.304484),
+            Point.fromLatitudeLongitude(38.632662, -90.304484),
             // South-east corner
-            SurrealPoint.fromLatitudeLongitude(38.628888, -90.264734),
+            Point.fromLatitudeLongitude(38.628888, -90.264734),
             // North-east corner
-            SurrealPoint.fromLatitudeLongitude(38.643937, -90.265187),
+            Point.fromLatitudeLongitude(38.643937, -90.265187),
             // North-west corner
-            SurrealPoint.fromLatitudeLongitude(38.647937, -90.304937)
+            Point.fromLatitudeLongitude(38.647937, -90.304937)
         ));
 
 
         GenericGeometryContainer actual = driver.create("geometry:stl", expected);
 
         assertEquals(expected.getPoint(), actual.getPoint());
-        assertEquals(expected.getLineString(), actual.getLineString());
+        assertEquals(expected.getLine(), actual.getLine());
         assertEquals(expected.getPolygon(), actual.getPolygon());
         assertEquals(expected, actual);
     }

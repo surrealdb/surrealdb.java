@@ -8,7 +8,7 @@ import lombok.With;
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @With
-public class SurrealPoint implements SurrealGeometryPrimitive {
+public class Point implements GeometryPrimitive {
 
     double longitude;
     double latitude;
@@ -22,11 +22,11 @@ public class SurrealPoint implements SurrealGeometryPrimitive {
      * @param longitude The longitude of the point.
      * @return A new SurrealPoint.
      */
-    public static SurrealPoint fromLatitudeLongitude(double latitude, double longitude) {
-        return new SurrealPoint(longitude, latitude);
+    public static Point fromLatitudeLongitude(double latitude, double longitude) {
+        return new Point(longitude, latitude);
     }
 
-    public static SurrealPoint fromLongitudeLatitude(double longitude, double latitude) {
-        return new SurrealPoint(longitude, latitude);
+    public static Point fromLongitudeLatitude(double longitude, double latitude) {
+        return new Point(longitude, latitude);
     }
 }

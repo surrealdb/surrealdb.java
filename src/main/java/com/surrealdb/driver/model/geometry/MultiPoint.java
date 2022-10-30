@@ -6,8 +6,8 @@ import lombok.With;
 
 @Value
 @With
-public class SurrealMultiPoint implements SurrealGeometryPrimitive {
+public class MultiPoint implements GeometryPrimitive {
 
-    ImmutableList<SurrealPoint> points;
+    ImmutableList<Point> points;
 
 }

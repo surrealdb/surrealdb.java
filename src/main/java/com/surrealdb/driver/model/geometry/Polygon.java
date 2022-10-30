@@ -7,13 +7,13 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
-public class SurrealPolygon implements SurrealGeometryPrimitive {
+public class Polygon implements GeometryPrimitive {
 
-    ImmutableList<SurrealPoint> outerRing;
+    ImmutableList<Point> outerRing;
     @Nullable
-    ImmutableList<SurrealPoint> innerRing;
+    ImmutableList<Point> innerRing;
 
-    public SurrealPolygon(ImmutableList<SurrealPoint> outerRing, @Nullable ImmutableList<SurrealPoint> innerRing) {
+    public Polygon(ImmutableList<Point> outerRing, @Nullable ImmutableList<Point> innerRing) {
         validateLinearRing(outerRing, false, "Outer ring");
         this.outerRing = outerRing;
 
@@ -25,19 +25,19 @@ public class SurrealPolygon implements SurrealGeometryPrimitive {
         }
     }
 
-    public SurrealPolygon(ImmutableList<SurrealPoint> outerRing) {
+    public Polygon(ImmutableList<Point> outerRing) {
         this(outerRing, null);
     }
 
-    public static SurrealPolygon fromOuterRing(SurrealPoint... outerRing) {
-        return new SurrealPolygon(ImmutableList.copyOf(outerRing), null);
+    public static Polygon fromOuterRing(Point... outerRing) {
+        return new Polygon(ImmutableList.copyOf(outerRing), null);
     }
 
-    public Optional<ImmutableList<SurrealPoint>> getInnerRing() {
+    public Optional<ImmutableList<Point>> getInnerRing() {
         return Optional.ofNullable(innerRing);
     }
 
-    private void validateLinearRing(ImmutableList<SurrealPoint> points, boolean clockwise, String ringType) {
+    private void validateLinearRing(ImmutableList<Point> points, boolean clockwise, String ringType) {
         if (points.size() < 3) {
             throw new IllegalArgumentException(String.format("%s must have at least 3 points", ringType));
         }
@@ -47,11 +47,11 @@ public class SurrealPolygon implements SurrealGeometryPrimitive {
         }
     }
 
-    private double calculateSum(ImmutableList<SurrealPoint> ring) {
+    private double calculateSum(ImmutableList<Point> ring) {
         double sum = 0;
         for (int i = 0; i < ring.size() - 1; i++) {
-            SurrealPoint p1 = ring.get(i);
-            SurrealPoint p2 = ring.get(i + 1);
+            Point p1 = ring.get(i);
+            Point p2 = ring.get(i + 1);
             sum += (p2.getLongitude() - p1.getLongitude()) * (p2.getLatitude() + p1.getLatitude());
         }
         return sum;

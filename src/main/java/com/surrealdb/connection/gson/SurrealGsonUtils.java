@@ -19,10 +19,10 @@ public class SurrealGsonUtils {
         new PatchReplaceAdaptor(),
 
         new GeometryPointAdaptor(),
-        new GeometryLineStringAdaptor(),
+        new GeometryLineAdaptor(),
         new GeometryPolygonAdaptor(),
         new GeometryMultiPointAdaptor(),
-        new GeometryMultiLineStringAdaptor(),
+        new GeometryMultiLineAdaptor(),
         new GeometryMultiPolygonAdaptor(),
         new GeometryCollectionAdaptor()
     );

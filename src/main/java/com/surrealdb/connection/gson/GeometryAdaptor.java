@@ -4,16 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.driver.model.geometry.SurrealGeometryPrimitive;
-import com.surrealdb.driver.model.geometry.SurrealLineString;
-import com.surrealdb.driver.model.geometry.SurrealPoint;
-import com.surrealdb.driver.model.geometry.SurrealPolygon;
+import com.surrealdb.driver.model.geometry.GeometryPrimitive;
+import com.surrealdb.driver.model.geometry.Line;
+import com.surrealdb.driver.model.geometry.Point;
+import com.surrealdb.driver.model.geometry.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-abstract class GeometryAdaptor<T extends SurrealGeometryPrimitive> extends SurrealGsonAdaptor<T> {
+abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonAdaptor<T> {
 
     GeometryAdaptor(Class<T> adaptorClass) {
         super(adaptorClass);
@@ -31,7 +31,7 @@ abstract class GeometryAdaptor<T extends SurrealGeometryPrimitive> extends Surre
         return object.getAsJsonArray("coordinates");
     }
 
-    JsonArray serializePointToArray(SurrealPoint point) {
+    JsonArray serializePointToArray(Point point) {
         return serializePointToArray(point.getLongitude(), point.getLatitude());
     }
 
@@ -42,40 +42,40 @@ abstract class GeometryAdaptor<T extends SurrealGeometryPrimitive> extends Surre
         return pointArray;
     }
 
-    SurrealPoint deserializePointFromArray(JsonArray coordinates) {
+    Point deserializePointFromArray(JsonArray coordinates) {
         double longitude = coordinates.get(0).getAsDouble();
         double latitude = coordinates.get(1).getAsDouble();
-        return SurrealPoint.fromLongitudeLatitude(longitude, latitude);
+        return Point.fromLongitudeLatitude(longitude, latitude);
     }
 
-    JsonArray serializeLineStringToArray(SurrealLineString lineString) {
+    JsonArray serializeLineStringToArray(Line line) {
         JsonArray lineStringArray = new JsonArray();
-        for (SurrealPoint point : lineString.getPoints()) {
+        for (Point point : line.getPoints()) {
             lineStringArray.add(serializePointToArray(point));
         }
         return lineStringArray;
     }
 
-    SurrealLineString deserializeLineStringFromArray(JsonArray coordinates) {
-        List<SurrealPoint> points = new ArrayList<>(coordinates.size());
+    Line deserializeLineStringFromArray(JsonArray coordinates) {
+        List<Point> points = new ArrayList<>(coordinates.size());
         for (JsonElement pointCoordinatesElement : coordinates) {
             points.add(deserializePointFromArray(pointCoordinatesElement.getAsJsonArray()));
         }
-        return new SurrealLineString(ImmutableList.copyOf(points));
+        return new Line(ImmutableList.copyOf(points));
     }
 
-    JsonArray serializePolygonToArray(SurrealPolygon polygon) {
+    JsonArray serializePolygonToArray(Polygon polygon) {
         JsonArray coordinates = new JsonArray();
         coordinates.add(serializeLinearRing(polygon.getOuterRing()));
 
-        Optional<ImmutableList<SurrealPoint>> innerRing = polygon.getInnerRing();
+        Optional<ImmutableList<Point>> innerRing = polygon.getInnerRing();
         innerRing.ifPresent(surrealPoints -> coordinates.add(serializeLinearRing(surrealPoints)));
         return coordinates;
     }
 
-    JsonArray serializeLinearRing(ImmutableList<SurrealPoint> linearRing) {
+    JsonArray serializeLinearRing(ImmutableList<Point> linearRing) {
         JsonArray array = new JsonArray();
-        for (SurrealPoint point : linearRing) {
+        for (Point point : linearRing) {
             array.add(serializePointToArray(point));
         }
         // Add the first point again to close the ring
@@ -84,18 +84,18 @@ abstract class GeometryAdaptor<T extends SurrealGeometryPrimitive> extends Surre
         return array;
     }
 
-    SurrealPolygon deserializePolygonFromArray(JsonArray coordinates) {
-        ImmutableList<SurrealPoint> outerRing = deserializeLinearRing(coordinates.get(0).getAsJsonArray());
-        ImmutableList<SurrealPoint> innerRing = null;
+    Polygon deserializePolygonFromArray(JsonArray coordinates) {
+        ImmutableList<Point> outerRing = deserializeLinearRing(coordinates.get(0).getAsJsonArray());
+        ImmutableList<Point> innerRing = null;
         if (coordinates.size() > 1) {
             innerRing = deserializeLinearRing(coordinates.get(1).getAsJsonArray());
         }
-        return new SurrealPolygon(outerRing, innerRing);
+        return new Polygon(outerRing, innerRing);
     }
 
-    ImmutableList<SurrealPoint> deserializeLinearRing(JsonElement element) {
+    ImmutableList<Point> deserializeLinearRing(JsonElement element) {
         JsonArray pointCoordinates = element.getAsJsonArray();
-        List<SurrealPoint> points = new ArrayList<>(pointCoordinates.size());
+        List<Point> points = new ArrayList<>(pointCoordinates.size());
 
         // Ignore the last point, as it is the same as the first
         for (int index = 0; index < pointCoordinates.size() - 1; index++) {

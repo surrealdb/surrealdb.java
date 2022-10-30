@@ -1,5 +1,5 @@
 package com.surrealdb.driver.model.geometry;
 
-public interface SurrealGeometryPrimitive {
+public interface GeometryPrimitive {
 
 }

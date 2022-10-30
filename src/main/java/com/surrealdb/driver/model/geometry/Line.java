@@ -6,15 +6,15 @@ import lombok.With;
 
 @Value
 @With
-public class SurrealLineString implements SurrealGeometryPrimitive {
+public class Line implements GeometryPrimitive {
 
-    ImmutableList<SurrealPoint> points;
+    ImmutableList<Point> points;
 
-    public SurrealLineString(ImmutableList<SurrealPoint> points) {
+    public Line(ImmutableList<Point> points) {
         this.points = points;
     }
 
-    public SurrealLineString(SurrealPoint... points) {
+    public Line(Point... points) {
         this.points = ImmutableList.copyOf(points);
     }
 
