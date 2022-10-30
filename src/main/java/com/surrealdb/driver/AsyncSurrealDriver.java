@@ -76,12 +76,16 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * @return a {@link CompletableFuture} that will complete with the result of the sign in
      * operation. If an error occurs, the future will complete exceptionally.
      */
-    public CompletableFuture<Void> signIn(String username, String password, String namespace, String database, String scope) {
+    public CompletableFuture<Void> signInAsScopeUser(String username, String password, String namespace, String database, String scope) {
         return connection.rpc("signin", new SignIn(username, password, namespace, database, scope));
     }
 
-    public CompletableFuture<Void> signIn(String username, String password, String namespace, String database) {
+    public CompletableFuture<Void> signInAsDatabaseUser(String username, String password, String namespace, String database) {
         return connection.rpc("signin", new SignIn(username, password, namespace, database, null));
+    }
+
+    public CompletableFuture<Void> signInAsNamespaceUser(String username, String password, String namespace) {
+        return connection.rpc("signin", new SignIn(username, password, namespace, null, null));
     }
 
     /**
@@ -90,7 +94,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * @return a {@link CompletableFuture} that will complete with the result of the sign in
      * operation. If an error occurs, the future will complete exceptionally.
      */
-    public CompletableFuture<Void> signIn(String username, String password) {
+    public CompletableFuture<Void> signInAsRootUser(String username, String password) {
         return connection.rpc("signin", new SignIn(username, password, null, null, null));
     }
 

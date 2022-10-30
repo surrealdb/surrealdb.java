@@ -13,9 +13,7 @@ import test.TestUtils;
 import test.driver.model.PartialPerson;
 import test.driver.model.Person;
 
-import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,7 +31,7 @@ public class SurrealDriverTest {
 
         driver = new SyncSurrealDriver(connection);
 
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
         driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));

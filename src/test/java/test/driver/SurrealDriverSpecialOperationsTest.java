@@ -29,13 +29,13 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testSignIn() {
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
     }
 
     @Test
     public void testBadCredentials() {
         assertThrows(SurrealAuthenticationException.class, () -> {
-            driver.signIn("admin", "incorrect-password");
+            driver.signInAsRootUser("admin", "incorrect-password");
         });
     }
 
@@ -47,7 +47,7 @@ public class SurrealDriverSpecialOperationsTest {
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+            driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
             driver.select("person", Person.class);
         });
     }
@@ -71,7 +71,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testInfo() {
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
         driver.info();
     }

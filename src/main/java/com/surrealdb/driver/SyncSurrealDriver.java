@@ -61,22 +61,26 @@ public class SyncSurrealDriver implements SurrealDriver {
         return getResultSynchronously(asyncDriver.info());
     }
 
-    public void signIn(String username, String password, String namespace, String database) {
-        getResultSynchronously(asyncDriver.signIn(username, password, namespace, database));
+    public void signInAsScopeUser(String username, String password, String namespace, String database, String scope) {
+        getResultSynchronously(asyncDriver.signInAsScopeUser(username, password, namespace, database, scope));
     }
 
-    public void signIn(String username, String password, String namespace, String database, String token) {
-        getResultSynchronously(asyncDriver.signIn(username, password, namespace, database, token));
+    public void signInAsDatabaseUser(String username, String password, String namespace, String database) {
+        getResultSynchronously(asyncDriver.signInAsDatabaseUser(username, password, namespace, database));
+    }
+
+    public void signInAsNamespaceUser(String username, String password, String namespace) {
+        getResultSynchronously(asyncDriver.signInAsNamespaceUser(username, password, namespace));
     }
 
     /**
-     * Signs in to the SurrealDB server. This method will block until the server responds.
+     * Signs in to the SurrealDB server as the root user. This method will block until the server responds.
      *
      * @param username The username to sign in with
      * @param password The password to sign in with
      */
-    public void signIn(String username, String password) {
-        getResultSynchronously(asyncDriver.signIn(username, password));
+    public void signInAsRootUser(String username, String password) {
+        getResultSynchronously(asyncDriver.signInAsRootUser(username, password));
     }
 
     public void use(String namespace, String database) {

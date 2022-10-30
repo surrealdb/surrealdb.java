@@ -40,7 +40,7 @@ public class SurrealDriverGsonTest {
         val connection = SurrealConnection.create(connectionSettings);
 
         driver = new SyncSurrealDriver(connection);
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
