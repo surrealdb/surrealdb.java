@@ -5,11 +5,13 @@ import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.driver.SyncSurrealDriver;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
 import test.driver.model.Person;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Khalid Alharisi
@@ -58,6 +60,13 @@ public class SurrealDriverSpecialOperationsTest {
     @Test
     public void testPing() {
         driver.ping();
+    }
+
+    @Test
+    @Disabled("Disabled until Surreal supports the version command")
+    void testGetDatabaseVersion() {
+        // Surreal uses the format '{}-{}' when responding to the 'version' RPC.
+        assertTrue(driver.getDatabaseVersion().matches(".*-.*"));
     }
 
     @Test

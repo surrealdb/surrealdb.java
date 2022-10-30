@@ -53,6 +53,10 @@ public class SyncSurrealDriver implements SurrealDriver {
         getResultSynchronously(asyncDriver.ping());
     }
 
+    public String getDatabaseVersion() {
+        return getResultSynchronously(asyncDriver.getDatabaseVersion());
+    }
+
     public Map<String, String> info() {
         return getResultSynchronously(asyncDriver.info());
     }

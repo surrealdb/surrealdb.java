@@ -58,6 +58,10 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return connection.rpc("ping");
     }
 
+    public CompletableFuture<String> getDatabaseVersion() {
+        return connection.rpc(String.class, "version");
+    }
+
     public CompletableFuture<Map<String, String>> info() {
         Type resultType = TypeToken.getParameterized(Map.class, String.class, String.class).getType();
         return connection.rpc(resultType, "info");
