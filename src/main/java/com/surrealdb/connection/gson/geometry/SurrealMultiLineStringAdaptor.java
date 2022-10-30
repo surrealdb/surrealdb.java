@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SurrealMultiLineStringAdaptor extends SurrealGeometryAdaptor<SurrealMultiLineString> {
+public final class SurrealMultiLineStringAdaptor extends SurrealGeometryAdaptor<SurrealMultiLineString> {
 
     public SurrealMultiLineStringAdaptor() {
         super(SurrealMultiLineString.class);

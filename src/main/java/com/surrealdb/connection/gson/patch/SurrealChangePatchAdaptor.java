@@ -5,7 +5,7 @@ import com.surrealdb.driver.model.patch.ChangePatch;
 
 import java.lang.reflect.Type;
 
-public class SurrealChangePatchAdaptor extends SurrealPatchAdaptor<ChangePatch> {
+public final class SurrealChangePatchAdaptor extends SurrealPatchAdaptor<ChangePatch> {
 
     public SurrealChangePatchAdaptor() {
         super(ChangePatch.class, "change");

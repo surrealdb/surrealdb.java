@@ -5,7 +5,7 @@ import com.surrealdb.driver.model.patch.ReplacePatch;
 
 import java.lang.reflect.Type;
 
-public class SurrealReplacePatchAdaptor extends SurrealPatchAdaptor<ReplacePatch> {
+public final class SurrealReplacePatchAdaptor extends SurrealPatchAdaptor<ReplacePatch> {
 
     public SurrealReplacePatchAdaptor() {
         super(ReplacePatch.class, "replace");

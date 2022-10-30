@@ -5,7 +5,7 @@ import com.surrealdb.driver.model.patch.AddPatch;
 
 import java.lang.reflect.Type;
 
-public class SurrealAddPatchAdaptor extends SurrealPatchAdaptor<AddPatch> {
+public final class SurrealAddPatchAdaptor extends SurrealPatchAdaptor<AddPatch> {
 
     public SurrealAddPatchAdaptor() {
         super(AddPatch.class, "add");

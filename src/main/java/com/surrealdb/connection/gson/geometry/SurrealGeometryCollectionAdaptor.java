@@ -10,7 +10,11 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SurrealGeometryCollectionAdaptor implements SurrealGsonAdaptor<SurrealGeometryCollection> {
+public class SurrealGeometryCollectionAdaptor extends SurrealGsonAdaptor<SurrealGeometryCollection> {
+
+    public SurrealGeometryCollectionAdaptor() {
+        super(SurrealGeometryCollection.class);
+    }
 
     @Override
     public JsonElement serialize(SurrealGeometryCollection src, Type typeOfSrc, JsonSerializationContext context) {
@@ -39,10 +43,5 @@ public class SurrealGeometryCollectionAdaptor implements SurrealGsonAdaptor<Surr
         }
 
         return new SurrealGeometryCollection(ImmutableList.copyOf(geometryList));
-    }
-
-    @Override
-    public Class<SurrealGeometryCollection> getAdaptorClass() {
-        return SurrealGeometryCollection.class;
     }
 }

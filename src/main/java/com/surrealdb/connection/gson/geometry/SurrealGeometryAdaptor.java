@@ -14,12 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class SurrealGeometryAdaptor<T extends SurrealGeometryPrimitive> implements SurrealGsonAdaptor<T> {
-
-    private final Class<T> adaptorClass;
+public abstract class SurrealGeometryAdaptor<T extends SurrealGeometryPrimitive> extends SurrealGsonAdaptor<T> {
 
     protected SurrealGeometryAdaptor(Class<T> adaptorClass) {
-        this.adaptorClass = adaptorClass;
+        super(adaptorClass);
     }
 
     protected JsonObject createJsonObject(String type, JsonArray coordinates) {
@@ -106,10 +104,5 @@ public abstract class SurrealGeometryAdaptor<T extends SurrealGeometryPrimitive>
         }
 
         return ImmutableList.copyOf(points);
-    }
-
-    @Override
-    public Class<T> getAdaptorClass() {
-        return adaptorClass;
     }
 }

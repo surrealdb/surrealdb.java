@@ -5,7 +5,7 @@ import com.surrealdb.driver.model.geometry.SurrealLineString;
 
 import java.lang.reflect.Type;
 
-public class SurrealLineStringAdaptor extends SurrealGeometryAdaptor<SurrealLineString> {
+public final class SurrealLineStringAdaptor extends SurrealGeometryAdaptor<SurrealLineString> {
 
     public SurrealLineStringAdaptor() {
         super(SurrealLineString.class);

@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SurrealMultiPolygonAdaptor extends SurrealGeometryAdaptor<SurrealMultiPolygon> {
+public final class SurrealMultiPolygonAdaptor extends SurrealGeometryAdaptor<SurrealMultiPolygon> {
 
     public SurrealMultiPolygonAdaptor() {
         super(SurrealMultiPolygon.class);

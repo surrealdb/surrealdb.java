@@ -4,19 +4,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.surrealdb.connection.gson.SurrealGsonAdaptor;
 import com.surrealdb.driver.model.patch.Patch;
-import lombok.AllArgsConstructor;
 
 import javax.annotation.Nullable;
 
-@AllArgsConstructor
-public abstract class SurrealPatchAdaptor<T extends Patch> implements SurrealGsonAdaptor<T> {
+public abstract class SurrealPatchAdaptor<T extends Patch> extends SurrealGsonAdaptor<T> {
 
-    private final Class<T> adaptorClass;
     private final String op;
 
-    @Override
-    public Class<T> getAdaptorClass() {
-        return adaptorClass;
+    public SurrealPatchAdaptor(Class<T> adaptorClass, String op) {
+        super(adaptorClass);
+
+        this.op = op;
     }
 
     protected JsonObject createObject(T patch, @Nullable String value) {

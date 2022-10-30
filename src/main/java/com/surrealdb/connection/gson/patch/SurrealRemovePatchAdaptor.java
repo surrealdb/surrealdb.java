@@ -5,7 +5,7 @@ import com.surrealdb.driver.model.patch.RemovePatch;
 
 import java.lang.reflect.Type;
 
-public class SurrealRemovePatchAdaptor extends SurrealPatchAdaptor<RemovePatch> {
+public final class SurrealRemovePatchAdaptor extends SurrealPatchAdaptor<RemovePatch> {
 
     public SurrealRemovePatchAdaptor() {
         super(RemovePatch.class, "remove");

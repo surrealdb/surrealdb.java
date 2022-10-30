@@ -5,14 +5,17 @@ import com.surrealdb.driver.model.SignIn;
 
 import java.lang.reflect.Type;
 
-public class SurrealSigninAdaptor implements SurrealGsonAdaptor<SignIn> {
+public final class SurrealSignInAdaptor extends SurrealGsonAdaptor<SignIn> {
+
+    public SurrealSignInAdaptor() {
+        super(SignIn.class);
+    }
 
     @Override
     public JsonElement serialize(SignIn src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject object = new JsonObject();
         object.addProperty("user", src.getUser());
         object.addProperty("pass", src.getPass());
-
         src.getNamespace().ifPresent(namespace -> object.addProperty("NS", namespace));
         src.getDatabase().ifPresent(database -> object.addProperty("DB", database));
         src.getScope().ifPresent(scope -> object.addProperty("SC", scope));
@@ -30,10 +33,5 @@ public class SurrealSigninAdaptor implements SurrealGsonAdaptor<SignIn> {
             object.has("DB") ? object.get("DB").getAsString() : null,
             object.has("SC") ? object.get("SC").getAsString() : null
         );
-    }
-
-    @Override
-    public Class<SignIn> getAdaptorClass() {
-        return SignIn.class;
     }
 }

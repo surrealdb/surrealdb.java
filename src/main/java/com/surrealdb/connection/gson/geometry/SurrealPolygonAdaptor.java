@@ -5,7 +5,7 @@ import com.surrealdb.driver.model.geometry.SurrealPolygon;
 
 import java.lang.reflect.Type;
 
-public class SurrealPolygonAdaptor extends SurrealGeometryAdaptor<SurrealPolygon> {
+public final class SurrealPolygonAdaptor extends SurrealGeometryAdaptor<SurrealPolygon> {
 
     public SurrealPolygonAdaptor() {
         super(SurrealPolygon.class);
@@ -21,10 +21,5 @@ public class SurrealPolygonAdaptor extends SurrealGeometryAdaptor<SurrealPolygon
     public SurrealPolygon deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
         return deserializePolygonFromArray(coordinates);
-    }
-
-    @Override
-    public Class<SurrealPolygon> getAdaptorClass() {
-        return SurrealPolygon.class;
     }
 }

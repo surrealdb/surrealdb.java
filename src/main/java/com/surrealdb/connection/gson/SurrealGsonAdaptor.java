@@ -13,13 +13,19 @@ import com.surrealdb.connection.gson.patch.SurrealReplacePatchAdaptor;
  * @param <T> the type of the object to be serialized/deserialized
  * @author Damian Kocher
  */
-public interface SurrealGsonAdaptor<T> extends JsonSerializer<T>, JsonDeserializer<T> {
+public abstract class SurrealGsonAdaptor<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
-    static ImmutableSet<SurrealGsonAdaptor<?>> getAdaptors() {
+    private final Class<T> adaptorClass;
+
+    public SurrealGsonAdaptor(Class<T> adaptorClass) {
+        this.adaptorClass = adaptorClass;
+    }
+
+    public static ImmutableSet<SurrealGsonAdaptor<?>> getAdaptors() {
         return ImmutableSet.of(
             new SurrealInstantAdaptor(),
 
-            new SurrealSigninAdaptor(),
+            new SurrealSignInAdaptor(),
 
             new SurrealAddPatchAdaptor(),
             new SurrealRemovePatchAdaptor(),
@@ -36,6 +42,7 @@ public interface SurrealGsonAdaptor<T> extends JsonSerializer<T>, JsonDeserializ
         );
     }
 
-    Class<T> getAdaptorClass();
-
+    public final Class<T> getAdaptorClass() {
+        return adaptorClass;
+    }
 }
