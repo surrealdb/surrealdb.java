@@ -14,10 +14,20 @@ public interface SurrealGsonAdaptor<T> extends JsonSerializer<T>, JsonDeserializ
         return ImmutableSet.of(
             new SurrealInstantAdaptor(),
 
+            new SurrealSigninAdaptor(),
+
             new SurrealAddPatchAdaptor(),
             new SurrealChangePatchAdaptor(),
             new SurrealRemovePatchAdaptor(),
-            new SurrealReplacePatchAdaptor()
+            new SurrealReplacePatchAdaptor(),
+
+            new SurrealPointAdaptor(),
+            new SurrealLineStringAdaptor(),
+            new SurrealPolygonAdaptor(),
+            new SurrealMultiPointAdaptor(),
+            new SurrealMultiLineStringAdaptor()
+//            new SurrealMultiPolygonAdaptor(),
+//            new SurrealGeometryCollectionAdaptor(),
         );
     }
 
