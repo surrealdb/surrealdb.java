@@ -100,8 +100,27 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return connection.rpc("use", namespace, database);
     }
 
-    public CompletableFuture<Void> let(String key, String value) {
+    /**
+     * Sets a connection-wide parameter
+     *
+     * @param key   The parameter to set
+     * @param value The value to set the parameter to
+     * @return a {@link CompletableFuture} that will complete once the SurrealDB server has
+     * responded to the set operation. If an error occurs, the future will complete exceptionally.
+     */
+    public CompletableFuture<Void> setConnectionWideParameter(String key, String value) {
         return connection.rpc("let", key, value);
+    }
+
+    /**
+     * Unset and clear a connection-wide parameter
+     *
+     * @param key The parameter to unset
+     * @return a {@link CompletableFuture} that will complete once the SurrealDB server has
+     * responded to the unset operation. If an error occurs, the future will complete exceptionally.
+     */
+    public CompletableFuture<Void> unsetConnectionWideParameter(String key) {
+        return connection.rpc("unset", key);
     }
 
     public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, String> args, Class<? extends T> rowType) {

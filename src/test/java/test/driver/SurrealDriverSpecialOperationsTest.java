@@ -52,7 +52,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testLet() {
-        driver.let("someKey", "someValue");
+        driver.setConnectionWideParameter("someKey", "someValue");
     }
 
     @Test

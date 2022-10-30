@@ -79,8 +79,12 @@ public class SyncSurrealDriver implements SurrealDriver {
         getResultSynchronously(asyncDriver.use(namespace, database));
     }
 
-    public void let(String key, String value) {
-        getResultSynchronously(asyncDriver.let(key, value));
+    public void setConnectionWideParameter(String key, String value) {
+        getResultSynchronously(asyncDriver.setConnectionWideParameter(key, value));
+    }
+
+    public void unsetConnectionWideParameter(String key) {
+        getResultSynchronously(asyncDriver.unsetConnectionWideParameter(key));
     }
 
     public <T> List<QueryResult<T>> query(String query, Map<String, String> args, Class<? extends T> rowType) {
