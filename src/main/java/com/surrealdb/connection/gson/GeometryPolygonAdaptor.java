@@ -1,13 +1,13 @@
-package com.surrealdb.connection.gson.geometry;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.SurrealPolygon;
 
 import java.lang.reflect.Type;
 
-public final class SurrealPolygonAdaptor extends SurrealGeometryAdaptor<SurrealPolygon> {
+final class GeometryPolygonAdaptor extends GeometryAdaptor<SurrealPolygon> {
 
-    public SurrealPolygonAdaptor() {
+    GeometryPolygonAdaptor() {
         super(SurrealPolygon.class);
     }
 

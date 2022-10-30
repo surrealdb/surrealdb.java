@@ -8,9 +8,9 @@ import java.time.Instant;
 /**
  * @author Damian Kocher
  */
-public final class SurrealInstantAdaptor extends SurrealGsonAdaptor<Instant> {
+final class InstantAdaptor extends SurrealGsonAdaptor<Instant> {
 
-    public SurrealInstantAdaptor() {
+    InstantAdaptor() {
         super(Instant.class);
     }
 

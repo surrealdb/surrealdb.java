@@ -1,9 +1,7 @@
 package com.surrealdb.connection;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.exception.*;
-import com.surrealdb.connection.gson.SurrealGsonAdaptor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.java_websocket.client.WebSocketClient;
@@ -24,6 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.surrealdb.connection.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
+
 /**
  * @author Khalid Alharisi
  */
@@ -31,8 +31,9 @@ import java.util.regex.Pattern;
 @ParametersAreNonnullByDefault
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
 
-    private final AtomicLong lastRequestId;
     private final Gson gson;
+
+    private final AtomicLong lastRequestId;
     private final Map<String, RequestEntry<?>> pendingRequests;
 
     private final boolean logOutgoingMessages;
@@ -66,8 +67,9 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     public SurrealWebSocketConnection(SurrealConnectionSettings settings) {
         super(settings.getUri());
 
+        this.gson = makeGsonInstanceSurrealCompatible(settings.getGson());
+
         this.lastRequestId = new AtomicLong(0);
-        this.gson = makeGsonCompatibleWithSurreal(settings.getGson());
         this.pendingRequests = new HashMap<>();
 
         this.logOutgoingMessages = settings.isLogOutgoingMessages();
@@ -77,22 +79,6 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         if (settings.isAutoConnect()) {
             connect(settings.getDefaultConnectTimeoutSeconds());
         }
-    }
-
-    private Gson makeGsonCompatibleWithSurreal(Gson gson) {
-        GsonBuilder gsonBuilder = gson.newBuilder();
-
-        // SurrealDB doesn't need HTML escaping
-        gsonBuilder.disableHtmlEscaping();
-
-        for (SurrealGsonAdaptor<?> adaptor : SurrealGsonAdaptor.getAdaptors()) {
-            gsonBuilder.registerTypeAdapter(adaptor.getAdaptorClass(), adaptor);
-        }
-
-        // Add all the SurrealDB adapters
-        //SurrealGsonAdaptor.getAdapters().forEach(gsonBuilder::registerTypeAdapter);
-
-        return gsonBuilder.create();
     }
 
     @Override

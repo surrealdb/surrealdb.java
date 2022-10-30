@@ -1,13 +1,13 @@
-package com.surrealdb.connection.gson.patch;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
 import com.surrealdb.driver.model.patch.RemovePatch;
 
 import java.lang.reflect.Type;
 
-public final class SurrealRemovePatchAdaptor extends SurrealPatchAdaptor<RemovePatch> {
+final class PatchRemoveAdaptor extends PatchAdaptor<RemovePatch> {
 
-    public SurrealRemovePatchAdaptor() {
+    PatchRemoveAdaptor() {
         super(RemovePatch.class, "remove");
     }
 

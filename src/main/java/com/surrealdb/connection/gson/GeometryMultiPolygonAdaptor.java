@@ -1,4 +1,4 @@
-package com.surrealdb.connection.gson.geometry;
+package com.surrealdb.connection.gson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
@@ -9,9 +9,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SurrealMultiPolygonAdaptor extends SurrealGeometryAdaptor<SurrealMultiPolygon> {
+final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<SurrealMultiPolygon> {
 
-    public SurrealMultiPolygonAdaptor() {
+    GeometryMultiPolygonAdaptor() {
         super(SurrealMultiPolygon.class);
     }
 

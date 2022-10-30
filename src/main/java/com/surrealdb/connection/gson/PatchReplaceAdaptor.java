@@ -1,13 +1,13 @@
-package com.surrealdb.connection.gson.patch;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
 import com.surrealdb.driver.model.patch.ReplacePatch;
 
 import java.lang.reflect.Type;
 
-public final class SurrealReplacePatchAdaptor extends SurrealPatchAdaptor<ReplacePatch> {
+final class PatchReplaceAdaptor extends PatchAdaptor<ReplacePatch> {
 
-    public SurrealReplacePatchAdaptor() {
+    PatchReplaceAdaptor() {
         super(ReplacePatch.class, "replace");
     }
 

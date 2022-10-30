@@ -1,4 +1,4 @@
-package com.surrealdb.connection.gson.geometry;
+package com.surrealdb.connection.gson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
@@ -9,9 +9,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SurrealMultiLineStringAdaptor extends SurrealGeometryAdaptor<SurrealMultiLineString> {
+final class GeometryMultiLineStringAdaptor extends GeometryAdaptor<SurrealMultiLineString> {
 
-    public SurrealMultiLineStringAdaptor() {
+    GeometryMultiLineStringAdaptor() {
         super(SurrealMultiLineString.class);
     }
 

@@ -5,9 +5,9 @@ import com.surrealdb.driver.model.SignIn;
 
 import java.lang.reflect.Type;
 
-public final class SurrealSignInAdaptor extends SurrealGsonAdaptor<SignIn> {
+final class SignInAdaptor extends SurrealGsonAdaptor<SignIn> {
 
-    public SurrealSignInAdaptor() {
+    SignInAdaptor() {
         super(SignIn.class);
     }
 
@@ -19,7 +19,6 @@ public final class SurrealSignInAdaptor extends SurrealGsonAdaptor<SignIn> {
         src.getNamespace().ifPresent(namespace -> object.addProperty("NS", namespace));
         src.getDatabase().ifPresent(database -> object.addProperty("DB", database));
         src.getScope().ifPresent(scope -> object.addProperty("SC", scope));
-
         return object;
     }
 

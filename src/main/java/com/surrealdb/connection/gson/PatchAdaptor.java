@@ -1,17 +1,16 @@
-package com.surrealdb.connection.gson.patch;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.surrealdb.connection.gson.SurrealGsonAdaptor;
 import com.surrealdb.driver.model.patch.Patch;
 
 import javax.annotation.Nullable;
 
-public abstract class SurrealPatchAdaptor<T extends Patch> extends SurrealGsonAdaptor<T> {
+abstract class PatchAdaptor<T extends Patch> extends SurrealGsonAdaptor<T> {
 
     private final String op;
 
-    public SurrealPatchAdaptor(Class<T> adaptorClass, String op) {
+    PatchAdaptor(Class<T> adaptorClass, String op) {
         super(adaptorClass);
 
         this.op = op;

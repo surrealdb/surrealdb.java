@@ -1,13 +1,13 @@
-package com.surrealdb.connection.gson.geometry;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.SurrealPoint;
 
 import java.lang.reflect.Type;
 
-public final class SurrealPointAdaptor extends SurrealGeometryAdaptor<SurrealPoint> {
+final class GeometryPointAdaptor extends GeometryAdaptor<SurrealPoint> {
 
-    public SurrealPointAdaptor() {
+    GeometryPointAdaptor() {
         super(SurrealPoint.class);
     }
 

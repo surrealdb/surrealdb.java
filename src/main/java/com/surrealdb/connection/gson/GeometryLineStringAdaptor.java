@@ -1,13 +1,13 @@
-package com.surrealdb.connection.gson.geometry;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.SurrealLineString;
 
 import java.lang.reflect.Type;
 
-public final class SurrealLineStringAdaptor extends SurrealGeometryAdaptor<SurrealLineString> {
+final class GeometryLineStringAdaptor extends GeometryAdaptor<SurrealLineString> {
 
-    public SurrealLineStringAdaptor() {
+    GeometryLineStringAdaptor() {
         super(SurrealLineString.class);
     }
 

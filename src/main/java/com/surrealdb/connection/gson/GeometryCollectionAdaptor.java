@@ -1,8 +1,7 @@
-package com.surrealdb.connection.gson.geometry;
+package com.surrealdb.connection.gson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
-import com.surrealdb.connection.gson.SurrealGsonAdaptor;
 import com.surrealdb.driver.model.geometry.SurrealGeometryCollection;
 import com.surrealdb.driver.model.geometry.SurrealGeometryPrimitive;
 
@@ -10,9 +9,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SurrealGeometryCollectionAdaptor extends SurrealGsonAdaptor<SurrealGeometryCollection> {
+class GeometryCollectionAdaptor extends SurrealGsonAdaptor<SurrealGeometryCollection> {
 
-    public SurrealGeometryCollectionAdaptor() {
+    GeometryCollectionAdaptor() {
         super(SurrealGeometryCollection.class);
     }
 
