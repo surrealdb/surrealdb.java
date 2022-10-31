@@ -8,8 +8,8 @@ import lombok.Value;
  * SurrealDB's representation of a geolocation point. This is a 2D point with a longitude and latitude.
  * <p>To create a point, use: <p>
  * <ul>
- *  <li>{@link #fromLatitudeLongitude(double, double)}</li>
- *  <li>{@link #fromLatitudeLongitude(double, double)}</li>
+ *  <li>{@link #fromYX(double, double)}</li>
+ *  <li>{@link #fromYX(double, double)}</li>
  * </ul>
  *
  * @author Damian Kocher
@@ -21,62 +21,62 @@ import lombok.Value;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Point implements GeometryPrimitive {
 
-    double longitude;
-    double latitude;
+    double x;
+    double y;
 
     /**
-     * This static factory method returns a {@link Point} from the provided <i>longitude</i> and <i>latitude</i> (in that order).
-     * If you would like to provide <i>latitude</i> first, use {@link #fromLatitudeLongitude(double, double)} instead.
+     * This static factory method returns a {@link Point} from the provided <i>x</i> and <i>y</i> (in that order).
+     * If you would like to provide <i>y</i> first, use {@link #fromYX(double, double)} instead.
      *
-     * @param latitude  The latitude of the point
-     * @param longitude The longitude of the point
+     * @param y The y of the point
+     * @param x The x of the point
      * @return A new SurrealPoint
-     * @see #fromLatitudeLongitude(double, double)
+     * @see #fromYX(double, double)
      */
-    public static Point fromLongitudeLatitude(double longitude, double latitude) {
-        return new Point(longitude, latitude);
+    public static Point fromXY(double x, double y) {
+        return new Point(x, y);
     }
 
     /**
-     * This static factory method returns a {@link Point} from the provided <i>latitude</i> and <i>longitude</i> (in that order).
-     * If you would like to provide <i>longitude</i> first, use {@link #fromLongitudeLatitude(double, double)} instead.
+     * This static factory method returns a {@link Point} from the provided <i>y</i> and <i>x</i> (in that order).
+     * If you would like to provide <i>x</i> first, use {@link #fromXY(double, double)} instead.
      *
-     * @param latitude  The latitude of the point
-     * @param longitude The longitude of the point
+     * @param y The y of the point
+     * @param x The x of the point
      * @return A new SurrealPoint
-     * @see #fromLongitudeLatitude(double, double)
+     * @see #fromXY(double, double)
      */
-    public static Point fromLatitudeLongitude(double latitude, double longitude) {
-        return new Point(longitude, latitude);
+    public static Point fromYX(double y, double x) {
+        return new Point(x, y);
     }
 
     /**
-     * @param longitude The longitude of the new point
-     * @return A new point with the same latitude as this point, but with the provided longitude.
+     * @param newX The newX of the new point
+     * @return A new point with the same latitude as this point, but with the provided newX.
      */
-    public Point withLongitude(double longitude) {
-        return new Point(longitude, latitude);
+    public Point withX(double newX) {
+        return new Point(newX, y);
     }
 
     /**
-     * @param latitude The latitude of the new point
-     * @return A new point with the same longitude as this point, but with the provided latitude.
+     * @param newY The newY of the new point
+     * @return A new point with the same longitude as this point, but with the provided newY.
      */
-    public Point withLatitude(double latitude) {
-        return new Point(longitude, latitude);
+    public Point withY(double newY) {
+        return new Point(x, newY);
     }
 
     /**
      * @return The longitude of the point
      */
-    public double getLongitude() {
-        return longitude;
+    public double getX() {
+        return x;
     }
 
     /**
      * @return The latitude of the point
      */
-    public double getLatitude() {
-        return latitude;
+    public double getY() {
+        return y;
     }
 }

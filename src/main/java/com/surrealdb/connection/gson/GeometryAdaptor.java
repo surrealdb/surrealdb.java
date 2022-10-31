@@ -32,15 +32,15 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
 
     JsonArray serializePoint(Point point) {
         JsonArray coordinates = new JsonArray();
-        coordinates.add(point.getLongitude());
-        coordinates.add(point.getLatitude());
+        coordinates.add(point.getX());
+        coordinates.add(point.getY());
         return coordinates;
     }
 
     Point deserializePoint(JsonArray coordinates) {
-        double longitude = coordinates.get(0).getAsDouble();
-        double latitude = coordinates.get(1).getAsDouble();
-        return Point.fromLongitudeLatitude(longitude, latitude);
+        double x = coordinates.get(0).getAsDouble();
+        double y = coordinates.get(1).getAsDouble();
+        return Point.fromXY(x, y);
     }
 
     JsonArray serializeLine(Line line) {

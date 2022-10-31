@@ -73,25 +73,25 @@ public class MultiPoint implements GeometryPrimitive {
         }
 
         /**
-         * Convenience method for adding a point in the form {@code (longitude, latitude)}.
+         * Convenience method for adding a point in the form {@code (x, y)}.
          *
-         * @param longitude The longitude of the point
-         * @param latitude The latitude of the point
+         * @param x The x of the point
+         * @param y The y of the point
          * @return This {@code Builder} object
          */
-        public Builder addPointLongitudeLatitude(double longitude, double latitude) {
-            return addPoint(Point.fromLongitudeLatitude(longitude, latitude));
+        public Builder addPointXY(double x, double y) {
+            return addPoint(Point.fromXY(x, y));
         }
 
         /**
-         * Convenience method for adding a point in the form {@code (latitude, longitude)}.
+         * Convenience method for adding a point in the form {@code (y, x)}.
          *
-         * @param latitude The latitude of the point
-         * @param longitude The longitude of the point
+         * @param y The y of the point
+         * @param x The x of the point
          * @return This {@code Builder} object
          */
-        public Builder addPointLatitudeLongitude(double latitude, double longitude) {
-            return addPoint(Point.fromLatitudeLongitude(latitude, longitude));
+        public Builder addPointYX(double y, double x) {
+            return addPoint(Point.fromYX(y, x));
         }
 
         /**

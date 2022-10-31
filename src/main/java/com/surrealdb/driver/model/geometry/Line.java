@@ -103,25 +103,25 @@ public class Line implements GeometryPrimitive {
         }
 
         /**
-         * Convenience method for adding a point in the form {@code longitudes, latitudes}.
+         * Convenience method for adding a point in the form {@code x, y}.
          *
-         * @param longitude The longitude of the point to add
-         * @param latitude  The latitude of the point to add
+         * @param x The x of the point to add
+         * @param y The y of the point to add
          * @return This {@code Builder} object
          */
-        public Builder addPointLongitudeLatitude(double longitude, double latitude) {
-            return addPoint(Point.fromLongitudeLatitude(longitude, latitude));
+        public Builder addPointXY(double x, double y) {
+            return addPoint(Point.fromXY(x, y));
         }
 
         /**
-         * Convenience method for adding a point in the form {@code latitudes, longitudes}.
+         * Convenience method for adding a point in the form {@code y, x}.
          *
-         * @param latitude  The latitude of the point to add
-         * @param longitude The longitude of the point to add
+         * @param y The y of the point to add
+         * @param x The x of the point to add
          * @return This {@code Builder} object
          */
-        public Builder addPointLatitudeLongitude(double latitude, double longitude) {
-            return addPoint(Point.fromLatitudeLongitude(latitude, longitude));
+        public Builder addPointYX(double y, double x) {
+            return addPoint(Point.fromYX(y, x));
         }
 
         /**
