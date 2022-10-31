@@ -1,6 +1,5 @@
 package com.surrealdb.connection.gson;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.GeometryCollection;
 import com.surrealdb.driver.model.geometry.GeometryPrimitive;
@@ -41,6 +40,6 @@ class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
             geometryList.add(primitive);
         }
 
-        return new GeometryCollection(ImmutableList.copyOf(geometryList));
+        return GeometryCollection.from(geometryList);
     }
 }

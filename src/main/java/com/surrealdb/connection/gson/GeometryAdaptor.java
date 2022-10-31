@@ -11,7 +11,6 @@ import com.surrealdb.driver.model.geometry.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonAdaptor<T> {
 
@@ -61,15 +60,22 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         for (JsonElement pointCoordinatesElement : coordinates) {
             points.add(deserializePointFromArray(pointCoordinatesElement.getAsJsonArray()));
         }
-        return new Line(ImmutableList.copyOf(points));
+        return Line.fromPoints(points);
     }
 
     JsonArray serializePolygonToArray(Polygon polygon) {
+        ImmutableList<Point> outerRing = polygon.getOuterRing();
+        ImmutableList<Point> innerRing = polygon.getInnerRing();
         JsonArray coordinates = new JsonArray();
-        coordinates.add(serializeLinearRing(polygon.getOuterRing()));
 
-        Optional<ImmutableList<Point>> innerRing = polygon.getInnerRing();
-        innerRing.ifPresent(surrealPoints -> coordinates.add(serializeLinearRing(surrealPoints)));
+        // Outer ring will always be present
+        coordinates.add(serializeLinearRing(outerRing));
+
+        // Inner ring is optional
+        if (!innerRing.isEmpty()) {
+            coordinates.add(serializeLinearRing(innerRing));
+        }
+
         return coordinates;
     }
 
@@ -78,8 +84,6 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         for (Point point : linearRing) {
             array.add(serializePointToArray(point));
         }
-        // Add the first point again to close the ring
-        array.add(array.get(0));
 
         return array;
     }
@@ -90,16 +94,15 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         if (coordinates.size() > 1) {
             innerRing = deserializeLinearRing(coordinates.get(1).getAsJsonArray());
         }
-        return new Polygon(outerRing, innerRing);
+        return Polygon.fromOuterAndInnerRing(outerRing, innerRing);
     }
 
     ImmutableList<Point> deserializeLinearRing(JsonElement element) {
         JsonArray pointCoordinates = element.getAsJsonArray();
         List<Point> points = new ArrayList<>(pointCoordinates.size());
 
-        // Ignore the last point, as it is the same as the first
-        for (int index = 0; index < pointCoordinates.size() - 1; index++) {
-            points.add(deserializePointFromArray(pointCoordinates.get(index).getAsJsonArray()));
+        for (JsonElement pointCoordinate : pointCoordinates) {
+            points.add(deserializePointFromArray(pointCoordinate.getAsJsonArray()));
         }
 
         return ImmutableList.copyOf(points);
