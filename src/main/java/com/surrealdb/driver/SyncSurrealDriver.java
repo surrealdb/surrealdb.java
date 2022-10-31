@@ -95,11 +95,11 @@ public class SyncSurrealDriver implements SurrealDriver {
         getResultSynchronously(asyncDriver.unsetConnectionWideParameter(key));
     }
 
-    public <T> List<QueryResult<T>> query(String query, Map<String, String> args, Class<? extends T> rowType) {
+    public <T> List<QueryResult<T>> query(String query, Map<String, Object> args, Class<? extends T> rowType) {
         return getResultSynchronously(asyncDriver.query(query, args, rowType));
     }
 
-    public <T> Optional<T> querySingle(String query, Map<String, String> args, Class<? extends T> rowType) {
+    public <T> Optional<T> querySingle(String query, Map<String, Object> args, Class<? extends T> rowType) {
         return getResultSynchronously(asyncDriver.querySingle(query, args, rowType));
     }
 

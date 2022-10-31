@@ -74,7 +74,7 @@ public class SurrealDriverTest {
 
     @Test
     public void testQuery() {
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         args.put("firstName", "Tobie");
         List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
 
@@ -85,7 +85,7 @@ public class SurrealDriverTest {
 
     @Test
     public void testQuerySingleExists() {
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         Optional<Person> optionalPerson = driver.querySingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", args, Person.class);
 
         assertTrue(optionalPerson.isPresent());
@@ -95,7 +95,7 @@ public class SurrealDriverTest {
 
     @Test
     public void testQuerySingleWhenWhenMatchingRecordDoesNotExist() {
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         args.put("marketing", "false");
         Optional<Person> optionalPerson = driver.querySingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", args, Person.class);
 

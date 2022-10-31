@@ -116,7 +116,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * @return a {@link CompletableFuture} that will complete once the SurrealDB server has
      * responded to the set operation. If an error occurs, the future will complete exceptionally.
      */
-    public CompletableFuture<Void> setConnectionWideParameter(String key, String value) {
+    public CompletableFuture<Void> setConnectionWideParameter(String key, Object value) {
         return connection.rpc("let", key, value);
     }
 
@@ -131,7 +131,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return connection.rpc("unset", key);
     }
 
-    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, String> args, Class<? extends T> rowType) {
+    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, Object> args, Class<? extends T> rowType) {
         Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowType).getType();
         Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
         return connection.rpc(resultType, "query", query, args);
@@ -151,7 +151,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * or an empty {@link Optional} if the query returned no results. If an error occurs, the future will complete exceptionally.
      * @see #query(String, Map, Class)
      */
-    public <T> CompletableFuture<Optional<T>> querySingle(String query, Map<String, String> args, Class<? extends T> rowType) {
+    public <T> CompletableFuture<Optional<T>> querySingle(String query, Map<String, Object> args, Class<? extends T> rowType) {
         CompletableFuture<List<QueryResult<T>>> rpcCallback = query(query, args, rowType);
 
         return rpcCallback.thenApplyAsync(queryResults -> {
