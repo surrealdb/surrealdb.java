@@ -8,6 +8,7 @@ import com.surrealdb.driver.model.geometry.Polygon;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
 import test.driver.model.GenericGeometryContainer;
@@ -34,6 +35,7 @@ public class SurrealDriverGeometryTest {
     }
 
     @Test
+    @Disabled("Until I improve geometry creating UX")
     void testGeometrySerialization() {
         GenericGeometryContainer expected = new GenericGeometryContainer("St. Louis");
 

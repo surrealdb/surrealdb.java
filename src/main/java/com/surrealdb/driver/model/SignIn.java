@@ -12,7 +12,7 @@ import java.util.Optional;
 public class SignIn {
 
     String user;
-    String pass;
+    String password;
     @Nullable
     String namespace;
     @Nullable
