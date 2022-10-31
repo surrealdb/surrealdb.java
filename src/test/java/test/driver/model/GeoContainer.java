@@ -7,7 +7,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 @Data
-public class GenericGeometryContainer {
+public class GeoContainer {
 
     @NonNull
     String name;
