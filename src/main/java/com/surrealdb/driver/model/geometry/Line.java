@@ -4,20 +4,21 @@ import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Value;
-import lombok.With;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * A GeoJSON LineString value for storing a geometric path.
+ * A GeoJSON LineString value for storing a geometric path. Paths must have at least two points,
+ * but may have more.
  *
  * @author Damian Kocher
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#line">SurrealDB Docs - Line</a>
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.4">GeoJSON Specification - LineString</a>
  */
 @Value
-@With
 public class Line implements GeometryPrimitive {
 
     ImmutableList<Point> points;
@@ -31,22 +32,28 @@ public class Line implements GeometryPrimitive {
     }
 
     /**
-     * @param points The points that make up the line.
-     * @return A new Line instance.
-     * @throws IllegalArgumentException If the line has less than 2 points.
-     * @throws NullPointerException     If any of the points are null.
+     * Creates and returns a new {@code Line} with the given points. Elements from the provided {@code Collection} are copied,
+     * meaning that changes to the provided {@code Collection} will not be reflected in the returned {@code Line}.
+     *
+     * @param points The points that make up the line
+     * @return A new Line instance
+     * @throws IllegalArgumentException If the provided {@code points} contains less than 2 elements
+     * @throws NullPointerException     If any of the points are null
      */
-    public static Line fromPoints(List<Point> points) {
+    public static Line from(Collection<Point> points) {
         return new Line(ImmutableList.copyOf(points));
     }
 
     /**
-     * @param points The points that make up the line.
-     * @return A new Line instance.
-     * @throws IllegalArgumentException If the line has less than 2 points.
-     * @throws NullPointerException     If any of the points are null.
+     * Creates and returns a new {@code Line} with the given points. Elements from the provided {@code array} are copied,
+     * meaning that changes to the provided {@code array} will not be reflected in the returned {@code Line}.
+     *
+     * @param points The points that make up the line
+     * @return A new Line instance
+     * @throws IllegalArgumentException If the provided {@code points} contains less than 2 elements
+     * @throws NullPointerException     If any of the points are null
      */
-    public static Line fromPoints(Point... points) {
+    public static Line from(Point... points) {
         return new Line(ImmutableList.copyOf(points));
     }
 
@@ -58,8 +65,7 @@ public class Line implements GeometryPrimitive {
     }
 
     /**
-     * Creates a new {@link Line.Builder} with all points on this line string. This is the preferred way
-     * to mutate a line string.
+     * Creates a new {@link Line.Builder} with all points on this line already added.
      *
      * @return A new {@link Line.Builder} instance with the points of this line.
      */
@@ -67,37 +73,113 @@ public class Line implements GeometryPrimitive {
         return new Builder().addPoints(points);
     }
 
+    /**
+     * Flips the order of the points in this line. For a line with the points
+     * {@code [[0, 0,], [1, 1], [2, 2]]}, this will return a line with
+     * {@code [[2, 2], [1, 1], [0, 0]]}.
+     *
+     * @return A new {@link Line} with the points in reverse order.
+     */
+    public Line flip() {
+        return new Line(points.reverse());
+    }
+
+    /**
+     * A builder for fluent construction of {@link Line} instances. Use {@link Line#builder()} to create a new empty
+     * instance, or {@link Line#toBuilder()} to create a new instance with the points of an existing {@link Line}.
+     */
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    static class Builder {
+    public static class Builder {
 
         private final List<Point> points = new ArrayList<>();
 
         /**
-         * @param point The point to add to the line.
-         * @return This builder.
+         * @param point The point to add
+         * @return This {@code Builder} object
          */
         public Builder addPoint(Point point) {
             points.add(point);
             return this;
         }
 
-        public Builder addPoints(List<Point> points) {
+        /**
+         * Convenience method for adding a point in the form {@code longitudes, latitudes}.
+         *
+         * @param longitude The longitude of the point to add
+         * @param latitude  The latitude of the point to add
+         * @return This {@code Builder} object
+         */
+        public Builder addPointLongitudeLatitude(double longitude, double latitude) {
+            return addPoint(Point.fromLongitudeLatitude(longitude, latitude));
+        }
+
+        /**
+         * Convenience method for adding a point in the form {@code latitudes, longitudes}.
+         *
+         * @param latitude  The latitude of the point to add
+         * @param longitude The longitude of the point to add
+         * @return This {@code Builder} object
+         */
+        public Builder addPointLatitudeLongitude(double latitude, double longitude) {
+            return addPoint(Point.fromLatitudeLongitude(latitude, longitude));
+        }
+
+        /**
+         * @param points The points to add
+         * @return This {@code Builder} object
+         */
+        public Builder addPoints(Collection<Point> points) {
             this.points.addAll(points);
             return this;
         }
 
+        /**
+         * @param points The points to add
+         * @return This {@code Builder} object
+         */
+        public Builder addPoints(Point... points) {
+            Collections.addAll(this.points, points);
+            return this;
+        }
+
+        /**
+         * @param point The point to remove
+         * @return This {@code Builder} object
+         */
         public Builder removePoint(Point point) {
             points.remove(point);
             return this;
         }
 
-        public Builder removePoint(int index) {
-            points.remove(index);
+        /**
+         * @param points The points to remove
+         * @return This {@code Builder} object
+         */
+        public Builder removePoints(Collection<Point> points) {
+            this.points.removeAll(points);
             return this;
         }
 
+        /**
+         * @param points The points to remove
+         * @return This {@code Builder} object
+         */
+        public Builder removePoints(Point... points) {
+            for (Point point : points) {
+                this.points.remove(point);
+            }
+            return this;
+        }
+
+        /**
+         * Creates and returns a new {@code Line} with the geometries added to this {@code Builder}.
+         * This Builder's backing list is copied, meaning that this Builder can be reused after calling this method.
+         *
+         * @return A new {@link Line} instance with the points added to this builder.
+         * @throws IllegalArgumentException If the line has less than 2 points.
+         */
         public Line build() {
-            return Line.fromPoints(points);
+            return Line.from(points);
         }
     }
 }

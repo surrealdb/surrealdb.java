@@ -1,6 +1,8 @@
 package com.surrealdb.driver.model.geometry;
 
 import com.google.common.collect.ImmutableList;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -50,6 +52,7 @@ public class Polygon implements GeometryPrimitive {
         }
     }
 
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
         private final List<Point> outerRing = new ArrayList<>();

@@ -33,6 +33,6 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
             polygons.add(deserializePolygonFromArray(polygon.getAsJsonArray()));
         }
 
-        return new MultiPolygon(ImmutableList.copyOf(polygons));
+        return MultiPolygon.from(ImmutableList.copyOf(polygons));
     }
 }

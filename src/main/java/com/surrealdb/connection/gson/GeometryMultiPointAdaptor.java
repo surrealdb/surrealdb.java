@@ -1,6 +1,5 @@
 package com.surrealdb.connection.gson;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.MultiPoint;
 import com.surrealdb.driver.model.geometry.Point;
@@ -34,6 +33,6 @@ final class GeometryMultiPointAdaptor extends GeometryAdaptor<MultiPoint> {
             points.add(deserializePointFromArray(pointCoordinatesElement.getAsJsonArray()));
         }
 
-        return new MultiPoint(ImmutableList.copyOf(points));
+        return MultiPoint.from(points);
     }
 }

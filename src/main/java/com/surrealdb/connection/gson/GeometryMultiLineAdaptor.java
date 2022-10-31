@@ -1,6 +1,5 @@
 package com.surrealdb.connection.gson;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
 import com.surrealdb.driver.model.geometry.Line;
 import com.surrealdb.driver.model.geometry.MultiLine;
@@ -34,6 +33,6 @@ final class GeometryMultiLineAdaptor extends GeometryAdaptor<MultiLine> {
             lines.add(deserializeLineStringFromArray(lineCoordinatesElement.getAsJsonArray()));
         }
 
-        return new MultiLine(ImmutableList.copyOf(lines));
+        return MultiLine.from(lines);
     }
 }

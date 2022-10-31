@@ -60,7 +60,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         for (JsonElement pointCoordinatesElement : coordinates) {
             points.add(deserializePointFromArray(pointCoordinatesElement.getAsJsonArray()));
         }
-        return Line.fromPoints(points);
+        return Line.from(points);
     }
 
     JsonArray serializePolygonToArray(Polygon polygon) {
