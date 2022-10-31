@@ -13,13 +13,13 @@ final class GeometryLineAdaptor extends GeometryAdaptor<Line> {
 
     @Override
     public JsonElement serialize(Line src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonArray coordinates = serializeLineStringToArray(src);
+        JsonArray coordinates = serializeLine(src);
         return createJsonObject("LineString", coordinates);
     }
 
     @Override
     public Line deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
-        return deserializeLineStringFromArray(coordinates);
+        return deserializeLine(coordinates);
     }
 }

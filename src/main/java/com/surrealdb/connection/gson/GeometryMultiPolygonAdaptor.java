@@ -19,7 +19,7 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
     public JsonElement serialize(MultiPolygon src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
         for (Polygon polygon : src.getPolygons()) {
-            coordinates.add(serializePolygonToArray(polygon));
+            coordinates.add(serializePolygon(polygon));
         }
         return createJsonObject("MultiPolygon", coordinates);
     }
@@ -30,7 +30,7 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
 
         List<Polygon> polygons = new ArrayList<>(coordinates.size());
         for (JsonElement polygon : coordinates) {
-            polygons.add(deserializePolygonFromArray(polygon.getAsJsonArray()));
+            polygons.add(deserializePolygon(polygon.getAsJsonArray()));
         }
 
         return MultiPolygon.from(ImmutableList.copyOf(polygons));

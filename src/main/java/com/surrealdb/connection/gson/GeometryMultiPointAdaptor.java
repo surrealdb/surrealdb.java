@@ -18,7 +18,7 @@ final class GeometryMultiPointAdaptor extends GeometryAdaptor<MultiPoint> {
     public JsonElement serialize(MultiPoint src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
         for (Point point : src.getPoints()) {
-            coordinates.add(serializePointToArray(point));
+            coordinates.add(serializePoint(point));
         }
 
         return createJsonObject("MultiPoint", coordinates);
@@ -30,7 +30,7 @@ final class GeometryMultiPointAdaptor extends GeometryAdaptor<MultiPoint> {
         List<Point> points = new ArrayList<>(coordinates.size());
 
         for (JsonElement pointCoordinatesElement : coordinates) {
-            points.add(deserializePointFromArray(pointCoordinatesElement.getAsJsonArray()));
+            points.add(deserializePoint(pointCoordinatesElement.getAsJsonArray()));
         }
 
         return MultiPoint.from(points);

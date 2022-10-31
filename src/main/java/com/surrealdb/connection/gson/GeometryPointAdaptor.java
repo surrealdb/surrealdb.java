@@ -13,12 +13,12 @@ final class GeometryPointAdaptor extends GeometryAdaptor<Point> {
 
     @Override
     public JsonElement serialize(Point src, Type typeOfSrc, JsonSerializationContext context) {
-        return createJsonObject("Point", serializePointToArray(src));
+        return createJsonObject("Point", serializePoint(src));
     }
 
     @Override
     public Point deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
-        return deserializePointFromArray(coordinates);
+        return deserializePoint(coordinates);
     }
 }

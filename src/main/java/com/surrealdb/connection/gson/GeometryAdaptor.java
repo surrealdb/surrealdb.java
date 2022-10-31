@@ -30,81 +30,56 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return object.getAsJsonArray("coordinates");
     }
 
-    JsonArray serializePointToArray(Point point) {
-        return serializePointToArray(point.getLongitude(), point.getLatitude());
+    JsonArray serializePoint(Point point) {
+        JsonArray coordinates = new JsonArray();
+        coordinates.add(point.getLongitude());
+        coordinates.add(point.getLatitude());
+        return coordinates;
     }
 
-    JsonArray serializePointToArray(double longitude, double latitude) {
-        JsonArray pointArray = new JsonArray();
-        pointArray.add(longitude);
-        pointArray.add(latitude);
-        return pointArray;
-    }
-
-    Point deserializePointFromArray(JsonArray coordinates) {
+    Point deserializePoint(JsonArray coordinates) {
         double longitude = coordinates.get(0).getAsDouble();
         double latitude = coordinates.get(1).getAsDouble();
         return Point.fromLongitudeLatitude(longitude, latitude);
     }
 
-    JsonArray serializeLineStringToArray(Line line) {
+    JsonArray serializeLine(Line line) {
         JsonArray lineStringArray = new JsonArray();
         for (Point point : line.getPoints()) {
-            lineStringArray.add(serializePointToArray(point));
+            lineStringArray.add(serializePoint(point));
         }
         return lineStringArray;
     }
 
-    Line deserializeLineStringFromArray(JsonArray coordinates) {
+    Line deserializeLine(JsonArray coordinates) {
         List<Point> points = new ArrayList<>(coordinates.size());
         for (JsonElement pointCoordinatesElement : coordinates) {
-            points.add(deserializePointFromArray(pointCoordinatesElement.getAsJsonArray()));
+            points.add(deserializePoint(pointCoordinatesElement.getAsJsonArray()));
         }
         return Line.from(points);
     }
 
-    JsonArray serializePolygonToArray(Polygon polygon) {
-        ImmutableList<Point> outerRing = polygon.getOuterRing();
-        ImmutableList<Point> innerRing = polygon.getInnerRing();
+    JsonArray serializePolygon(Polygon polygon) {
         JsonArray coordinates = new JsonArray();
 
-        // Outer ring will always be present
-        coordinates.add(serializeLinearRing(outerRing));
+        Line exterior = polygon.getExterior();
+        coordinates.add(serializeLine(exterior));
 
-        // Inner ring is optional
-        if (!innerRing.isEmpty()) {
-            coordinates.add(serializeLinearRing(innerRing));
+        ImmutableList<Line> interiors = polygon.getInteriors();
+        for (Line interior : interiors) {
+            coordinates.add(serializeLine(interior));
         }
 
         return coordinates;
     }
 
-    JsonArray serializeLinearRing(ImmutableList<Point> linearRing) {
-        JsonArray array = new JsonArray();
-        for (Point point : linearRing) {
-            array.add(serializePointToArray(point));
+    Polygon deserializePolygon(JsonArray coordinates) {
+        Line exterior = deserializeLine(coordinates.get(0).getAsJsonArray());
+        List<Line> interiors = new ArrayList<>();
+        // Interior rings start at index 1, as index 0 is the exterior ring
+        for (int i = 1; i < coordinates.size(); i++) {
+            interiors.add(deserializeLine(coordinates.get(i).getAsJsonArray()));
         }
-
-        return array;
-    }
-
-    Polygon deserializePolygonFromArray(JsonArray coordinates) {
-        ImmutableList<Point> outerRing = deserializeLinearRing(coordinates.get(0).getAsJsonArray());
-        ImmutableList<Point> innerRing = null;
-        if (coordinates.size() > 1) {
-            innerRing = deserializeLinearRing(coordinates.get(1).getAsJsonArray());
-        }
-        return Polygon.fromOuterAndInnerRing(outerRing, innerRing);
-    }
-
-    ImmutableList<Point> deserializeLinearRing(JsonElement element) {
-        JsonArray pointCoordinates = element.getAsJsonArray();
-        List<Point> points = new ArrayList<>(pointCoordinates.size());
-
-        for (JsonElement pointCoordinate : pointCoordinates) {
-            points.add(deserializePointFromArray(pointCoordinate.getAsJsonArray()));
-        }
-
-        return ImmutableList.copyOf(points);
+        return Polygon.withInteriorPolygons(exterior, interiors);
     }
 }

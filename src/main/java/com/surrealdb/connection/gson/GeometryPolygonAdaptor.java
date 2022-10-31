@@ -13,13 +13,13 @@ final class GeometryPolygonAdaptor extends GeometryAdaptor<Polygon> {
 
     @Override
     public JsonElement serialize(Polygon src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonArray coordinates = serializePolygonToArray(src);
+        JsonArray coordinates = serializePolygon(src);
         return createJsonObject("Polygon", coordinates);
     }
 
     @Override
     public Polygon deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
-        return deserializePolygonFromArray(coordinates);
+        return deserializePolygon(coordinates);
     }
 }

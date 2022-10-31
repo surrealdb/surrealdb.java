@@ -5,8 +5,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,77 +20,73 @@ import java.util.List;
 @Value
 public class Polygon implements GeometryPrimitive {
 
-    ImmutableList<Point> outerRing;
-    ImmutableList<Point> innerRing;
+    Line exterior;
+    ImmutableList<Line> interiors;
 
-    private Polygon(ImmutableList<Point> outerRing, @Nullable ImmutableList<Point> innerRing) {
-        validateLinearRing(outerRing, "Outer ring");
-        this.outerRing = outerRing;
-
-        if (innerRing != null) {
-            validateLinearRing(innerRing, "Inner ring");
-            this.innerRing = innerRing;
-        } else {
-            this.innerRing = ImmutableList.of();
-        }
+    // In the future this should probably validate that the exterior and interiors are valid
+    // linear rings, but SurrealDB doesn't currently do that
+    private Polygon(Line exterior, ImmutableList<Line> interiors) {
+        this.exterior = exterior;
+        this.interiors = interiors;
     }
 
-    public static Polygon fromOuterAndInnerRing(ImmutableList<Point> outerRing, @Nullable ImmutableList<Point> innerRing) {
-        return new Polygon(outerRing, innerRing);
+    public static Polygon withInteriorPolygons(Line exterior, Collection<Line> interiors) {
+        return new Polygon(exterior, ImmutableList.copyOf(interiors));
     }
 
-    public static Polygon fromOuterRing(ImmutableList<Point> outerRing) {
-        return new Polygon(outerRing, null);
+    public static Polygon from(Line exterior) {
+        return new Polygon(exterior, ImmutableList.of());
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    private void validateLinearRing(ImmutableList<Point> points, String ringType) {
-        if (points.size() < 4) {
-            throw new IllegalArgumentException(String.format("%s must have at least 4 points", ringType));
-        }
-    }
-
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        private final List<Point> outerRing = new ArrayList<>();
-        private final List<Point> innerRing = new ArrayList<>();
+        private Line exterior;
+        private final List<Line> interiors = new ArrayList<>();
 
-        public Builder addOuterRingPoint(Point point) {
-            outerRing.add(point);
+        public Builder setExterior(Line exterior) {
+            this.exterior = exterior;
             return this;
         }
 
-        public Builder addOuterRingPointLongitudeLatitude(double longitude, double latitude) {
-            Point point = Point.fromLongitudeLatitude(longitude, latitude);
-            return addOuterRingPoint(point);
-        }
-
-        public Builder addOuterRingPointLatitudeLongitude(double latitude, double longitude) {
-            Point point = Point.fromLatitudeLongitude(longitude, latitude);
-            return addInnerRingPoint(point);
-        }
-
-        public Builder addInnerRingPoint(Point point) {
-            innerRing.add(point);
+        public Builder addInterior(Line interior) {
+            this.interiors.add(interior);
             return this;
         }
 
-        public Builder addInnerRingPointLongitudeLatitude(double longitude, double latitude) {
-            Point point = Point.fromLongitudeLatitude(longitude, latitude);
-            return addInnerRingPoint(point);
+        public Builder addInteriors(Collection<Line> interiors) {
+            this.interiors.addAll(interiors);
+            return this;
         }
 
-        public Builder addInnerRingPointLatitudeLongitude(double latitude, double longitude) {
-            Point point = Point.fromLatitudeLongitude(latitude, longitude);
-            return addInnerRingPoint(point);
+        public Builder addInteriors(Line... interiors) {
+            Collections.addAll(this.interiors, interiors);
+            return this;
+        }
+
+        public Builder removeInterior(Line interior) {
+            this.interiors.remove(interior);
+            return this;
+        }
+
+        public Builder removeInteriors(Collection<Line> interiors) {
+            this.interiors.removeAll(interiors);
+            return this;
+        }
+
+        public Builder removeInteriors(Line... interiors) {
+            for (Line interior : interiors) {
+                this.interiors.remove(interior);
+            }
+            return this;
         }
 
         public Polygon build() {
-            return new Polygon(ImmutableList.copyOf(outerRing), ImmutableList.copyOf(innerRing));
+            return Polygon.withInteriorPolygons(exterior, interiors);
         }
     }
 }

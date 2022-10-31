@@ -18,7 +18,7 @@ final class GeometryMultiLineAdaptor extends GeometryAdaptor<MultiLine> {
     public JsonElement serialize(MultiLine src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
         for (Line line : src.getLines()) {
-            coordinates.add(serializeLineStringToArray(line));
+            coordinates.add(serializeLine(line));
         }
 
         return createJsonObject("MultiLineString", coordinates);
@@ -30,7 +30,7 @@ final class GeometryMultiLineAdaptor extends GeometryAdaptor<MultiLine> {
         List<Line> lines = new ArrayList<>(coordinates.size());
 
         for (JsonElement lineCoordinatesElement : coordinates) {
-            lines.add(deserializeLineStringFromArray(lineCoordinatesElement.getAsJsonArray()));
+            lines.add(deserializeLine(lineCoordinatesElement.getAsJsonArray()));
         }
 
         return MultiLine.from(lines);
