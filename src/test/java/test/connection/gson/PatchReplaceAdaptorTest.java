@@ -1,32 +1,39 @@
 package test.connection.gson;
 
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.surrealdb.driver.model.patch.ReplacePatch;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static test.connection.gson.GsonTestUtils.*;
 
 public class PatchReplaceAdaptorTest {
 
     @Test
-    void testSerialization() {
-        ReplacePatch replacePatch = new ReplacePatch("version", "1.0.1");
-        JsonObject serialized = GsonTestUtils.serializeToJsonElement(replacePatch).getAsJsonObject();
+    void testIntSerialization() {
+        ReplacePatch<Integer> replacePatch = ReplacePatch.create("followers", 32);
+        Type type = TypeToken.getParameterized(ReplacePatch.class, Integer.class).getType();
+        JsonObject serialized = serializeToJsonElement(replacePatch, type).getAsJsonObject();
 
-        assertEquals("replace", serialized.get("op").getAsString());
-        assertEquals("version", serialized.getAsJsonObject().get("path").getAsString());
-        assertEquals("1.0.1", serialized.getAsJsonObject().get("value").getAsString());
+        assertJsonHasPropertyString(serialized, "op", "replace");
+        assertJsonHasPropertyString(serialized, "path", "followers");
+        assertJsonHasPropertyInt(serialized, "value", 32);
     }
 
     @Test
-    void testDeserialization() {
+    void testInstantDeserialization() {
         JsonObject object = new JsonObject();
         object.addProperty("op", "replace");
-        object.addProperty("path", "name");
-        object.addProperty("value", "Tobie Morgan Hitchcock");
-        ReplacePatch deserialized = GsonTestUtils.deserializeFromJsonElement(object, ReplacePatch.class);
+        object.addProperty("path", "lastVisit");
+        object.addProperty("value", "2020-01-01T00:00:00.000Z");
+        Type type = TypeToken.getParameterized(ReplacePatch.class, Instant.class).getType();
+        ReplacePatch<Instant> deserialized = GsonTestUtils.deserializeFromJsonElement(object, type);
 
-        assertEquals("name", deserialized.getPath());
-        assertEquals("Tobie Morgan Hitchcock", deserialized.getValue());
+        assertEquals("lastVisit", deserialized.getPath());
+        assertEquals(Instant.parse("2020-01-01T00:00:00.000Z"), deserialized.getValue());
     }
 }

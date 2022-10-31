@@ -179,9 +179,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchOne() {
         List<Patch> patches = Arrays.asList(
-            new ReplacePatch("/name/first", "Khalid"),
-            new ReplacePatch("/name/last", "Alharisi"),
-            new ReplacePatch("/title", "Engineer")
+            ReplacePatch.create("/name/first", "Khalid"),
+            ReplacePatch.create("/name/last", "Alharisi"),
+            ReplacePatch.create("/title", "Engineer")
         );
 
         driver.patch("person:1", patches);
@@ -196,9 +196,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchAll() {
         List<Patch> patches = Arrays.asList(
-            new ReplacePatch("/name/first", "Khalid"),
-            new ReplacePatch("/name/last", "Alharisi"),
-            new ReplacePatch("/title", "Engineer")
+            ReplacePatch.create("/name/first", "Khalid"),
+            ReplacePatch.create("/name/last", "Alharisi"),
+            ReplacePatch.create("/title", "Engineer")
         );
 
         driver.patch("person", patches);

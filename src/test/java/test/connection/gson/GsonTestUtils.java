@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.surrealdb.connection.gson.SurrealGsonUtils;
 import lombok.experimental.UtilityClass;
 
+import java.lang.reflect.Type;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @UtilityClass
@@ -17,17 +19,28 @@ public class GsonTestUtils {
         return gsonInstance.toJsonTree(object);
     }
 
-    public static <T> T deserializeFromJsonElement(JsonElement jsonElement, Class<T> clazz) {
-        return gsonInstance.fromJson(jsonElement, clazz);
+    public static <T> JsonElement serializeToJsonElement(T object, Type genericType) {
+        return gsonInstance.toJsonTree(object, genericType);
+    }
+
+    public static <T> T deserializeFromJsonElement(JsonElement jsonElement, Type type) {
+        return gsonInstance.fromJson(jsonElement, type);
     }
 
     public static void assertJsonElementEquals(JsonElement expected, JsonElement actual) {
         assertEquals(expected, actual);
     }
 
-    public static void assertJsonHasPropertyString(JsonObject serialized, String property, String value) {
+    public static void assertJsonHasPropertyString(JsonObject serialized, String property, String expected) {
         assertTrue(serialized.has(property), () -> "Serialized object does not have property " + property);
-        assertEquals(value, serialized.get(property).getAsString(), () -> "Serialized object does not have property " + property + " with value " + value);
+        String actual = serialized.get(property).getAsString();
+        assertEquals(expected, actual, () -> "Serialized object does not have property " + property + " with expected value " + expected);
+    }
+
+    public static void assertJsonHasPropertyInt(JsonObject serialized, String property, int expected) {
+        assertTrue(serialized.has(property), () -> "Serialized object does not have property " + property);
+        int actual = serialized.get(property).getAsInt();
+        assertEquals(expected, actual, () -> "Serialized object does not have property " + property + " with expected value " + expected);
     }
 
     public static void assertJsonDoesNotHaveProperty(JsonObject serialized, String property) {

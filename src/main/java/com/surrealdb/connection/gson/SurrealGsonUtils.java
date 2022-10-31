@@ -13,11 +13,6 @@ public class SurrealGsonUtils {
 
         new SignInAdaptor(),
 
-        new PatchAddAdaptor(),
-        new PatchRemoveAdaptor(),
-        new PatchChangeAdaptor(),
-        new PatchReplaceAdaptor(),
-
         new GeometryPointAdaptor(),
         new GeometryLineAdaptor(),
         new GeometryPolygonAdaptor(),

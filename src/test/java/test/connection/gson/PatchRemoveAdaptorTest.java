@@ -11,7 +11,7 @@ public class PatchRemoveAdaptorTest {
 
     @Test
     void testSerialization() {
-        RemovePatch removePatch = new RemovePatch("valueToRemove");
+        RemovePatch removePatch = RemovePatch.create("valueToRemove");
         JsonObject serialized = GsonTestUtils.serializeToJsonElement(removePatch).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "op", "remove");
