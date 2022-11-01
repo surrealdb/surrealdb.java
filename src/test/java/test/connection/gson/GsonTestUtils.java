@@ -15,16 +15,20 @@ public class GsonTestUtils {
 
     private static final Gson gsonInstance = SurrealGsonUtils.makeGsonInstanceSurrealCompatible(new Gson());
 
-    public static <T> JsonElement serializeToJsonElement(T object) {
+    public static <T> JsonElement serialize(T object) {
         return gsonInstance.toJsonTree(object);
     }
 
-    public static <T> JsonElement serializeToJsonElement(T object, Type genericType) {
+    public static <T> JsonElement serialize(T object, Type genericType) {
         return gsonInstance.toJsonTree(object, genericType);
     }
 
-    public static <T> T deserializeFromJsonElement(JsonElement jsonElement, Type type) {
-        return gsonInstance.fromJson(jsonElement, type);
+    public static <T> T deserialize(JsonElement json, Type type) {
+        return gsonInstance.fromJson(json, type);
+    }
+
+    public static <T> T deserialize(String json, Type type) {
+        return gsonInstance.fromJson(json, type);
     }
 
     public static void assertJsonElementEquals(JsonElement expected, JsonElement actual) {
@@ -51,5 +55,11 @@ public class GsonTestUtils {
         for (String property : properties) {
             assertJsonDoesNotHaveProperty(serialized, property);
         }
+    }
+
+    public static void assertGeometryCoordinatesEqual(double expectedX, double expectedY, JsonElement actual) {
+        assertEquals(2, actual.getAsJsonArray().size(), "Check coordinate array size");
+        assertEquals(expectedX, actual.getAsJsonArray().get(0).getAsDouble(), "Check x coordinate");
+        assertEquals(expectedY, actual.getAsJsonArray().get(1).getAsDouble(), "Check y coordinate");
     }
 }

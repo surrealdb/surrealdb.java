@@ -12,7 +12,7 @@ public class PatchRemoveAdaptorTest {
     @Test
     void testSerialization() {
         RemovePatch removePatch = RemovePatch.create("valueToRemove");
-        JsonObject serialized = GsonTestUtils.serializeToJsonElement(removePatch).getAsJsonObject();
+        JsonObject serialized = GsonTestUtils.serialize(removePatch).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "op", "remove");
         assertJsonHasPropertyString(serialized, "path", "valueToRemove");
@@ -23,7 +23,7 @@ public class PatchRemoveAdaptorTest {
         JsonObject object = new JsonObject();
         object.addProperty("op", "remove");
         object.addProperty("path", "valueToRemove");
-        RemovePatch deserialized = GsonTestUtils.deserializeFromJsonElement(object, RemovePatch.class);
+        RemovePatch deserialized = GsonTestUtils.deserialize(object, RemovePatch.class);
 
         assertEquals("valueToRemove", deserialized.getPath());
     }

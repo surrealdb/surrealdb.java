@@ -17,7 +17,7 @@ public class PatchAddAdaptorTest {
     void testIntSerialization() {
         AddPatch<Integer> addPatch = AddPatch.create("followers", 32);
         Type type = TypeToken.getParameterized(AddPatch.class, Integer.class).getType();
-        JsonObject serialized = serializeToJsonElement(addPatch, type).getAsJsonObject();
+        JsonObject serialized = serialize(addPatch, type).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "op", "add");
         assertJsonHasPropertyString(serialized, "path", "followers");
@@ -31,7 +31,7 @@ public class PatchAddAdaptorTest {
         object.addProperty("path", "lastVisit");
         object.addProperty("value", "2020-01-01T00:00:00.000Z");
         Type type = TypeToken.getParameterized(AddPatch.class, Instant.class).getType();
-        AddPatch<Instant> deserialized = GsonTestUtils.deserializeFromJsonElement(object, type);
+        AddPatch<Instant> deserialized = GsonTestUtils.deserialize(object, type);
 
         assertEquals("lastVisit", deserialized.getPath());
         assertEquals(Instant.parse("2020-01-01T00:00:00.000Z"), deserialized.getValue());

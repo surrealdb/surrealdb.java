@@ -12,7 +12,7 @@ public class SignInAdaptorTest {
     @Test
     void testSerializationOfRootUserSignIn() {
         SignIn signIn = new SignIn("generic_username", "a_password", null, null, null);
-        JsonObject serialized = GsonTestUtils.serializeToJsonElement(signIn).getAsJsonObject();
+        JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "user", "generic_username");
         assertJsonHasPropertyString(serialized, "pass", "a_password");
@@ -25,7 +25,7 @@ public class SignInAdaptorTest {
     @Test
     void testSerializationOfNamespaceUserSignIn() {
         SignIn signIn = new SignIn("generic_username", "a_password", "the_namespace", null, null);
-        JsonObject serialized = GsonTestUtils.serializeToJsonElement(signIn).getAsJsonObject();
+        JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "user", "generic_username");
         assertJsonHasPropertyString(serialized, "pass", "a_password");
@@ -37,7 +37,7 @@ public class SignInAdaptorTest {
     @Test
     void testSerializationOfDatabaseUserSignIn() {
         SignIn signIn = new SignIn("generic_username", "a_password", "the_namespace", "database_name", null);
-        JsonObject serialized = GsonTestUtils.serializeToJsonElement(signIn).getAsJsonObject();
+        JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "user", "generic_username");
         assertJsonHasPropertyString(serialized, "pass", "a_password");
@@ -49,7 +49,7 @@ public class SignInAdaptorTest {
     @Test
     void testSerializationOfScopeUserSignIn() {
         SignIn signIn = new SignIn("generic_username", "a_password", "the_namespace", "database_name", "auth_scope");
-        JsonObject serialized = GsonTestUtils.serializeToJsonElement(signIn).getAsJsonObject();
+        JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
         assertJsonHasPropertyString(serialized, "user", "generic_username");
         assertJsonHasPropertyString(serialized, "pass", "a_password");
@@ -65,7 +65,7 @@ public class SignInAdaptorTest {
         signInJson.addProperty("pass", "root_user_password");
 
         SignIn expected = new SignIn("root_user", "root_user_password", null, null, null);
-        SignIn actual = GsonTestUtils.deserializeFromJsonElement(signInJson, SignIn.class);
+        SignIn actual = GsonTestUtils.deserialize(signInJson, SignIn.class);
 
         assertEquals(expected, actual);
     }
@@ -78,7 +78,7 @@ public class SignInAdaptorTest {
         signInJson.addProperty("NS", "some_namespace");
 
         SignIn expected = new SignIn("namespace_user", "namespace_user_password", "some_namespace", null, null);
-        SignIn actual = GsonTestUtils.deserializeFromJsonElement(signInJson, SignIn.class);
+        SignIn actual = GsonTestUtils.deserialize(signInJson, SignIn.class);
 
         assertEquals(expected, actual);
     }
@@ -92,7 +92,7 @@ public class SignInAdaptorTest {
         signInJson.addProperty("DB", "some_database");
 
         SignIn expected = new SignIn("database_user", "database_user_password", "some_namespace", "some_database", null);
-        SignIn actual = GsonTestUtils.deserializeFromJsonElement(signInJson, SignIn.class);
+        SignIn actual = GsonTestUtils.deserialize(signInJson, SignIn.class);
 
         assertEquals(expected, actual);
     }
@@ -107,7 +107,7 @@ public class SignInAdaptorTest {
         signInJson.addProperty("SC", "some_scope");
 
         SignIn expected = new SignIn("scope_user", "scope_user_password", "some_namespace", "some_database", "some_scope");
-        SignIn actual = GsonTestUtils.deserializeFromJsonElement(signInJson, SignIn.class);
+        SignIn actual = GsonTestUtils.deserialize(signInJson, SignIn.class);
 
         assertEquals(expected, actual);
     }
