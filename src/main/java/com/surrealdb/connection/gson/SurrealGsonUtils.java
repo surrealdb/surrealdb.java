@@ -11,8 +11,6 @@ public class SurrealGsonUtils {
     private static final ImmutableSet<SurrealGsonAdaptor<?>> ADAPTORS = ImmutableSet.of(
         new InstantAdaptor(),
 
-        new SignInAdaptor(),
-
         new GeometryPointAdaptor(),
         new GeometryLineAdaptor(),
         new GeometryPolygonAdaptor(),

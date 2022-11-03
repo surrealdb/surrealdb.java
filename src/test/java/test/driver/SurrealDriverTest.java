@@ -31,7 +31,7 @@ public class SurrealDriverTest {
 
         driver = new SyncSurrealDriver(connection);
 
-        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signIn(TestUtils.getRootCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
         driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));

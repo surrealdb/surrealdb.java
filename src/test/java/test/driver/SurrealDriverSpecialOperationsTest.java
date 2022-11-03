@@ -3,7 +3,9 @@ package test.driver;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.auth.SurrealRootCredentials;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -29,13 +31,13 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testSignIn() {
-        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signIn(TestUtils.getRootCredentials());
     }
 
     @Test
     public void testBadCredentials() {
         assertThrows(SurrealAuthenticationException.class, () -> {
-            driver.signInAsRootUser("admin", "incorrect-password");
+            driver.signIn(SurrealRootCredentials.from("invalid_username", "invalid_password"));
         });
     }
 
@@ -47,7 +49,7 @@ public class SurrealDriverSpecialOperationsTest {
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
+            driver.signIn(TestUtils.getRootCredentials());
             driver.select("person", Person.class);
         });
     }
@@ -71,7 +73,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testInfo() {
-        driver.signInAsRootUser(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.signIn(TestUtils.getRootCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
         driver.info();
     }

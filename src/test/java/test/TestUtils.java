@@ -2,6 +2,8 @@ package test;
 
 import com.surrealdb.connection.SurrealConnectionProtocol;
 import com.surrealdb.connection.SurrealConnectionSettings;
+import com.surrealdb.driver.auth.SurrealAuthCredentials;
+import com.surrealdb.driver.auth.SurrealRootCredentials;
 
 /**
  * @author Khalid Alharisi
@@ -28,6 +30,10 @@ public class TestUtils {
 
     public static SurrealConnectionProtocol getProtocol() {
         return SurrealConnectionProtocol.WEB_SOCKET;
+    }
+
+    public static SurrealAuthCredentials getRootCredentials() {
+        return SurrealRootCredentials.from(USERNAME, PASSWORD);
     }
 
     public static String getHost() {

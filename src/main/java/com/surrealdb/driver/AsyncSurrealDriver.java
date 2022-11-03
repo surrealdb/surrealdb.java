@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
+import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.model.QueryResult;
-import com.surrealdb.driver.model.SignIn;
 import com.surrealdb.driver.model.patch.Patch;
 
 import java.lang.reflect.Type;
@@ -69,35 +69,8 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return connection.rpc(executorService,"info", resultType);
     }
 
-    /**
-     * @param username  The username to sign in with
-     * @param password  The password to sign in with
-     * @param namespace The namespace to sign in with
-     * @param database  The database to sign in with
-     * @param scope     The scope to sign in with
-     * @return a {@link CompletableFuture} that will complete with the result of the sign in
-     * operation. If an error occurs, the future will complete exceptionally.
-     */
-    public CompletableFuture<Void> signInAsScopeUser(String username, String password, String namespace, String database, String scope) {
-        return connection.rpc(executorService,"signin", new SignIn(username, password, namespace, database, scope));
-    }
-
-    public CompletableFuture<Void> signInAsDatabaseUser(String username, String password, String namespace, String database) {
-        return connection.rpc(executorService,"signin", new SignIn(username, password, namespace, database, null));
-    }
-
-    public CompletableFuture<Void> signInAsNamespaceUser(String username, String password, String namespace) {
-        return connection.rpc(executorService,"signin", new SignIn(username, password, namespace, null, null));
-    }
-
-    /**
-     * @param username The username to sign in with
-     * @param password The password to sign in with
-     * @return a {@link CompletableFuture} that will complete with the result of the sign in
-     * operation. If an error occurs, the future will complete exceptionally.
-     */
-    public CompletableFuture<Void> signInAsRootUser(String username, String password) {
-        return connection.rpc(executorService,"signin", new SignIn(username, password, null, null, null));
+    public CompletableFuture<Void> signIn(SurrealAuthCredentials credentials) {
+        return connection.rpc(executorService,"signin", credentials);
     }
 
     /**
