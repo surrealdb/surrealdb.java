@@ -2,7 +2,7 @@ package com.surrealdb.driver;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealException;
-import com.surrealdb.driver.auth.SurrealAuthCredentials;
+import com.surrealdb.driver.auth.*;
 import com.surrealdb.driver.patch.Patch;
 
 import java.util.List;
@@ -15,8 +15,8 @@ import java.util.concurrent.ExecutorService;
 /**
  * A synchronous SurrealDB driver. This driver is used in conjunction with a
  * {@link SurrealConnection} to communicate with the server. The driver provides methods for
- * signing in to the server executing queries, and subscribing to data (coming soon). All methods in this
- * class are synchronous and will block until the operation is finished.
+ * signing in to the server, executing queries, and subscribing to data (coming soon). All methods in this
+ * driver are synchronous and will block until the operation is finished.
  *
  * @author Khalid Alharisi
  */
@@ -53,6 +53,12 @@ public class SyncSurrealDriver implements SurrealDriver {
         getResultSynchronously(asyncDriver.ping());
     }
 
+    /**
+     * Asks the database for its version. As of version v1.0.0-beta.9, the returned string
+     * will be in the format {@code 'PKG_NAME-PKG_VERSION}'. This method will block until the server responds.
+     *
+     * @return The version of the SurrealDB server
+     */
     public String getDatabaseVersion() {
         return getResultSynchronously(asyncDriver.getDatabaseVersion());
     }
@@ -61,18 +67,49 @@ public class SyncSurrealDriver implements SurrealDriver {
         return getResultSynchronously(asyncDriver.info());
     }
 
+    /**
+     * Signs in to the server using the provided credentials. This method will block until the server
+     * responds.
+     *
+     * @param credentials The credentials to sign in with
+     * @see SurrealRootCredentials#from(String, String)
+     * @see SurrealNamespaceCredentials#from(String, String, String)
+     * @see SurrealDatabaseCredentials#from(String, String, String, String)
+     * @see SurrealScopeCredentials#from(String, String, String)
+     */
     public void signIn(SurrealAuthCredentials credentials) {
         getResultSynchronously(asyncDriver.signIn(credentials));
     }
 
+    /**
+     * Selects a namespace and database to use for subsequent queries. This method will block until
+     * the server responds.
+     *
+     * @param namespace The namespace to use
+     * @param database  The database to use
+     */
     public void use(String namespace, String database) {
         getResultSynchronously(asyncDriver.use(namespace, database));
     }
 
+    /**
+     * Sets a connection wide key-value pair. The value can be used in queries with the
+     * syntax <i>$key</i>. This method will block until the server responds.
+     * This method will block until the server responds.
+     *
+     * @param key   The parameter key
+     * @param value The parameter value
+     */
     public void setConnectionWideParameter(String key, Object value) {
         getResultSynchronously(asyncDriver.setConnectionWideParameter(key, value));
     }
 
+    /**
+     * Unsets and clears a connection wide key-value pair. This method will block until the server
+     * responds.
+     *
+     * @param key The parameter key
+     */
     public void unsetConnectionWideParameter(String key) {
         getResultSynchronously(asyncDriver.unsetConnectionWideParameter(key));
     }
