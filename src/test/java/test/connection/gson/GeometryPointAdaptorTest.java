@@ -12,8 +12,8 @@ public class GeometryPointAdaptorTest {
 
     @Test
     void testSerializationPrecision() {
-        var expectedX = Math.E;
-        var expectedY = Math.PI;
+        double expectedX = Math.E;
+        double expectedY = Math.PI;
 
         Point point = Point.fromXY(expectedX, expectedY);
         JsonObject serialized = GsonTestUtils.serialize(point).getAsJsonObject();
