@@ -1,7 +1,10 @@
 package com.surrealdb.connection;
 
 import com.google.gson.Gson;
-import com.surrealdb.connection.exception.*;
+import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.connection.exception.SurrealException;
+import com.surrealdb.connection.exception.SurrealExceptionUtils;
+import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.java_websocket.client.WebSocketClient;
@@ -19,8 +22,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.surrealdb.connection.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
 
@@ -39,9 +40,6 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final boolean logOutgoingMessages;
     private final boolean logIncomingMessages;
     private final boolean logSignInCredentials;
-
-    // precomputed private variables
-    private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
     /**
      * @param host   The host to connect to
@@ -119,6 +117,9 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         val request = new RpcRequest(requestId, method, params);
         val callback = new CompletableFuture<T>();
 
+        val requestEntry = new RequestEntry<>(resultType, callback);
+        pendingRequests.put(requestId, requestEntry);
+
         try {
             val json = gson.toJson(request);
 
@@ -137,10 +138,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             callback.completeExceptionally(new SurrealException("Failed to send RPC request", e));
         }
 
-        // Only add the request to the pending requests map if the request was sent successfully
+        // If there was an error sending the request, remove the request entry from the map
+        // since we will never receive a response for it
         if (!callback.isCompletedExceptionally()) {
-            val requestEntry = new RequestEntry<>(resultType, callback);
-            pendingRequests.put(requestId, requestEntry);
+            pendingRequests.remove(requestId);
         }
 
         return callback;
@@ -171,43 +172,26 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             return;
         }
 
-        Optional<Type> nullableType = requestEntry.getResultType();
+        Optional<Type> resultType = requestEntry.getResultType();
         CompletableFuture<?> callback = requestEntry.getCallback();
 
         // Wrap everything in a try-catch-finally block so that we can always complete the callback
         try {
             if (!response.isSuccessful()) {
-                handleError(requestId, error, callback);
-            } else if (nullableType.isPresent()) {
-                Type type = nullableType.get();
-                callback.complete(gson.fromJson(response.getResult(), type));
-            } else {
-                callback.complete(null);
+                String errorMessage = error.getMessage();
+                log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error.getCode(), errorMessage);
+                SurrealException exception = SurrealExceptionUtils.createExceptionFromMessage(errorMessage);
+                callback.completeExceptionally(exception);
             }
+
+            if (!resultType.isPresent()) {
+                callback.complete(null);
+                return;
+            }
+
+            callback.complete(gson.fromJson(response.getResult(), resultType.get()));
         } catch (Exception e) {
             callback.completeExceptionally(e);
-        } finally {
-            // Make sure the callback is completed no matter what
-            if (!callback.isDone()) {
-                callback.complete(null);
-            }
-        }
-    }
-
-    private <T> void handleError(String requestId, RpcResponse.Error error, CompletableFuture<T> callback) {
-        log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error.getCode(), error.getMessage());
-
-        if (error.getMessage().contains("There was a problem with authentication")) {
-            callback.completeExceptionally(new SurrealAuthenticationException());
-        } else if (error.getMessage().contains("There was a problem with the database: Specify a namespace to use")) {
-            callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
-        } else {
-            Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
-            if (recordAlreadyExitsMatcher.matches()) {
-                callback.completeExceptionally(new SurrealRecordAlreadyExistsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
-            } else {
-                callback.completeExceptionally(new SurrealException(error.getMessage()));
-            }
         }
     }
 

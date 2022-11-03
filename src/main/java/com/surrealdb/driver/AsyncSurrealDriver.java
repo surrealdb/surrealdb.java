@@ -1,7 +1,9 @@
 package com.surrealdb.driver;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.SignIn;
 import com.surrealdb.driver.model.patch.Patch;
@@ -134,7 +136,26 @@ public class AsyncSurrealDriver implements SurrealDriver {
     public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, Object> args, Class<? extends T> rowType) {
         Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowType).getType();
         Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
-        return connection.rpc(resultType, "query", query, args);
+        CompletableFuture<List<QueryResult<T>>> future = connection.rpc(resultType, "query", query, args);
+
+        return future.thenComposeAsync(this::checkResultsForErrors, asyncOperationExecutorService);
+    }
+
+    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Class<? extends T> rowType) {
+        return query(query, ImmutableMap.of(), rowType);
+    }
+
+    private <T> CompletableFuture<List<QueryResult<T>>> checkResultsForErrors(List<QueryResult<T>> queryResults) {
+        for (QueryResult<T> queryResult : queryResults) {
+            if (queryResult.getStatus().equals("ERR") && queryResult.getDetail() != null) {
+                // Java 8 doesn't have CompletableFuture.failedFuture() so we have to do this...
+                CompletableFuture<List<QueryResult<T>>> exceptionalFuture = new CompletableFuture<>();
+                exceptionalFuture.completeExceptionally(SurrealExceptionUtils.createExceptionFromMessage(queryResult.getDetail()));
+                return exceptionalFuture;
+            }
+        }
+
+        return CompletableFuture.completedFuture(queryResults);
     }
 
     /**
