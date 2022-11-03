@@ -239,5 +239,4 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             log.error("Connection error", ex);
         }
     }
-
 }

@@ -12,12 +12,9 @@ public class InstantAdaptorTest {
     @Test
     void testStartOfEpoch() {
         Instant startOfEpoch = Instant.ofEpochMilli(0);
+        String expectedSerialized = "1970-01-01T00:00:00Z";
 
-        JsonElement serialized = GsonTestUtils.serialize(startOfEpoch);
-        assertEquals("1970-01-01T00:00:00Z", serialized.getAsString(), "Check serialized value matches expected");
-
-        Instant deserialized = GsonTestUtils.deserialize(serialized, Instant.class);
-        assertEquals(startOfEpoch, deserialized, "Check deserialized value matches expected");
+        testInstantSerialization(startOfEpoch, expectedSerialized);
     }
 
     @Test

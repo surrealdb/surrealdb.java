@@ -70,7 +70,7 @@ public class SyncSurrealDriver implements SurrealDriver {
         getResultSynchronously(asyncDriver.use(namespace, database));
     }
 
-    public void setConnectionWideParameter(String key, String value) {
+    public void setConnectionWideParameter(String key, Object value) {
         getResultSynchronously(asyncDriver.setConnectionWideParameter(key, value));
     }
 

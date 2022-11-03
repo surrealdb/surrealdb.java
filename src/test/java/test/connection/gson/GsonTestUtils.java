@@ -31,24 +31,20 @@ public class GsonTestUtils {
         return gsonInstance.fromJson(json, type);
     }
 
-    public static void assertJsonElementEquals(JsonElement expected, JsonElement actual) {
-        assertEquals(expected, actual);
-    }
-
     public static void assertJsonHasPropertyString(JsonObject serialized, String property, String expected) {
-        assertTrue(serialized.has(property), () -> "Serialized object does not have property " + property);
+        assertTrue(serialized.has(property), () -> "Serialized object must have property " + property);
         String actual = serialized.get(property).getAsString();
-        assertEquals(expected, actual, () -> "Serialized object does not have property " + property + " with expected value " + expected);
+        assertEquals(expected, actual, () -> "Serialized object does must have property " + property + " with expected value " + expected);
     }
 
     public static void assertJsonHasPropertyInt(JsonObject serialized, String property, int expected) {
-        assertTrue(serialized.has(property), () -> "Serialized object does not have property " + property);
+        assertTrue(serialized.has(property), () -> "Serialized object must have property " + property);
         int actual = serialized.get(property).getAsInt();
-        assertEquals(expected, actual, () -> "Serialized object does not have property " + property + " with expected value " + expected);
+        assertEquals(expected, actual, () -> "Serialized object must have property " + property + " with expected value " + expected);
     }
 
     public static void assertJsonDoesNotHaveProperty(JsonObject serialized, String property) {
-        assertFalse(serialized.has(property), () -> "Serialized object has property " + property);
+        assertFalse(serialized.has(property), () -> "Serialized object must not have property " + property);
     }
 
     public static void assertJsonDoesNotHaveProperties(JsonObject serialized, String... properties) {

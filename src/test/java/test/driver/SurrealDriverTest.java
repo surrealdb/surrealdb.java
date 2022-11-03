@@ -1,5 +1,6 @@
 package test.driver;
 
+import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
 import com.surrealdb.driver.SyncSurrealDriver;
@@ -41,6 +42,19 @@ public class SurrealDriverTest {
     @AfterEach
     public void teardown() {
         driver.delete("person");
+        driver.getSurrealConnection().disconnect();
+    }
+
+    @Test
+    void testSetConnectionWideParameter() {
+        driver.setConnectionWideParameter("default_name", new Person.Name("First", "Last"));
+        driver.querySingle("CREATE person:global_test SET name = $default_name", ImmutableMap.of(), Person.class);
+
+        Optional<Person> person = driver.selectSingle("person:global_test", Person.class);
+
+        assertTrue(person.isPresent());
+        assertEquals("First", person.get().getName().getFirst());
+        assertEquals("Last", person.get().getName().getLast());
     }
 
     @Test
@@ -76,7 +90,7 @@ public class SurrealDriverTest {
     public void testQuery() {
         Map<String, Object> args = new HashMap<>();
         args.put("firstName", "Tobie");
-        List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
+        List<QueryResult<Person>> actual = driver.query("SELECT * FROM person WHERE name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size()); // number of queries
         assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully

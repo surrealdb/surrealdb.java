@@ -2,9 +2,7 @@ package test.connection;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
-import com.surrealdb.connection.exception.SurrealException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
@@ -17,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Khalid Alharisi
  */
-@Slf4j
 public class SurrealConnectionTest {
 
     @Test
@@ -52,8 +49,7 @@ public class SurrealConnectionTest {
     public void testUserForgotToConnect() {
         val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
 
-        val callback = connection.rpc("let", "some_key", "some_val");
-        assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(callback));
+        assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(connection.rpc("ping")));
     }
 
     @Test
@@ -74,8 +70,7 @@ public class SurrealConnectionTest {
         val connection = SurrealConnection.create(settings);
         // Normally, the user would have to call connect() to connect to the server.
         // However, since we set autoConnect to true, the connection will be established automatically.
-        val callback = connection.rpc("let", "some_key", "some_val");
-        assertDoesNotThrow(() -> getCallbackResults(callback));
+        assertDoesNotThrow(() -> getCallbackResults(connection.rpc("ping")));
     }
 
     @Test
@@ -87,20 +82,20 @@ public class SurrealConnectionTest {
         // Connect to the server.
         connection.connect(3);
         // Verify that the connection is connected.
-        assertDoesNotThrow(() -> getCallbackResults(connection.rpc("let", "some_key", "some_val")));
+        assertDoesNotThrow(() -> getCallbackResults(connection.rpc("ping")));
         assertTrue(connection.isConnected());
         // Disconnect from the server.
         connection.disconnect();
         // Verify that the connection is not connected.
-        assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(connection.rpc("let", "some_key", "some_val")));
+        assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(connection.rpc("ping")));
         assertFalse(connection.isConnected());
     }
 
-    private <T> T getCallbackResults(CompletableFuture<T> future) {
+    private <T> T getCallbackResults(CompletableFuture<T> future) throws Throwable {
         try {
             return future.join();
         } catch (CompletionException completionException) {
-            throw (SurrealException) completionException.getCause();
+            throw completionException.getCause();
         }
     }
 }

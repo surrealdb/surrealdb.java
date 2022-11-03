@@ -3,7 +3,6 @@ package test.driver;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
-import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import test.TestUtils;
 import test.driver.model.Person;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Khalid Alharisi
@@ -31,7 +29,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testSignIn() {
-        driver.signIn(TestUtils.getRootCredentials());
+        assertDoesNotThrow(() -> driver.signIn(TestUtils.getRootCredentials()));
     }
 
     @Test
@@ -43,7 +41,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testUse() {
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        assertDoesNotThrow(() -> driver.use(TestUtils.getNamespace(), TestUtils.getDatabase()));
     }
 
     @Test
@@ -55,13 +53,8 @@ public class SurrealDriverSpecialOperationsTest {
     }
 
     @Test
-    public void testLet() {
-        driver.setConnectionWideParameter("someKey", "someValue");
-    }
-
-    @Test
     public void testPing() {
-        driver.ping();
+        assertDoesNotThrow(() -> driver.ping());
     }
 
     @Test
