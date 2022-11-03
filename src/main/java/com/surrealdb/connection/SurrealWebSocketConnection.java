@@ -1,12 +1,12 @@
 package com.surrealdb.connection;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealException;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
@@ -16,6 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final Gson gson;
 
     private final AtomicLong lastRequestId;
-    private final Map<String, RequestEntry<?>> pendingRequests;
+    private final Map<String, RequestEntry> pendingRequests;
 
     private final boolean logOutgoingMessages;
     private final boolean logIncomingMessages;
@@ -115,24 +116,21 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @Override
     public <T> CompletableFuture<T> rpc(ExecutorService executorService, String method, @Nullable Type resultType, Object... params) {
         return CompletableFuture.supplyAsync(() -> {
-            val requestId = Long.toString(lastRequestId.incrementAndGet());
-            val request = new RpcRequest(requestId, method, params);
-            val callback = new CompletableFuture<T>();
+            String requestId = Long.toString(lastRequestId.incrementAndGet());
+            Instant timestamp = Instant.now();
+            CompletableFuture<T> callback = new CompletableFuture<>();
 
-            val requestEntry = new RequestEntry<>(resultType, callback);
+            RequestEntry requestEntry = new RequestEntry(requestId, timestamp, callback, method, resultType);
             pendingRequests.put(requestId, requestEntry);
 
             try {
-                val json = gson.toJson(request);
-
-                if (logOutgoingMessages) {
-                    if (method.equals("signin") && !logSignInCredentials) {
-                        log.debug("Sending RPC sign in request [id: {}]", requestId);
-                    } else {
-                        log.debug("Sending RPC request [request id: {}, method: {}, body: {}]", requestId, method, json);
-                    }
-                }
-
+                // Create a model for serialization
+                RpcRequest request = new RpcRequest(requestId, method, params);
+                // Serialize the model
+                String json = gson.toJson(request);
+                // Log the request
+                logRpcRequest(method, requestId, json);
+                // Send the request
                 send(json);
             } catch (WebsocketNotConnectedException ignored) {
                 callback.completeExceptionally(new SurrealNotConnectedException());
@@ -150,6 +148,19 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         }, executorService).thenComposeAsync(future -> future);
     }
 
+    private void logRpcRequest(String method, String requestId, String json) {
+        if (!logOutgoingMessages) {
+            return;
+        }
+
+        String body = json;
+        // Only log sign in credentials if explicitly enabled
+        if (method.equals("signIn") && !logSignInCredentials) {
+            body = "REDACTED";
+        }
+        log.debug("Outgoing RPC [id: {}, method: {}, request: {}]", requestId, method, body);
+    }
+
     @Override
     public void onOpen(ServerHandshake handshake) {
         log.debug("Connected to SurrealDB server {}", uri);
@@ -157,35 +168,42 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onMessage(String message) {
-        if (logIncomingMessages) {
-            log.debug("Received message: {}", message);
+        // Deserialize the message
+        RpcResponse response;
+        try {
+            response = gson.fromJson(message, RpcResponse.class);
+        } catch (JsonSyntaxException e) {
+            log.error("Failed to deserialize message from SurrealDB server", e);
+            return;
         }
-
-        // deserialize the message
-        RpcResponse response = gson.fromJson(message, RpcResponse.class);
+        // Pull out the request id
         String requestId = response.getId();
-        RpcResponse.Error error = response.getError();
-
-        // look up the request this response is for
-        RequestEntry<?> requestEntry = pendingRequests.get(requestId);
-        pendingRequests.remove(requestId);
-
+        // Look up the request this response is for
+        RequestEntry requestEntry = pendingRequests.get(requestId);
+        // If there is no request entry for this response, ignore it
         if (requestEntry == null) {
             log.warn("Received response for unknown request [id: {}]", requestId);
             return;
         }
+        // Remove the request entry from the map
+        pendingRequests.remove(requestId);
 
         Optional<Type> resultType = requestEntry.getResultType();
         CompletableFuture<?> callback = requestEntry.getCallback();
 
-        // Wrap everything in a try-catch-finally block so that we can always complete the callback
         try {
             if (!response.isSuccessful()) {
+                RpcResponse.Error error = response.getError();
                 String errorMessage = error.getMessage();
-                log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error.getCode(), errorMessage);
+                if (logIncomingMessages) {
+                    log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error.getCode(), errorMessage);
+                }
                 SurrealException exception = SurrealExceptionUtils.createExceptionFromMessage(errorMessage);
                 callback.completeExceptionally(exception);
+                return;
             }
+
+            logSuccessfulRpcResponse(requestEntry, message);
 
             if (!resultType.isPresent()) {
                 callback.complete(null);
@@ -198,9 +216,20 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         }
     }
 
+    private void logSuccessfulRpcResponse(RequestEntry requestEntry, String message) {
+        if (!logIncomingMessages) {
+            return;
+        }
+
+        String id = requestEntry.getId();
+        String method = requestEntry.getMethod();
+
+        log.debug("Incoming RPC [id: {}, method: {}, response: {}]", id, method, message);
+    }
+
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        log.debug("Connection closed: code={} reason={} remote={}", code, reason, remote);
+        log.debug("Connection closed [code: {}, reason: {}, remote: {}]", code, reason, remote);
         pendingRequests.clear();
     }
 
