@@ -114,20 +114,20 @@ public class SyncSurrealDriver implements SurrealDriver {
         getResultSynchronously(asyncDriver.unsetConnectionWideParameter(key));
     }
 
-    public <T> List<QueryResult<T>> query(String query, Map<String, Object> args, Class<? extends T> rowType) {
-        return getResultSynchronously(asyncDriver.query(query, args, rowType));
+    public <T> List<QueryResult<T>> query(String query, Class<T> rowType, Map<String, Object> args) {
+        return getResultSynchronously(asyncDriver.query(query, rowType, args));
     }
 
-    public <T> Optional<T> querySingle(String query, Map<String, Object> args, Class<? extends T> rowType) {
-        return getResultSynchronously(asyncDriver.querySingle(query, args, rowType));
+    public <T> Optional<T> querySingle(String query, Class<T> rowType, Map<String, Object> args) {
+        return getResultSynchronously(asyncDriver.querySingle(query, rowType, args));
     }
 
-    public <T> List<T> select(String thing, Class<? extends T> rowType) {
-        return getResultSynchronously(asyncDriver.select(thing, rowType));
+    public <T> List<T> retrieveAllRecordsFromTable(SurrealTable<T> table) {
+        return getResultSynchronously(asyncDriver.retrieveAllRecordsFromTable(table));
     }
 
-    public <T> Optional<T> selectSingle(String thing, Class<? extends T> rowType) {
-        return getResultSynchronously(asyncDriver.selectSingle(thing, rowType));
+    public <T> Optional<T> retrieveRecordFromTable(SurrealTable<T> table, String record) {
+        return getResultSynchronously(asyncDriver.retrieveRecordFromTable(table, record));
     }
 
     public <T> T create(String thing, T data) {

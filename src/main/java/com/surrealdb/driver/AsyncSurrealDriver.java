@@ -8,6 +8,7 @@ import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
 
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,16 +106,15 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return connection.rpc(executorService, "unset", key);
     }
 
-    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, Object> args, Class<? extends T> rowType) {
-        Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowType).getType();
-        Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
-        CompletableFuture<List<QueryResult<T>>> future = connection.rpc(executorService, "query", resultType, query, args);
-
-        return future.thenComposeAsync(this::checkResultsForErrors, executorService);
-    }
-
-    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Class<? extends T> rowType) {
-        return query(query, ImmutableMap.of(), rowType);
+    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Class<T> queryResult, Map<String, Object> parameters) {
+        // QueryResult<T>
+        TypeToken<?> queryType = TypeToken.getParameterized(QueryResult.class, queryResult);
+        // List<QueryResult<T>>
+        Type resultType = TypeToken.getParameterized(List.class, queryType.getType()).getType();
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> queryFuture = connection.rpc(executorService, "query", resultType, query, parameters);
+        // Check for errors and return the result
+        return queryFuture.thenComposeAsync(this::checkResultsForErrors, executorService);
     }
 
     private <T> CompletableFuture<List<QueryResult<T>>> checkResultsForErrors(List<QueryResult<T>> queryResults) {
@@ -130,53 +130,39 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return CompletableFuture.completedFuture(queryResults);
     }
 
-    /**
-     * Runs the provided query and returns the <i>the first result</i> in the <i>first query</i> wrapped as an optional.
-     * This method is just a convenient wrapper around {@link #query(String, Map, Class)} for use cases where only a
-     * single result is needed. Therefore, it's recommended to use a limit of 1 in the query to insure only the desired
-     * result is transmitted.
-     *
-     * @param query   The query to execute
-     * @param args    The arguments to use in the query
-     * @param rowType The type of the rows in the result
-     * @param <T>     The type of the rows in the result
-     * @return a {@link CompletableFuture} that will complete with an {@link Optional} containing the first result in the query
-     * or an empty {@link Optional} if the query returned no results. If an error occurs, the future will complete exceptionally.
-     * @see #query(String, Map, Class)
-     */
-    public <T> CompletableFuture<Optional<T>> querySingle(String query, Map<String, Object> args, Class<? extends T> rowType) {
-        CompletableFuture<List<QueryResult<T>>> rpcCallback = query(query, args, rowType);
-
-        return rpcCallback.thenApplyAsync(queryResults -> {
-            // If there are no query results, return an empty optional
-            if (queryResults.isEmpty()) {
-                return Optional.empty();
-            }
-            // Since there is at least one query, it's safe to get the first one
-            QueryResult<T> firstQueryResult = queryResults.get(0);
-            return getFirstElement(firstQueryResult.getResult());
-        }, executorService);
+    public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Class<T> queryResult) {
+        return query(query, queryResult, ImmutableMap.of());
     }
 
-    public <T> CompletableFuture<List<T>> select(String thing, Class<? extends T> rowType) {
-        Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
-        return connection.rpc(executorService, "select", resultType, thing);
+    public <T> CompletableFuture<Optional<T>> querySingle(String query, Class<T> queryResult, Map<String, Object> parameters) {
+        CompletableFuture<List<QueryResult<T>>> queryFuture = query(query, queryResult, parameters);
+        return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
-    /**
-     * Selects the provided <i>thing</i> and returns the <i>first result</i> wrapped as an optional. This method is just a
-     * convenient wrapper around {@link #select(String, Class)} for use cases where only a single result is needed.
-     *
-     * @param thing   The thing to select
-     * @param rowType The type of the result
-     * @param <T>     The type of the result
-     * @return a {@link CompletableFuture} that will complete with an {@link Optional} containing the first result in the query.
-     * If an error occurs, the future will complete exceptionally.
-     * @see #select(String, Class)
-     */
-    public <T> CompletableFuture<Optional<T>> selectSingle(String thing, Class<? extends T> rowType) {
-        CompletableFuture<List<T>> result = select(thing, rowType);
-        return result.thenApplyAsync(this::getFirstElement, executorService);
+    public <T> CompletableFuture<List<T>> retrieveAllRecordsFromTable(SurrealTable<T> table) {
+        // SQL query to retrieve all records from the table
+        String sql = "SELECT * FROM type::table($tb);";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "tb", table.getName()
+        );
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> query = query(sql, table.getType(), parameters);
+        // Return all records from the query
+        return query.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
+    }
+
+    public <T> CompletableFuture<Optional<T>> retrieveRecordFromTable(SurrealTable<T> table, String record) {
+        // SQL query to retrieve a record from the table
+        String sql = "SELECT * FROM type::thing($what);";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "what", table.getName() + ":" + record
+        );
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> query = query(sql, table.getType(), parameters);
+        // Return the first record from the query
+        return query.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
     public <T> CompletableFuture<T> create(String thing, T data) {
@@ -223,6 +209,21 @@ public class AsyncSurrealDriver implements SurrealDriver {
     @Override
     public ExecutorService getAsyncOperationExecutorService() {
         return executorService;
+    }
+
+    private <T> Optional<T> getFirstResultFromFirstQuery(List<QueryResult<T>> queryResults) {
+        List<T> resultsFromFirstQuery = getResultsFromFirstQuery(queryResults);
+        return getFirstElement(resultsFromFirstQuery);
+    }
+
+    private <T> List<T> getResultsFromFirstQuery(List<QueryResult<T>> queryResults) {
+        // If there are no query results, return an empty list
+        if (queryResults.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // Since there is at least one query, it's safe to get the first one
+        QueryResult<T> firstQueryResult = queryResults.get(0);
+        return firstQueryResult.getResult();
     }
 
     /**

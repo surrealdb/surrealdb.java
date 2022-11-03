@@ -61,7 +61,7 @@ public class SurrealDriverGeometryTest {
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);
         String query = "SELECT * FROM geometry WHERE point INSIDE $selection;";
-        Optional<GeoContainer> queryResults = driver.querySingle(query, args, GeoContainer.class);
+        Optional<GeoContainer> queryResults = driver.querySingle(query, GeoContainer.class, args);
 
         assertTrue(queryResults.isPresent());
         assertEquals("Point 1", queryResults.get().getName());

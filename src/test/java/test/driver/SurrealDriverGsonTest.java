@@ -3,6 +3,7 @@ package test.driver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.SyncSurrealDriver;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
@@ -20,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Damian Kocher
  */
 public class SurrealDriverGsonTest {
+
+    private static final SurrealTable<Person> personTable = SurrealTable.create("person", Person.class);
 
     private SyncSurrealDriver driver;
 
@@ -52,7 +55,9 @@ public class SurrealDriverGsonTest {
         val person = new Person("Contributor", "Damian", "Kocher", false);
         assertDoesNotThrow(() -> driver.create("person:damian", person));
 
-        val personFromDb = driver.select("person:damian", Person.class).get(0);
+        val optionalPersonFromDb = driver.retrieveRecordFromTable(personTable, "damian");
+        assertTrue(optionalPersonFromDb.isPresent());
+        Person personFromDb = optionalPersonFromDb.get();
 
         assertEquals(person.getTitle(), personFromDb.getTitle());
         assertEquals(person.getName(), personFromDb.getName());
@@ -68,9 +73,10 @@ public class SurrealDriverGsonTest {
         val person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
         assertDoesNotThrow(() -> driver.create("person:prince", person));
 
-        val deserializedPerson = driver.select("person:prince", Person.class).get(0);
+        val deserializedPerson = driver.retrieveRecordFromTable(personTable, "prince");
+        assertTrue(deserializedPerson.isPresent());
         // Since person.Name overrides equals, we can use assertEquals
-        assertEquals(person.getName(), deserializedPerson.getName());
+        assertEquals(person.getName(), deserializedPerson.get().getName());
     }
 
     @Test

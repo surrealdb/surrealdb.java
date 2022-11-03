@@ -3,6 +3,7 @@ package test.driver;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,7 @@ public class SurrealDriverSpecialOperationsTest {
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
             driver.signIn(TestUtils.getRootCredentials());
-            driver.select("person", Person.class);
+            driver.retrieveAllRecordsFromTable(SurrealTable.create("person", Person.class));
         });
     }
 
