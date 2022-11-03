@@ -1,4 +1,4 @@
-package com.surrealdb.driver.model;
+package com.surrealdb.driver;
 
 import lombok.Value;
 

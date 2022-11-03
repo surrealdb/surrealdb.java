@@ -1,4 +1,4 @@
-package com.surrealdb.driver.model.patch;
+package com.surrealdb.driver.patch;
 
 import lombok.*;
 

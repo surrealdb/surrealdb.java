@@ -2,8 +2,8 @@ package com.surrealdb.connection.gson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
-import com.surrealdb.driver.model.geometry.MultiPolygon;
-import com.surrealdb.driver.model.geometry.Polygon;
+import com.surrealdb.driver.geometry.MultiPolygon;
+import com.surrealdb.driver.geometry.Polygon;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

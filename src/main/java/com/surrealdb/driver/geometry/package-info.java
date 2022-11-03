@@ -5,6 +5,6 @@
  * or the <a href="https://www.rfc-editor.org/rfc/rfc7946">GeoJSON specification</a>.
  */
 @ParametersAreNonnullByDefault
-package com.surrealdb.driver.model.geometry;
+package com.surrealdb.driver.geometry;
 
 import javax.annotation.ParametersAreNonnullByDefault;

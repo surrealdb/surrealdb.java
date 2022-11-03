@@ -1,7 +1,7 @@
 package test.connection.gson;
 
 import com.google.gson.JsonObject;
-import com.surrealdb.driver.model.geometry.Point;
+import com.surrealdb.driver.geometry.Point;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

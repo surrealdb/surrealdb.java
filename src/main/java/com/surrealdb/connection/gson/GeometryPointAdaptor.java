@@ -1,7 +1,7 @@
 package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
-import com.surrealdb.driver.model.geometry.Point;
+import com.surrealdb.driver.geometry.Point;
 
 import java.lang.reflect.Type;
 

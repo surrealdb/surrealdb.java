@@ -1,8 +1,8 @@
 package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
-import com.surrealdb.driver.model.geometry.GeometryCollection;
-import com.surrealdb.driver.model.geometry.GeometryPrimitive;
+import com.surrealdb.driver.geometry.GeometryCollection;
+import com.surrealdb.driver.geometry.GeometryPrimitive;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

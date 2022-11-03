@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.driver.model.geometry.GeometryPrimitive;
-import com.surrealdb.driver.model.geometry.Line;
-import com.surrealdb.driver.model.geometry.Point;
-import com.surrealdb.driver.model.geometry.Polygon;
+import com.surrealdb.driver.geometry.GeometryPrimitive;
+import com.surrealdb.driver.geometry.Line;
+import com.surrealdb.driver.geometry.Point;
+import com.surrealdb.driver.geometry.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,8 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
-import com.surrealdb.driver.model.QueryResult;
-import com.surrealdb.driver.model.patch.Patch;
+import com.surrealdb.driver.patch.Patch;
 
 import java.lang.reflect.Type;
 import java.util.List;

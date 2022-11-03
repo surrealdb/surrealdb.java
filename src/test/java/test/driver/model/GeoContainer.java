@@ -1,6 +1,6 @@
 package test.driver.model;
 
-import com.surrealdb.driver.model.geometry.*;
+import com.surrealdb.driver.geometry.*;
 import lombok.Data;
 import lombok.NonNull;
 

@@ -1,4 +1,4 @@
-package com.surrealdb.driver.model.geometry;
+package com.surrealdb.driver.geometry;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
