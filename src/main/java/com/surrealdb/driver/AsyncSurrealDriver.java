@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 public class AsyncSurrealDriver implements SurrealDriver {
 
     private final SurrealConnection connection;
-    private final ExecutorService asyncOperationExecutorService;
+    private final ExecutorService executorService;
 
     /**
      * Creates a new {@link AsyncSurrealDriver} instance using the provided {@link SurrealConnection}
@@ -39,7 +39,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      */
     public AsyncSurrealDriver(SurrealConnection connection, SurrealDriverSettings settings) {
         this.connection = connection;
-        this.asyncOperationExecutorService = settings.getAsyncOperationExecutorService();
+        this.executorService = settings.getAsyncOperationExecutorService();
     }
 
     /**
@@ -57,16 +57,16 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * responded to the ping. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> ping() {
-        return connection.rpc("ping");
+        return connection.rpc(executorService,"ping");
     }
 
     public CompletableFuture<String> getDatabaseVersion() {
-        return connection.rpc(String.class, "version");
+        return connection.rpc(executorService,"version", String.class);
     }
 
     public CompletableFuture<Map<String, String>> info() {
         Type resultType = TypeToken.getParameterized(Map.class, String.class, String.class).getType();
-        return connection.rpc(resultType, "info");
+        return connection.rpc(executorService,"info", resultType);
     }
 
     /**
@@ -79,15 +79,15 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * operation. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> signInAsScopeUser(String username, String password, String namespace, String database, String scope) {
-        return connection.rpc("signin", new SignIn(username, password, namespace, database, scope));
+        return connection.rpc(executorService,"signin", new SignIn(username, password, namespace, database, scope));
     }
 
     public CompletableFuture<Void> signInAsDatabaseUser(String username, String password, String namespace, String database) {
-        return connection.rpc("signin", new SignIn(username, password, namespace, database, null));
+        return connection.rpc(executorService,"signin", new SignIn(username, password, namespace, database, null));
     }
 
     public CompletableFuture<Void> signInAsNamespaceUser(String username, String password, String namespace) {
-        return connection.rpc("signin", new SignIn(username, password, namespace, null, null));
+        return connection.rpc(executorService,"signin", new SignIn(username, password, namespace, null, null));
     }
 
     /**
@@ -97,7 +97,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * operation. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> signInAsRootUser(String username, String password) {
-        return connection.rpc("signin", new SignIn(username, password, null, null, null));
+        return connection.rpc(executorService,"signin", new SignIn(username, password, null, null, null));
     }
 
     /**
@@ -107,7 +107,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * responded to the use operation. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> use(String namespace, String database) {
-        return connection.rpc("use", namespace, database);
+        return connection.rpc(executorService,"use", namespace, database);
     }
 
     /**
@@ -119,7 +119,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * responded to the set operation. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> setConnectionWideParameter(String key, Object value) {
-        return connection.rpc("let", key, value);
+        return connection.rpc(executorService,"let", key, value);
     }
 
     /**
@@ -130,15 +130,15 @@ public class AsyncSurrealDriver implements SurrealDriver {
      * responded to the unset operation. If an error occurs, the future will complete exceptionally.
      */
     public CompletableFuture<Void> unsetConnectionWideParameter(String key) {
-        return connection.rpc("unset", key);
+        return connection.rpc(executorService, "unset", key);
     }
 
     public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Map<String, Object> args, Class<? extends T> rowType) {
         Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowType).getType();
         Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
-        CompletableFuture<List<QueryResult<T>>> future = connection.rpc(resultType, "query", query, args);
+        CompletableFuture<List<QueryResult<T>>> future = connection.rpc(executorService, "query", resultType, query, args);
 
-        return future.thenComposeAsync(this::checkResultsForErrors, asyncOperationExecutorService);
+        return future.thenComposeAsync(this::checkResultsForErrors, executorService);
     }
 
     public <T> CompletableFuture<List<QueryResult<T>>> query(String query, Class<? extends T> rowType) {
@@ -183,12 +183,12 @@ public class AsyncSurrealDriver implements SurrealDriver {
             // Since there is at least one query, it's safe to get the first one
             QueryResult<T> firstQueryResult = queryResults.get(0);
             return getFirstElement(firstQueryResult.getResult());
-        }, asyncOperationExecutorService);
+        }, executorService);
     }
 
     public <T> CompletableFuture<List<T>> select(String thing, Class<? extends T> rowType) {
         Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
-        return connection.rpc(resultType, "select", thing);
+        return connection.rpc(executorService, "select", resultType, thing);
     }
 
     /**
@@ -204,43 +204,43 @@ public class AsyncSurrealDriver implements SurrealDriver {
      */
     public <T> CompletableFuture<Optional<T>> selectSingle(String thing, Class<? extends T> rowType) {
         CompletableFuture<List<T>> result = select(thing, rowType);
-        return result.thenApplyAsync(this::getFirstElement, asyncOperationExecutorService);
+        return result.thenApplyAsync(this::getFirstElement, executorService);
     }
 
     public <T> CompletableFuture<T> create(String thing, T data) {
         Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
         CompletableFuture<T> finalFuture = new CompletableFuture<>();
 
-        CompletableFuture<List<T>> createFuture = connection.rpc(resultType, "create", thing, data);
+        CompletableFuture<List<T>> createFuture = connection.rpc(executorService, "create", resultType, thing, data);
         createFuture.whenCompleteAsync(((list, throwable) -> {
             if (throwable != null) {
                 finalFuture.completeExceptionally(throwable);
             } else {
                 finalFuture.complete(list.get(0));
             }
-        }), asyncOperationExecutorService);
+        }), executorService);
 
         return finalFuture;
     }
 
     public <T> CompletableFuture<List<T>> update(String thing, T data) {
         Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
-        return connection.rpc(resultType, "update", thing, data);
+        return connection.rpc(executorService, "update", resultType, thing, data);
     }
 
     public <T, P> CompletableFuture<List<T>> change(String thing, P data, Class<T> rowType) {
         Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
-        return connection.rpc(resultType, "change", thing, data);
+        return connection.rpc(executorService, "change", resultType, thing, data);
     }
 
     public CompletableFuture<?> patch(String thing, List<Patch> patches) {
         Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
-        return connection.rpc(resultType, "modify", thing, patches);
+        return connection.rpc(executorService, "modify", resultType, thing, patches);
     }
 
     public CompletableFuture<?> delete(String thing) {
         Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
-        return connection.rpc(resultType, "delete", thing);
+        return connection.rpc(executorService, "delete", resultType, thing);
     }
 
     @Override
@@ -250,7 +250,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
 
     @Override
     public ExecutorService getAsyncOperationExecutorService() {
-        return asyncOperationExecutorService;
+        return executorService;
     }
 
     /**

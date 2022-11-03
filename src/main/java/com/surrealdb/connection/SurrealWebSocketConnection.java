@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -112,39 +113,41 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     @Override
-    public <T> CompletableFuture<T> rpc(@Nullable Type resultType, String method, Object... params) {
-        val requestId = Long.toString(lastRequestId.incrementAndGet());
-        val request = new RpcRequest(requestId, method, params);
-        val callback = new CompletableFuture<T>();
+    public <T> CompletableFuture<T> rpc(ExecutorService executorService, String method, @Nullable Type resultType, Object... params) {
+        return CompletableFuture.supplyAsync(() -> {
+            val requestId = Long.toString(lastRequestId.incrementAndGet());
+            val request = new RpcRequest(requestId, method, params);
+            val callback = new CompletableFuture<T>();
 
-        val requestEntry = new RequestEntry<>(resultType, callback);
-        pendingRequests.put(requestId, requestEntry);
+            val requestEntry = new RequestEntry<>(resultType, callback);
+            pendingRequests.put(requestId, requestEntry);
 
-        try {
-            val json = gson.toJson(request);
+            try {
+                val json = gson.toJson(request);
 
-            if (logOutgoingMessages) {
-                if (method.equals("signin") && !logSignInCredentials) {
-                    log.debug("Sending RPC sign in request [id: {}]", requestId);
-                } else {
-                    log.debug("Sending RPC request [request id: {}, method: {}, body: {}]", requestId, method, json);
+                if (logOutgoingMessages) {
+                    if (method.equals("signin") && !logSignInCredentials) {
+                        log.debug("Sending RPC sign in request [id: {}]", requestId);
+                    } else {
+                        log.debug("Sending RPC request [request id: {}, method: {}, body: {}]", requestId, method, json);
+                    }
                 }
+
+                send(json);
+            } catch (WebsocketNotConnectedException ignored) {
+                callback.completeExceptionally(new SurrealNotConnectedException());
+            } catch (Exception e) {
+                callback.completeExceptionally(new SurrealException("Failed to send RPC request", e));
             }
 
-            send(json);
-        } catch (WebsocketNotConnectedException ignored) {
-            callback.completeExceptionally(new SurrealNotConnectedException());
-        } catch (Exception e) {
-            callback.completeExceptionally(new SurrealException("Failed to send RPC request", e));
-        }
+            // If there was an error sending the request, remove the request entry from the map
+            // since we will never receive a response for it
+            if (callback.isCompletedExceptionally()) {
+                pendingRequests.remove(requestId);
+            }
 
-        // If there was an error sending the request, remove the request entry from the map
-        // since we will never receive a response for it
-        if (!callback.isCompletedExceptionally()) {
-            pendingRequests.remove(requestId);
-        }
-
-        return callback;
+            return callback;
+        }, executorService).thenComposeAsync(future -> future);
     }
 
     @Override

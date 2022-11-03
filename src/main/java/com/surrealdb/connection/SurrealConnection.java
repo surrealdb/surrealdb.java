@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * @author Khalid Alharisi
@@ -77,14 +79,14 @@ public interface SurrealConnection {
      * completed when the response is received. If the request fails, the future will be completed
      * exceptionally.
      *
-     * @param resultType The expected result type
-     * @param method     The RPC method to call
-     * @param params     The parameters to pass to the method
      * @param <T>        A generic of the same type as the expected result type
+     * @param method     The RPC method to call
+     * @param resultType The expected result type
+     * @param params     The parameters to pass to the method
      * @return A {@link CompletableFuture} that will be completed with the result of the RPC call,
      * or an exception if the call fails
      */
-    <T> CompletableFuture<T> rpc(@Nullable Type resultType, String method, Object... params);
+    <T> CompletableFuture<T> rpc(ExecutorService executorService, String method, @Nullable Type resultType, Object... params);
 
     /**
      * Sends an RPC call to the SurrealDB server without expecting a return value.
@@ -94,7 +96,17 @@ public interface SurrealConnection {
      * @return A {@link CompletableFuture} that will be completed SurrealDB responds to the RPC call,
      * or an exception if the call fails
      */
+    default CompletableFuture<Void> rpc(ExecutorService executorService, String method, Object... params) {
+        return rpc(executorService, method, null, params);
+    }
+
+    default <T> CompletableFuture<T> rpc(String method, @Nullable Type resultType, Object... params) {
+        ForkJoinPool executorService = ForkJoinPool.commonPool();
+        return rpc(executorService, method, resultType, params);
+    }
+
     default CompletableFuture<Void> rpc(String method, Object... params) {
-        return rpc(null, method, params);
+        ForkJoinPool executorService = ForkJoinPool.commonPool();
+        return rpc(executorService, method, params);
     }
 }
