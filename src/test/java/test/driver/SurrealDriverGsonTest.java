@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.SurrealSyncDriver;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ public class SurrealDriverGsonTest {
     private static final SurrealTable<Person> personTable = SurrealTable.create("person", Person.class);
     private static final SurrealTable<InstantContainer> timeTable = SurrealTable.create("time", InstantContainer.class);
 
-    private SyncSurrealDriver driver;
+    private SurrealSyncDriver driver;
 
     @AfterEach
     void cleanup() {
@@ -43,7 +43,7 @@ public class SurrealDriverGsonTest {
 
         val connection = SurrealConnection.create(connectionSettings);
 
-        driver = new SyncSurrealDriver(connection);
+        driver = new SurrealSyncDriver(connection);
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }

@@ -4,7 +4,7 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.SurrealSyncDriver;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -19,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class SurrealDriverSpecialOperationsTest {
 
-    private SyncSurrealDriver driver;
+    private SurrealSyncDriver driver;
 
     @BeforeEach
     public void setup() {
         SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
-        driver = new SyncSurrealDriver(connection);
+        driver = new SurrealSyncDriver(connection);
     }
 
     @Test

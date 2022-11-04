@@ -1,2 +1,3 @@
 rootProject.name = 'surrealdb'
+include ':examples'
 

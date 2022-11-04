@@ -7,8 +7,15 @@ The official SurrealDB library for Java.
 ### Features
 - Sync & Async driver implementations available.
 - Complex JSON serialization & deserialization to Java classes.
-- Simple API (very similar to the Javascript driver, [see docs](https://surrealdb.com/docs/integration/libraries/nodejs#:~:text=node%20app.js-,Library%20methods,-The%20JavaScript%20library)).
+- Simple API for CRUD operations.
+- Fluent API for building queries. (_Coming soon_)
 
+### Supported SurrealDB features
+- [x] Authentication
+- [X] CRUD operations
+- [X] Querying via SurrealQL
+- [ ] Querying via Fluent API
+- [ ] Live queries (when SurrealDB re-enables it)
 
 ### Installation
 - For now, you can grab the JAR from the releases page [here](https://github.com/surrealdb/surrealdb.java/releases).
@@ -101,7 +108,8 @@ class Person {
 ```
 
 ### Planned Features
-- A complete SDK With Repository pattern.
+- A complete SDK with repository pattern.
+- Fluent API for building queries.
 - Open an issue for feature requests
 
 

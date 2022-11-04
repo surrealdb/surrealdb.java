@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+}
+
+group 'com.surrealdb'
+version '0.2.0'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(rootProject)
+
+    // lombok
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    // logging
+    implementation 'ch.qos.logback:logback-core:1.4.4'
+    implementation 'ch.qos.logback:logback-classic:1.4.4'
+}
+
+test {
+    useJUnitPlatform()
+}

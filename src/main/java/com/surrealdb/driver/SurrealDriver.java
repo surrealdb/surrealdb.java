@@ -8,8 +8,8 @@ import java.util.concurrent.ExecutorService;
  * A SurrealDB driver. This driver is used in conjunction with a {@link SurrealConnection} to
  * communicate with the server.
  * <p>
- * This interface isn't meant to be used directly. Take a look at {@link SyncSurrealDriver} or
- * {@link AsyncSurrealDriver} for more information.
+ * This interface isn't meant to be used directly. Take a look at {@link SurrealSyncDriver} or
+ * {@link SurrealAsyncDriver} for more information.
  */
 // If this library ever gets updated to Java 17, this can be a sealed interface.
 public interface SurrealDriver {

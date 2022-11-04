@@ -20,30 +20,30 @@ import java.util.concurrent.ExecutorService;
  *
  * @author Khalid Alharisi
  */
-public class SyncSurrealDriver implements SurrealDriver {
+public class SurrealSyncDriver implements SurrealDriver {
 
-    private final AsyncSurrealDriver asyncDriver;
+    private final SurrealAsyncDriver asyncDriver;
 
     /**
-     * Creates a new {@link SyncSurrealDriver} instance using the provided {@link SurrealConnection} and
+     * Creates a new {@link SurrealSyncDriver} instance using the provided {@link SurrealConnection} and
      * {@link SurrealDriverSettings}. The connection must connect to a SurrealDB server before any
      * driver methods are called.
      *
      * @param connection The connection to use for communicating with the server.
      * @param settings   The settings this driver should use.
      */
-    public SyncSurrealDriver(SurrealConnection connection, SurrealDriverSettings settings) {
-        asyncDriver = new AsyncSurrealDriver(connection, settings);
+    public SurrealSyncDriver(SurrealConnection connection, SurrealDriverSettings settings) {
+        asyncDriver = new SurrealAsyncDriver(connection, settings);
     }
 
     /**
-     * Creates a new {@link SyncSurrealDriver} instance using the provided connection. The connection
+     * Creates a new {@link SurrealSyncDriver} instance using the provided connection. The connection
      * must connect to a SurrealDB server before any driver methods are called.
      *
      * @param connection The connection to use for communication with the server
      */
-    public SyncSurrealDriver(SurrealConnection connection) {
-        this.asyncDriver = new AsyncSurrealDriver(connection);
+    public SurrealSyncDriver(SurrealConnection connection) {
+        this.asyncDriver = new SurrealAsyncDriver(connection);
     }
 
     /**

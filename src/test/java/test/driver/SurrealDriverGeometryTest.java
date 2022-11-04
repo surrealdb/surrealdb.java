@@ -3,11 +3,10 @@ package test.driver;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.SurrealSyncDriver;
 import com.surrealdb.driver.geometry.Line;
 import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
-import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +23,13 @@ public class SurrealDriverGeometryTest {
     private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.create("geometry", GeoContainer.class);
 
     private SurrealConnection connection;
-    private SyncSurrealDriver driver;
+    private SurrealSyncDriver driver;
 
     @BeforeEach
     void setup() {
         connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);
-        driver = new SyncSurrealDriver(connection);
+        driver = new SurrealSyncDriver(connection);
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }

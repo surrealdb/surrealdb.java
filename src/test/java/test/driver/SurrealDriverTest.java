@@ -5,7 +5,7 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
 import com.surrealdb.driver.QueryResult;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.SurrealSyncDriver;
 import com.surrealdb.driver.patch.Patch;
 import com.surrealdb.driver.patch.ReplacePatch;
 import org.junit.jupiter.api.AfterEach;
@@ -28,14 +28,14 @@ public class SurrealDriverTest {
     private static final SurrealTable<Person> personTable = SurrealTable.create("person", Person.class);
 
     private SurrealConnection connection;
-    private SyncSurrealDriver driver;
+    private SurrealSyncDriver driver;
 
     @BeforeEach
     public void setup() {
         connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
 
-        driver = new SyncSurrealDriver(connection);
+        driver = new SurrealSyncDriver(connection);
 
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
