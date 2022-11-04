@@ -25,14 +25,14 @@ public class SurrealConnectionTest {
     }
 
     @Test
-    public void testHostNotReachable1() {
+    public void testHostNotReachable() {
         val connection = SurrealConnection.create(TestUtils.getProtocol(), "0.255.255.255", TestUtils.getPort());
 
         assertThrows(SurrealConnectionTimeoutException.class, () -> connection.connect(3));
     }
 
     @Test
-    public void testHostNotReachable2() {
+    public void testPortNotReachable() {
         val connection = SurrealConnection.create(TestUtils.getProtocol(), TestUtils.getHost(), 9999);
 
         assertThrows(SurrealConnectionTimeoutException.class, () -> connection.connect(3));
@@ -57,11 +57,14 @@ public class SurrealConnectionTest {
         val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
 
         connection.connect(3);
+
         assertTrue(connection.isConnected());
+        assertDoesNotThrow(() -> getCallbackResults(connection.rpc("ping")));
+
         connection.disconnect();
 
-        val callback = connection.rpc("let", "some_key", "some_val");
-        assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(callback));
+        assertFalse(connection.isConnected());
+        assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(connection.rpc("ping")));
     }
 
     @Test
@@ -70,6 +73,7 @@ public class SurrealConnectionTest {
         val connection = SurrealConnection.create(settings);
         // Normally, the user would have to call connect() to connect to the server.
         // However, since we set autoConnect to true, the connection will be established automatically.
+        assertTrue(connection.isConnected());
         assertDoesNotThrow(() -> getCallbackResults(connection.rpc("ping")));
     }
 

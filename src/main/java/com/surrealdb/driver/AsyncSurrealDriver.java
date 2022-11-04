@@ -139,6 +139,10 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
+    public <T> CompletableFuture<Optional<T>> querySingle(String query, Class<T> queryResult) {
+        return querySingle(query, queryResult, ImmutableMap.of());
+    }
+
     public <T> CompletableFuture<List<T>> retrieveAllRecords(SurrealTable<T> table) {
         // SQL query to retrieve all records from the table
         String sql = "SELECT * FROM type::table($tb);";

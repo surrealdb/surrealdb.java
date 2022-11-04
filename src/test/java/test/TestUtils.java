@@ -32,7 +32,7 @@ public class TestUtils {
         return SurrealConnectionProtocol.WEB_SOCKET;
     }
 
-    public static SurrealAuthCredentials getRootCredentials() {
+    public static SurrealAuthCredentials getAuthCredentials() {
         return SurrealRootCredentials.from(USERNAME, PASSWORD);
     }
 

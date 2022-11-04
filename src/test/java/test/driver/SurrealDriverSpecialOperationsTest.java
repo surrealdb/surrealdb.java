@@ -30,7 +30,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testSignIn() {
-        assertDoesNotThrow(() -> driver.signIn(TestUtils.getRootCredentials()));
+        assertDoesNotThrow(() -> driver.signIn(TestUtils.getAuthCredentials()));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class SurrealDriverSpecialOperationsTest {
     @Test
     public void testNoDatabaseSelected() {
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signIn(TestUtils.getRootCredentials());
+            driver.signIn(TestUtils.getAuthCredentials());
             driver.retrieveAllRecordsFromTable(SurrealTable.create("person", Person.class));
         });
     }
@@ -67,7 +67,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testInfo() {
-        driver.signIn(TestUtils.getRootCredentials());
+        driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
         driver.info();
     }

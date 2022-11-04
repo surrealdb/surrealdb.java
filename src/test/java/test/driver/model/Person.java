@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
  * @author Khalid Alharisi
  */
 @Data
-@NoArgsConstructor
 public class Person {
 
     private String id;

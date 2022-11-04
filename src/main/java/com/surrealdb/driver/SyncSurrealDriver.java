@@ -122,6 +122,10 @@ public class SyncSurrealDriver implements SurrealDriver {
         return getResultSynchronously(asyncDriver.querySingle(query, rowType, args));
     }
 
+    public <T> Optional<T> querySingle(String query, Class<T> rowType) {
+        return getResultSynchronously(asyncDriver.querySingle(query, rowType));
+    }
+
     public <T> List<T> retrieveAllRecordsFromTable(SurrealTable<T> table) {
         return getResultSynchronously(asyncDriver.retrieveAllRecords(table));
     }

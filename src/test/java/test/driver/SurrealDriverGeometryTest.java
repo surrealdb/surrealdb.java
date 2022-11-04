@@ -23,21 +23,22 @@ public class SurrealDriverGeometryTest {
 
     private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.create("geometry", GeoContainer.class);
 
+    private SurrealConnection connection;
     private SyncSurrealDriver driver;
 
     @BeforeEach
     void setup() {
-        val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
+        connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);
         driver = new SyncSurrealDriver(connection);
-        driver.signIn(TestUtils.getRootCredentials());
+        driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @AfterEach
     void cleanup() {
         driver.deleteRecords(geometryTable);
-        driver.getSurrealConnection().disconnect();
+        connection.disconnect();
     }
 
     @Test
@@ -63,7 +64,7 @@ public class SurrealDriverGeometryTest {
         Polygon selection = Polygon.from(selectionExterior);
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);
-        String query = "SELECT * FROM geometry WHERE point INSIDE $selection;";
+        String query = "SELECT * FROM geometry WHERE point INSIDE $selection LIMIT 1;";
         Optional<GeoContainer> queryResults = driver.querySingle(query, GeoContainer.class, args);
 
         assertTrue(queryResults.isPresent());
