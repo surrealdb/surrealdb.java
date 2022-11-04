@@ -23,14 +23,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SurrealDriverGsonTest {
 
     private static final SurrealTable<Person> personTable = SurrealTable.create("person", Person.class);
+    private static final SurrealTable<InstantContainer> timeTable = SurrealTable.create("time", InstantContainer.class);
 
     private SyncSurrealDriver driver;
 
     @AfterEach
     void cleanup() {
         if (driver != null) {
-            driver.delete("person");
-            driver.delete("InstantContainer");
+            driver.deleteRecords(personTable);
+            driver.deleteRecords(timeTable);
         }
     }
 
@@ -53,7 +54,7 @@ public class SurrealDriverGsonTest {
         setupDriver(gson);
 
         val person = new Person("Contributor", "Damian", "Kocher", false);
-        assertDoesNotThrow(() -> driver.create("person:damian", person));
+        assertDoesNotThrow(() -> driver.create(personTable, "damian", person));
 
         val optionalPersonFromDb = driver.retrieveRecordFromTable(personTable, "damian");
         assertTrue(optionalPersonFromDb.isPresent());
@@ -71,7 +72,7 @@ public class SurrealDriverGsonTest {
         setupDriver(gson);
 
         val person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
-        assertDoesNotThrow(() -> driver.create("person:prince", person));
+        assertDoesNotThrow(() -> driver.create(personTable, "prince", person));
 
         val deserializedPerson = driver.retrieveRecordFromTable(personTable, "prince");
         assertTrue(deserializedPerson.isPresent());
@@ -90,7 +91,7 @@ public class SurrealDriverGsonTest {
             .instant(now)
             .instant(oneDayFromNow)
             .build();
-        val deserializedDateContainer = driver.create("InstantContainer", instantContainer);
+        val deserializedDateContainer = driver.create(timeTable, instantContainer);
 
         assertEquals(instantContainer, deserializedDateContainer);
     }

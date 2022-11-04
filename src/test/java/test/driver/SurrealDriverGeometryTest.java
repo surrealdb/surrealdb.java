@@ -2,6 +2,7 @@ package test.driver;
 
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.geometry.Line;
 import com.surrealdb.driver.geometry.Point;
@@ -20,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SurrealDriverGeometryTest {
 
+    private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.create("geometry", GeoContainer.class);
+
     private SyncSurrealDriver driver;
 
     @BeforeEach
@@ -33,7 +36,7 @@ public class SurrealDriverGeometryTest {
 
     @AfterEach
     void cleanup() {
-        driver.delete("geometry");
+        driver.deleteRecords(geometryTable);
         driver.getSurrealConnection().disconnect();
     }
 
@@ -46,8 +49,8 @@ public class SurrealDriverGeometryTest {
         GeoContainer point2 = new GeoContainer("Point 2");
         point2.setPoint(Point.fromYX(0, 0));
 
-        driver.create("geometry", point1);
-        driver.create("geometry", point2);
+        driver.create(geometryTable, point1);
+        driver.create(geometryTable, point2);
 
         // Forest park in STL
         Line selectionExterior = Line.builder()

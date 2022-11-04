@@ -39,13 +39,13 @@ public class SurrealDriverTest {
         driver.signIn(TestUtils.getRootCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+        driver.create(personTable, "1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        driver.create(personTable, "2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
     }
 
     @AfterEach
     public void teardown() {
-        driver.delete("person");
+        driver.deleteRecords(personTable);
         driver.getSurrealConnection().disconnect();
     }
 
@@ -66,7 +66,7 @@ public class SurrealDriverTest {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
 
-        person = driver.create("person", person);
+        person = driver.create(personTable, person);
         assertNotNull(person.getId());
     }
 
@@ -75,15 +75,15 @@ public class SurrealDriverTest {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
 
-        person = driver.create("person:3", person);
+        person = driver.create(personTable, "3", person);
         assertEquals("person:3", person.getId());
     }
 
     @Test
     public void testCreateAlreadyExistsId() {
         SurrealRecordAlreadyExistsException exception = assertThrows(SurrealRecordAlreadyExistsException.class, () -> {
-            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+            driver.create(personTable, "3", new Person("Engineer", "Khalid", "Alharisi", false));
+            driver.create(personTable, "3", new Person("Engineer", "Khalid", "Alharisi", false));
         });
 
         assertEquals("person", exception.getTableName());
@@ -151,17 +151,16 @@ public class SurrealDriverTest {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
         expected.setId("person:1");
 
-        List<Person> actual = driver.update("person:1", expected);
+        Person actual = driver.updateRecord(personTable, "1", expected);
 
-        assertEquals(1, actual.size());
-        assertEquals(expected, actual.get(0));
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testUpdateAll() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
-        List<Person> actual = driver.update("person", expected);
+        List<Person> actual = driver.updateRecords(personTable, expected);
 
         assertEquals(2, actual.size());
         actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
@@ -171,17 +170,16 @@ public class SurrealDriverTest {
     public void testChangeOne() {
         PartialPerson patch = new PartialPerson(false);
 
-        List<Person> actual = driver.change("person:2", patch, Person.class);
+        PartialPerson actual = driver.changeRecord(personTable.withType(PartialPerson.class), "1", patch);
 
-        assertEquals(1, actual.size());
-        assertEquals(patch.isMarketing(), actual.get(0).isMarketing());
+        assertEquals(patch.isMarketing(), actual.isMarketing());
     }
 
     @Test
     public void testChangeAll() {
         PartialPerson patch = new PartialPerson(false);
 
-        List<Person> actual = driver.change("person", patch, Person.class);
+        List<PartialPerson> actual = driver.changeRecords(personTable.withType(PartialPerson.class), patch);
 
         assertEquals(2, actual.size());
         actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
@@ -195,7 +193,7 @@ public class SurrealDriverTest {
             ReplacePatch.create("/title", "Engineer")
         );
 
-        driver.patch("person:1", patches);
+        driver.patchRecord(personTable, "1", patches);
         Person actual = driver.retrieveRecordFromTable(personTable, "1").get();
 
         assertEquals("Khalid", actual.getName().getFirst());
@@ -211,7 +209,7 @@ public class SurrealDriverTest {
             ReplacePatch.create("/title", "Engineer")
         );
 
-        driver.patch("person", patches);
+        driver.patchTable(personTable, patches);
         List<Person> actual = driver.retrieveAllRecordsFromTable(personTable);
 
         assertEquals(2, actual.size());
@@ -224,14 +222,14 @@ public class SurrealDriverTest {
 
     @Test
     public void testDeleteOne() {
-        driver.delete("person:1");
+        driver.deleteRecord(personTable, "1");
         Optional<Person> actual = driver.retrieveRecordFromTable(personTable, "1");
         assertFalse(actual.isPresent());
     }
 
     @Test
     public void testDeleteAll() {
-        driver.delete("person");
+        driver.deleteRecords(personTable);
         List<Person> actual = driver.retrieveAllRecordsFromTable(personTable);
         assertEquals(0, actual.size());
     }

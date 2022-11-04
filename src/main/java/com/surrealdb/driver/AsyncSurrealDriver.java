@@ -139,7 +139,7 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> retrieveAllRecordsFromTable(SurrealTable<T> table) {
+    public <T> CompletableFuture<List<T>> retrieveAllRecords(SurrealTable<T> table) {
         // SQL query to retrieve all records from the table
         String sql = "SELECT * FROM type::table($tb);";
         // Parameters to use in the query
@@ -152,12 +152,12 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return query.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<Optional<T>> retrieveRecordFromTable(SurrealTable<T> table, String record) {
+    public <T> CompletableFuture<Optional<T>> retrieveRecord(SurrealTable<T> table, String record) {
         // SQL query to retrieve a record from the table
         String sql = "SELECT * FROM type::thing($what);";
         // Parameters to use in the query
         Map<String, Object> parameters = ImmutableMap.of(
-            "what", table.getName() + ":" + record
+            "what", table.makeThing(record)
         );
         // Execute the query
         CompletableFuture<List<QueryResult<T>>> query = query(sql, table.getType(), parameters);
@@ -165,40 +165,142 @@ public class AsyncSurrealDriver implements SurrealDriver {
         return query.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<T> create(String thing, T data) {
-        Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
-        CompletableFuture<T> finalFuture = new CompletableFuture<>();
-
-        CompletableFuture<List<T>> createFuture = connection.rpc(executorService, "create", resultType, thing, data);
-        createFuture.whenCompleteAsync(((list, throwable) -> {
-            if (throwable != null) {
-                finalFuture.completeExceptionally(throwable);
-            } else {
-                finalFuture.complete(list.get(0));
-            }
-        }), executorService);
-
-        return finalFuture;
+    public <T> CompletableFuture<T> createRecord(SurrealTable<T> table, String record, T data) {
+        // SQL query to create a record
+        String sql = "CREATE type::thing($what) CONTENT $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "what", table.makeThing(record),
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> createFuture = querySingle(sql, table.getType(), parameters);
+        // Return the created record
+        return createFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> update(String thing, T data) {
-        Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
-        return connection.rpc(executorService, "update", resultType, thing, data);
+    public <T> CompletableFuture<T> createRecord(SurrealTable<T> table, T data) {
+        // SQL query to create a record
+        String sql = "CREATE type::table($tb) CONTENT $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "tb", table.getName(),
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> createFuture = querySingle(sql, table.getType(), parameters);
+        // Return the created record
+        return createFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T, P> CompletableFuture<List<T>> change(String thing, P data, Class<T> rowType) {
-        Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
-        return connection.rpc(executorService, "change", resultType, thing, data);
+    public <T> CompletableFuture<T> updateRecord(SurrealTable<T> table, String record, T data) {
+        // SQL query to update a record
+        String sql = "UPDATE type::thing($what) CONTENT $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "what", table.makeThing(record),
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> updateFuture = querySingle(sql, table.getType(), parameters);
+        // Return the updated record
+        return updateFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public CompletableFuture<?> patch(String thing, List<Patch> patches) {
-        Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
-        return connection.rpc(executorService, "modify", resultType, thing, patches);
+    public <T> CompletableFuture<List<T>> updateRecords(SurrealTable<T> table, T data) {
+        // SQL query to update records
+        String sql = "UPDATE type::table($tb) CONTENT $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "tb", table.getName(),
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> updateFuture = query(sql, table.getType(), parameters);
+        // Return the updated records
+        return updateFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public CompletableFuture<?> delete(String thing) {
-        Type resultType = TypeToken.getParameterized(List.class, Object.class).getType();
-        return connection.rpc(executorService, "delete", resultType, thing);
+    public <T> CompletableFuture<List<T>> changeRecords(SurrealTable<T> table, T data) {
+        // SQL query to change records
+        String sql = "UPDATE type::table($tb) MERGE $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "tb", table.getName(),
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> changeFuture = query(sql, table.getType(), parameters);
+        // Return the changed records
+        return changeFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
+    }
+
+    public <T> CompletableFuture<T> changeRecord(SurrealTable<T> table, String record, T data) {
+        // SQL query to change a record
+        String sql = "UPDATE type::thing($what) MERGE $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "what", table.makeThing(record),
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> changeFuture = querySingle(sql, table.getType(), parameters);
+        // Return the changed record
+        return changeFuture.thenApplyAsync(Optional::get, executorService);
+    }
+
+    public <T> CompletableFuture<List<T>> patchTable(SurrealTable<T> table, List<Patch> patches) {
+        // SQL query to patch an entire table
+        String sql = "UPDATE type::table($tb) PATCH $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "tb", table.getName(),
+            "data", patches
+        );
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> patchFuture = query(sql, table.getType(), parameters);
+        // Return the patched records
+        return patchFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
+    }
+
+    public <T> CompletableFuture<T> patchRecord(SurrealTable<T> table, String record, List<Patch> patches) {
+        // SQL query to patch a record
+        String sql = "UPDATE type::thing($what) PATCH $data RETURN AFTER;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "what", table.makeThing(record),
+            "data", patches
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> patchFuture = querySingle(sql, table.getType(), parameters);
+        // Return the patched record
+        return patchFuture.thenApplyAsync(Optional::get, executorService);
+    }
+
+    public <T> CompletableFuture<List<T>> deleteRecords(SurrealTable<T> table) {
+        // SQL query to delete records
+        String sql = "DELETE type::table($tb) RETURN BEFORE;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "tb", table.getName()
+        );
+        // Execute the query
+        CompletableFuture<List<QueryResult<T>>> deleteFuture = query(sql, table.getType(), parameters);
+        // Return the deleted records
+        return deleteFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
+    }
+
+    public <T> CompletableFuture<T> deleteRecord(SurrealTable<T> table, String record) {
+        // SQL query to delete a record
+        String sql = "DELETE type::thing($what) RETURN BEFORE;";
+        // Parameters to use in the query
+        Map<String, Object> parameters = ImmutableMap.of(
+            "what", table.makeThing(record)
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> deleteFuture = querySingle(sql, table.getType(), parameters);
+        // Return the deleted record
+        return deleteFuture.thenApplyAsync(Optional::get, executorService);
     }
 
     @Override

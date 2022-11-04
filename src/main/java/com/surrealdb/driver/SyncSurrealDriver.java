@@ -123,31 +123,51 @@ public class SyncSurrealDriver implements SurrealDriver {
     }
 
     public <T> List<T> retrieveAllRecordsFromTable(SurrealTable<T> table) {
-        return getResultSynchronously(asyncDriver.retrieveAllRecordsFromTable(table));
+        return getResultSynchronously(asyncDriver.retrieveAllRecords(table));
     }
 
     public <T> Optional<T> retrieveRecordFromTable(SurrealTable<T> table, String record) {
-        return getResultSynchronously(asyncDriver.retrieveRecordFromTable(table, record));
+        return getResultSynchronously(asyncDriver.retrieveRecord(table, record));
     }
 
-    public <T> T create(String thing, T data) {
-        return getResultSynchronously(asyncDriver.create(thing, data));
+    public <T> T create(SurrealTable<T> table, String record, T data) {
+        return getResultSynchronously(asyncDriver.createRecord(table, record, data));
     }
 
-    public <T> List<T> update(String thing, T data) {
-        return getResultSynchronously(asyncDriver.update(thing, data));
+    public <T> T create(SurrealTable<T> table, T data) {
+        return getResultSynchronously(asyncDriver.createRecord(table, data));
     }
 
-    public <T, P> List<T> change(String thing, P data, Class<T> rowType) {
-        return getResultSynchronously(asyncDriver.change(thing, data, rowType));
+    public <T> T updateRecord(SurrealTable<T> table, String record, T data) {
+        return getResultSynchronously(asyncDriver.updateRecord(table, record, data));
     }
 
-    public void patch(String thing, List<Patch> patches) {
-        getResultSynchronously(asyncDriver.patch(thing, patches));
+    public <T> List<T> updateRecords(SurrealTable<T> table, T data) {
+        return getResultSynchronously(asyncDriver.updateRecords(table, data));
     }
 
-    public void delete(String thing) {
-        getResultSynchronously(asyncDriver.delete(thing));
+    public <T> T changeRecord(SurrealTable<T> table, String record, T data) {
+        return getResultSynchronously(asyncDriver.changeRecord(table, record, data));
+    }
+
+    public <T> List<T> changeRecords(SurrealTable<T> table, T data) {
+        return getResultSynchronously(asyncDriver.changeRecords(table, data));
+    }
+
+    public <T> T patchRecord(SurrealTable<T> table, String record, List<Patch> patches) {
+        return getResultSynchronously(asyncDriver.patchRecord(table, record, patches));
+    }
+
+    public <T> List<T> patchTable(SurrealTable<T> table, List<Patch> patches) {
+        return getResultSynchronously(asyncDriver.patchTable(table, patches));
+    }
+
+    public <T> T deleteRecord(SurrealTable<T> table, String record) {
+        return getResultSynchronously(asyncDriver.deleteRecord(table, record));
+    }
+
+    public <T> List<T> deleteRecords(SurrealTable<T> table) {
+        return getResultSynchronously(asyncDriver.deleteRecords(table));
     }
 
     private <T> T getResultSynchronously(CompletableFuture<T> completableFuture) {
