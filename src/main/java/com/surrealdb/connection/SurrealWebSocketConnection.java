@@ -17,10 +17,10 @@ import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,7 +41,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     private final boolean logOutgoingMessages;
     private final boolean logIncomingMessages;
-    private final boolean logSignInCredentials;
+    private final boolean logAuthenticationCredentials;
 
     /**
      * @param host   The host to connect to
@@ -70,11 +70,11 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         this.gson = makeGsonInstanceSurrealCompatible(settings.getGson());
 
         this.lastRequestId = new AtomicLong(0);
-        this.pendingRequests = new HashMap<>();
+        this.pendingRequests = new ConcurrentHashMap<>();
 
         this.logOutgoingMessages = settings.isLogOutgoingMessages();
         this.logIncomingMessages = settings.isLogIncomingMessages();
-        this.logSignInCredentials = settings.isLogSignInCredentials();
+        this.logAuthenticationCredentials = settings.isLogAuthenticationCredentials();
 
         if (settings.isAutoConnect()) {
             connect(settings.getDefaultConnectTimeoutSeconds());
@@ -83,13 +83,18 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void connect(int timeoutSeconds) {
+        if (isConnected()) {
+            return;
+        }
+
         try {
             log.debug("Connecting to SurrealDB server {}", uri);
             this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new SurrealConnectionTimeoutException();
         }
-        if (!isOpen()) {
+
+        if (!isConnected()) {
             throw new SurrealConnectionTimeoutException();
         }
     }
@@ -145,7 +150,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             }
 
             return callback;
-        }, executorService).thenComposeAsync(future -> future);
+        }, executorService).thenComposeAsync(future -> future, executorService);
     }
 
     private void logRpcRequest(String method, String requestId, String json) {
@@ -155,7 +160,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
         String body = json;
         // Only log sign in credentials if explicitly enabled
-        if (method.equals("signIn") && !logSignInCredentials) {
+        if (method.equals("signin") && !logAuthenticationCredentials) {
             body = "REDACTED";
         }
         log.debug("Outgoing RPC [id: {}, method: {}, request: {}]", requestId, method, body);

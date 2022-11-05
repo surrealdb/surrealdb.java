@@ -63,12 +63,12 @@ public class SurrealConnectionSettings {
     private final boolean logIncomingMessages = true;
 
     /**
-     * Controls whether sign in credentials (username and password) are logged. Setting this to {@code true}
+     * Controls whether authentication credentials are logged. Setting this to {@code true}
      * could potentially pose a security risk. The default value is {@code false}. This setting is ignored if
      * {@link #logOutgoingMessages} is false.
      */
     @lombok.Builder.Default
-    private final boolean logSignInCredentials = false;
+    private final boolean logAuthenticationCredentials = false;
 
     @lombok.Builder.Default
     private final boolean autoConnect = false;

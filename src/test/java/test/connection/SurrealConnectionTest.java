@@ -5,10 +5,12 @@ import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import test.TestUtils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,6 +70,16 @@ public class SurrealConnectionTest {
     }
 
     @Test
+    void testDoubleConnect() {
+        val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
+
+        connection.connect(3);
+
+        assertDoesNotThrow(() -> connection.connect(3));
+        assertDoesNotThrow(() -> getCallbackResults(connection.rpc("ping")));
+    }
+
+    @Test
     void testAutoConnect() {
         val settings = TestUtils.createConnectionSettingsBuilderWithDefaults().setAutoConnect(true).build();
         val connection = SurrealConnection.create(settings);
@@ -93,6 +105,20 @@ public class SurrealConnectionTest {
         // Verify that the connection is not connected.
         assertThrows(SurrealNotConnectedException.class, () -> getCallbackResults(connection.rpc("ping")));
         assertFalse(connection.isConnected());
+    }
+
+    @Test
+    @Timeout(value = 10_000, unit = TimeUnit.MILLISECONDS) // Timeout after 10 seconds.
+    void testHighVolumeConcurrentTraffic() {
+        val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
+        connection.connect(3);
+
+        val futures = new CompletableFuture[1000];
+        for (int i = 0; i < futures.length; i++) {
+            futures[i] = connection.rpc("ping");
+        }
+
+        CompletableFuture.allOf(futures).join();
     }
 
     private <T> T getCallbackResults(CompletableFuture<T> future) throws Throwable {
