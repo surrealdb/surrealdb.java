@@ -1,5 +1,7 @@
 package com.surrealdb.connection;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author Damian Kocher
  */
@@ -15,9 +17,9 @@ public enum SurrealConnectionProtocol {
      */
     WEB_SOCKET_SECURE("wss");
 
-    private final String scheme;
+    @NotNull String scheme;
 
-    SurrealConnectionProtocol(String scheme) {
+    SurrealConnectionProtocol(@NotNull String scheme) {
         this.scheme = scheme;
     }
 
@@ -28,7 +30,7 @@ public enum SurrealConnectionProtocol {
      *
      * @return The scheme of this protocol.
      */
-    public String getScheme() {
+    public @NotNull String getScheme() {
         return scheme;
     }
 }

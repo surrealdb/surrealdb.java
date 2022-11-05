@@ -1,8 +1,9 @@
 package com.surrealdb.connection;
 
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Optional;
@@ -17,14 +18,13 @@ import java.util.concurrent.CompletableFuture;
 @Value
 class RequestEntry {
 
-    String id;
-    Instant timestamp;
-    CompletableFuture<?> callback;
-    String method;
-    @Nullable
-    Type resultType;
+    @NotNull String id;
+    @NotNull Instant timestamp;
+    @NotNull CompletableFuture<?> callback;
+    @NotNull String method;
+    @Nullable Type resultType;
 
-    public Optional<Type> getResultType() {
+    public @NotNull Optional<Type> getResultType() {
         return Optional.ofNullable(resultType);
     }
 }

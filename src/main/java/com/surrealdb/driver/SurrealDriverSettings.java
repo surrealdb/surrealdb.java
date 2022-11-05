@@ -3,6 +3,7 @@ package com.surrealdb.driver;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -19,6 +20,6 @@ public class SurrealDriverSettings {
      * {@link ForkJoinPool} will be used.
      */
     @lombok.Builder.Default
-    private final ExecutorService asyncOperationExecutorService = ForkJoinPool.commonPool();
+    @NotNull ExecutorService asyncOperationExecutorService = ForkJoinPool.commonPool();
 
 }

@@ -4,31 +4,30 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
 public final class SurrealNamespaceCredentials implements SurrealAuthCredentials {
 
-    String user;
-    String pass;
-    String NS;
+    @NotNull String user;
+    @NotNull String pass;
+    @NotNull String NS;
 
-    public static SurrealNamespaceCredentials from(String user, String password, String namespace) {
+    public static @NotNull SurrealNamespaceCredentials from(@NotNull String user, @NotNull String password, @NotNull String namespace) {
         return new SurrealNamespaceCredentials(user, password, namespace);
     }
 
-    public String getUser() {
+    public @NotNull String getUser() {
         return user;
     }
 
-    public String getPassword() {
+    public @NotNull String getPassword() {
         return pass;
     }
 
-    public String getNamespace() {
+    public @NotNull String getNamespace() {
         return NS;
     }
 }

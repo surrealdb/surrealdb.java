@@ -1,6 +1,7 @@
 package com.surrealdb.connection.gson;
 
 import com.google.gson.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -15,12 +16,12 @@ final class InstantAdaptor extends SurrealGsonAdaptor<Instant> {
     }
 
     @Override
-    public JsonElement serialize(Instant src, Type typeOfSrc, JsonSerializationContext context) {
+    public @NotNull JsonElement serialize(@NotNull Instant src, Type typeOfSrc, JsonSerializationContext context) {
         return new JsonPrimitive(src.toString());
     }
 
     @Override
-    public Instant deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public Instant deserialize(@NotNull JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         return Instant.parse(json.getAsString());
     }
 }

@@ -8,6 +8,7 @@ import com.surrealdb.driver.geometry.GeometryPrimitive;
 import com.surrealdb.driver.geometry.Line;
 import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,32 +19,32 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         super(adaptorClass);
     }
 
-    JsonObject createJsonObject(String type, JsonArray coordinates) {
+    @NotNull JsonObject createJsonObject(String type, JsonArray coordinates) {
         JsonObject object = new JsonObject();
         object.addProperty("type", type);
         object.add("coordinates", coordinates);
         return object;
     }
 
-    JsonArray getCoordinates(JsonElement element) {
+    JsonArray getCoordinates(@NotNull JsonElement element) {
         JsonObject object = element.getAsJsonObject();
         return object.getAsJsonArray("coordinates");
     }
 
-    JsonArray serializePoint(Point point) {
+    @NotNull JsonArray serializePoint(@NotNull Point point) {
         JsonArray coordinates = new JsonArray();
         coordinates.add(point.getX());
         coordinates.add(point.getY());
         return coordinates;
     }
 
-    Point deserializePoint(JsonArray coordinates) {
+    @NotNull Point deserializePoint(@NotNull JsonArray coordinates) {
         double x = coordinates.get(0).getAsDouble();
         double y = coordinates.get(1).getAsDouble();
         return Point.fromXY(x, y);
     }
 
-    JsonArray serializeLine(Line line) {
+    @NotNull JsonArray serializeLine(@NotNull Line line) {
         JsonArray lineStringArray = new JsonArray();
         for (Point point : line.getPoints()) {
             lineStringArray.add(serializePoint(point));
@@ -51,7 +52,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return lineStringArray;
     }
 
-    Line deserializeLine(JsonArray coordinates) {
+    @NotNull Line deserializeLine(@NotNull JsonArray coordinates) {
         List<Point> points = new ArrayList<>(coordinates.size());
         for (JsonElement pointCoordinatesElement : coordinates) {
             points.add(deserializePoint(pointCoordinatesElement.getAsJsonArray()));
@@ -59,7 +60,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return Line.from(points);
     }
 
-    JsonArray serializePolygon(Polygon polygon) {
+    @NotNull JsonArray serializePolygon(@NotNull Polygon polygon) {
         JsonArray coordinates = new JsonArray();
 
         Line exterior = polygon.getExterior();
@@ -73,7 +74,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return coordinates;
     }
 
-    Polygon deserializePolygon(JsonArray coordinates) {
+    @NotNull Polygon deserializePolygon(@NotNull JsonArray coordinates) {
         Line exterior = deserializeLine(coordinates.get(0).getAsJsonArray());
         List<Line> interiors = new ArrayList<>();
         // Interior rings start at index 1, as index 0 is the exterior ring

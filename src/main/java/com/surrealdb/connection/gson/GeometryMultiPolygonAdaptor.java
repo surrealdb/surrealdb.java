@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
 import com.surrealdb.driver.geometry.MultiPolygon;
 import com.surrealdb.driver.geometry.Polygon;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
     }
 
     @Override
-    public JsonElement serialize(MultiPolygon src, Type typeOfSrc, JsonSerializationContext context) {
+    public @NotNull JsonElement serialize(@NotNull MultiPolygon src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
         for (Polygon polygon : src.getPolygons()) {
             coordinates.add(serializePolygon(polygon));
@@ -25,7 +26,7 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
     }
 
     @Override
-    public MultiPolygon deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public @NotNull MultiPolygon deserialize(@NotNull JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
 
         List<Polygon> polygons = new ArrayList<>(coordinates.size());

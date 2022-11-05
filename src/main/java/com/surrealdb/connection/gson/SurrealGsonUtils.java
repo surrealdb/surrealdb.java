@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 @UtilityClass
 public class SurrealGsonUtils {
@@ -20,7 +21,7 @@ public class SurrealGsonUtils {
         new GeometryCollectionAdaptor()
     );
 
-    public static Gson makeGsonInstanceSurrealCompatible(Gson gson) {
+    public static @NotNull Gson makeGsonInstanceSurrealCompatible(@NotNull Gson gson) {
         GsonBuilder gsonBuilder = gson.newBuilder();
 
         // SurrealDB doesn't need HTML escaping

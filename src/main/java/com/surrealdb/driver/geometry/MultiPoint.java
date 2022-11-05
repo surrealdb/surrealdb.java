@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,14 +23,14 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiPoint implements GeometryPrimitive {
 
-    ImmutableList<Point> points;
+    @NotNull ImmutableList<Point> points;
 
     /**
      * @param points The points to store in this MultiPoint.
      * @return A new MultiPoint with the given points.
      * @throws NullPointerException If {@code points} contains a null value.
      */
-    public static MultiPoint from(Collection<Point> points) {
+    public static @NotNull MultiPoint from(@NotNull Collection<Point> points) {
         return new MultiPoint(ImmutableList.copyOf(points));
     }
 
@@ -38,14 +39,14 @@ public class MultiPoint implements GeometryPrimitive {
      * @return A new MultiPoint with the given points.
      * @throws NullPointerException If {@code points} contains a null value.
      */
-    public static MultiPoint from(Point... points) {
+    public static @NotNull MultiPoint from(Point @NotNull ... points) {
         return new MultiPoint(ImmutableList.copyOf(points));
     }
 
     /**
      * @return A new {@link MultiPoint.Builder} instance
      */
-    public static Builder builder() {
+    public static @NotNull Builder builder() {
         return new Builder();
     }
 
@@ -54,20 +55,20 @@ public class MultiPoint implements GeometryPrimitive {
      *
      * @return A new {@link MultiPoint.Builder} instance with the points of this {@code MultiPoint}.
      */
-    public Builder toBuilder() {
+    public @NotNull Builder toBuilder() {
         return builder().addPoints(points);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     static class Builder {
 
-        private final List<Point> points = new ArrayList<>();
+        List<Point> points = new ArrayList<>();
 
         /**
          * @param point The point to add
          * @return This {@code Builder} object
          */
-        public Builder addPoint(Point point) {
+        public @NotNull Builder addPoint(Point point) {
             points.add(point);
             return this;
         }
@@ -79,7 +80,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param y The y of the point
          * @return This {@code Builder} object
          */
-        public Builder addPointXY(double x, double y) {
+        public @NotNull Builder addPointXY(double x, double y) {
             return addPoint(Point.fromXY(x, y));
         }
 
@@ -90,7 +91,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param x The x of the point
          * @return This {@code Builder} object
          */
-        public Builder addPointYX(double y, double x) {
+        public @NotNull Builder addPointYX(double y, double x) {
             return addPoint(Point.fromYX(y, x));
         }
 
@@ -98,7 +99,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param points The points to add
          * @return This {@code Builder} object
          */
-        public Builder addPoints(Collection<Point> points) {
+        public @NotNull Builder addPoints(@NotNull Collection<Point> points) {
             this.points.addAll(points);
             return this;
         }
@@ -107,7 +108,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param points The points to add
          * @return This {@code Builder} object
          */
-        public Builder addPoints(Point... points) {
+        public @NotNull Builder addPoints(Point... points) {
             Collections.addAll(this.points, points);
             return this;
         }
@@ -116,7 +117,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param point The point to remove
          * @return This {@code Builder} object
          */
-        public Builder removePoint(Point point) {
+        public @NotNull Builder removePoint(Point point) {
             points.remove(point);
             return this;
         }
@@ -125,7 +126,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param points The points to remove
          * @return This {@code Builder} object
          */
-        public Builder removePoints(Collection<Point> points) {
+        public @NotNull Builder removePoints(@NotNull Collection<Point> points) {
             this.points.removeAll(points);
             return this;
         }
@@ -134,7 +135,7 @@ public class MultiPoint implements GeometryPrimitive {
          * @param points The points to remove
          * @return This {@code Builder} object
          */
-        public Builder removePoints(Point... points) {
+        public @NotNull Builder removePoints(Point @NotNull ... points) {
             for (Point point : points) {
                 this.points.remove(point);
             }
@@ -148,9 +149,8 @@ public class MultiPoint implements GeometryPrimitive {
          *
          * @return A new {@link MultiPoint} with the points added to this {@code Builder}
          */
-        public MultiPoint build() {
+        public @NotNull MultiPoint build() {
             return new MultiPoint(ImmutableList.copyOf(this.points));
         }
     }
-
 }

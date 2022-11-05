@@ -3,6 +3,7 @@ package com.surrealdb.driver.geometry;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * SurrealDB's representation of a geolocation point. This is a 2D point with a longitude and latitude.
@@ -33,7 +34,7 @@ public class Point implements GeometryPrimitive {
      * @return A new SurrealPoint
      * @see #fromYX(double, double)
      */
-    public static Point fromXY(double x, double y) {
+    public static @NotNull Point fromXY(double x, double y) {
         return new Point(x, y);
     }
 
@@ -46,7 +47,7 @@ public class Point implements GeometryPrimitive {
      * @return A new SurrealPoint
      * @see #fromXY(double, double)
      */
-    public static Point fromYX(double y, double x) {
+    public static @NotNull Point fromYX(double y, double x) {
         return new Point(x, y);
     }
 
@@ -54,7 +55,7 @@ public class Point implements GeometryPrimitive {
      * @param newX The newX of the new point
      * @return A new point with the same latitude as this point, but with the provided newX.
      */
-    public Point withX(double newX) {
+    public @NotNull Point withX(double newX) {
         return new Point(newX, y);
     }
 
@@ -62,7 +63,7 @@ public class Point implements GeometryPrimitive {
      * @param newY The newY of the new point
      * @return A new point with the same longitude as this point, but with the provided newY.
      */
-    public Point withY(double newY) {
+    public @NotNull Point withY(double newY) {
         return new Point(x, newY);
     }
 

@@ -3,6 +3,7 @@ package com.surrealdb.connection.gson;
 import com.google.gson.*;
 import com.surrealdb.driver.geometry.MultiPoint;
 import com.surrealdb.driver.geometry.Point;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ final class GeometryMultiPointAdaptor extends GeometryAdaptor<MultiPoint> {
     }
 
     @Override
-    public JsonElement serialize(MultiPoint src, Type typeOfSrc, JsonSerializationContext context) {
+    public @NotNull JsonElement serialize(@NotNull MultiPoint src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
         for (Point point : src.getPoints()) {
             coordinates.add(serializePoint(point));
@@ -25,7 +26,7 @@ final class GeometryMultiPointAdaptor extends GeometryAdaptor<MultiPoint> {
     }
 
     @Override
-    public MultiPoint deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public @NotNull MultiPoint deserialize(@NotNull JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonArray coordinates = getCoordinates(json);
         List<Point> points = new ArrayList<>(coordinates.size());
 

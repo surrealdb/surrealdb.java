@@ -6,6 +6,7 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -17,44 +18,44 @@ import java.util.concurrent.ExecutorService;
 
 public class SurrealDriverImpl implements SurrealDriver {
 
-    private final SurrealConnection connection;
-    private final ExecutorService executorService;
+    @NotNull SurrealConnection connection;
+    @NotNull ExecutorService executorService;
 
-    public SurrealDriverImpl(SurrealConnection connection, SurrealDriverSettings settings) {
+    public SurrealDriverImpl(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
         this.connection = connection;
         this.executorService = settings.getAsyncOperationExecutorService();
     }
 
-    public SurrealDriverImpl(SurrealConnection connection) {
+    public SurrealDriverImpl(@NotNull SurrealConnection connection) {
         this(connection, SurrealDriverSettings.DEFAULT);
     }
 
-    public CompletableFuture<Void> pingAsync() {
+    public @NotNull CompletableFuture<Void> pingAsync() {
         return connection.rpc(executorService, "ping");
     }
 
-    public CompletableFuture<String> getDatabaseVersionAsync() {
+    public @NotNull CompletableFuture<String> getDatabaseVersionAsync() {
         return connection.rpc(executorService, "version", String.class);
     }
 
-    public CompletableFuture<Map<String, String>> infoAsync() {
+    public @NotNull CompletableFuture<Map<String, String>> infoAsync() {
         Type resultType = TypeToken.getParameterized(Map.class, String.class, String.class).getType();
         return connection.rpc(executorService, "info", resultType);
     }
 
-    public CompletableFuture<Void> signInAsync(SurrealAuthCredentials credentials) {
+    public @NotNull CompletableFuture<Void> signInAsync(SurrealAuthCredentials credentials) {
         return connection.rpc(executorService, "signin", credentials);
     }
 
-    public CompletableFuture<Void> useAsync(String namespace, String database) {
+    public @NotNull CompletableFuture<Void> useAsync(String namespace, String database) {
         return connection.rpc(executorService, "use", namespace, database);
     }
 
-    public CompletableFuture<Void> setConnectionWideParameterAsync(String key, Object value) {
+    public @NotNull CompletableFuture<Void> setConnectionWideParameterAsync(String key, Object value) {
         return connection.rpc(executorService, "let", key, value);
     }
 
-    public CompletableFuture<Void> unsetConnectionWideParameterAsync(String key) {
+    public @NotNull CompletableFuture<Void> unsetConnectionWideParameterAsync(String key) {
         return connection.rpc(executorService, "unset", key);
     }
 
@@ -69,7 +70,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return queryFuture.thenComposeAsync(this::checkResultsForErrors, executorService);
     }
 
-    private <T> CompletableFuture<List<QueryResult<T>>> checkResultsForErrors(List<QueryResult<T>> queryResults) {
+    private <T> @NotNull CompletableFuture<List<QueryResult<T>>> checkResultsForErrors(@NotNull List<QueryResult<T>> queryResults) {
         for (QueryResult<T> queryResult : queryResults) {
             if (queryResult.getStatus().equals("ERR") && queryResult.getDetail() != null) {
                 // Java 8 doesn't have CompletableFuture.failedFuture() so we have to do this...
@@ -87,7 +88,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> retrieveAllRecordsFromTableAsync(SurrealTable<T> table) {
+    public <T> CompletableFuture<List<T>> retrieveAllRecordsFromTableAsync(@NotNull SurrealTable<T> table) {
         // SQL query to retrieve all records from the table
         String sql = "SELECT * FROM type::table($tb);";
         // Parameters to use in the query
@@ -100,7 +101,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return query.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<Optional<T>> retrieveRecordAsync(SurrealTable<T> table, String record) {
+    public <T> CompletableFuture<Optional<T>> retrieveRecordAsync(@NotNull SurrealTable<T> table, String record) {
         // SQL query to retrieve a record from the table
         String sql = "SELECT * FROM type::thing($what);";
         // Parameters to use in the query
@@ -113,7 +114,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return query.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<T> createRecordAsync(SurrealTable<T> table, String record, T data) {
+    public <T> CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::thing($what) CONTENT $data RETURN AFTER;";
         // Parameters to use in the query
@@ -127,7 +128,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return createFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T> CompletableFuture<T> createRecordAsync(SurrealTable<T> table, T data) {
+    public <T> CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::table($tb) CONTENT $data RETURN AFTER;";
         // Parameters to use in the query
@@ -141,7 +142,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return createFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T> CompletableFuture<T> updateRecordAsync(SurrealTable<T> table, String record, T data) {
+    public <T> CompletableFuture<T> updateRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
         // SQL query to update a record
         String sql = "UPDATE type::thing($what) CONTENT $data RETURN AFTER;";
         // Parameters to use in the query
@@ -155,7 +156,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return updateFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> updateAllRecordsInTableAsync(SurrealTable<T> table, T data) {
+    public <T> CompletableFuture<List<T>> updateAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to update records
         String sql = "UPDATE type::table($tb) CONTENT $data RETURN AFTER;";
         // Parameters to use in the query
@@ -169,7 +170,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return updateFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> changeAllRecordsInTableAsync(SurrealTable<T> table, T data) {
+    public <T> CompletableFuture<List<T>> changeAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to change records
         String sql = "UPDATE type::table($tb) MERGE $data RETURN AFTER;";
         // Parameters to use in the query
@@ -183,7 +184,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return changeFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<T> changeRecordAsync(SurrealTable<T> table, String record, T data) {
+    public <T> CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
         // SQL query to change a record
         String sql = "UPDATE type::thing($what) MERGE $data RETURN AFTER;";
         // Parameters to use in the query
@@ -197,7 +198,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return changeFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> patchAllRecordsInTableAsync(SurrealTable<T> table, List<Patch> patches) {
+    public <T> CompletableFuture<List<T>> patchAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull List<Patch> patches) {
         // SQL query to patch an entire table
         String sql = "UPDATE type::table($tb) PATCH $data RETURN AFTER;";
         // Parameters to use in the query
@@ -211,7 +212,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return patchFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<T> patchRecordAsync(SurrealTable<T> table, String record, List<Patch> patches) {
+    public <T> CompletableFuture<T> patchRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull List<Patch> patches) {
         // SQL query to patch a record
         String sql = "UPDATE type::thing($what) PATCH $data RETURN AFTER;";
         // Parameters to use in the query
@@ -225,7 +226,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return patchFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    public <T> CompletableFuture<List<T>> deleteAllRecordsInTableAsync(SurrealTable<T> table) {
+    public <T> CompletableFuture<List<T>> deleteAllRecordsInTableAsync(@NotNull SurrealTable<T> table) {
         // SQL query to delete records
         String sql = "DELETE type::table($tb) RETURN BEFORE;";
         // Parameters to use in the query
@@ -238,7 +239,7 @@ public class SurrealDriverImpl implements SurrealDriver {
         return deleteFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
-    public <T> CompletableFuture<T> deleteRecordAsync(SurrealTable<T> table, String record) {
+    public <T> CompletableFuture<T> deleteRecordAsync(@NotNull SurrealTable<T> table, String record) {
         // SQL query to delete a record
         String sql = "DELETE type::thing($what) RETURN BEFORE;";
         // Parameters to use in the query
@@ -252,21 +253,21 @@ public class SurrealDriverImpl implements SurrealDriver {
     }
 
     @Override
-    public SurrealConnection getSurrealConnection() {
+    public @NotNull SurrealConnection getSurrealConnection() {
         return connection;
     }
 
     @Override
-    public ExecutorService getAsyncOperationExecutorService() {
+    public @NotNull ExecutorService getAsyncOperationExecutorService() {
         return executorService;
     }
 
-    private <T> Optional<T> getFirstResultFromFirstQuery(List<QueryResult<T>> queryResults) {
+    private <T> @NotNull Optional<T> getFirstResultFromFirstQuery(@NotNull List<QueryResult<T>> queryResults) {
         List<T> resultsFromFirstQuery = getResultsFromFirstQuery(queryResults);
         return getFirstElement(resultsFromFirstQuery);
     }
 
-    private <T> List<T> getResultsFromFirstQuery(List<QueryResult<T>> queryResults) {
+    private <T> @NotNull List<T> getResultsFromFirstQuery(@NotNull List<QueryResult<T>> queryResults) {
         // If there are no query results, return an empty list
         if (queryResults.isEmpty()) {
             return Collections.emptyList();
@@ -281,7 +282,7 @@ public class SurrealDriverImpl implements SurrealDriver {
      * @param <T>  The type of the list
      * @return the first element in the list or an empty {@link Optional} if the list is empty
      */
-    private <T> Optional<T> getFirstElement(List<T> list) {
+    private <T> @NotNull Optional<T> getFirstElement(@NotNull List<T> list) {
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 }

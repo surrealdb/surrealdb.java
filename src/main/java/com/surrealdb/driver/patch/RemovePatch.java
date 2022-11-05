@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A patch to remove data from an existing record.
@@ -18,16 +19,16 @@ public class RemovePatch implements Patch {
     /**
      * Used by Gson to serialize the patch.
      */
-    private final String op = "remove";
+    @NotNull String op = "remove";
 
-    private final String path;
+    @NotNull String path;
 
-    public static RemovePatch create(String path) {
+    public static @NotNull RemovePatch create(@NotNull String path) {
         return new RemovePatch(path);
     }
 
     @Override
-    public String getPath() {
+    public @NotNull String getPath() {
         return path;
     }
 }

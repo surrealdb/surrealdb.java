@@ -1,6 +1,7 @@
 package com.surrealdb.connection;
 
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * An internal representation of an RPC request.
@@ -10,8 +11,8 @@ import lombok.Value;
 @Value
 class RpcRequest {
 
-    String id;
-    String method;
-    Object[] params;
+    @NotNull String id;
+    @NotNull String method;
+    @NotNull Object[] params;
 
 }

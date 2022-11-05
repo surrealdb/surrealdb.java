@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A patch to add data to an existing record.
@@ -18,21 +19,21 @@ public class AddPatch<T> implements Patch {
     /**
      * Used by Gson to serialize the patch.
      */
-    private final String op = "add";
+    @NotNull String op = "add";
 
-    private final String path;
-    private final T value;
+    @NotNull String path;
+    @NotNull T value;
 
-    public static <T> AddPatch<T> create(String path, T value) {
+    public static <T> @NotNull AddPatch<T> create(@NotNull String path, @NotNull T value) {
         return new AddPatch<>(path, value);
     }
 
     @Override
-    public String getPath() {
+    public @NotNull String getPath() {
         return path;
     }
 
-    public T getValue() {
+    public @NotNull T getValue() {
         return value;
     }
 }

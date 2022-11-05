@@ -2,6 +2,7 @@ package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 
@@ -11,13 +12,13 @@ import java.lang.reflect.Type;
  */
 abstract class SurrealGsonAdaptor<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
-    private final Class<T> adaptorClass;
+    @NotNull Class<T> adaptorClass;
 
-    SurrealGsonAdaptor(Class<T> adaptorClass) {
+    SurrealGsonAdaptor(@NotNull Class<T> adaptorClass) {
         this.adaptorClass = adaptorClass;
     }
 
-    final Type getAdaptorClass() {
+    final @NotNull Type getAdaptorClass() {
         return adaptorClass;
     }
 }

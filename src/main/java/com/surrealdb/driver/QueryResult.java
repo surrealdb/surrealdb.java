@@ -1,8 +1,9 @@
 package com.surrealdb.driver;
 
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -11,9 +12,9 @@ import java.util.List;
 @Value
 public class QueryResult<T> {
 
-    List<T> result;
+    @NotNull List<T> result;
     @Nullable String detail;
-    String status;
-    String time;
+    @NotNull String status;
+    @NotNull String time;
 
 }

@@ -4,36 +4,35 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
 public class SurrealDatabaseCredentials implements SurrealAuthCredentials {
 
-    String user;
-    String pass;
-    String NS;
-    String DB;
+    @NotNull String user;
+    @NotNull String pass;
+    @NotNull String NS;
+    @NotNull String DB;
 
-    public static SurrealDatabaseCredentials from(String user, String password, String namespace, String database) {
+    public static @NotNull SurrealDatabaseCredentials from(@NotNull String user, @NotNull String password, @NotNull String namespace, @NotNull String database) {
         return new SurrealDatabaseCredentials(user, password, namespace, database);
     }
 
-    public String getUser() {
+    public @NotNull String getUser() {
         return user;
     }
 
-    public String getPassword() {
+    public @NotNull String getPassword() {
         return pass;
     }
 
-    public String getNamespace() {
+    public @NotNull String getNamespace() {
         return NS;
     }
 
-    public String getDatabase() {
+    public @NotNull String getDatabase() {
         return DB;
     }
 }

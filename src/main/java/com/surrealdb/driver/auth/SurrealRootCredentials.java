@@ -1,26 +1,28 @@
 package com.surrealdb.driver.auth;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
 public class SurrealRootCredentials implements SurrealAuthCredentials {
 
-    String user;
-    String pass;
+    @NotNull String user;
+    @NotNull String pass;
 
-    public static SurrealRootCredentials from(String user, String password) {
+    public static @NotNull SurrealRootCredentials from(@NotNull String user, @NotNull String password) {
         return new SurrealRootCredentials(user, password);
     }
 
-    public String getUser() {
+    public @NotNull String getUser() {
         return user;
     }
 
-    public String getPassword() {
+    public @NotNull String getPassword() {
         return pass;
     }
 }

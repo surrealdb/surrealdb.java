@@ -22,7 +22,7 @@ dependencies {
     // Gson
     implementation 'com.google.code.gson:gson:2.10'
 
-    // Immutable Collections, utilities, and safety annotations
+    // Immutable Collections and utilities
     implementation("com.google.guava:guava:31.1-jre")
 
     // logging
@@ -35,6 +35,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    // @NotNull & @Nullable
+    implementation 'org.jetbrains:annotations:23.0.0'
 
     // junit
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'

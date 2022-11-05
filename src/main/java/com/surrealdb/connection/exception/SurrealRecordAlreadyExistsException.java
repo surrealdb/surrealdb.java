@@ -2,6 +2,7 @@ package com.surrealdb.connection.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Thrown when attempting to create a record that already exists.
@@ -12,7 +13,7 @@ import lombok.Getter;
 @Getter
 public class SurrealRecordAlreadyExistsException extends SurrealException {
 
-    private String tableName;
-    private String recordId;
+    private @NotNull String tableName;
+    private @NotNull String recordId;
 
 }

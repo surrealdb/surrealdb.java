@@ -1,9 +1,9 @@
 package com.surrealdb.connection;
 
 import com.google.gson.Gson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -12,7 +12,6 @@ import java.util.concurrent.ForkJoinPool;
 /**
  * @author Khalid Alharisi
  */
-@ParametersAreNonnullByDefault
 public interface SurrealConnection {
 
     /**
@@ -26,7 +25,7 @@ public interface SurrealConnection {
      * @param settings the connection settings to use
      * @return a new {@link SurrealConnection} instance
      */
-    static SurrealConnection create(SurrealConnectionSettings settings) {
+    static @NotNull SurrealConnection create(@NotNull SurrealConnectionSettings settings) {
         return new SurrealWebSocketConnection(settings);
     }
 
@@ -40,7 +39,7 @@ public interface SurrealConnection {
      * @param port     The port to connect to
      * @return a new {@link SurrealConnection} instance
      */
-    static SurrealConnection create(SurrealConnectionProtocol protocol, String host, int port) {
+    static @NotNull SurrealConnection create(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
         SurrealConnectionSettings settings = SurrealConnectionSettings.builder()
             .setUriFromComponents(protocol, host, port)
             .build();
@@ -71,7 +70,7 @@ public interface SurrealConnection {
      * @return the {@link Gson} instance this {@link SurrealConnection} is using to serialize and deserialize
      * data.
      */
-    Gson getGson();
+    @NotNull Gson getGson();
 
     /**
      * Sends an RPC request to the SurrealDB server with the given method and parameters. The
@@ -86,7 +85,7 @@ public interface SurrealConnection {
      * @return A {@link CompletableFuture} that will be completed with the result of the RPC call,
      * or an exception if the call fails
      */
-    <T> CompletableFuture<T> rpc(ExecutorService executorService, String method, @Nullable Type resultType, Object... params);
+    <T> @NotNull CompletableFuture<T> rpc(@NotNull ExecutorService executorService, @NotNull String method, @Nullable Type resultType, @NotNull Object... params);
 
     /**
      * Sends an RPC call to the SurrealDB server without expecting a return value.
@@ -96,16 +95,16 @@ public interface SurrealConnection {
      * @return A {@link CompletableFuture} that will be completed SurrealDB responds to the RPC call,
      * or an exception if the call fails
      */
-    default CompletableFuture<Void> rpc(ExecutorService executorService, String method, Object... params) {
+    default @NotNull CompletableFuture<Void> rpc(@NotNull ExecutorService executorService, @NotNull String method, @NotNull Object... params) {
         return rpc(executorService, method, null, params);
     }
 
-    default <T> CompletableFuture<T> rpc(String method, @Nullable Type resultType, Object... params) {
+    default @NotNull <T> CompletableFuture<T> rpc(@NotNull String method, @Nullable Type resultType, @NotNull Object... params) {
         ForkJoinPool executorService = ForkJoinPool.commonPool();
         return rpc(executorService, method, resultType, params);
     }
 
-    default CompletableFuture<Void> rpc(String method, Object... params) {
+    default @NotNull CompletableFuture<Void> rpc(@NotNull String method, @NotNull Object... params) {
         ForkJoinPool executorService = ForkJoinPool.commonPool();
         return rpc(executorService, method, params);
     }

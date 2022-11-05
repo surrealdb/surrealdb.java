@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 
@@ -41,10 +42,10 @@ public class SurrealConnectionSettings {
     public static final SurrealConnectionSettings LOCAL_DEFAULT = SurrealConnectionSettings.builder().build();
 
     @lombok.Builder.Default
-    private final URI uri = URI.create("ws://localhost:8000/rpc");
+    @NotNull URI uri = URI.create("ws://localhost:8000/rpc");
 
     @lombok.Builder.Default
-    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    @NotNull Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     /**
      * Controls whether outgoing messages are logged through SLF4j's {@link org.slf4j.Logger#debug(String)}. If your
@@ -52,7 +53,7 @@ public class SurrealConnectionSettings {
      * value is {@code true}.
      */
     @lombok.Builder.Default
-    private final boolean logOutgoingMessages = true;
+    boolean logOutgoingMessages = true;
 
     /**
      * Controls whether incoming messages are logged through SLF4j's {@link org.slf4j.Logger#debug(String)}. If your
@@ -60,7 +61,7 @@ public class SurrealConnectionSettings {
      * value is {@code true}.
      */
     @lombok.Builder.Default
-    private final boolean logIncomingMessages = true;
+    boolean logIncomingMessages = true;
 
     /**
      * Controls whether authentication credentials are logged. Setting this to {@code true}
@@ -68,13 +69,13 @@ public class SurrealConnectionSettings {
      * {@link #logOutgoingMessages} is false.
      */
     @lombok.Builder.Default
-    private final boolean logAuthenticationCredentials = false;
+    boolean logAuthenticationCredentials = false;
 
     @lombok.Builder.Default
-    private final boolean autoConnect = false;
+    boolean autoConnect = false;
 
     @lombok.Builder.Default
-    private final int defaultConnectTimeoutSeconds = 15;
+    int defaultConnectTimeoutSeconds = 15;
 
     /**
      * A builder class for creating a {@link SurrealConnectionSettings} instance. Use {@code SurrealConnectionSettings.builder()}
@@ -92,7 +93,7 @@ public class SurrealConnectionSettings {
          * @param port     The port to connect to
          * @return this builder
          */
-        public Builder setUriFromComponents(SurrealConnectionProtocol protocol, String host, int port) {
+        public @NotNull Builder setUriFromComponents(@NotNull SurrealConnectionProtocol protocol, String host, int port) {
             setUri(URI.create(String.format("%s://%s:%d/rpc", protocol.getScheme(), host, port)));
             return this;
         }

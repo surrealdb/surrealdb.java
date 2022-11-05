@@ -2,6 +2,10 @@ package com.surrealdb.connection;
 
 import com.google.gson.JsonElement;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 /**
  * An internal representation of an RPC response.
@@ -11,15 +15,12 @@ import lombok.Value;
 @Value
 class RpcResponse {
 
-    String id;
-    JsonElement result;
-    Error error;
+    @NotNull String id;
+    @NotNull JsonElement result;
+    @Nullable Error error;
 
-    /**
-     * @return true if the response is an error, false if successful
-     */
-    public boolean isSuccessful() {
-        return error == null;
+    public @NotNull Optional<Error> getError() {
+        return Optional.ofNullable(error);
     }
 
     /**
@@ -28,6 +29,6 @@ class RpcResponse {
     @Value
     static class Error {
         int code;
-        String message;
+        @NotNull String message;
     }
 }

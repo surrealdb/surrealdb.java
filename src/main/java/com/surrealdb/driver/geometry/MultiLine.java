@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,17 +23,17 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiLine implements GeometryPrimitive {
 
-    ImmutableList<Line> lines;
+    @NotNull ImmutableList<Line> lines;
 
-    public static MultiLine from(Collection<Line> lines) {
+    public static @NotNull MultiLine from(@NotNull Collection<Line> lines) {
         return new MultiLine(ImmutableList.copyOf(lines));
     }
 
-    public static MultiLine from(Line... lines) {
+    public static @NotNull MultiLine from(Line @NotNull ... lines) {
         return new MultiLine(ImmutableList.copyOf(lines));
     }
 
-    public static MultiLine from(Line line) {
+    public static @NotNull MultiLine from(@NotNull Line line) {
         return new MultiLine(ImmutableList.of(line));
     }
 
@@ -45,7 +46,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param line The line to add
          * @return This {@code Builder} object
          */
-        public Builder addLine(Line line) {
+        public @NotNull Builder addLine(Line line) {
             lines.add(line);
             return this;
         }
@@ -54,7 +55,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to add
          * @return This {@code Builder} object
          */
-        public Builder addLines(Collection<Line> lines) {
+        public @NotNull Builder addLines(@NotNull Collection<Line> lines) {
             this.lines.addAll(lines);
             return this;
         }
@@ -63,7 +64,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to add
          * @return This {@code Builder} object
          */
-        public Builder addLines(Line... lines) {
+        public @NotNull Builder addLines(Line... lines) {
             Collections.addAll(this.lines, lines);
             return this;
         }
@@ -72,7 +73,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param line The line to remove
          * @return This {@code Builder} object
          */
-        public Builder removeLine(Line line) {
+        public @NotNull Builder removeLine(Line line) {
             lines.remove(line);
             return this;
         }
@@ -81,7 +82,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to remove
          * @return This {@code Builder} object
          */
-        public Builder removeLines(Collection<Line> lines) {
+        public @NotNull Builder removeLines(@NotNull Collection<Line> lines) {
             this.lines.removeAll(lines);
             return this;
         }
@@ -90,7 +91,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to remove
          * @return This {@code Builder} object
          */
-        public Builder removeLines(Line... lines) {
+        public @NotNull Builder removeLines(@NotNull Line... lines) {
             for (Line line : lines) {
                 this.lines.remove(line);
             }
@@ -104,7 +105,7 @@ public class MultiLine implements GeometryPrimitive {
          *
          * @return A new {@code MultiLine} instance
          */
-        public MultiLine build() {
+        public @NotNull MultiLine build() {
             return MultiLine.from(lines);
         }
     }

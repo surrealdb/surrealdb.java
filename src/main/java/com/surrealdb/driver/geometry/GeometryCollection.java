@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,9 +27,9 @@ public class GeometryCollection {
     /**
      * A {@code GeometryCollection} without any geometries.
      */
-    public static GeometryCollection EMPTY = new GeometryCollection(ImmutableList.of());
+    public static @NotNull GeometryCollection EMPTY = new GeometryCollection(ImmutableList.of());
 
-    ImmutableList<GeometryPrimitive> geometries;
+    @NotNull ImmutableList<GeometryPrimitive> geometries;
 
     /**
      * Creates and returns a new {@code GeometryCollection} with the given geometries.
@@ -41,7 +42,7 @@ public class GeometryCollection {
      * @see GeometryCollection#from(GeometryPrimitive...)
      * @see GeometryCollection#from(GeometryPrimitive)
      */
-    public static GeometryCollection from(Collection<GeometryPrimitive> geometries) {
+    public static @NotNull GeometryCollection from(@NotNull Collection<GeometryPrimitive> geometries) {
         return new GeometryCollection(ImmutableList.copyOf(geometries));
     }
 
@@ -56,7 +57,7 @@ public class GeometryCollection {
      * @see GeometryCollection#from(Collection)
      * @see GeometryCollection#from(GeometryPrimitive)
      */
-    public static GeometryCollection from(GeometryPrimitive... geometries) {
+    public static @NotNull GeometryCollection from(GeometryPrimitive @NotNull ... geometries) {
         return new GeometryCollection(ImmutableList.copyOf(geometries));
     }
 
@@ -68,11 +69,11 @@ public class GeometryCollection {
      * @see GeometryCollection#from(Collection)
      * @see GeometryCollection#from(GeometryPrimitive...)
      */
-    public static GeometryCollection from(GeometryPrimitive geometry) {
+    public static @NotNull GeometryCollection from(@NotNull GeometryPrimitive geometry) {
         return new GeometryCollection(ImmutableList.of(geometry));
     }
 
-    public static Builder builder() {
+    public static @NotNull Builder builder() {
         return new Builder();
     }
 
@@ -89,7 +90,7 @@ public class GeometryCollection {
          * @param geometry The geometry to add
          * @return This {@code Builder} object
          */
-        public Builder addGeometry(GeometryPrimitive geometry) {
+        public @NotNull Builder addGeometry(GeometryPrimitive geometry) {
             geometries.add(geometry);
             return this;
         }
@@ -98,7 +99,7 @@ public class GeometryCollection {
          * @param geometries The geometries to add
          * @return This {@code Builder} object
          */
-        public Builder addGeometries(Collection<GeometryPrimitive> geometries) {
+        public @NotNull Builder addGeometries(@NotNull Collection<GeometryPrimitive> geometries) {
             this.geometries.addAll(geometries);
             return this;
         }
@@ -107,7 +108,7 @@ public class GeometryCollection {
          * @param geometries The geometries to add
          * @return This {@code Builder} object
          */
-        public Builder addGeometries(GeometryPrimitive... geometries) {
+        public @NotNull Builder addGeometries(GeometryPrimitive... geometries) {
             Collections.addAll(this.geometries, geometries);
             return this;
         }
@@ -118,7 +119,7 @@ public class GeometryCollection {
          * @param geometryCollection The {@code GeometryCollection} to add
          * @return This {@code Builder} object
          */
-        public Builder addGeometries(GeometryCollection geometryCollection) {
+        public @NotNull Builder addGeometries(@NotNull GeometryCollection geometryCollection) {
             return addGeometries(geometryCollection.getGeometries());
         }
 
@@ -126,7 +127,7 @@ public class GeometryCollection {
          * @param geometry The geometry to remove
          * @return This {@code Builder} object
          */
-        public Builder removeGeometry(GeometryPrimitive geometry) {
+        public @NotNull Builder removeGeometry(GeometryPrimitive geometry) {
             geometries.remove(geometry);
             return this;
         }
@@ -135,7 +136,7 @@ public class GeometryCollection {
          * @param geometries The geometries to remove
          * @return This {@code Builder} object
          */
-        public Builder removeGeometries(Collection<GeometryPrimitive> geometries) {
+        public @NotNull Builder removeGeometries(@NotNull Collection<GeometryPrimitive> geometries) {
             this.geometries.removeAll(geometries);
             return this;
         }
@@ -144,7 +145,7 @@ public class GeometryCollection {
          * @param geometries The geometries to remove
          * @return This {@code Builder} object
          */
-        public Builder removeGeometries(GeometryPrimitive... geometries) {
+        public @NotNull Builder removeGeometries(GeometryPrimitive @NotNull ... geometries) {
             for (GeometryPrimitive geometry : geometries) {
                 this.geometries.remove(geometry);
             }
@@ -157,7 +158,7 @@ public class GeometryCollection {
          * @param geometryCollection The {@code GeometryCollection} to remove
          * @return This {@code Builder} object
          */
-        public Builder removeGeometries(GeometryCollection geometryCollection) {
+        public @NotNull Builder removeGeometries(@NotNull GeometryCollection geometryCollection) {
             return removeGeometries(geometryCollection.getGeometries());
         }
 
@@ -167,7 +168,7 @@ public class GeometryCollection {
          *
          * @return A new {@code GeometryCollection} with the geometries added to this {@code Builder}
          */
-        public GeometryCollection build() {
+        public @NotNull GeometryCollection build() {
             return GeometryCollection.from(geometries);
         }
     }

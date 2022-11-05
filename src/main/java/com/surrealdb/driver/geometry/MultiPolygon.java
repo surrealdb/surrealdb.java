@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiPolygon implements GeometryPrimitive {
 
-    ImmutableList<Polygon> polygons;
+    @NotNull ImmutableList<Polygon> polygons;
 
     /**
      * Creates a new MultiPolygon from the given polygons.
@@ -31,7 +32,7 @@ public class MultiPolygon implements GeometryPrimitive {
      * @return A new MultiPolygon with the given {@code polygons}
      * @throws NullPointerException If {@code polygons} contains a null value.
      */
-    public static MultiPolygon from(Collection<Polygon> polygons) {
+    public static @NotNull MultiPolygon from(@NotNull Collection<Polygon> polygons) {
         return new MultiPolygon(ImmutableList.copyOf(polygons));
     }
 
@@ -41,7 +42,7 @@ public class MultiPolygon implements GeometryPrimitive {
      * @param polygons The polygons to store in this MultiPolygon
      * @return A new MultiPolygon with the given {@code polygons}
      */
-    public static MultiPolygon from(Polygon... polygons) {
+    public static @NotNull MultiPolygon from(Polygon @NotNull ... polygons) {
         return new MultiPolygon(ImmutableList.copyOf(polygons));
     }
 
@@ -50,14 +51,14 @@ public class MultiPolygon implements GeometryPrimitive {
      * @return A new MultiPolygon containing just the given {@code polygon}
      * @throws NullPointerException If {@code polygon} is null.
      */
-    public static MultiPolygon from(Polygon polygon) {
+    public static @NotNull MultiPolygon from(@NotNull Polygon polygon) {
         return new MultiPolygon(ImmutableList.of(polygon));
     }
 
     /**
      * @return A new {@link MultiPolygon.Builder} instance
      */
-    public static Builder builder() {
+    public static @NotNull Builder builder() {
         return new Builder();
     }
 
@@ -66,7 +67,7 @@ public class MultiPolygon implements GeometryPrimitive {
      *
      * @return A new {@link MultiPolygon.Builder} instance with the polygons of this {@code MultiPolygon}.
      */
-    public Builder toBuilder() {
+    public @NotNull Builder toBuilder() {
         return builder().addPolygons(polygons);
     }
 
@@ -79,7 +80,7 @@ public class MultiPolygon implements GeometryPrimitive {
          * @param polygon The polygon to add
          * @return This {@code Builder} object
          */
-        public Builder addPolygon(Polygon polygon) {
+        public @NotNull Builder addPolygon(Polygon polygon) {
             polygons.add(polygon);
             return this;
         }
@@ -88,7 +89,7 @@ public class MultiPolygon implements GeometryPrimitive {
          * @param polygons The polygons to add
          * @return This {@code Builder} object
          */
-        public Builder addPolygons(Collection<Polygon> polygons) {
+        public @NotNull Builder addPolygons(@NotNull Collection<Polygon> polygons) {
             this.polygons.addAll(polygons);
             return this;
         }
@@ -97,7 +98,7 @@ public class MultiPolygon implements GeometryPrimitive {
          * @param polygons The polygons to add
          * @return This {@code Builder} object
          */
-        public Builder addPolygons(Polygon... polygons) {
+        public @NotNull Builder addPolygons(Polygon... polygons) {
             Collections.addAll(this.polygons, polygons);
             return this;
         }
@@ -106,7 +107,7 @@ public class MultiPolygon implements GeometryPrimitive {
          * @param polygon The polygon to remove
          * @return This {@code Builder} object
          */
-        public Builder removePolygon(Polygon polygon) {
+        public @NotNull Builder removePolygon(Polygon polygon) {
             polygons.remove(polygon);
             return this;
         }
@@ -115,7 +116,7 @@ public class MultiPolygon implements GeometryPrimitive {
          * @param polygons The polygons to remove
          * @return This {@code Builder} object
          */
-        public Builder removePolygons(Collection<Polygon> polygons) {
+        public @NotNull Builder removePolygons(@NotNull Collection<Polygon> polygons) {
             this.polygons.removeAll(polygons);
             return this;
         }
@@ -124,7 +125,7 @@ public class MultiPolygon implements GeometryPrimitive {
          * @param polygons The polygons to remove
          * @return This {@code Builder} object
          */
-        public Builder removePolygons(Polygon... polygons) {
+        public @NotNull Builder removePolygons(Polygon @NotNull ... polygons) {
             for (Polygon polygon : polygons) {
                 this.polygons.remove(polygon);
             }
@@ -134,7 +135,7 @@ public class MultiPolygon implements GeometryPrimitive {
         /**
          * @return A new MultiPolygon with the polygons added to this {@code Builder}
          */
-        public MultiPolygon build() {
+        public @NotNull MultiPolygon build() {
             return MultiPolygon.from(polygons);
         }
     }

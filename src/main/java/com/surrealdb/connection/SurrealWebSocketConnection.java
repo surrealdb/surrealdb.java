@@ -10,9 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
@@ -31,17 +31,16 @@ import static com.surrealdb.connection.gson.SurrealGsonUtils.makeGsonInstanceSur
  * @author Khalid Alharisi
  */
 @Slf4j
-@ParametersAreNonnullByDefault
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
 
-    private final Gson gson;
+    @NotNull Gson gson;
 
-    private final AtomicLong lastRequestId;
-    private final Map<String, RequestEntry> pendingRequests;
+    @NotNull AtomicLong lastRequestId;
+    @NotNull Map<String, RequestEntry> pendingRequests;
 
-    private final boolean logOutgoingMessages;
-    private final boolean logIncomingMessages;
-    private final boolean logAuthenticationCredentials;
+    boolean logOutgoingMessages;
+    boolean logIncomingMessages;
+    boolean logAuthenticationCredentials;
 
     /**
      * @param host   The host to connect to
@@ -52,7 +51,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
      * {@link SurrealConnection#create(SurrealConnectionProtocol, String, int)} instead
      */
     @Deprecated
-    public SurrealWebSocketConnection(String host, int port, boolean useTls) {
+    public SurrealWebSocketConnection(@NotNull String host, int port, boolean useTls) {
         this(SurrealConnectionSettings.builder()
             .setUriFromComponents(useTls ? SurrealConnectionProtocol.WEB_SOCKET_SECURE : SurrealConnectionProtocol.WEB_SOCKET, host, port)
             .build());
@@ -64,7 +63,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
      *
      * @param settings The settings to use
      */
-    public SurrealWebSocketConnection(SurrealConnectionSettings settings) {
+    public SurrealWebSocketConnection(@NotNull SurrealConnectionSettings settings) {
         super(settings.getUri());
 
         this.gson = makeGsonInstanceSurrealCompatible(settings.getGson());
@@ -114,12 +113,12 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     @Override
-    public Gson getGson() {
+    public @NotNull Gson getGson() {
         return gson;
     }
 
     @Override
-    public <T> CompletableFuture<T> rpc(ExecutorService executorService, String method, @Nullable Type resultType, Object... params) {
+    public <T> @NotNull CompletableFuture<T> rpc(@NotNull ExecutorService executorService, @NotNull String method, @Nullable Type resultType, Object @NotNull ... params) {
         return CompletableFuture.supplyAsync(() -> {
             String requestId = Long.toString(lastRequestId.incrementAndGet());
             Instant timestamp = Instant.now();
@@ -153,7 +152,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         }, executorService).thenComposeAsync(future -> future, executorService);
     }
 
-    private void logRpcRequest(String method, String requestId, String json) {
+    private void logRpcRequest(@NotNull String method, String requestId, String json) {
         if (!logOutgoingMessages) {
             return;
         }
@@ -197,11 +196,13 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         CompletableFuture<?> callback = requestEntry.getCallback();
 
         try {
-            if (!response.isSuccessful()) {
-                RpcResponse.Error error = response.getError();
-                String errorMessage = error.getMessage();
+            Optional<RpcResponse.Error> error = response.getError();
+
+            if (error.isPresent()) {
+                RpcResponse.Error error1 = error.get();
+                String errorMessage = error1.getMessage();
                 if (logIncomingMessages) {
-                    log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error.getCode(), errorMessage);
+                    log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, error1.getCode(), errorMessage);
                 }
                 SurrealException exception = SurrealExceptionUtils.createExceptionFromMessage(errorMessage);
                 callback.completeExceptionally(exception);
@@ -221,7 +222,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         }
     }
 
-    private void logSuccessfulRpcResponse(RequestEntry requestEntry, String message) {
+    private void logSuccessfulRpcResponse(@NotNull RequestEntry requestEntry, String message) {
         if (!logIncomingMessages) {
             return;
         }

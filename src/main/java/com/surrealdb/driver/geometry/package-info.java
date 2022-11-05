@@ -4,7 +4,5 @@
  * information about the types, see the <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries">SurrealDB Docs</a>
  * or the <a href="https://www.rfc-editor.org/rfc/rfc7946">GeoJSON specification</a>.
  */
-@ParametersAreNonnullByDefault
 package com.surrealdb.driver.geometry;
 
-import javax.annotation.ParametersAreNonnullByDefault;

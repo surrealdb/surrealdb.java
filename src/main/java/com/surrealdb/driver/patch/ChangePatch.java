@@ -1,6 +1,10 @@
 package com.surrealdb.driver.patch;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A patch to change data in an existing record.
@@ -10,26 +14,26 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
-public class ChangePatch<T> implements Patch {
+public final class ChangePatch<T> implements Patch {
 
     /**
      * Used by Gson to serialize the patch.
      */
-    private final String op = "change";
+    String op = "change";
 
-    private final String path;
-    private final T value;
+    @NotNull String path;
+    @NotNull T value;
 
-    public static <T> ChangePatch<T> create(String path, T value) {
+    public static <T> @NotNull ChangePatch<T> create(@NotNull String path, @NotNull T value) {
         return new ChangePatch<>(path, value);
     }
 
     @Override
-    public String getPath() {
+    public @NotNull String getPath() {
         return path;
     }
 
-    public T getValue() {
+    public @NotNull T getValue() {
         return value;
     }
 }

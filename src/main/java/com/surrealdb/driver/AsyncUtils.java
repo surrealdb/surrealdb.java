@@ -2,6 +2,7 @@ package com.surrealdb.driver;
 
 import com.surrealdb.connection.exception.SurrealException;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -9,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 @UtilityClass
 class AsyncUtils {
 
-    static <T> T getResultSynchronously(CompletableFuture<T> completableFuture) {
+    static <T> T getResultSynchronously(@NotNull CompletableFuture<T> completableFuture) {
         try {
             return completableFuture.get();
         } catch (InterruptedException e) {

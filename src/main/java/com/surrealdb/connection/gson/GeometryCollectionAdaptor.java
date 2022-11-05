@@ -3,6 +3,7 @@ package com.surrealdb.connection.gson;
 import com.google.gson.*;
 import com.surrealdb.driver.geometry.GeometryCollection;
 import com.surrealdb.driver.geometry.GeometryPrimitive;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
     }
 
     @Override
-    public JsonElement serialize(GeometryCollection src, Type typeOfSrc, JsonSerializationContext context) {
+    public @NotNull JsonElement serialize(@NotNull GeometryCollection src, Type typeOfSrc, @NotNull JsonSerializationContext context) {
         JsonObject object = new JsonObject();
         object.addProperty("type", "GeometryCollection");
 
@@ -30,7 +31,7 @@ class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
     }
 
     @Override
-    public GeometryCollection deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public @NotNull GeometryCollection deserialize(@NotNull JsonElement json, Type typeOfT, @NotNull JsonDeserializationContext context) throws JsonParseException {
         JsonObject object = json.getAsJsonObject();
         JsonArray geometries = object.getAsJsonArray("geometries");
 

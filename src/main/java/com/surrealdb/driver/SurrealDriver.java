@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -15,27 +16,27 @@ import static com.surrealdb.driver.AsyncUtils.getResultSynchronously;
 
 public interface SurrealDriver {
 
-    static SurrealDriver create(SurrealConnection connection, SurrealDriverSettings settings) {
+    static @NotNull SurrealDriver create(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
         return new SurrealDriverImpl(connection, settings);
     }
 
-    static SurrealDriver create(SurrealConnection connection) {
+    static @NotNull SurrealDriver create(@NotNull SurrealConnection connection) {
         return new SurrealDriverImpl(connection);
     }
 
-    CompletableFuture<Void> pingAsync();
+    @NotNull CompletableFuture<Void> pingAsync();
 
     default void ping() {
         getResultSynchronously(pingAsync());
     }
 
-    CompletableFuture<String> getDatabaseVersionAsync();
+    @NotNull CompletableFuture<String> getDatabaseVersionAsync();
 
-    default String getDatabaseVersion() {
+    default @NotNull String getDatabaseVersion() {
         return getResultSynchronously(getDatabaseVersionAsync());
     }
 
-    CompletableFuture<Map<String, String>> infoAsync();
+    @NotNull CompletableFuture<Map<String, String>> infoAsync();
 
     default Map<String, String> info() {
         return getResultSynchronously(infoAsync());

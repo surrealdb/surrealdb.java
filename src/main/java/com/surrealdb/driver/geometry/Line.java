@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,9 +22,9 @@ import java.util.List;
 @Value
 public class Line implements GeometryPrimitive {
 
-    ImmutableList<Point> points;
+    @NotNull ImmutableList<Point> points;
 
-    private Line(ImmutableList<Point> points) {
+    private Line(@NotNull ImmutableList<Point> points) {
         this.points = points;
 
         if (points.size() < 2) {
@@ -40,7 +41,7 @@ public class Line implements GeometryPrimitive {
      * @throws IllegalArgumentException If the provided {@code points} contains less than 2 elements
      * @throws NullPointerException     If any of the points are null
      */
-    public static Line from(Collection<Point> points) {
+    public static @NotNull Line from(@NotNull Collection<Point> points) {
         return new Line(ImmutableList.copyOf(points));
     }
 
@@ -53,14 +54,14 @@ public class Line implements GeometryPrimitive {
      * @throws IllegalArgumentException If the provided {@code points} contains less than 2 elements
      * @throws NullPointerException     If any of the points are null
      */
-    public static Line from(Point... points) {
+    public static @NotNull Line from(Point @NotNull ... points) {
         return new Line(ImmutableList.copyOf(points));
     }
 
     /**
      * @return A new {@link Line.Builder} instance.
      */
-    public static Builder builder() {
+    public static @NotNull Builder builder() {
         return new Builder();
     }
 
@@ -69,7 +70,7 @@ public class Line implements GeometryPrimitive {
      *
      * @return A new {@link Line.Builder} instance with the points of this line.
      */
-    public Builder toBuilder() {
+    public @NotNull Builder toBuilder() {
         return new Builder().addPoints(points);
     }
 
@@ -80,7 +81,7 @@ public class Line implements GeometryPrimitive {
      *
      * @return A new {@link Line} with the points in reverse order.
      */
-    public Line flip() {
+    public @NotNull Line flip() {
         return new Line(points.reverse());
     }
 
@@ -97,7 +98,7 @@ public class Line implements GeometryPrimitive {
          * @param point The point to add
          * @return This {@code Builder} object
          */
-        public Builder addPoint(Point point) {
+        public @NotNull Builder addPoint(Point point) {
             points.add(point);
             return this;
         }
@@ -109,7 +110,7 @@ public class Line implements GeometryPrimitive {
          * @param y The y of the point to add
          * @return This {@code Builder} object
          */
-        public Builder addPointXY(double x, double y) {
+        public @NotNull Builder addPointXY(double x, double y) {
             return addPoint(Point.fromXY(x, y));
         }
 
@@ -120,7 +121,7 @@ public class Line implements GeometryPrimitive {
          * @param x The x of the point to add
          * @return This {@code Builder} object
          */
-        public Builder addPointYX(double y, double x) {
+        public @NotNull Builder addPointYX(double y, double x) {
             return addPoint(Point.fromYX(y, x));
         }
 
@@ -128,7 +129,7 @@ public class Line implements GeometryPrimitive {
          * @param points The points to add
          * @return This {@code Builder} object
          */
-        public Builder addPoints(Collection<Point> points) {
+        public @NotNull Builder addPoints(@NotNull Collection<Point> points) {
             this.points.addAll(points);
             return this;
         }
@@ -137,7 +138,7 @@ public class Line implements GeometryPrimitive {
          * @param points The points to add
          * @return This {@code Builder} object
          */
-        public Builder addPoints(Point... points) {
+        public @NotNull Builder addPoints(Point... points) {
             Collections.addAll(this.points, points);
             return this;
         }
@@ -146,7 +147,7 @@ public class Line implements GeometryPrimitive {
          * @param point The point to remove
          * @return This {@code Builder} object
          */
-        public Builder removePoint(Point point) {
+        public @NotNull Builder removePoint(Point point) {
             points.remove(point);
             return this;
         }
@@ -155,7 +156,7 @@ public class Line implements GeometryPrimitive {
          * @param points The points to remove
          * @return This {@code Builder} object
          */
-        public Builder removePoints(Collection<Point> points) {
+        public @NotNull Builder removePoints(@NotNull Collection<Point> points) {
             this.points.removeAll(points);
             return this;
         }
@@ -164,7 +165,7 @@ public class Line implements GeometryPrimitive {
          * @param points The points to remove
          * @return This {@code Builder} object
          */
-        public Builder removePoints(Point... points) {
+        public @NotNull Builder removePoints(Point @NotNull ... points) {
             for (Point point : points) {
                 this.points.remove(point);
             }
@@ -178,7 +179,7 @@ public class Line implements GeometryPrimitive {
          * @return A new {@link Line} instance with the points added to this builder.
          * @throws IllegalArgumentException If the line has less than 2 points.
          */
-        public Line build() {
+        public @NotNull Line build() {
             return Line.from(points);
         }
     }
