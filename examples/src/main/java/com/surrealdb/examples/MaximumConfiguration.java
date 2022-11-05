@@ -5,8 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealConnectionProtocol;
 import com.surrealdb.connection.SurrealConnectionSettings;
+import com.surrealdb.driver.SurrealDriver;
 import com.surrealdb.driver.SurrealDriverSettings;
-import com.surrealdb.driver.SurrealSyncDriver;
 
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
@@ -19,7 +19,7 @@ public class MaximumConfiguration {
         SurrealConnection connection = SurrealConnection.create(connectionSettings);
 
         SurrealDriverSettings driverSettings = createDriverSettings();
-        SurrealSyncDriver driver = new SurrealSyncDriver(connection, driverSettings);
+        SurrealDriver driver = SurrealDriver.create(connection, driverSettings);
 
         // ... insert business logic here ...
 

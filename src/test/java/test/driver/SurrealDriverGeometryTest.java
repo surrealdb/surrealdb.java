@@ -2,8 +2,8 @@ package test.driver;
 
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.SurrealDriver;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.SurrealSyncDriver;
 import com.surrealdb.driver.geometry.Line;
 import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
@@ -20,23 +20,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SurrealDriverGeometryTest {
 
-    private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.create("geometry", GeoContainer.class);
+    private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.of("geometry", GeoContainer.class);
 
     private SurrealConnection connection;
-    private SurrealSyncDriver driver;
+    private SurrealDriver driver;
 
     @BeforeEach
     void setup() {
         connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);
-        driver = new SurrealSyncDriver(connection);
+        driver = SurrealDriver.create(connection);
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @AfterEach
     void cleanup() {
-        driver.deleteRecords(geometryTable);
+        driver.deleteAllRecordsInTable(geometryTable);
         connection.disconnect();
     }
 
@@ -44,13 +44,13 @@ public class SurrealDriverGeometryTest {
     void testQueryingPointsInsidePolygon() {
         GeoContainer point1 = new GeoContainer("Point 1");
         // Point inside polygon
-        point1.setPoint(Point.fromYX(38.638688,-90.291562));
+        point1.setPoint(Point.fromYX(38.638688, -90.291562));
 
         GeoContainer point2 = new GeoContainer("Point 2");
         point2.setPoint(Point.fromYX(0, 0));
 
-        driver.create(geometryTable, point1);
-        driver.create(geometryTable, point2);
+        driver.createRecord(geometryTable, point1);
+        driver.createRecord(geometryTable, point2);
 
         // Forest park in STL
         Line selectionExterior = Line.builder()

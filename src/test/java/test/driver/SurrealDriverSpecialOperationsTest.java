@@ -3,9 +3,10 @@ package test.driver;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.driver.SurrealDriver;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.SurrealSyncDriver;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -19,42 +20,23 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class SurrealDriverSpecialOperationsTest {
 
-    private SurrealSyncDriver driver;
+    private SurrealDriver driver;
 
     @BeforeEach
     public void setup() {
         SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
-        driver = new SurrealSyncDriver(connection);
+        driver = SurrealDriver.create(connection);
+    }
+
+    @AfterEach
+    public void teardown() {
+        SurrealConnection connection = driver.getSurrealConnection();
+        connection.disconnect();
     }
 
     @Test
-    public void testSignIn() {
-        assertDoesNotThrow(() -> driver.signIn(TestUtils.getAuthCredentials()));
-    }
-
-    @Test
-    public void testBadCredentials() {
-        assertThrows(SurrealAuthenticationException.class, () -> {
-            driver.signIn(SurrealRootCredentials.from("invalid_username", "invalid_password"));
-        });
-    }
-
-    @Test
-    public void testUse() {
-        assertDoesNotThrow(() -> driver.use(TestUtils.getNamespace(), TestUtils.getDatabase()));
-    }
-
-    @Test
-    public void testNoDatabaseSelected() {
-        assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signIn(TestUtils.getAuthCredentials());
-            driver.retrieveAllRecordsFromTable(SurrealTable.create("person", Person.class));
-        });
-    }
-
-    @Test
-    public void testPing() {
+    void testPing() {
         assertDoesNotThrow(() -> driver.ping());
     }
 
@@ -66,10 +48,28 @@ public class SurrealDriverSpecialOperationsTest {
     }
 
     @Test
-    public void testInfo() {
-        driver.signIn(TestUtils.getAuthCredentials());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-        driver.info();
+    void testSignIn() {
+        assertDoesNotThrow(() -> driver.signIn(TestUtils.getAuthCredentials()));
     }
 
+    @Test
+    void testBadCredentials() {
+        assertThrows(SurrealAuthenticationException.class, () -> {
+            driver.signIn(SurrealRootCredentials.from("invalid_username", "invalid_password"));
+        });
+    }
+
+    @Test
+    void testUse() {
+        assertDoesNotThrow(() -> driver.use(TestUtils.getNamespace(), TestUtils.getDatabase()));
+    }
+
+    @Test
+    void testNoDatabaseSelected() {
+        driver.signIn(TestUtils.getAuthCredentials());
+
+        assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
+            driver.retrieveAllRecordsFromTable(SurrealTable.of("person", Person.class));
+        });
+    }
 }

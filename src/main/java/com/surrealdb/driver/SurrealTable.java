@@ -11,7 +11,7 @@ public class SurrealTable<T> {
     String name;
     Class<T> type;
 
-    public static <T> SurrealTable<T> create(String name, Class<T> type) {
+    public static <T> SurrealTable<T> of(String name, Class<T> type) {
         return new SurrealTable<>(name, type);
     }
 
