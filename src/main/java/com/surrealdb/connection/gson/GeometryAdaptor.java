@@ -46,7 +46,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
 
     @NotNull JsonArray serializeLine(@NotNull Line line) {
         JsonArray lineStringArray = new JsonArray();
-        for (Point point : line.getPoints()) {
+        for (Point point : line) {
             lineStringArray.add(serializePoint(point));
         }
         return lineStringArray;

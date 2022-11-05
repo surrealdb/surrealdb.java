@@ -1,15 +1,10 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A GeoJSON LineString value for storing a geometric path. Paths must have at least two points,
@@ -19,8 +14,9 @@ import java.util.List;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#line">SurrealDB Docs - Line</a>
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.4">GeoJSON Specification - LineString</a>
  */
-@Value
-public class Line implements GeometryPrimitive {
+@ToString
+@EqualsAndHashCode
+public class Line implements GeometryPrimitive, Iterable<Point> {
 
     @NotNull ImmutableList<Point> points;
 
@@ -74,6 +70,14 @@ public class Line implements GeometryPrimitive {
         return new Builder().addPoints(points);
     }
 
+    public int getPointCount() {
+        return points.size();
+    }
+
+    public @NotNull Point getPoint(int index) {
+        return points.get(index);
+    }
+
     /**
      * Flips the order of the points in this line. For a line with the points
      * {@code [[0, 0,], [1, 1], [2, 2]]}, this will return a line with
@@ -83,6 +87,11 @@ public class Line implements GeometryPrimitive {
      */
     public @NotNull Line flip() {
         return new Line(points.reverse());
+    }
+
+    @Override
+    public @NonNull Iterator<Point> iterator() {
+        return points.iterator();
     }
 
     /**

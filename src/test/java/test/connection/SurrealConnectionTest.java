@@ -108,7 +108,7 @@ public class SurrealConnectionTest {
     }
 
     @Test
-    @Timeout(value = 10_000, unit = TimeUnit.MILLISECONDS) // Timeout after 10 seconds.
+    @Timeout(value = 10_000, unit = TimeUnit.MILLISECONDS)
     void testHighVolumeConcurrentTraffic() {
         val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);

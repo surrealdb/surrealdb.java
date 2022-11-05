@@ -2,10 +2,12 @@ package com.surrealdb.driver;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
-@Value
+@EqualsAndHashCode
+@ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SurrealTable<T> {
 
@@ -22,5 +24,13 @@ public class SurrealTable<T> {
 
     @NotNull String makeThing(String record) {
         return name + ":" + record;
+    }
+
+    public @NotNull String getName() {
+        return name;
+    }
+
+    public @NotNull Class<T> getType() {
+        return type;
     }
 }

@@ -5,7 +5,8 @@ import com.surrealdb.driver.auth.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static test.connection.gson.GsonTestUtils.*;
+import static test.connection.gson.GsonTestUtils.assertJsonDoesNotHaveProperties;
+import static test.connection.gson.GsonTestUtils.assertJsonHasPropertyString;
 
 public class SignInAdaptorTest {
 
@@ -77,10 +78,11 @@ public class SignInAdaptorTest {
         signInJson.addProperty("pass", "namespace_user_password");
         signInJson.addProperty("NS", "some_namespace");
 
-        SurrealAuthCredentials expected = SurrealNamespaceCredentials.from("namespace_user", "namespace_user_password", "some_namespace");
-        SurrealAuthCredentials actual = GsonTestUtils.deserialize(signInJson, SurrealNamespaceCredentials.class);
+        SurrealNamespaceCredentials deserialized = GsonTestUtils.deserialize(signInJson, SurrealNamespaceCredentials.class);
 
-        assertEquals(expected, actual);
+        assertEquals("namespace_user", deserialized.getUser());
+        assertEquals("namespace_user_password", deserialized.getPassword());
+        assertEquals("some_namespace", deserialized.getNamespace());
     }
 
     @Test
@@ -91,10 +93,12 @@ public class SignInAdaptorTest {
         signInJson.addProperty("NS", "some_namespace");
         signInJson.addProperty("DB", "some_database");
 
-        SurrealAuthCredentials expected = SurrealDatabaseCredentials.from("database_user", "database_user_password", "some_namespace", "some_database");
-        SurrealAuthCredentials actual = GsonTestUtils.deserialize(signInJson, SurrealDatabaseCredentials.class);
+        SurrealDatabaseCredentials deserialized = GsonTestUtils.deserialize(signInJson, SurrealDatabaseCredentials.class);
 
-        assertEquals(expected, actual);
+        assertEquals("database_user", deserialized.getUser());
+        assertEquals("database_user_password", deserialized.getPassword());
+        assertEquals("some_namespace", deserialized.getNamespace());
+        assertEquals("some_database", deserialized.getDatabase());
     }
 
     @Test
@@ -104,9 +108,10 @@ public class SignInAdaptorTest {
         signInJson.addProperty("DB", "some_database");
         signInJson.addProperty("SC", "some_scope");
 
-        SurrealAuthCredentials expected = SurrealScopeCredentials.from("some_namespace", "some_database", "some_scope");
-        SurrealAuthCredentials actual = GsonTestUtils.deserialize(signInJson, SurrealScopeCredentials.class);
+        SurrealScopeCredentials deserialized = GsonTestUtils.deserialize(signInJson, SurrealScopeCredentials.class);
 
-        assertEquals(expected, actual);
+        assertEquals("some_namespace", deserialized.getNamespace());
+        assertEquals("some_database", deserialized.getDatabase());
+        assertEquals("some_scope", deserialized.getScope());
     }
 }

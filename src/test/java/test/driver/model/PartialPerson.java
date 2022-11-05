@@ -11,5 +11,5 @@ import lombok.Data;
 public class PartialPerson {
 
     private boolean marketing;
-    
+
 }
