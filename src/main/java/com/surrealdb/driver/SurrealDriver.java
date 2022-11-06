@@ -86,6 +86,20 @@ public interface SurrealDriver {
         return getResultSynchronously(querySingleAsync(query, queryResult, args));
     }
 
+    <T> CompletableFuture<List<T>> queryFirstAsync(String query, Class<T> queryResult, Map<String, Object> args);
+
+    default <T> List<T> queryFirst(String query, Class<T> queryResult, Map<String, Object> args) {
+        return getResultSynchronously(queryFirstAsync(query, queryResult, args));
+    }
+
+    default <T> CompletableFuture<List<T>> queryFirstAsync(String query, Class<T> queryResult) {
+        return queryFirstAsync(query, queryResult, ImmutableMap.of());
+    }
+
+    default <T> List<T> queryFirst(String query, Class<T> queryResult) {
+        return getResultSynchronously(queryFirstAsync(query, queryResult));
+    }
+
     default <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult) {
         return querySingleAsync(query, queryResult, ImmutableMap.of());
     }

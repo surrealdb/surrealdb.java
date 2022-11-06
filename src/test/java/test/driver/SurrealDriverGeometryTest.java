@@ -1,5 +1,6 @@
 package test.driver;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.SurrealDriver;
@@ -12,16 +13,37 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.TestUtils;
+import test.driver.model.City;
 import test.driver.model.GeoContainer;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SurrealDriverGeometryTest {
 
+    private static final ImmutableList<City> CITIES = ImmutableList.of(
+        new City(Point.fromGeoHash("xn76urx6"), "Tokyo", 37),
+        new City(Point.fromGeoHash("ttnghcy0"), "Delhi", 28),
+        new City(Point.fromGeoHash("wtw3sjq6"), "Shanghai", 25),
+        new City(Point.fromGeoHash("6gyf4bdx"), "São Paulo", 21),
+        new City(Point.fromGeoHash("9g3w81t7"), "Mexico City", 21),
+        new City(Point.fromGeoHash("stq4yv3j"), "Cairo", 20),
+        new City(Point.fromGeoHash("te7ud2ev"), "Mumbai", 20),
+        new City(Point.fromGeoHash("wx4g0bm6"), "Beijing", 20),
+        new City(Point.fromGeoHash("wh0r3qs3"), "Dhaka", 20),
+        new City(Point.fromGeoHash("xn0m77v9"), "Osaka", 19),
+        new City(Point.fromGeoHash("dr5regw3"), "New York", 19),
+        new City(Point.fromGeoHash("tkrtkvgh"), "Karachi", 19),
+        new City(Point.fromGeoHash("69y7pkxf"), "Buenos Aires", 19),
+        new City(Point.fromGeoHash("wm7b0tu3"), "Chongqing", 19),
+        new City(Point.fromGeoHash("sxk973m6"), "Istanbul", 18)
+    );
+
     private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.of("geometry", GeoContainer.class);
+    private static final SurrealTable<City> citiesTable = SurrealTable.of("cities", City.class);
 
     private SurrealConnection connection;
     private SurrealDriver driver;
@@ -33,37 +55,40 @@ public class SurrealDriverGeometryTest {
         driver = SurrealDriver.create(connection);
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+
+        CompletableFuture<?>[] cityCreationFutures = CITIES.stream()
+            .map((city) -> driver.createRecordAsync(citiesTable, city))
+            .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(cityCreationFutures).join();
     }
 
     @AfterEach
     void cleanup() {
         driver.deleteAllRecordsInTable(geometryTable);
+        driver.deleteAllRecordsInTable(citiesTable);
         connection.disconnect();
     }
 
     @Test
     void testQueryingPointsInsidePolygon() {
-        // This point is inside the polygon
-        driver.createRecord(geometryTable, new GeoContainer("Middle of Forest Park").setPoint(Point.fromYX(38.638688, -90.291562)));
-        /// These points are not
-        driver.createRecord(geometryTable, new GeoContainer("Point 2").setPoint(Point.fromYX(0, 0)));
-        driver.createRecord(geometryTable, new GeoContainer("Paris").setPoint(Point.fromYX(48.8566, 2.3522)));
-
-        // Forest park in STL
+        // A VERY approximate polygon around Japan
         LinearRing selectionExterior = LineString.builder()
-            .addPointYX(38.632662, -90.304484) // South-west corner
-            .addPointYX(38.628888, -90.264734) // South-east corner
-            .addPointYX(38.643937, -90.265187) // North-east corner
-            .addPointYX(38.647937, -90.304937) // North-west corner
-            .addPointYX(38.632662, -90.304484) // South-west corner (again)
+            .addPointYX(41.41758775838002, 139.36688850517004)
+            .addPointYX(32.84100934819944, 128.34142926401432)
+            .addPointYX(29.029439014623353, 131.00084055673764)
+            .addPointYX(43.78908772017741, 150.52424042309514)
+            .addPointYX(45.935268573361704, 139.057803663134)
             .buildLinearRing();
         Polygon selection = Polygon.from(selectionExterior);
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);
-        String query = "SELECT * FROM geometry WHERE point INSIDE $selection LIMIT 1;";
-        Optional<GeoContainer> queryResults = driver.querySingle(query, GeoContainer.class, args);
+        String query = "SELECT * FROM cities WHERE location INSIDE $selection";
+        List<City> cities = driver.queryFirst(query, City.class, args);
 
-        assertTrue(queryResults.isPresent());
-        assertEquals("Middle of Forest Park", queryResults.get().getName());
+        assertEquals(2, cities.size());
+
+        List<String> cityNames = cities.stream().map(City::getName).toList();
+        assertTrue(cityNames.contains("Tokyo"), "Tokyo should be in the selection");
+        assertTrue(cityNames.contains("Osaka"), "Osaka should be in the selection");
     }
 }
