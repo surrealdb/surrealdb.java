@@ -16,13 +16,13 @@ public class GeoContainer {
     @Nullable
     Point point;
     @Nullable
-    Line line;
+    LineString line;
     @Nullable
     Polygon polygon;
     @Nullable
     MultiPoint multiPoint;
     @Nullable
-    MultiLine multiLine;
+    MultiLineString multiLineString;
     @Nullable
     MultiPolygon multiPolygon;
     @Nullable

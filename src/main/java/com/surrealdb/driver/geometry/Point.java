@@ -5,9 +5,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.regex.Pattern;
 
 /**
  * SurrealDB's representation of a geolocation point. This is a 2D point with a longitude and latitude.
@@ -25,9 +24,7 @@ import java.util.regex.Pattern;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
-public class Point implements GeometryPrimitive {
-
-    static Pattern GEO_HASH_PATTERN = Pattern.compile("[0-9bcdefghjkmnpqrstuvwxyz]+");
+public final class Point implements GeometryPrimitive {
 
     double x;
     double y;
@@ -59,15 +56,8 @@ public class Point implements GeometryPrimitive {
     }
 
     public static @NotNull Point fromGeoHash(String geoHash) {
-        if (!GEO_HASH_PATTERN.matcher(geoHash).matches()) {
-            throw new IllegalArgumentException("Provided geo hash contains invalid characters: " + geoHash);
-        }
-
-        double xMin = -180;
-        double xMax = 180;
-        double yMin = -90;
-        double yMax = 90;
-
+        DecodingGeoHashCoord xCoord = new DecodingGeoHashCoord(-180, 180);
+        DecodingGeoHashCoord yCoord = new DecodingGeoHashCoord(-90, 90);
         boolean lng = true;
 
         for (char character : Lists.charactersOf(geoHash)) {
@@ -76,31 +66,14 @@ public class Point implements GeometryPrimitive {
             for (int shift = 4; shift >= 0; --shift) {
                 boolean isMin = ((value >> shift) & 1) == 1;
 
-                if (lng) {
-                    double mid = average(xMin, xMax);
-                    if (isMin) {
-                        xMin = mid;
-                    } else {
-                        xMax = mid;
-                    }
-                } else {
-                    double mid = average(yMin, yMax);
-                    if (isMin) {
-                        yMin = mid;
-                    } else {
-                        yMax = mid;
-                    }
-                }
+                DecodingGeoHashCoord coord = lng ? xCoord : yCoord;
+                coord.cut(isMin);
 
                 lng = !lng;
             }
         }
 
-        return new Point(average(xMin, xMax), average(yMin, yMax));
-    }
-
-    private static double average(double a, double b) {
-        return (a + b) / 2;
+        return new Point(xCoord.mid(), yCoord.mid());
     }
 
     private static int decode(char character) {
@@ -139,49 +112,27 @@ public class Point implements GeometryPrimitive {
     }
 
     public @NotNull String toGeoHash(int precision) {
-        double xMin = -180;
-        double xMax = 180;
-        double yMin = -90;
-        double yMax = 90;
-
-        int hash = 0;
+        EncodedGeoHashCoord xCoord = new EncodedGeoHashCoord(-180, 180, x);
+        EncodedGeoHashCoord yCoord = new EncodedGeoHashCoord(-90, 90, y);
         StringBuilder geoHash = new StringBuilder(precision);
-
         boolean lng = true;
 
         while (geoHash.length() < precision) {
-            for (int shift = 4; shift >= 0; --shift) {
-                if (lng) {
-                    double mid = average(xMin, xMax);
-                    if (x > mid) {
-                        hash = (hash << 1) + 1;
-                        xMin = mid;
-                    } else {
-                        hash <<= 1;
-                        xMax = mid;
-                    }
-                } else {
-                    double mid = average(yMin, yMax);
-                    if (y > mid) {
-                        hash = (hash << 1) + 1;
-                        yMin = mid;
-                    } else {
-                        hash <<= 1;
-                        yMax = mid;
-                    }
-                }
+            int hash = 0;
 
+            for (int shift = 4; shift >= 0; --shift) {
+                EncodedGeoHashCoord coord = lng ? xCoord : yCoord;
+                hash = (hash << 1) + (coord.cut() ? 1 : 0);
                 lng = !lng;
             }
 
-            geoHash.append(encode(hash));
-            hash = 0;
+            geoHash.append(encodeGeoHashChar(hash));
         }
 
         return geoHash.toString();
     }
 
-    private char encode(int value) {
+    private char encodeGeoHashChar(int value) {
         if (value >= 0 && value <= 9) {
             return (char) (value + '0');
         }
@@ -197,6 +148,7 @@ public class Point implements GeometryPrimitive {
         if (value >= 21 && value <= 31) {
             return (char) (value + 'p' - 21);
         }
+
         throw new IllegalArgumentException("Invalid value in geo hash: " + value);
     }
 
@@ -212,5 +164,56 @@ public class Point implements GeometryPrimitive {
      */
     public double getY() {
         return y;
+    }
+
+    @AllArgsConstructor
+    private abstract static class GeoHashCoord {
+
+        @NonFinal
+        double min;
+        @NonFinal
+        double max;
+
+        public double mid() {
+            return (min + max) / 2;
+        }
+    }
+
+
+    private static final class EncodedGeoHashCoord extends GeoHashCoord {
+
+        double actual;
+
+        public EncodedGeoHashCoord(double min, double max, double actual) {
+            super(min, max);
+            this.actual = actual;
+        }
+
+        boolean cut() {
+            double mid = mid();
+
+            if (actual > mid) {
+                super.min = mid;
+                return true;
+            } else {
+                super.max = mid;
+                return false;
+            }
+        }
+    }
+
+    private static final class DecodingGeoHashCoord extends GeoHashCoord {
+
+        public DecodingGeoHashCoord(double min, double max) {
+            super(min, max);
+        }
+
+        void cut(boolean isMin) {
+            if (isMin) {
+                super.min = mid();
+            } else {
+                super.max = mid();
+            }
+        }
     }
 }

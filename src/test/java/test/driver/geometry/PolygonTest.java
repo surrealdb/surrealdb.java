@@ -1,6 +1,6 @@
 package test.driver.geometry;
 
-import com.surrealdb.driver.geometry.Line;
+import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ public class PolygonTest {
 
     @Test
     void testBuildDoesNotThrowWhenExteriorHasBeenSet() {
-        Line exterior = Line.from(
+        LineString exterior = LineString.from(
             Point.fromXY(0, 0),
             Point.fromXY(1, 0),
             Point.fromXY(1, 1),

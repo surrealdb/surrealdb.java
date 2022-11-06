@@ -1,6 +1,6 @@
 package test.driver.geometry;
 
-import com.surrealdb.driver.geometry.Line;
+import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.Point;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +13,8 @@ public class LineTest {
 
     @Test
     void testPointWithoutEnoughPoints() {
-        assertThrows(IllegalArgumentException.class, () -> Line.builder().build());
-        assertThrows(IllegalArgumentException.class, () -> Line.from(Point.fromXY(1, 2)));
+        assertThrows(IllegalArgumentException.class, () -> LineString.builder().build());
+        assertThrows(IllegalArgumentException.class, () -> LineString.from(Point.fromXY(1, 2)));
     }
 
     @Test
@@ -22,7 +22,7 @@ public class LineTest {
         Point p1 = Point.fromXY(1, 2);
         Point p2 = Point.fromXY(3, 4);
 
-        Line line = Line.from(p1, p2);
+        LineString line = LineString.from(p1, p2);
 
         assertEquals(2, line.getPointCount());
         assertEquals(p1, line.getPoint(0));
@@ -34,22 +34,22 @@ public class LineTest {
         Point p1 = Point.fromXY(1, 2);
         Point p2 = Point.fromXY(3, 4);
 
-        Line line = Line.from(p1, p2);
+        LineString line = LineString.from(p1, p2);
 
         assertThrows(UnsupportedOperationException.class, () -> line.iterator().remove());
     }
 
     @Test
     void testToBuilder() {
-        Line line = Line.from(Point.fromXY(1, 2), Point.fromXY(3, 4));
-        Line copy = line.toBuilder().build();
+        LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4));
+        LineString copy = line.toBuilder().build();
 
         assertEquals(line, copy);
     }
 
     @Test
     void testBuilderAddPoints() {
-        Line line = Line.builder()
+        LineString line = LineString.builder()
             .addPoint(Point.fromXY(1, 2))
             .addPointXY(3, 4)
             .addPointYX(6, 5)
@@ -77,7 +77,7 @@ public class LineTest {
         Point p6 = Point.fromXY(11, 12);
         Point p7 = Point.fromXY(13, 14);
 
-        Line line = Line.from(p1, p2, p3, p4, p5, p6, p7)
+        LineString line = LineString.from(p1, p2, p3, p4, p5, p6, p7)
             .toBuilder()
             .removePoint(p2)
             .removePoints(List.of(p3, p5))
@@ -91,8 +91,8 @@ public class LineTest {
 
     @Test
     void testFlip() {
-        Line line = Line.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
-        Line flipped = line.flip();
+        LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        LineString flipped = line.flip();
 
         System.out.println(line);
         System.out.println(flipped);

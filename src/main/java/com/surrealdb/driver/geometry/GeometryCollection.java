@@ -12,8 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Geometry Collections can be used to store multiple different geometry types in a single value. {@link Point}, {@link Line},
- * {@link Polygon}, {@link MultiPoint}, {@link MultiLine}, and {@link MultiPolygon} are supported. It's possible to store more
+ * Geometry Collections can be used to store multiple different geometry types in a single value. {@link Point}, {@link LineString},
+ * {@link Polygon}, {@link MultiPoint}, {@link MultiLineString}, and {@link MultiPolygon} are supported. It's possible to store more
  * than one 'singe' geometry type, but it's not recommended. Instead, use {@code MultiPoint}, {@code MultiLine}, or {@code MultiPolygon}.
  *
  * @author Damian Kocher

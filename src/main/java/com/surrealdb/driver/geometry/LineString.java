@@ -16,11 +16,11 @@ import java.util.*;
  */
 @ToString
 @EqualsAndHashCode
-public class Line implements GeometryPrimitive, Iterable<Point> {
+public class LineString implements GeometryPrimitive, Iterable<Point> {
 
-    @NotNull ImmutableList<Point> points;
+    protected @NotNull ImmutableList<Point> points;
 
-    private Line(@NotNull ImmutableList<Point> points) {
+    protected LineString(@NotNull ImmutableList<Point> points) {
         this.points = points;
 
         if (points.size() < 2) {
@@ -37,8 +37,8 @@ public class Line implements GeometryPrimitive, Iterable<Point> {
      * @throws IllegalArgumentException If the provided {@code points} contains less than 2 elements
      * @throws NullPointerException     If any of the points are null
      */
-    public static @NotNull Line from(@NotNull Collection<Point> points) {
-        return new Line(ImmutableList.copyOf(points));
+    public static @NotNull LineString from(@NotNull Collection<Point> points) {
+        return new LineString(ImmutableList.copyOf(points));
     }
 
     /**
@@ -50,24 +50,28 @@ public class Line implements GeometryPrimitive, Iterable<Point> {
      * @throws IllegalArgumentException If the provided {@code points} contains less than 2 elements
      * @throws NullPointerException     If any of the points are null
      */
-    public static @NotNull Line from(Point @NotNull ... points) {
-        return new Line(ImmutableList.copyOf(points));
+    public static @NotNull LineString from(Point @NotNull ... points) {
+        return new LineString(ImmutableList.copyOf(points));
     }
 
     /**
-     * @return A new {@link Line.Builder} instance.
+     * @return A new {@link LineString.Builder} instance.
      */
-    public static @NotNull Builder builder() {
-        return new Builder();
+    public static @NotNull LineString.Builder builder() {
+        return new LineString.Builder();
     }
 
     /**
-     * Creates a new {@link Line.Builder} with all points on this line already added.
+     * Creates a new {@link LineString.Builder} with all points on this line already added.
      *
-     * @return A new {@link Line.Builder} instance with the points of this line.
+     * @return A new {@link LineString.Builder} instance with the points of this line.
      */
     public @NotNull Builder toBuilder() {
         return new Builder().addPoints(points);
+    }
+
+    public @NotNull LinearRing toLinearRing() {
+        return LinearRing.from(points);
     }
 
     public int getPointCount() {
@@ -83,17 +87,10 @@ public class Line implements GeometryPrimitive, Iterable<Point> {
      * {@code [[0, 0,], [1, 1], [2, 2]]}, this will return a line with
      * {@code [[2, 2], [1, 1], [0, 0]]}.
      *
-     * @return A new {@link Line} with the points in reverse order.
+     * @return A new {@link LineString} with the points in reverse order.
      */
-    public @NotNull Line flip() {
-        return new Line(points.reverse());
-    }
-
-    public boolean isClosedLinearRing() {
-        Point firstPoint = points.get(0);
-        Point lastPoint = points.get(points.size() - 1);
-
-        return firstPoint.equals(lastPoint);
+    public @NotNull LineString flip() {
+        return new LineString(points.reverse());
     }
 
     @Override
@@ -102,13 +99,13 @@ public class Line implements GeometryPrimitive, Iterable<Point> {
     }
 
     /**
-     * A builder for fluent construction of {@link Line} instances. Use {@link Line#builder()} to create a new empty
-     * instance, or {@link Line#toBuilder()} to create a new instance with the points of an existing {@link Line}.
+     * A builder for fluent construction of {@link LineString} instances. Use {@link LineString#builder()} to create a new empty
+     * instance, or {@link LineString#toBuilder()} to create a new instance with the points of an existing {@link LineString}.
      */
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        private final List<Point> points = new ArrayList<>();
+        List<Point> points = new ArrayList<>();
 
         /**
          * @param point The point to add
@@ -192,11 +189,15 @@ public class Line implements GeometryPrimitive, Iterable<Point> {
          * Creates and returns a new {@code Line} with the geometries added to this {@code Builder}.
          * This Builder's backing list is copied, meaning that this Builder can be reused after calling this method.
          *
-         * @return A new {@link Line} instance with the points added to this builder.
+         * @return A new {@link LineString} instance with the points added to this builder.
          * @throws IllegalArgumentException If the line has less than 2 points.
          */
-        public @NotNull Line build() {
-            return Line.from(points);
+        public @NotNull LineString build() {
+            return LineString.from(points);
+        }
+
+        public @NotNull LinearRing buildLinearRing() {
+            return LinearRing.from(points);
         }
     }
 }

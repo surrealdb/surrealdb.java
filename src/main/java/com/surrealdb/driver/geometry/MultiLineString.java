@@ -21,32 +21,32 @@ import java.util.List;
  */
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiLine implements GeometryPrimitive {
+public class MultiLineString implements GeometryPrimitive {
 
-    @NotNull ImmutableList<Line> lines;
+    @NotNull ImmutableList<LineString> lines;
 
-    public static @NotNull MultiLine from(@NotNull Collection<Line> lines) {
-        return new MultiLine(ImmutableList.copyOf(lines));
+    public static @NotNull MultiLineString from(@NotNull Collection<LineString> lines) {
+        return new MultiLineString(ImmutableList.copyOf(lines));
     }
 
-    public static @NotNull MultiLine from(Line @NotNull ... lines) {
-        return new MultiLine(ImmutableList.copyOf(lines));
+    public static @NotNull MultiLineString from(LineString @NotNull ... lines) {
+        return new MultiLineString(ImmutableList.copyOf(lines));
     }
 
-    public static @NotNull MultiLine from(@NotNull Line line) {
-        return new MultiLine(ImmutableList.of(line));
+    public static @NotNull MultiLineString from(@NotNull LineString line) {
+        return new MultiLineString(ImmutableList.of(line));
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        private final List<Line> lines = new ArrayList<>();
+        private final List<LineString> lines = new ArrayList<>();
 
         /**
          * @param line The line to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addLine(Line line) {
+        public @NotNull Builder addLine(LineString line) {
             lines.add(line);
             return this;
         }
@@ -55,7 +55,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addLines(@NotNull Collection<Line> lines) {
+        public @NotNull Builder addLines(@NotNull Collection<LineString> lines) {
             this.lines.addAll(lines);
             return this;
         }
@@ -64,7 +64,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addLines(Line... lines) {
+        public @NotNull Builder addLines(LineString... lines) {
             Collections.addAll(this.lines, lines);
             return this;
         }
@@ -73,7 +73,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param line The line to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeLine(Line line) {
+        public @NotNull Builder removeLine(LineString line) {
             lines.remove(line);
             return this;
         }
@@ -82,7 +82,7 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeLines(@NotNull Collection<Line> lines) {
+        public @NotNull Builder removeLines(@NotNull Collection<LineString> lines) {
             this.lines.removeAll(lines);
             return this;
         }
@@ -91,8 +91,8 @@ public class MultiLine implements GeometryPrimitive {
          * @param lines The lines to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeLines(@NotNull Line... lines) {
-            for (Line line : lines) {
+        public @NotNull Builder removeLines(@NotNull LineString... lines) {
+            for (LineString line : lines) {
                 this.lines.remove(line);
             }
             return this;
@@ -105,8 +105,8 @@ public class MultiLine implements GeometryPrimitive {
          *
          * @return A new {@code MultiLine} instance
          */
-        public @NotNull MultiLine build() {
-            return MultiLine.from(lines);
+        public @NotNull MultiLineString build() {
+            return MultiLineString.from(lines);
         }
     }
 }

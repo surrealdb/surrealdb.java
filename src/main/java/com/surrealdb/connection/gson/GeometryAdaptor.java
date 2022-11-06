@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.driver.geometry.GeometryPrimitive;
-import com.surrealdb.driver.geometry.Line;
-import com.surrealdb.driver.geometry.Point;
-import com.surrealdb.driver.geometry.Polygon;
+import com.surrealdb.driver.geometry.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -44,7 +41,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return Point.fromXY(x, y);
     }
 
-    @NotNull JsonArray serializeLine(@NotNull Line line) {
+    @NotNull JsonArray serializeLine(@NotNull LineString line) {
         JsonArray lineStringArray = new JsonArray();
         for (Point point : line) {
             lineStringArray.add(serializePoint(point));
@@ -52,22 +49,22 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return lineStringArray;
     }
 
-    @NotNull Line deserializeLine(@NotNull JsonArray coordinates) {
+    @NotNull LineString deserializeLine(@NotNull JsonArray coordinates) {
         List<Point> points = new ArrayList<>(coordinates.size());
         for (JsonElement pointCoordinatesElement : coordinates) {
             points.add(deserializePoint(pointCoordinatesElement.getAsJsonArray()));
         }
-        return Line.from(points);
+        return LineString.from(points);
     }
 
     @NotNull JsonArray serializePolygon(@NotNull Polygon polygon) {
         JsonArray coordinates = new JsonArray();
 
-        Line exterior = polygon.getExterior();
+        LineString exterior = polygon.getExterior();
         coordinates.add(serializeLine(exterior));
 
-        ImmutableList<Line> interiors = polygon.getInteriors();
-        for (Line interior : interiors) {
+        ImmutableList<LinearRing> interiors = polygon.getInteriors();
+        for (LineString interior : interiors) {
             coordinates.add(serializeLine(interior));
         }
 
@@ -75,11 +72,12 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
     }
 
     @NotNull Polygon deserializePolygon(@NotNull JsonArray coordinates) {
-        Line exterior = deserializeLine(coordinates.get(0).getAsJsonArray());
-        List<Line> interiors = new ArrayList<>();
+        LinearRing exterior = deserializeLine(coordinates.get(0).getAsJsonArray()).toLinearRing();
+        List<LinearRing> interiors = new ArrayList<>();
         // Interior rings start at index 1, as index 0 is the exterior ring
         for (int i = 1; i < coordinates.size(); i++) {
-            interiors.add(deserializeLine(coordinates.get(i).getAsJsonArray()));
+            LinearRing interior = deserializeLine(coordinates.get(i).getAsJsonArray()).toLinearRing();
+            interiors.add(interior);
         }
         return Polygon.withInteriorPolygons(exterior, interiors);
     }

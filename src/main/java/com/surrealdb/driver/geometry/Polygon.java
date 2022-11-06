@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,19 +22,19 @@ import java.util.List;
 @Value
 public class Polygon implements GeometryPrimitive {
 
-    @NotNull Line exterior;
-    @NotNull ImmutableList<Line> interiors;
+    @NotNull LinearRing exterior;
+    @NotNull ImmutableList<LinearRing> interiors;
 
-    private Polygon(@NotNull Line exterior, @NotNull ImmutableList<Line> interiors) {
+    private Polygon(@NotNull LinearRing exterior, @NotNull ImmutableList<LinearRing> interiors) {
         this.exterior = exterior;
         this.interiors = interiors;
     }
 
-    public static @NotNull Polygon withInteriorPolygons(@NotNull Line exterior, @NotNull Collection<Line> interiors) {
+    public static @NotNull Polygon withInteriorPolygons(@NotNull LinearRing exterior, @NotNull Collection<LinearRing> interiors) {
         return new Polygon(exterior, ImmutableList.copyOf(interiors));
     }
 
-    public static @NotNull Polygon from(@NotNull Line exterior) {
+    public static @NotNull Polygon from(@NotNull LinearRing exterior) {
         return new Polygon(exterior, ImmutableList.of());
     }
 
@@ -46,43 +45,49 @@ public class Polygon implements GeometryPrimitive {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        @NotNull List<Line> interiors = new ArrayList<>();
+        @NotNull List<LinearRing> interiors = new ArrayList<>();
         @NonFinal
-        @Nullable Line exterior;
+        @Nullable LinearRing exterior;
 
-        public @NotNull Builder setExterior(@NotNull Line exterior) {
-            this.exterior = exterior;
+        public @NotNull Builder setExterior(@NotNull LineString exterior) {
+            this.exterior = exterior.toLinearRing();
             return this;
         }
 
-        public @NotNull Builder addInterior(Line interior) {
-            this.interiors.add(interior);
+        public @NotNull Builder addInterior(LineString interior) {
+            this.interiors.add(interior.toLinearRing());
             return this;
         }
 
-        public @NotNull Builder addInteriors(@NotNull Collection<Line> interiors) {
-            this.interiors.addAll(interiors);
+        public @NotNull Builder addInteriors(@NotNull Collection<LineString> interiors) {
+            for (LineString interior : interiors) {
+                this.interiors.add(interior.toLinearRing());
+            }
             return this;
         }
 
-        public @NotNull Builder addInteriors(@NotNull Line... interiors) {
-            Collections.addAll(this.interiors, interiors);
+        public @NotNull Builder addInteriors(@NotNull LineString... interiors) {
+            for (LineString interior : interiors) {
+                this.interiors.add(interior.toLinearRing());
+            }
             return this;
         }
 
-        public @NotNull Builder removeInterior(@NotNull Line interior) {
-            this.interiors.remove(interior);
+        public @NotNull Builder removeInterior(@NotNull LineString interior) {
+            this.interiors.remove(interior.toLinearRing());
             return this;
         }
 
-        public @NotNull Builder removeInteriors(@NotNull Collection<Line> interiors) {
-            this.interiors.removeAll(interiors);
+        public @NotNull Builder removeInteriors(@NotNull Collection<LineString> interiors) {
+            for (LineString interior : interiors) {
+                this.interiors.remove(interior.toLinearRing());
+            }
             return this;
         }
 
-        public @NotNull Builder removeInteriors(@NotNull Line... interiors) {
-            for (Line interior : interiors) {
-                this.interiors.remove(interior);
+        public @NotNull Builder removeInteriors(@NotNull LineString... interiors) {
+            for (LineString interior : interiors) {
+                this.interiors.remove(interior.toLinearRing());
             }
             return this;
         }

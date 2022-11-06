@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.SurrealDriver;
 import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.geometry.Line;
+import com.surrealdb.driver.geometry.LineString;
+import com.surrealdb.driver.geometry.LinearRing;
 import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
 import org.junit.jupiter.api.AfterEach;
@@ -49,13 +50,13 @@ public class SurrealDriverGeometryTest {
         driver.createRecord(geometryTable, new GeoContainer("Paris").setPoint(Point.fromYX(48.8566, 2.3522)));
 
         // Forest park in STL
-        Line selectionExterior = Line.builder()
+        LinearRing selectionExterior = LineString.builder()
             .addPointYX(38.632662, -90.304484) // South-west corner
             .addPointYX(38.628888, -90.264734) // South-east corner
             .addPointYX(38.643937, -90.265187) // North-east corner
             .addPointYX(38.647937, -90.304937) // North-west corner
             .addPointYX(38.632662, -90.304484) // South-west corner (again)
-            .build();
+            .buildLinearRing();
         Polygon selection = Polygon.from(selectionExterior);
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);

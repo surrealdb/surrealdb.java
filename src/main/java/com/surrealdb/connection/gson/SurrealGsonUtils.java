@@ -16,7 +16,7 @@ public class SurrealGsonUtils {
         new GeometryLineAdaptor(),
         new GeometryPolygonAdaptor(),
         new GeometryMultiPointAdaptor(),
-        new GeometryMultiLineAdaptor(),
+        new GeometryMultiLineStringAdaptor(),
         new GeometryMultiPolygonAdaptor(),
         new GeometryCollectionAdaptor()
     );
