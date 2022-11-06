@@ -59,13 +59,13 @@ public class SurrealDriverImpl implements SurrealDriver {
         return connection.rpc(executorService, "unset", key);
     }
 
-    public <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult, Map<String, Object> params) {
+    public <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult, Map<String, Object> args) {
         // QueryResult<T>
         TypeToken<?> queryType = TypeToken.getParameterized(QueryResult.class, queryResult);
         // List<QueryResult<T>>
         Type resultType = TypeToken.getParameterized(List.class, queryType.getType()).getType();
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> queryFuture = connection.rpc(executorService, "query", resultType, query, params);
+        CompletableFuture<List<QueryResult<T>>> queryFuture = connection.rpc(executorService, "query", resultType, query, args);
         // Check for errors and return the result
         return queryFuture.thenComposeAsync(this::checkResultsForErrors, executorService);
     }
@@ -83,20 +83,20 @@ public class SurrealDriverImpl implements SurrealDriver {
         return CompletableFuture.completedFuture(queryResults);
     }
 
-    public <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult, Map<String, Object> parameters) {
-        CompletableFuture<List<QueryResult<T>>> queryFuture = queryAsync(query, queryResult, parameters);
+    public <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult, Map<String, Object> args) {
+        CompletableFuture<List<QueryResult<T>>> queryFuture = queryAsync(query, queryResult, args);
         return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
     public <T> CompletableFuture<List<T>> retrieveAllRecordsFromTableAsync(@NotNull SurrealTable<T> table) {
         // SQL query to retrieve all records from the table
         String sql = "SELECT * FROM type::table($tb);";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "tb", table.getName()
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> query = queryAsync(sql, table.getType(), parameters);
+        CompletableFuture<List<QueryResult<T>>> query = queryAsync(sql, table.getType(), args);
         // Return all records from the query
         return query.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -104,12 +104,12 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<Optional<T>> retrieveRecordAsync(@NotNull SurrealTable<T> table, String record) {
         // SQL query to retrieve a record from the table
         String sql = "SELECT * FROM type::thing($what);";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "what", table.makeThing(record)
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> query = queryAsync(sql, table.getType(), parameters);
+        CompletableFuture<List<QueryResult<T>>> query = queryAsync(sql, table.getType(), args);
         // Return the first record from the query
         return query.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
@@ -117,13 +117,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::thing($what) CONTENT $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "what", table.makeThing(record),
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> createFuture = querySingleAsync(sql, table.getType(), parameters);
+        CompletableFuture<Optional<T>> createFuture = querySingleAsync(sql, table.getType(), args);
         // Return the created record
         return createFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -131,13 +131,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::table($tb) CONTENT $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "tb", table.getName(),
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> createFuture = querySingleAsync(sql, table.getType(), parameters);
+        CompletableFuture<Optional<T>> createFuture = querySingleAsync(sql, table.getType(), args);
         // Return the created record
         return createFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -145,13 +145,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<T> updateRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
         // SQL query to update a record
         String sql = "UPDATE type::thing($what) CONTENT $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "what", table.makeThing(record),
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> updateFuture = querySingleAsync(sql, table.getType(), parameters);
+        CompletableFuture<Optional<T>> updateFuture = querySingleAsync(sql, table.getType(), args);
         // Return the updated record
         return updateFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -159,13 +159,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<List<T>> updateAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to update records
         String sql = "UPDATE type::table($tb) CONTENT $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "tb", table.getName(),
             "data", data
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> updateFuture = queryAsync(sql, table.getType(), parameters);
+        CompletableFuture<List<QueryResult<T>>> updateFuture = queryAsync(sql, table.getType(), args);
         // Return the updated records
         return updateFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -173,13 +173,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<List<T>> changeAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to change records
         String sql = "UPDATE type::table($tb) MERGE $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "tb", table.getName(),
             "data", data
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> changeFuture = queryAsync(sql, table.getType(), parameters);
+        CompletableFuture<List<QueryResult<T>>> changeFuture = queryAsync(sql, table.getType(), args);
         // Return the changed records
         return changeFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -187,13 +187,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
         // SQL query to change a record
         String sql = "UPDATE type::thing($what) MERGE $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "what", table.makeThing(record),
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> changeFuture = querySingleAsync(sql, table.getType(), parameters);
+        CompletableFuture<Optional<T>> changeFuture = querySingleAsync(sql, table.getType(), args);
         // Return the changed record
         return changeFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -201,13 +201,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<List<T>> patchAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull List<Patch> patches) {
         // SQL query to patch an entire table
         String sql = "UPDATE type::table($tb) PATCH $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "tb", table.getName(),
             "data", patches
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> patchFuture = queryAsync(sql, table.getType(), parameters);
+        CompletableFuture<List<QueryResult<T>>> patchFuture = queryAsync(sql, table.getType(), args);
         // Return the patched records
         return patchFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -215,13 +215,13 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<T> patchRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull List<Patch> patches) {
         // SQL query to patch a record
         String sql = "UPDATE type::thing($what) PATCH $data RETURN AFTER;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "what", table.makeThing(record),
             "data", patches
         );
         // Execute the query
-        CompletableFuture<Optional<T>> patchFuture = querySingleAsync(sql, table.getType(), parameters);
+        CompletableFuture<Optional<T>> patchFuture = querySingleAsync(sql, table.getType(), args);
         // Return the patched record
         return patchFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -229,12 +229,12 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<List<T>> deleteAllRecordsInTableAsync(@NotNull SurrealTable<T> table) {
         // SQL query to delete records
         String sql = "DELETE type::table($tb) RETURN BEFORE;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "tb", table.getName()
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> deleteFuture = queryAsync(sql, table.getType(), parameters);
+        CompletableFuture<List<QueryResult<T>>> deleteFuture = queryAsync(sql, table.getType(), args);
         // Return the deleted records
         return deleteFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -242,12 +242,12 @@ public class SurrealDriverImpl implements SurrealDriver {
     public <T> CompletableFuture<T> deleteRecordAsync(@NotNull SurrealTable<T> table, String record) {
         // SQL query to delete a record
         String sql = "DELETE type::thing($what) RETURN BEFORE;";
-        // Parameters to use in the query
-        Map<String, Object> parameters = ImmutableMap.of(
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
             "what", table.makeThing(record)
         );
         // Execute the query
-        CompletableFuture<Optional<T>> deleteFuture = querySingleAsync(sql, table.getType(), parameters);
+        CompletableFuture<Optional<T>> deleteFuture = querySingleAsync(sql, table.getType(), args);
         // Return the deleted record
         return deleteFuture.thenApplyAsync(Optional::get, executorService);
     }

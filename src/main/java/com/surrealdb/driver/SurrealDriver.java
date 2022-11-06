@@ -66,24 +66,24 @@ public interface SurrealDriver {
         getResultSynchronously(unsetConnectionWideParameterAsync(key));
     }
 
-    <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult, Map<String, Object> params);
+    <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult, Map<String, Object> args);
 
     default <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult) {
         return queryAsync(query, queryResult, ImmutableMap.of());
     }
 
-    default <T> List<QueryResult<T>> query(String query, Class<T> queryResult, Map<String, Object> params) {
-        return getResultSynchronously(queryAsync(query, queryResult, params));
+    default <T> List<QueryResult<T>> query(String query, Class<T> queryResult, Map<String, Object> args) {
+        return getResultSynchronously(queryAsync(query, queryResult, args));
     }
 
     default <T> List<QueryResult<T>> query(String query, Class<T> queryResult) {
         return getResultSynchronously(queryAsync(query, queryResult));
     }
 
-    <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult, Map<String, Object> params);
+    <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult, Map<String, Object> args);
 
-    default <T> Optional<T> querySingle(String query, Class<T> queryResult, Map<String, Object> params) {
-        return getResultSynchronously(querySingleAsync(query, queryResult, params));
+    default <T> Optional<T> querySingle(String query, Class<T> queryResult, Map<String, Object> args) {
+        return getResultSynchronously(querySingleAsync(query, queryResult, args));
     }
 
     default <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult) {

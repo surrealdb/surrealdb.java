@@ -72,10 +72,10 @@ public class SurrealDriverTest {
 
     @Test
     void testQueryWithParameters() {
-        Map<String, Object> params = ImmutableMap.of(
+        Map<String, Object> args = ImmutableMap.of(
             "firstName", "Tobie"
         );
-        List<QueryResult<Person>> actual = driver.query("SELECT * FROM person WHERE name.first = $firstName", Person.class, params);
+        List<QueryResult<Person>> actual = driver.query("SELECT * FROM person WHERE name.first = $firstName", Person.class, args);
 
         assertEquals(1, actual.size()); // number of queries
         assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
