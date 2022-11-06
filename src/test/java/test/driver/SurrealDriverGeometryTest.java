@@ -42,15 +42,11 @@ public class SurrealDriverGeometryTest {
 
     @Test
     void testQueryingPointsInsidePolygon() {
-        GeoContainer point1 = new GeoContainer("Point 1");
-        // Point inside polygon
-        point1.setPoint(Point.fromYX(38.638688, -90.291562));
-
-        GeoContainer point2 = new GeoContainer("Point 2");
-        point2.setPoint(Point.fromYX(0, 0));
-
-        driver.createRecord(geometryTable, point1);
-        driver.createRecord(geometryTable, point2);
+        // This point is inside the polygon
+        driver.createRecord(geometryTable, new GeoContainer("Middle of Forest Park").setPoint(Point.fromYX(38.638688, -90.291562)));
+        /// These points are not
+        driver.createRecord(geometryTable, new GeoContainer("Point 2").setPoint(Point.fromYX(0, 0)));
+        driver.createRecord(geometryTable, new GeoContainer("Paris").setPoint(Point.fromYX(48.8566, 2.3522)));
 
         // Forest park in STL
         Line selectionExterior = Line.builder()
@@ -67,6 +63,6 @@ public class SurrealDriverGeometryTest {
         Optional<GeoContainer> queryResults = driver.querySingle(query, GeoContainer.class, args);
 
         assertTrue(queryResults.isPresent());
-        assertEquals("Point 1", queryResults.get().getName());
+        assertEquals("Middle of Forest Park", queryResults.get().getName());
     }
 }

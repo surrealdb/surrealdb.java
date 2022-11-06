@@ -89,6 +89,13 @@ public class Line implements GeometryPrimitive, Iterable<Point> {
         return new Line(points.reverse());
     }
 
+    public boolean isClosedLinearRing() {
+        Point firstPoint = points.get(0);
+        Point lastPoint = points.get(points.size() - 1);
+
+        return firstPoint.equals(lastPoint);
+    }
+
     @Override
     public @NonNull Iterator<Point> iterator() {
         return points.iterator();

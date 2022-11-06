@@ -26,8 +26,6 @@ public class Polygon implements GeometryPrimitive {
     @NotNull Line exterior;
     @NotNull ImmutableList<Line> interiors;
 
-    // In the future this should probably validate that the exterior and interiors are valid
-    // linear rings, but SurrealDB doesn't currently do that
     private Polygon(@NotNull Line exterior, @NotNull ImmutableList<Line> interiors) {
         this.exterior = exterior;
         this.interiors = interiors;

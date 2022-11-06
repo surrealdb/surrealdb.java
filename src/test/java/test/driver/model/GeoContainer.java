@@ -3,10 +3,12 @@ package test.driver.model;
 import com.surrealdb.driver.geometry.*;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 
 import javax.annotation.Nullable;
 
 @Data
+@Accessors(chain = true)
 public class GeoContainer {
 
     @NonNull
