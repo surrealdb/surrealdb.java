@@ -41,68 +41,89 @@ Maven:
 
 ### Quick Start
 ```java
-package org.example;
+public class QuickStart {
 
-import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.connection.SurrealConnectionProtocol;
-import com.surrealdb.driver.SyncSurrealDriver;
-
-import java.util.List;
-
-public class Main {
     public static void main(String[] args) {
-        SurrealConnectionSettings connectionSettings = SurrealConnectionSettings.Builder()
-            .setUriFromComponents(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000)
-            .setAutoConnect(false)
-            .build();
-        
-        SurrealConnection connection = SurrealConnection.create(connectionSettings);
-        connection.connect(30); // timeout after 30 seconds
+        // Create a connection with the minimal amount of configuration
+        SurrealConnection connection = SurrealConnection.create(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000);
+        // If the connection is not established within 15 seconds, an exception will be thrown.
+        connection.connect(15);
 
-        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
+        // Create a synchronous driver without any driver settings
+        SurrealDriver driver = SurrealDriver.create(connection);
 
-        driver.signIn("root", "root"); // username & password
-        driver.use("test", "test"); // namespace & database
+        // Sign in with the user 'root' and the password 'root'
+        SurrealAuthCredentials credentials = SurrealRootCredentials.from("root", "root");
 
-        Person tobie = driver.create("person", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        // Sign in with the newly created credentials
+        driver.signIn(credentials);
 
-        List<Person> people = driver.select("person", Person.class);
+        // Use the namespace 'examples' and the database 'quickstart'
+        driver.use("examples", "quickstart");
 
-        System.out.println();
-        System.out.println("Tobie = "+tobie);
-        System.out.println();
-        System.out.println("people = "+people);
-        System.out.println();
+        // Create a reference to the "person" table
+        // note: Creating a table reference has no effect on the database.
+        //       Table references are just wrappers around the table name
+        //       and type of object that will be stored within the table.
+        SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
 
+        // Create a new person
+        Person tobie = new Person();
+        tobie.setTitle("Founder & CEO");
+        tobie.setName("Tobie", "Morgan Hitchcock");
+        tobie.setMarketing(true);
+
+        try {
+            // Save the person to the database
+            System.out.println("Saving person to database...");
+            driver.createRecord(personTable, "tobie", tobie);
+        } catch (SurrealRecordAlreadyExistsException e) {
+            // This exception will be thrown if the record already exists
+            // in the database. In this case, we will just update the record
+            // instead of creating a new one.
+
+            // Try running the program twice to see this behavior in action
+
+            System.out.println("Record already exists, updating instead...");
+            driver.updateRecord(personTable, "tobie", tobie);
+        }
+
+        // Retrieve the person from the database
+        // note: Retrieving a record from the DB returns an Optional. This is to
+        //       make it almost impossible to throw a null pointer exception.
+        Optional<Person> retrievedTobie = driver.retrieveRecord(personTable, "tobie");
+
+        // Print the retrieved person
+        retrievedTobie.ifPresentOrElse(
+            person -> System.out.println("Retrieved person: " + person),
+            () -> System.err.println("Failed to retrieve person")
+        );
+
+        // Disconnect from the database. This is required in order to exit since
+        // the connection is running in a separate thread.
         connection.disconnect();
-        
-        // for more docs, see https://surrealdb.com/docs/integration/libraries/java (coming soon)
     }
 }
 
-class Person {
-    String id;
-    String title;
-    String firstName;
-    String lastName;
-    boolean marketing;
+@Data
+public class Person {
 
-    public Person(String title, String firstName, String lastName, boolean marketing) {
-        this.title = title;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.marketing = marketing;
+    private String id; // This will be automatically assigned by SurrealDB when the object is saved
+    private String title;
+    private Name name;
+    private boolean marketing;
+
+    public void setName(String firstName, String lastName) {
+        this.name = new Name(firstName, lastName);
     }
 
-    @Override
-    public String toString() {
-        return "Person{" +
-                "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", marketing=" + marketing +
-                '}';
+    @Data
+    @AllArgsConstructor
+    public static class Name {
+
+        private String firstName;
+        private String lastName;
+
     }
 }
 ```
@@ -110,6 +131,7 @@ class Person {
 ### Planned Features
 - A complete SDK with repository pattern.
 - Fluent API for building queries.
+- Support for all SurrealDB features.
 - Open an issue for feature requests
 
 

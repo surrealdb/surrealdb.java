@@ -8,6 +8,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 
+/**
+ * An immutable configuration object that can be used to configure the behavior of a {@code SurrealDriver}. To create a
+ * new {@code SurrealDriverSettings} object, call {@link SurrealDriverSettings.Builder}.
+ *
+ */
 @Builder(builderClassName = "Builder", setterPrefix = "set")
 @Getter
 @With
