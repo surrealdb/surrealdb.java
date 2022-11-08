@@ -3,6 +3,7 @@ package com.surrealdb.driver.geometry;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,14 +78,14 @@ public class GeometryCollection {
         return new Builder();
     }
 
-    public Builder toBuilder() {
+    public @NonNull Builder toBuilder() {
         return new Builder().addGeometries(this);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        private final List<GeometryPrimitive> geometries = new ArrayList<>();
+        @NotNull List<GeometryPrimitive> geometries = new ArrayList<>();
 
         /**
          * @param geometry The geometry to add

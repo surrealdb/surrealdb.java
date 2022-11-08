@@ -1,10 +1,7 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -40,7 +37,7 @@ public class MultiLineString implements GeometryPrimitive {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        private final List<LineString> lines = new ArrayList<>();
+        @NotNull List<LineString> lines = new ArrayList<>();
 
         /**
          * @param line The line to add
@@ -91,7 +88,7 @@ public class MultiLineString implements GeometryPrimitive {
          * @param lines The lines to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeLines(@NotNull LineString... lines) {
+        public @NotNull Builder removeLines(@NotNull LineString @NonNull ... lines) {
             for (LineString line : lines) {
                 this.lines.remove(line);
             }

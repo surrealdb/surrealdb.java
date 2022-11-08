@@ -44,7 +44,7 @@ public class SurrealDriverSpecialOperationsTest {
     @Disabled("Disabled until Surreal supports the version command")
     void testGetDatabaseVersion() {
         // Surreal uses the format '{}-{}' when responding to the 'version' RPC.
-        assertTrue(driver.getDatabaseVersion().matches(".*-.*"));
+        assertTrue(driver.databaseVersion().matches(".*-.*"));
     }
 
     @Test

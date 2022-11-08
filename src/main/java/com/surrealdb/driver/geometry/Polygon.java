@@ -3,6 +3,7 @@ package com.surrealdb.driver.geometry;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +55,7 @@ public class Polygon implements GeometryPrimitive {
             return this;
         }
 
-        public @NotNull Builder addInterior(LineString interior) {
+        public @NotNull Builder addInterior(@NonNull LineString interior) {
             this.interiors.add(interior.toLinearRing());
             return this;
         }
@@ -66,7 +67,7 @@ public class Polygon implements GeometryPrimitive {
             return this;
         }
 
-        public @NotNull Builder addInteriors(@NotNull LineString... interiors) {
+        public @NotNull Builder addInteriors(@NotNull LineString @NonNull ... interiors) {
             for (LineString interior : interiors) {
                 this.interiors.add(interior.toLinearRing());
             }
@@ -85,7 +86,7 @@ public class Polygon implements GeometryPrimitive {
             return this;
         }
 
-        public @NotNull Builder removeInteriors(@NotNull LineString... interiors) {
+        public @NotNull Builder removeInteriors(@NotNull LineString @NonNull ... interiors) {
             for (LineString interior : interiors) {
                 this.interiors.remove(interior.toLinearRing());
             }

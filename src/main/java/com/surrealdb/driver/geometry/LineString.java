@@ -105,7 +105,7 @@ public class LineString implements GeometryPrimitive, Iterable<Point> {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        List<Point> points = new ArrayList<>();
+        @NotNull List<Point> points = new ArrayList<>();
 
         /**
          * @param point The point to add

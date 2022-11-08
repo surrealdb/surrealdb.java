@@ -19,7 +19,7 @@ public final class ChangePatch<T> implements Patch {
     /**
      * Used by Gson to serialize the patch.
      */
-    String op = "change";
+    @NotNull String op = "change";
 
     @NotNull String path;
     @NotNull T value;

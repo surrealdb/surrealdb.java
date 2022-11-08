@@ -1,10 +1,12 @@
 package com.surrealdb.driver.patch;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author Khalid Alharisi
  */
 public interface Patch {
 
-    String getPath();
+    @NotNull String getPath();
 
 }

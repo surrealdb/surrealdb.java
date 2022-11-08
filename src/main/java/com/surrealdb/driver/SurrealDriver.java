@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
+import com.surrealdb.driver.sql.QueryResult;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -12,16 +14,16 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-import static com.surrealdb.driver.AsyncUtils.getResultSynchronously;
+import static com.surrealdb.driver.InternalDriverUtils.getResultSynchronously;
 
 public interface SurrealDriver {
 
     static @NotNull SurrealDriver create(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
-        return new SurrealDriverImpl(connection, settings);
+        return new StandardSurrealDriver(connection, settings);
     }
 
     static @NotNull SurrealDriver create(@NotNull SurrealConnection connection) {
-        return new SurrealDriverImpl(connection);
+        return new StandardSurrealDriver(connection, SurrealDriverSettings.DEFAULT);
     }
 
     @NotNull CompletableFuture<Void> pingAsync();
@@ -30,82 +32,82 @@ public interface SurrealDriver {
         getResultSynchronously(pingAsync());
     }
 
-    @NotNull CompletableFuture<String> getDatabaseVersionAsync();
+    @NotNull CompletableFuture<String> databaseVersionAsync();
 
-    default @NotNull String getDatabaseVersion() {
-        return getResultSynchronously(getDatabaseVersionAsync());
+    default @NotNull String databaseVersion() {
+        return getResultSynchronously(databaseVersionAsync());
     }
 
     @NotNull CompletableFuture<Map<String, String>> infoAsync();
 
-    default Map<String, String> info() {
+    default @NotNull Map<String, String> info() {
         return getResultSynchronously(infoAsync());
     }
 
-    CompletableFuture<Void> signInAsync(SurrealAuthCredentials credentials);
+    @NotNull CompletableFuture<Void> signInAsync(@NotNull SurrealAuthCredentials credentials);
 
-    default void signIn(SurrealAuthCredentials credentials) {
+    default void signIn(@NotNull SurrealAuthCredentials credentials) {
         getResultSynchronously(signInAsync(credentials));
     }
 
-    CompletableFuture<Void> useAsync(String namespace, String database);
+    @NotNull CompletableFuture<Void> useAsync(@NotNull String namespace, @NotNull String database);
 
-    default void use(String namespace, String database) {
+    default void use(@NotNull String namespace, @NotNull String database) {
         getResultSynchronously(useAsync(namespace, database));
     }
 
-    CompletableFuture<Void> setConnectionWideParameterAsync(String key, Object value);
+    CompletableFuture<Void> setConnectionWideParameterAsync(@NotNull String key, @NotNull Object value);
 
-    default void setConnectionWideParameter(String key, Object value) {
+    default void setConnectionWideParameter(@NotNull String key, @NotNull Object value) {
         getResultSynchronously(setConnectionWideParameterAsync(key, value));
     }
 
-    CompletableFuture<Void> unsetConnectionWideParameterAsync(String key);
+    CompletableFuture<Void> unsetConnectionWideParameterAsync(@NotNull String key);
 
-    default void unsetConnectionWideParameter(String key) {
+    default void unsetConnectionWideParameter(@NotNull String key) {
         getResultSynchronously(unsetConnectionWideParameterAsync(key));
     }
 
-    <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult, Map<String, Object> args);
+    <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args);
 
-    default <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult) {
-        return queryAsync(query, queryResult, ImmutableMap.of());
+    <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args);
+
+    <T> CompletableFuture<List<T>> sqlFirstAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args);
+
+    default <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NonNull String query, @NonNull Class<T> queryResult) {
+        return sqlAsync(query, queryResult, ImmutableMap.of());
     }
 
-    default <T> List<QueryResult<T>> query(String query, Class<T> queryResult, Map<String, Object> args) {
-        return getResultSynchronously(queryAsync(query, queryResult, args));
+    default <T> List<QueryResult<T>> sql(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+        return getResultSynchronously(sqlAsync(query, queryResult, args));
     }
 
-    default <T> List<QueryResult<T>> query(String query, Class<T> queryResult) {
-        return getResultSynchronously(queryAsync(query, queryResult));
+    default <T> List<QueryResult<T>> sql(@NonNull String query, @NonNull Class<T> queryResult) {
+        return getResultSynchronously(sqlAsync(query, queryResult));
     }
 
-    <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult, Map<String, Object> args);
-
-    default <T> Optional<T> querySingle(String query, Class<T> queryResult, Map<String, Object> args) {
-        return getResultSynchronously(querySingleAsync(query, queryResult, args));
+    default <T> Optional<T> sqlSingle(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+        return getResultSynchronously(sqlSingleAsync(query, queryResult, args));
     }
 
-    <T> CompletableFuture<List<T>> queryFirstAsync(String query, Class<T> queryResult, Map<String, Object> args);
-
-    default <T> List<T> queryFirst(String query, Class<T> queryResult, Map<String, Object> args) {
-        return getResultSynchronously(queryFirstAsync(query, queryResult, args));
+    default <T> Optional<T> sqlSingle(@NonNull String query, @NonNull Class<T> queryResult) {
+        return getResultSynchronously(sqlSingleAsync(query, queryResult));
     }
 
-    default <T> CompletableFuture<List<T>> queryFirstAsync(String query, Class<T> queryResult) {
-        return queryFirstAsync(query, queryResult, ImmutableMap.of());
+    default <T> List<T> sqlFirst(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+        return getResultSynchronously(sqlFirstAsync(query, queryResult, args));
     }
 
-    default <T> List<T> queryFirst(String query, Class<T> queryResult) {
-        return getResultSynchronously(queryFirstAsync(query, queryResult));
+    default <T> CompletableFuture<List<T>> sqlFirstAsync(@NonNull String query, @NonNull Class<T> queryResult) {
+        return sqlFirstAsync(query, queryResult, ImmutableMap.of());
     }
 
-    default <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult) {
-        return querySingleAsync(query, queryResult, ImmutableMap.of());
+    default <T> List<T> sqlFirst(@NonNull String query, @NonNull Class<T> queryResult) {
+        return getResultSynchronously(sqlFirstAsync(query, queryResult));
     }
 
-    default <T> Optional<T> querySingle(String query, Class<T> queryResult) {
-        return getResultSynchronously(querySingleAsync(query, queryResult));
+    default <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NonNull String query, @NonNull Class<T> queryResult) {
+        return sqlSingleAsync(query, queryResult, ImmutableMap.of());
     }
 
     <T> CompletableFuture<List<T>> retrieveAllRecordsFromTableAsync(SurrealTable<T> table);

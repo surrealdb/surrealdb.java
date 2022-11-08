@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @UtilityClass
-class AsyncUtils {
+class InternalDriverUtils {
 
     static <T> T getResultSynchronously(@NotNull CompletableFuture<T> completableFuture) {
         try {

@@ -62,7 +62,7 @@ public class MultiPoint implements GeometryPrimitive {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     static class Builder {
 
-        List<Point> points = new ArrayList<>();
+        @NotNull List<Point> points = new ArrayList<>();
 
         /**
          * @param point The point to add

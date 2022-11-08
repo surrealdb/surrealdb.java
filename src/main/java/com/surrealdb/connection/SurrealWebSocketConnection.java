@@ -6,6 +6,7 @@ import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealException;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -36,6 +37,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @NotNull Gson gson;
 
     @NotNull AtomicLong lastRequestId;
+    @NonFinal
     @NotNull Map<String, RequestEntry> pendingRequests;
 
     boolean logOutgoingMessages;
@@ -236,7 +238,13 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @Override
     public void onClose(int code, String reason, boolean remote) {
         log.debug("Connection closed [code: {}, reason: {}, remote: {}]", code, reason, remote);
-        pendingRequests.clear();
+
+        Map<String, RequestEntry> oldPendingRequests = pendingRequests;
+        pendingRequests = new ConcurrentHashMap<>();
+
+        for (RequestEntry value : oldPendingRequests.values()) {
+            value.getCallback().completeExceptionally(new SurrealNotConnectedException());
+        }
     }
 
     @Override

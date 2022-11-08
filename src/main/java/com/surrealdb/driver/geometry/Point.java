@@ -1,10 +1,7 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.Lists;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +52,7 @@ public final class Point implements GeometryPrimitive {
         return new Point(x, y);
     }
 
-    public static @NotNull Point fromGeoHash(String geoHash) {
+    public static @NotNull Point fromGeoHash(@NonNull String geoHash) {
         DecodingGeoHashCoord xCoord = new DecodingGeoHashCoord(-180, 180);
         DecodingGeoHashCoord yCoord = new DecodingGeoHashCoord(-90, 90);
         boolean lng = true;

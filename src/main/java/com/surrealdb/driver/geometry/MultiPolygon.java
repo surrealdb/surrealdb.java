@@ -74,7 +74,7 @@ public class MultiPolygon implements GeometryPrimitive {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     static class Builder {
 
-        private final List<Polygon> polygons = new ArrayList<>();
+        @NotNull List<Polygon> polygons = new ArrayList<>();
 
         /**
          * @param polygon The polygon to add

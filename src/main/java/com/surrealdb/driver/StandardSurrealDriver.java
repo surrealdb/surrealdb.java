@@ -6,6 +6,8 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
+import com.surrealdb.driver.sql.QueryResult;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -16,25 +18,21 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-public class SurrealDriverImpl implements SurrealDriver {
+public class StandardSurrealDriver implements SurrealDriver {
 
     @NotNull SurrealConnection connection;
     @NotNull ExecutorService executorService;
 
-    public SurrealDriverImpl(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
+    public StandardSurrealDriver(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
         this.connection = connection;
         this.executorService = settings.getAsyncOperationExecutorService();
-    }
-
-    public SurrealDriverImpl(@NotNull SurrealConnection connection) {
-        this(connection, SurrealDriverSettings.DEFAULT);
     }
 
     public @NotNull CompletableFuture<Void> pingAsync() {
         return connection.rpc(executorService, "ping");
     }
 
-    public @NotNull CompletableFuture<String> getDatabaseVersionAsync() {
+    public @NotNull CompletableFuture<String> databaseVersionAsync() {
         return connection.rpc(executorService, "version", String.class);
     }
 
@@ -43,23 +41,23 @@ public class SurrealDriverImpl implements SurrealDriver {
         return connection.rpc(executorService, "info", resultType);
     }
 
-    public @NotNull CompletableFuture<Void> signInAsync(SurrealAuthCredentials credentials) {
+    public @NotNull CompletableFuture<Void> signInAsync(@NonNull SurrealAuthCredentials credentials) {
         return connection.rpc(executorService, "signin", credentials);
     }
 
-    public @NotNull CompletableFuture<Void> useAsync(String namespace, String database) {
+    public @NotNull CompletableFuture<Void> useAsync(@NonNull String namespace, @NonNull String database) {
         return connection.rpc(executorService, "use", namespace, database);
     }
 
-    public @NotNull CompletableFuture<Void> setConnectionWideParameterAsync(String key, Object value) {
+    public @NotNull CompletableFuture<Void> setConnectionWideParameterAsync(@NonNull String key, @NonNull Object value) {
         return connection.rpc(executorService, "let", key, value);
     }
 
-    public @NotNull CompletableFuture<Void> unsetConnectionWideParameterAsync(String key) {
+    public @NotNull CompletableFuture<Void> unsetConnectionWideParameterAsync(@NonNull String key) {
         return connection.rpc(executorService, "unset", key);
     }
 
-    public <T> CompletableFuture<List<QueryResult<T>>> queryAsync(String query, Class<T> queryResult, Map<String, Object> args) {
+    public <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
         // QueryResult<T>
         TypeToken<?> queryType = TypeToken.getParameterized(QueryResult.class, queryResult);
         // List<QueryResult<T>>
@@ -83,14 +81,14 @@ public class SurrealDriverImpl implements SurrealDriver {
         return CompletableFuture.completedFuture(queryResults);
     }
 
-    public <T> CompletableFuture<Optional<T>> querySingleAsync(String query, Class<T> queryResult, Map<String, Object> args) {
-        CompletableFuture<List<QueryResult<T>>> queryFuture = queryAsync(query, queryResult, args);
+    public <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+        CompletableFuture<List<QueryResult<T>>> queryFuture = sqlAsync(query, queryResult, args);
         return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
     @Override
-    public <T> CompletableFuture<List<T>> queryFirstAsync(String query, Class<T> queryResult, Map<String, Object> args) {
-        CompletableFuture<List<QueryResult<T>>> queryFuture = queryAsync(query, queryResult, args);
+    public <T> CompletableFuture<List<T>> sqlFirstAsync(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+        CompletableFuture<List<QueryResult<T>>> queryFuture = sqlAsync(query, queryResult, args);
         return queryFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
 
@@ -102,7 +100,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "tb", table.getName()
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> query = queryAsync(sql, table.getType(), args);
+        CompletableFuture<List<QueryResult<T>>> query = sqlAsync(sql, table.getType(), args);
         // Return all records from the query
         return query.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -115,9 +113,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "what", table.makeThing(record)
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> query = queryAsync(sql, table.getType(), args);
-        // Return the first record from the query
-        return query.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
+        return sqlSingleAsync(sql, table.getType(), args);
     }
 
     public <T> CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, String record, @NotNull T data) {
@@ -129,7 +125,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> createFuture = querySingleAsync(sql, table.getType(), args);
+        CompletableFuture<Optional<T>> createFuture = sqlSingleAsync(sql, table.getType(), args);
         // Return the created record
         return createFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -143,7 +139,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> createFuture = querySingleAsync(sql, table.getType(), args);
+        CompletableFuture<Optional<T>> createFuture = sqlSingleAsync(sql, table.getType(), args);
         // Return the created record
         return createFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -157,7 +153,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> updateFuture = querySingleAsync(sql, table.getType(), args);
+        CompletableFuture<Optional<T>> updateFuture = sqlSingleAsync(sql, table.getType(), args);
         // Return the updated record
         return updateFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -171,7 +167,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", data
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> updateFuture = queryAsync(sql, table.getType(), args);
+        CompletableFuture<List<QueryResult<T>>> updateFuture = sqlAsync(sql, table.getType(), args);
         // Return the updated records
         return updateFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -185,7 +181,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", data
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> changeFuture = queryAsync(sql, table.getType(), args);
+        CompletableFuture<List<QueryResult<T>>> changeFuture = sqlAsync(sql, table.getType(), args);
         // Return the changed records
         return changeFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -199,7 +195,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", data
         );
         // Execute the query
-        CompletableFuture<Optional<T>> changeFuture = querySingleAsync(sql, table.getType(), args);
+        CompletableFuture<Optional<T>> changeFuture = sqlSingleAsync(sql, table.getType(), args);
         // Return the changed record
         return changeFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -213,7 +209,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", patches
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> patchFuture = queryAsync(sql, table.getType(), args);
+        CompletableFuture<List<QueryResult<T>>> patchFuture = sqlAsync(sql, table.getType(), args);
         // Return the patched records
         return patchFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -227,7 +223,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "data", patches
         );
         // Execute the query
-        CompletableFuture<Optional<T>> patchFuture = querySingleAsync(sql, table.getType(), args);
+        CompletableFuture<Optional<T>> patchFuture = sqlSingleAsync(sql, table.getType(), args);
         // Return the patched record
         return patchFuture.thenApplyAsync(Optional::get, executorService);
     }
@@ -240,7 +236,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "tb", table.getName()
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> deleteFuture = queryAsync(sql, table.getType(), args);
+        CompletableFuture<List<QueryResult<T>>> deleteFuture = sqlAsync(sql, table.getType(), args);
         // Return the deleted records
         return deleteFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
@@ -253,7 +249,7 @@ public class SurrealDriverImpl implements SurrealDriver {
             "what", table.makeThing(record)
         );
         // Execute the query
-        CompletableFuture<Optional<T>> deleteFuture = querySingleAsync(sql, table.getType(), args);
+        CompletableFuture<Optional<T>> deleteFuture = sqlSingleAsync(sql, table.getType(), args);
         // Return the deleted record
         return deleteFuture.thenApplyAsync(Optional::get, executorService);
     }

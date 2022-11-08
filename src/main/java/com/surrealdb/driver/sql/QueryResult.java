@@ -1,4 +1,4 @@
-package com.surrealdb.driver;
+package com.surrealdb.driver.sql;
 
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;

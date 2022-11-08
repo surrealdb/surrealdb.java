@@ -52,7 +52,7 @@ public class LinearRing extends LineString {
 
     @Override
     public @NotNull Point getPoint(int index) {
-        if (index == super.getPointCount() && !closed) {
+        if (!closed && index == super.getPointCount()) {
             return super.getPoint(0);
         }
 
@@ -80,7 +80,7 @@ public class LinearRing extends LineString {
         }
 
         @Override
-        public Point next() {
+        public @NonNull Point next() {
             return linearRing.getPoint(index++);
         }
     }

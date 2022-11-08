@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public class SurrealExceptionUtils {
 
     // precomputed private variables
-    private static final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("Database record `(.+):(.+)` already exists");
+    private static final @NotNull Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("Database record `(.+):(.+)` already exists");
 
     public static @NotNull SurrealException createExceptionFromMessage(@NotNull String message) {
         if (message.contains("There was a problem with authentication")) {

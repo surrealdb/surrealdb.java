@@ -83,7 +83,7 @@ public class SurrealDriverGeometryTest {
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);
         String query = "SELECT * FROM cities WHERE location INSIDE $selection";
-        List<City> cities = driver.queryFirst(query, City.class, args);
+        List<City> cities = driver.sqlFirst(query, City.class, args);
 
         assertEquals(2, cities.size());
 

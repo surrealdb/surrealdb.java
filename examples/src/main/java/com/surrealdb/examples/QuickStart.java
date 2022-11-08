@@ -8,9 +8,11 @@ import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
 import com.surrealdb.examples.models.Person;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
+@Slf4j
 public class QuickStart {
 
     public static void main(String[] args) {
@@ -45,7 +47,7 @@ public class QuickStart {
 
         try {
             // Save the person to the database
-            System.out.println("Saving person to database...");
+            log.info("Saving person to the database...");
             driver.createRecord(personTable, "tobie", tobie);
         } catch (SurrealRecordAlreadyExistsException e) {
             // This exception will be thrown if the record already exists
@@ -54,7 +56,7 @@ public class QuickStart {
 
             // Try running the program twice to see this behavior in action
 
-            System.out.println("Record already exists, updating instead...");
+            log.info("Record already exists, updating instead...");
             driver.updateRecord(personTable, "tobie", tobie);
         }
 
@@ -65,8 +67,8 @@ public class QuickStart {
 
         // Print the retrieved person
         retrievedTobie.ifPresentOrElse(
-                person -> System.out.println("Retrieved person: " + person),
-                () -> System.err.println("Failed to retrieve person")
+            person -> log.info("Retrieved person: {}", person),
+            () -> log.warn("Could not retrieve person")
         );
 
         // Disconnect from the database. This is required in order to exit since

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
-import com.surrealdb.driver.QueryResult;
+import com.surrealdb.driver.sql.QueryResult;
 import com.surrealdb.driver.SurrealDriver;
 import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.patch.Patch;
@@ -65,7 +65,7 @@ public class SurrealDriverTest {
     void testSetConnectionWideParameter() {
         Person.Name expectedName = new Person.Name("First", "Last");
         driver.setConnectionWideParameter("default_name", expectedName);
-        Person person = driver.querySingle("CREATE person:global_test SET name = $default_name", Person.class).get();
+        Person person = driver.sqlSingle("CREATE person:global_test SET name = $default_name", Person.class).get();
 
         assertEquals(expectedName, person.getName());
     }
@@ -75,7 +75,7 @@ public class SurrealDriverTest {
         Map<String, Object> args = ImmutableMap.of(
             "firstName", "Tobie"
         );
-        List<QueryResult<Person>> actual = driver.query("SELECT * FROM person WHERE name.first = $firstName", Person.class, args);
+        List<QueryResult<Person>> actual = driver.sql("SELECT * FROM person WHERE name.first = $firstName", Person.class, args);
 
         assertEquals(1, actual.size()); // number of queries
         assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
@@ -84,7 +84,7 @@ public class SurrealDriverTest {
 
     @Test
     void testQuerySingleExists() {
-        Optional<Person> optionalPerson = driver.querySingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", Person.class);
+        Optional<Person> optionalPerson = driver.sqlSingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", Person.class);
 
         assertTrue(optionalPerson.isPresent());
         Person person = optionalPerson.get();
@@ -96,7 +96,7 @@ public class SurrealDriverTest {
         Map<String, Object> args = ImmutableMap.of(
             "marketing", false
         );
-        Optional<Person> optionalPerson = driver.querySingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", Person.class, args);
+        Optional<Person> optionalPerson = driver.sqlSingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", Person.class, args);
 
         assertFalse(optionalPerson.isPresent());
     }
