@@ -66,10 +66,11 @@ public class QuickStart {
         Optional<Person> retrievedTobie = driver.retrieveRecord(personTable, "tobie");
 
         // Print the retrieved person
-        retrievedTobie.ifPresentOrElse(
-            person -> log.info("Retrieved person: {}", person),
-            () -> log.warn("Could not retrieve person")
-        );
+        if (retrievedTobie.isPresent()) {
+            log.info("Retrieved person from the database: {}", retrievedTobie.get());
+        } else {
+            log.error("Failed to retrieve person from the database");
+        }
 
         // Disconnect from the database. This is required in order to exit since
         // the connection is running in a separate thread.
