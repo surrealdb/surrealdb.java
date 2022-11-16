@@ -1,10 +1,9 @@
 package test.driver.geometry;
 
+import com.google.common.collect.ImmutableList;
 import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.Point;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,7 +52,7 @@ public class LineStringTest {
             .addPoint(Point.fromXY(1, 2))
             .addPointXY(3, 4)
             .addPointYX(6, 5)
-            .addPoints(List.of(Point.fromXY(7, 8), Point.fromXY(9, 10)))
+            .addPoints(ImmutableList.of(Point.fromXY(7, 8), Point.fromXY(9, 10)))
             .addPoints(Point.fromXY(11, 12), Point.fromXY(13, 14))
             .build();
 
@@ -80,7 +79,7 @@ public class LineStringTest {
         LineString line = LineString.from(p1, p2, p3, p4, p5, p6, p7)
             .toBuilder()
             .removePoint(p2)
-            .removePoints(List.of(p3, p5))
+            .removePoints(ImmutableList.of(p3, p5))
             .removePoints(p6, p7)
             .build();
 

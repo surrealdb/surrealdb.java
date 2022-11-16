@@ -18,6 +18,7 @@ import test.driver.model.GeoContainer;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -87,7 +88,7 @@ public class SurrealDriverGeometryTest {
 
         assertEquals(2, cities.size());
 
-        List<String> cityNames = cities.stream().map(City::getName).toList();
+        List<String> cityNames = cities.stream().map(City::getName).collect(Collectors.toList());
         assertTrue(cityNames.contains("Tokyo"), "Tokyo should be in the selection");
         assertTrue(cityNames.contains("Osaka"), "Osaka should be in the selection");
     }
