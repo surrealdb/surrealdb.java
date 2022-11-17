@@ -42,7 +42,7 @@ public class SurrealConnectionSettings {
     public static final SurrealConnectionSettings LOCAL_DEFAULT = SurrealConnectionSettings.builder().build();
 
     @lombok.Builder.Default
-    @NotNull URI uri = URI.create("ws://localhost:8000/rpc");
+    @NotNull URI uri = createURI(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000);
 
     @lombok.Builder.Default
     @NotNull Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -77,6 +77,10 @@ public class SurrealConnectionSettings {
     @lombok.Builder.Default
     int defaultConnectTimeoutSeconds = 15;
 
+    private static @NotNull URI createURI(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
+        return URI.create(protocol.getScheme() + "://" + host + ":" + port + "/rpc");
+    }
+
     /**
      * A builder class for creating a {@link SurrealConnectionSettings} instance. Use {@code SurrealConnectionSettings.builder()}
      * to create a new instance.
@@ -94,7 +98,7 @@ public class SurrealConnectionSettings {
          * @return this builder
          */
         public @NotNull Builder setUriFromComponents(@NotNull SurrealConnectionProtocol protocol, String host, int port) {
-            setUri(URI.create(String.format("%s://%s:%d/rpc", protocol.getScheme(), host, port)));
+            setUri(createURI(protocol, host, port));
             return this;
         }
     }
