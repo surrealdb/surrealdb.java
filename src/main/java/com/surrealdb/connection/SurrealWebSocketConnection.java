@@ -55,7 +55,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @Deprecated
     public SurrealWebSocketConnection(@NotNull String host, int port, boolean useTls) {
         this(SurrealConnectionSettings.builder()
-            .setUriFromComponents(useTls ? SurrealConnectionProtocol.WEB_SOCKET_SECURE : SurrealConnectionProtocol.WEB_SOCKET, host, port)
+            .setUriFromComponents(useTls ? SurrealConnectionProtocol.WEB_SOCKET_SSL : SurrealConnectionProtocol.WEB_SOCKET, host, port)
             .build());
     }
 

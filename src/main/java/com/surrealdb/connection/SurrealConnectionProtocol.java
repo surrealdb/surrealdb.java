@@ -15,7 +15,7 @@ public enum SurrealConnectionProtocol {
     /**
      * Secure WebSocket protocol.
      */
-    WEB_SOCKET_SECURE("wss");
+    WEB_SOCKET_SSL("wss");
 
     @NotNull String scheme;
 
