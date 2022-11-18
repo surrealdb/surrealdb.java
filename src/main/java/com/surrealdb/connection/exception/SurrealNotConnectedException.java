@@ -6,4 +6,8 @@ package com.surrealdb.connection.exception;
  * @author Khalid Alharisi
  */
 public final class SurrealNotConnectedException extends SurrealException {
+
+    public SurrealNotConnectedException() {
+        super("Not connected to the database");
+    }
 }

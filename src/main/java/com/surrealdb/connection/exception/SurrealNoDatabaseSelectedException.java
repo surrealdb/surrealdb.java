@@ -7,4 +7,8 @@ package com.surrealdb.connection.exception;
  * @author Khalid Alharisi
  */
 public final class SurrealNoDatabaseSelectedException extends SurrealException {
+
+    public SurrealNoDatabaseSelectedException() {
+        super("No database selected");
+    }
 }

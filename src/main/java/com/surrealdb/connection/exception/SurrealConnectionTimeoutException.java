@@ -6,4 +6,8 @@ package com.surrealdb.connection.exception;
  * @author Khalid Alharisi
  */
 public final class SurrealConnectionTimeoutException extends SurrealException {
+
+    public SurrealConnectionTimeoutException() {
+        super("Connection timed out");
+    }
 }

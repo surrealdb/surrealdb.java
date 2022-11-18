@@ -26,6 +26,7 @@ public class SurrealExceptionUtils {
             return new SurrealRecordAlreadyExistsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2));
         }
 
+        // If we don't know what the error is, just return a generic exception
         return new SurrealException(message);
     }
 }

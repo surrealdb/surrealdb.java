@@ -7,4 +7,8 @@ package com.surrealdb.connection.exception;
  * @author Khalid Alharisi
  */
 public final class SurrealAuthenticationException extends SurrealException {
+
+    public SurrealAuthenticationException() {
+        super("Not authenticated");
+    }
 }
