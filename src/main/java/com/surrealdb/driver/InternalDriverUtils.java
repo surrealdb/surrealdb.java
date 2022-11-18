@@ -7,6 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Shared methods used by all {@link SurrealDriver} implementations. As the class name suggests, these methods are not
+ * part of the public API.
+ */
 @UtilityClass
 class InternalDriverUtils {
 

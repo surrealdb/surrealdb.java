@@ -18,7 +18,7 @@ import java.time.temporal.ChronoUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Damian Kocher
+ * E2E serialization tests
  */
 public class SurrealDriverGsonTest {
 

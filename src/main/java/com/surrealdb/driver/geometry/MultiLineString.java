@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * MultiLines can be used to store multiple {@code lines} in a single value.
  *
- * @author Damian Kocher
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#multiline">SurrealDB Docs - MultiLine</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.5">GeoJSON - MultiLine</a>
  */

@@ -15,7 +15,6 @@ import java.util.List;
 /**
  * MultiPoints can be used to store multiple geometry points in a single value.
  *
- * @author Damian Kocher
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#multipoint">Surreal Docs - MultiPoint</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.3">GeoJSON - MultiPoint</a>
  */

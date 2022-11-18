@@ -16,7 +16,6 @@ import java.util.List;
  * {@link Polygon}, {@link MultiPoint}, {@link MultiLineString}, and {@link MultiPolygon} are supported. It's possible to store more
  * than one 'singe' geometry type, but it's not recommended. Instead, use {@code MultiPoint}, {@code MultiLine}, or {@code MultiPolygon}.
  *
- * @author Damian Kocher
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#collection">SurrealDB Docs - Geometry Collections</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.8">GeoJSON - Geometry Collections</a>
  */

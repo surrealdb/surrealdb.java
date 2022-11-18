@@ -10,7 +10,6 @@ import java.util.*;
  * A GeoJSON LineString value for storing a geometric path. Paths must have at least two points,
  * but may have more.
  *
- * @author Damian Kocher
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#line">SurrealDB Docs - Line</a>
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.4">GeoJSON Specification - LineString</a>
  */

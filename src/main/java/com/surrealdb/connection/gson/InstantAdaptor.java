@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
 import java.time.Instant;
 
 /**
- * @author Damian Kocher
+ * (de)serializer for {@link Instant} objects.
  */
 final class InstantAdaptor extends SurrealGsonAdaptor<Instant> {
 

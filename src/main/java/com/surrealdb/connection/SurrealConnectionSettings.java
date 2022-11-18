@@ -27,8 +27,6 @@ import java.net.URI;
  *     <li>auto connect: false</li>
  *     <li>defaultConnectTimeoutSeconds: 15 seconds</li>
  * </ul>
- *
- * @author Damian Kocher
  */
 @Builder(builderClassName = "Builder", setterPrefix = "set")
 @Getter

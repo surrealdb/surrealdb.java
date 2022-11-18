@@ -15,7 +15,6 @@ import java.util.List;
 /**
  * A GeoJSON Polygon value for storing a geometric area.
  *
- * @author Damian Kocher
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#polygon">SurrealDB Docs - Polygon</a>
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.6">GeoJSON Specification - Polygon</a>
  */

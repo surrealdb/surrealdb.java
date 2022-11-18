@@ -7,8 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Type;
 
 /**
- * @param <T> the type of the object to be serialized/deserialized
- * @author Damian Kocher
+ * A base class for Surreal Gson (de)serializers.
  */
 abstract class SurrealGsonAdaptor<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 

@@ -3,17 +3,17 @@ package com.surrealdb.connection;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @author Damian Kocher
+ * An enum containing protocols that can be used to connect to a SurrealDB server.
  */
 public enum SurrealConnectionProtocol {
 
     /**
-     * WebSocket protocol.
+     * WebSocket without encryption. Uses <b>ws://</b> as the protocol scheme.
      */
     WEB_SOCKET("ws"),
 
     /**
-     * Secure WebSocket protocol.
+     * WebSocket over SSL. Uses <b>wss://</b> as the protocol scheme.
      */
     WEB_SOCKET_SSL("wss");
 

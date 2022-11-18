@@ -15,6 +15,9 @@ import java.util.concurrent.ExecutorService;
 
 import static com.surrealdb.driver.InternalDriverUtils.getResultSynchronously;
 
+/**
+ * @author Khalid Alharisi
+ */
 public interface SurrealDriver {
 
     static @NotNull SurrealDriver create(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {

@@ -17,6 +17,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * @author Khalid Alharisi
+ */
 public class StandardSurrealDriver implements SurrealDriver {
 
     @NotNull SurrealConnection connection;

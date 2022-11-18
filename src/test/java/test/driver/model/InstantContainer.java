@@ -9,7 +9,6 @@ import java.util.List;
 /**
  * Used for testing instant (de)serialization.
  *
- * @author Damian Kocher
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @EqualsAndHashCode

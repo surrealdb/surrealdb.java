@@ -12,8 +12,6 @@ import java.util.concurrent.CompletableFuture;
 /**
  * An internal container for a pending request data.
  * Used to store result type for deserialization, as well as a future to callback.
- *
- * @author Damian Kocher
  */
 @Value
 class RequestEntry {
