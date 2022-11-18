@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SurrealTable<T> {
+public final class SurrealTable<T> {
 
     @NotNull String name;
     @NotNull Class<T> type;

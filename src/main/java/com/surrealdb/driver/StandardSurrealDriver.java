@@ -3,6 +3,7 @@ package com.surrealdb.driver;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.connection.exception.SurrealException;
 import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
@@ -72,11 +73,10 @@ public class StandardSurrealDriver implements SurrealDriver {
 
     private <T> @NotNull CompletableFuture<List<QueryResult<T>>> checkResultsForErrors(@NotNull List<QueryResult<T>> queryResults) {
         for (QueryResult<T> queryResult : queryResults) {
-            if (queryResult.getStatus().equals("ERR") && queryResult.getDetail() != null) {
-                // Java 8 doesn't have CompletableFuture.failedFuture() so we have to do this...
-                CompletableFuture<List<QueryResult<T>>> exceptionalFuture = new CompletableFuture<>();
-                exceptionalFuture.completeExceptionally(SurrealExceptionUtils.createExceptionFromMessage(queryResult.getDetail()));
-                return exceptionalFuture;
+            if (queryResult.getStatus().equals("ERR")) {
+                String errorMessage = queryResult.getDetail().orElse("");
+                SurrealException exception = SurrealExceptionUtils.createExceptionFromMessage(errorMessage);
+                return CompletableFuture.failedFuture(exception);
             }
         }
 

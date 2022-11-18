@@ -19,7 +19,6 @@ import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -161,8 +160,47 @@ public class SurrealWebSocketConnection implements SurrealConnection {
         }
 
         @Override
-        public void onOpen(ServerHandshake handshakeData) {
-            log.debug("Connected to SurrealDB server {}", uri);
+        public <T> @NotNull CompletableFuture<T> rpc(@NotNull ExecutorService executorService, @NotNull String method, @Nullable Type resultType, Object @NotNull ... params) {
+            return CompletableFuture.supplyAsync(() -> {
+                String requestId = Long.toString(lastRequestId.getAndIncrement());
+                Instant timestamp = Instant.now();
+                CompletableFuture<T> callback = new CompletableFuture<>();
+
+                RequestEntry requestEntry = new RequestEntry(requestId, timestamp, callback, method, resultType);
+                pendingRequests.put(requestId, requestEntry);
+
+                try {
+                    // Create a model for serialization
+                    RpcRequest request = new RpcRequest(requestId, method, params);
+                    // Serialize the model
+                    String json = gson.toJson(request);
+                    // Log the request
+                    logRpcRequest(method, requestId, json);
+                    // Send the request
+                    send(json);
+                } catch (WebsocketNotConnectedException ignored) {
+                    callback.completeExceptionally(new SurrealNotConnectedException());
+                } catch (Exception e) {
+                    callback.completeExceptionally(new SurrealException("Failed to send RPC request", e));
+                }
+
+                // If there was an error sending the request, remove the request entry from the map
+                // since we will never receive a response for it
+                if (callback.isCompletedExceptionally()) {
+                    pendingRequests.remove(requestId);
+                }
+
+                return callback;
+            }, executorService).thenComposeAsync(future -> future, executorService);
+        }
+
+        private void logRpcRequest(@NotNull String method, @NotNull String requestId, @NotNull String json) {
+            if (!logOutgoingMessages) {
+                return;
+            }
+
+            String body = method.equals("signin") && !logAuthenticationCredentials ? "REDACTED" : json;
+            log.debug("Outgoing RPC [id: {}, method: {}, request: {}]", requestId, method, body);
         }
 
         @Override
@@ -187,36 +225,43 @@ public class SurrealWebSocketConnection implements SurrealConnection {
             // Remove the request entry from the map
             pendingRequests.remove(requestId);
 
-            Optional<Type> resultType = requestEntry.getResultType();
             CompletableFuture<?> callback = requestEntry.getCallback();
-
             try {
-                Optional<RpcResponse.Error> optionalError = response.getError();
-
-                if (optionalError.isPresent()) {
-                    RpcResponse.Error error = optionalError.get();
-                    String errorMessage = error.getMessage();
-
-                    if (logIncomingMessages) {
-                        int errorCode = error.getCode();
-                        log.error("Received RPC error [id: {}, code: {}, message: {}]", requestId, errorCode, errorMessage);
-                    }
-
-                    SurrealException exception = SurrealExceptionUtils.createExceptionFromMessage(errorMessage);
-                    callback.completeExceptionally(exception);
-                }
-
-                logSuccessfulRpcResponse(requestEntry, message);
-
-                if (!resultType.isPresent()) {
-                    callback.complete(null);
-                    return;
-                }
-
-                callback.complete(gson.fromJson(response.getResult(), resultType.get()));
+                response.getError().ifPresentOrElse(
+                    error -> handleRpcError(requestEntry, error),
+                    () -> handleRpcSuccess(requestEntry, response, message)
+                );
             } catch (Exception e) {
+                log.error("Failed to handle RPC response", e);
                 callback.completeExceptionally(e);
             }
+
+            if (!callback.isDone()) {
+                log.error("RPC callback was not completed by the handler");
+                callback.completeExceptionally(new SurrealException("RPC callback was not completed by the handler"));
+            }
+        }
+
+        private void handleRpcError(@NotNull RequestEntry requestEntry, @NotNull RpcResponse.Error error) {
+            String errorMessage = error.getMessage();
+            CompletableFuture<?> callback = requestEntry.getCallback();
+
+            if (logIncomingMessages) {
+                int errorCode = error.getCode();
+                log.error("Received RPC error [id: {}, code: {}, message: {}]", requestEntry.getId(), errorCode, errorMessage);
+            }
+
+            SurrealException exception = SurrealExceptionUtils.createExceptionFromMessage(errorMessage);
+            callback.completeExceptionally(exception);
+        }
+
+        private void handleRpcSuccess(RequestEntry requestEntry, @NotNull RpcResponse response, String message) {
+            logSuccessfulRpcResponse(requestEntry, message);
+
+            requestEntry.getResultType().ifPresentOrElse(
+                resultType -> requestEntry.getCallback().complete(gson.fromJson(response.getResult(), resultType)),
+                () -> requestEntry.getCallback().complete(null)
+            );
         }
 
         private void logSuccessfulRpcResponse(@NotNull RequestEntry requestEntry, String message) {
@@ -228,23 +273,6 @@ public class SurrealWebSocketConnection implements SurrealConnection {
             String method = requestEntry.getMethod();
 
             log.debug("Incoming RPC [id: {}, method: {}, response: {}]", id, method, message);
-        }
-
-        @Override
-        public void onClose(int code, String reason, boolean remote) {
-            log.debug("Connection closed [code: {}, reason: {}, remote: {}]", code, reason, remote);
-            onClose.accept(remote);
-
-            for (RequestEntry value : pendingRequests.values()) {
-                value.getCallback().completeExceptionally(new SurrealNotConnectedException());
-            }
-        }
-
-        @Override
-        public void onError(Exception exception) {
-            if (!(exception instanceof ConnectException) && !(exception instanceof NoRouteToHostException)) {
-                log.error("Connection error", exception);
-            }
         }
 
         @Override
@@ -298,47 +326,25 @@ public class SurrealWebSocketConnection implements SurrealConnection {
         }
 
         @Override
-        public <T> @NotNull CompletableFuture<T> rpc(@NotNull ExecutorService executorService, @NotNull String method, @Nullable Type resultType, Object @NotNull ... params) {
-            return CompletableFuture.supplyAsync(() -> {
-                String requestId = Long.toString(lastRequestId.getAndIncrement());
-                Instant timestamp = Instant.now();
-                CompletableFuture<T> callback = new CompletableFuture<>();
-
-                RequestEntry requestEntry = new RequestEntry(requestId, timestamp, callback, method, resultType);
-                pendingRequests.put(requestId, requestEntry);
-
-                try {
-                    // Create a model for serialization
-                    RpcRequest request = new RpcRequest(requestId, method, params);
-                    // Serialize the model
-                    String json = gson.toJson(request);
-                    // Log the request
-                    logRpcRequest(method, requestId, json);
-                    // Send the request
-                    send(json);
-                } catch (WebsocketNotConnectedException ignored) {
-                    callback.completeExceptionally(new SurrealNotConnectedException());
-                } catch (Exception e) {
-                    callback.completeExceptionally(new SurrealException("Failed to send RPC request", e));
-                }
-
-                // If there was an error sending the request, remove the request entry from the map
-                // since we will never receive a response for it
-                if (callback.isCompletedExceptionally()) {
-                    pendingRequests.remove(requestId);
-                }
-
-                return callback;
-            }, executorService).thenComposeAsync(future -> future, executorService);
+        public void onOpen(ServerHandshake handshakeData) {
+            log.debug("Connected to SurrealDB server {}", uri);
         }
 
-        private void logRpcRequest(@NotNull String method, @NotNull String requestId, @NotNull String json) {
-            if (!logOutgoingMessages) {
-                return;
-            }
+        @Override
+        public void onClose(int code, String reason, boolean remote) {
+            log.debug("Connection closed [code: {}, reason: {}, remote: {}]", code, reason, remote);
+            onClose.accept(remote);
 
-            String body = method.equals("signin") && !logAuthenticationCredentials ? "REDACTED" : json;
-            log.debug("Outgoing RPC [id: {}, method: {}, request: {}]", requestId, method, body);
+            for (RequestEntry value : pendingRequests.values()) {
+                value.getCallback().completeExceptionally(new SurrealNotConnectedException());
+            }
+        }
+
+        @Override
+        public void onError(Exception exception) {
+            if (!(exception instanceof ConnectException) && !(exception instanceof NoRouteToHostException)) {
+                log.error("Connection error", exception);
+            }
         }
     }
 }

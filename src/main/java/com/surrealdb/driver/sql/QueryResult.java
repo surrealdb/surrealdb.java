@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Khalid Alharisi
@@ -17,4 +18,7 @@ public class QueryResult<T> {
     @NotNull String status;
     @NotNull String time;
 
+    public @NotNull Optional<String> getDetail() {
+        return Optional.ofNullable(detail);
+    }
 }

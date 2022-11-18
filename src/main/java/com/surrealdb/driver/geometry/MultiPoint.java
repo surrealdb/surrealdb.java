@@ -15,7 +15,7 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiPoint implements GeometryPrimitive, Iterable<Point> {
+public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
 
     @NotNull ImmutableList<Point> points;
 

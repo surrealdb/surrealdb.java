@@ -15,7 +15,7 @@ import java.util.concurrent.ForkJoinPool;
 @Builder(builderClassName = "Builder", setterPrefix = "set")
 @Getter
 @With
-public class SurrealDriverSettings {
+public final class SurrealDriverSettings {
 
     public static final SurrealDriverSettings DEFAULT = SurrealDriverSettings.builder().build();
 

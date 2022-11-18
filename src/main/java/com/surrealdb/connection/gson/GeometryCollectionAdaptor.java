@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
+final class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
 
     GeometryCollectionAdaptor() {
         super(GeometryCollection.class);
@@ -36,32 +36,18 @@ class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
 
         List<GeometryPrimitive> geometryList = new ArrayList<>(geometries.size());
         for (JsonElement geometry : geometries) {
-            // This should be an enhanced switch statement, but that's not supported in Java 8.
-            switch (geometry.getAsJsonObject().get("type").getAsString()) {
-                case "Point":
-                    geometryList.add(context.deserialize(geometry, Point.class));
-                    break;
-                case "MultiPoint":
-                    geometryList.add(context.deserialize(geometry, MultiPoint.class));
-                    break;
-                case "LineString":
-                    geometryList.add(context.deserialize(geometry, LineString.class));
-                    break;
-                case "MultiLineString":
-                    geometryList.add(context.deserialize(geometry, MultiLineString.class));
-                    break;
-                case "Polygon":
-                    geometryList.add(context.deserialize(geometry, Polygon.class));
-                    break;
-                case "MultiPolygon":
-                    geometryList.add(context.deserialize(geometry, MultiPolygon.class));
-                    break;
-                case "GeometryCollection":
-                    geometryList.add(context.deserialize(geometry, GeometryCollection.class));
-                    break;
-                default:
-                    throw new JsonParseException("Unknown geometry type");
-            }
+            String type = geometry.getAsJsonObject().get("type").getAsString();
+            Class<?> geometryClass = switch (type) {
+                case "Point" -> Point.class;
+                case "MultiPoint" -> MultiPoint.class;
+                case "LineString" -> LineString.class;
+                case "MultiLineString" -> MultiLineString.class;
+                case "Polygon" -> Polygon.class;
+                case "MultiPolygon" -> MultiPolygon.class;
+                default -> throw new JsonParseException("Unknown geometry type: " + type);
+            };
+
+            geometryList.add(context.deserialize(geometry, geometryClass));
         }
 
         return GeometryCollection.from(geometryList);

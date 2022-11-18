@@ -31,7 +31,7 @@ import java.net.URI;
 @Builder(builderClassName = "Builder", setterPrefix = "set")
 @Getter
 @With
-public class SurrealConnectionSettings {
+public final class SurrealConnectionSettings {
 
     /**
      * A connection settings instance set to connect to a local SurrealDB server using the default
@@ -89,7 +89,7 @@ public class SurrealConnectionSettings {
      * A builder class for creating a {@link SurrealConnectionSettings} instance. Use {@code SurrealConnectionSettings.builder()}
      * to create a new instance.
      */
-    public static class Builder {
+    public final static class Builder {
 
         /**
          * Generates and sets the URI from the provided components. This method will override any

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
-public class SurrealRootCredentials implements SurrealAuthCredentials {
+public final class SurrealRootCredentials implements SurrealAuthCredentials {
 
     @NotNull String user;
     @NotNull String pass;

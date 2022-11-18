@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
-public class AddPatch<T> implements Patch {
+public final class AddPatch<T> implements Patch {
 
     /**
      * Used by Gson to serialize the patch.

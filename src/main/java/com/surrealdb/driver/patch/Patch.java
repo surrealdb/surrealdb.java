@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Khalid Alharisi
  */
-public interface Patch {
+public sealed interface Patch permits AddPatch, ChangePatch, RemovePatch, ReplacePatch {
 
     @NotNull String getPath();
 

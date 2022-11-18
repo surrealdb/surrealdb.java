@@ -15,7 +15,7 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiLineString implements GeometryPrimitive, Iterable<LineString> {
+public final class MultiLineString implements GeometryPrimitive, Iterable<LineString> {
 
     @NotNull ImmutableList<LineString> lines;
 

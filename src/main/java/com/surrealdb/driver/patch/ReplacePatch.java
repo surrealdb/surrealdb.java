@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode
-public class ReplacePatch<T> implements Patch {
+public final class ReplacePatch<T> implements Patch {
 
     @NotNull String op = "replace";
 

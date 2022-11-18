@@ -25,7 +25,7 @@ public final class GeometryCollection implements Iterable<GeometryPrimitive> {
     /**
      * A {@code GeometryCollection} without any geometries.
      */
-    public static @NotNull GeometryCollection EMPTY = new GeometryCollection(ImmutableList.of());
+    public static final @NotNull GeometryCollection EMPTY = new GeometryCollection(ImmutableList.of());
 
     @NotNull ImmutableList<GeometryPrimitive> geometries;
 

@@ -1,6 +1,6 @@
 package com.surrealdb.driver.auth;
 
 
-public interface SurrealAuthCredentials {
+public sealed interface SurrealAuthCredentials permits SurrealDatabaseCredentials, SurrealNamespaceCredentials, SurrealRootCredentials, SurrealScopeCredentials {
 
 }
