@@ -18,7 +18,7 @@ final class GeometryMultiPointAdaptor extends GeometryAdaptor<MultiPoint> {
     @Override
     public @NotNull JsonElement serialize(@NotNull MultiPoint src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
-        for (Point point : src.getPoints()) {
+        for (Point point : src) {
             coordinates.add(serializePoint(point));
         }
 

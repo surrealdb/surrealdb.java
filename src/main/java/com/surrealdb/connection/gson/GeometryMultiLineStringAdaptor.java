@@ -18,7 +18,7 @@ final class GeometryMultiLineStringAdaptor extends GeometryAdaptor<MultiLineStri
     @Override
     public @NotNull JsonElement serialize(@NotNull MultiLineString src, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
-        for (LineString line : src.getLines()) {
+        for (LineString line : src) {
             coordinates.add(serializeLine(line));
         }
 

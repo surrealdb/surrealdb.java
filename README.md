@@ -136,5 +136,5 @@ public class Person {
 
 
 ### Minimum Requirements
-- Java 8
+- Java 17
 
