@@ -47,6 +47,8 @@ public interface SurrealConnection {
         return create(settings);
     }
 
+    void connectAsync(int timeoutSeconds);
+
     /**
      * Establishes a connection to the SurrealDB server. This method will block until the connection
      * is established or an error occurs.
@@ -54,6 +56,8 @@ public interface SurrealConnection {
      * @param timeoutSeconds The timeout in seconds
      */
     void connect(int timeoutSeconds);
+
+    void disconnectAsync();
 
     /**
      * Disconnects from the SurrealDB server. This method will block until the connection is

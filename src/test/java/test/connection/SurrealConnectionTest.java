@@ -11,6 +11,7 @@ import test.TestUtils;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -70,6 +71,18 @@ public class SurrealConnectionTest {
     }
 
     @Test
+    void testConnectThenDisconnectThenConnect() {
+        val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
+
+        connection.connect(3);
+        connection.disconnect();
+        connection.connect(3);
+
+        assertTrue(connection.isConnected());
+        assertDoesNotThrow(() -> getCallbackResults(connection.rpc("ping")));
+    }
+
+    @Test
     void testDoubleConnect() {
         val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
 
@@ -113,12 +126,12 @@ public class SurrealConnectionTest {
         val connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);
 
-        val futures = new CompletableFuture[1000];
-        for (int i = 0; i < futures.length; i++) {
-            futures[i] = connection.rpc("ping");
-        }
+        val pings = IntStream.range(0, 1000)
+            .parallel()
+            .mapToObj(i -> connection.rpc("ping"))
+            .toArray(CompletableFuture[]::new);
 
-        CompletableFuture.allOf(futures).join();
+        CompletableFuture.allOf(pings).join();
     }
 
     private <T> T getCallbackResults(CompletableFuture<T> future) throws Throwable {

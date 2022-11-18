@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.With;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,6 +78,12 @@ public class SurrealConnectionSettings {
     @lombok.Builder.Default
     int defaultConnectTimeoutSeconds = 15;
 
+    @lombok.Builder.Default
+    boolean reconnectOnUnexpectedDisconnect = true;
+
+    @lombok.Builder.Default
+    int maxReconnectAttempts = 5;
+
     private static @NotNull URI createURI(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
         return URI.create(protocol.getScheme() + "://" + host + ":" + port + "/rpc");
     }
@@ -97,7 +104,7 @@ public class SurrealConnectionSettings {
          * @param port     The port to connect to
          * @return this builder
          */
-        public @NotNull Builder setUriFromComponents(@NotNull SurrealConnectionProtocol protocol, String host, int port) {
+        public @NotNull Builder setUriFromComponents(@NotNull SurrealConnectionProtocol protocol, @NonNull String host, int port) {
             setUri(createURI(protocol, host, port));
             return this;
         }
