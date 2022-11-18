@@ -3,13 +3,11 @@ package com.surrealdb.driver.geometry;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Geometry Collections can be used to store multiple different geometry types in a single value. {@link Point}, {@link LineString},
@@ -19,9 +17,10 @@ import java.util.List;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#collection">SurrealDB Docs - Geometry Collections</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.8">GeoJSON - Geometry Collections</a>
  */
-@Value
+@ToString
+@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GeometryCollection {
+public class GeometryCollection implements Iterable<GeometryPrimitive> {
 
     /**
      * A {@code GeometryCollection} without any geometries.
@@ -42,6 +41,10 @@ public class GeometryCollection {
      * @see GeometryCollection#from(GeometryPrimitive)
      */
     public static @NotNull GeometryCollection from(@NotNull Collection<GeometryPrimitive> geometries) {
+        if (geometries.isEmpty()) {
+            return EMPTY;
+        }
+
         return new GeometryCollection(ImmutableList.copyOf(geometries));
     }
 
@@ -57,6 +60,10 @@ public class GeometryCollection {
      * @see GeometryCollection#from(GeometryPrimitive)
      */
     public static @NotNull GeometryCollection from(GeometryPrimitive @NotNull ... geometries) {
+        if (geometries.length == 0) {
+            return EMPTY;
+        }
+
         return new GeometryCollection(ImmutableList.copyOf(geometries));
     }
 
@@ -78,6 +85,19 @@ public class GeometryCollection {
 
     public @NotNull Builder toBuilder() {
         return new Builder().addGeometries(this);
+    }
+
+    public @NotNull GeometryPrimitive getGeometry(int index) {
+        return geometries.get(index);
+    }
+
+    public int getGeometryCount() {
+        return geometries.size();
+    }
+
+    @Override
+    public @NotNull Iterator<GeometryPrimitive> iterator() {
+        return geometries.iterator();
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -119,7 +139,8 @@ public class GeometryCollection {
          * @return This {@code Builder} object
          */
         public @NotNull Builder addGeometries(@NotNull GeometryCollection geometryCollection) {
-            return addGeometries(geometryCollection.getGeometries());
+            geometries.addAll(geometryCollection.geometries);
+            return this;
         }
 
         /**
@@ -158,7 +179,7 @@ public class GeometryCollection {
          * @return This {@code Builder} object
          */
         public @NotNull Builder removeGeometries(@NotNull GeometryCollection geometryCollection) {
-            return removeGeometries(geometryCollection.getGeometries());
+            return removeGeometries(geometryCollection.geometries);
         }
 
         /**

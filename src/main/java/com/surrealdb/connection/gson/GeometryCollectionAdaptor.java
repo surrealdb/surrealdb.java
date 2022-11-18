@@ -23,7 +23,7 @@ class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollection> {
         JsonArray geometries = new JsonArray();
         object.add("geometries", geometries);
 
-        for (GeometryPrimitive geometry : src.getGeometries()) {
+        for (GeometryPrimitive geometry : src) {
             geometries.add(context.serialize(geometry));
         }
 
