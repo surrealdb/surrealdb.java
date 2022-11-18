@@ -2,7 +2,7 @@ package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ public class LinearRing extends LineString {
         pointCount = points.size() + (closed ? 0 : 1);
     }
 
-    public static @NonNull LinearRing from(@NotNull Collection<Point> points) {
+    public static @NotNull LinearRing from(@NotNull Collection<Point> points) {
         return new LinearRing(ImmutableList.copyOf(points));
     }
 
@@ -41,7 +41,7 @@ public class LinearRing extends LineString {
     }
 
     @Override
-    public @NonNull Iterator<Point> iterator() {
+    public @NotNull Iterator<Point> iterator() {
         return new LinearRingIterator(this);
     }
 
@@ -64,15 +64,13 @@ public class LinearRing extends LineString {
         return this;
     }
 
+    @RequiredArgsConstructor
     private static class LinearRingIterator implements Iterator<Point> {
 
-        LinearRing linearRing;
+        @NotNull LinearRing linearRing;
+
         @NonFinal
         int index = 0;
-
-        private LinearRingIterator(LinearRing linearRing) {
-            this.linearRing = linearRing;
-        }
 
         @Override
         public boolean hasNext() {
@@ -80,7 +78,7 @@ public class LinearRing extends LineString {
         }
 
         @Override
-        public @NonNull Point next() {
+        public @NotNull Point next() {
             return linearRing.getPoint(index++);
         }
     }

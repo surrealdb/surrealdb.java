@@ -5,7 +5,6 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
 import com.surrealdb.driver.sql.QueryResult;
-import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -74,39 +73,39 @@ public interface SurrealDriver {
 
     <T> CompletableFuture<List<T>> sqlFirstAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args);
 
-    default <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NonNull String query, @NonNull Class<T> queryResult) {
+    default <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> queryResult) {
         return sqlAsync(query, queryResult, ImmutableMap.of());
     }
 
-    default <T> List<QueryResult<T>> sql(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+    default <T> List<QueryResult<T>> sql(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         return getResultSynchronously(sqlAsync(query, queryResult, args));
     }
 
-    default <T> List<QueryResult<T>> sql(@NonNull String query, @NonNull Class<T> queryResult) {
+    default <T> List<QueryResult<T>> sql(@NotNull String query, @NotNull Class<T> queryResult) {
         return getResultSynchronously(sqlAsync(query, queryResult));
     }
 
-    default <T> Optional<T> sqlSingle(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+    default <T> Optional<T> sqlSingle(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         return getResultSynchronously(sqlSingleAsync(query, queryResult, args));
     }
 
-    default <T> Optional<T> sqlSingle(@NonNull String query, @NonNull Class<T> queryResult) {
+    default <T> Optional<T> sqlSingle(@NotNull String query, @NotNull Class<T> queryResult) {
         return getResultSynchronously(sqlSingleAsync(query, queryResult));
     }
 
-    default <T> List<T> sqlFirst(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+    default <T> List<T> sqlFirst(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         return getResultSynchronously(sqlFirstAsync(query, queryResult, args));
     }
 
-    default <T> CompletableFuture<List<T>> sqlFirstAsync(@NonNull String query, @NonNull Class<T> queryResult) {
+    default <T> CompletableFuture<List<T>> sqlFirstAsync(@NotNull String query, @NotNull Class<T> queryResult) {
         return sqlFirstAsync(query, queryResult, ImmutableMap.of());
     }
 
-    default <T> List<T> sqlFirst(@NonNull String query, @NonNull Class<T> queryResult) {
+    default <T> List<T> sqlFirst(@NotNull String query, @NotNull Class<T> queryResult) {
         return getResultSynchronously(sqlFirstAsync(query, queryResult));
     }
 
-    default <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NonNull String query, @NonNull Class<T> queryResult) {
+    default <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NotNull String query, @NotNull Class<T> queryResult) {
         return sqlSingleAsync(query, queryResult, ImmutableMap.of());
     }
 

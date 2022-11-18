@@ -1,6 +1,5 @@
 package com.surrealdb.connection;
 
-import lombok.NonNull;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +13,6 @@ class RpcRequest {
 
     @NotNull String id;
     @NotNull String method;
-    @NotNull Object @NonNull [] params;
+    @NotNull Object @NotNull [] params;
 
 }

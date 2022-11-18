@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.surrealdb.driver.geometry.*;
-import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import java.util.List;
 
 abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonAdaptor<T> {
 
-    GeometryAdaptor(@NonNull Class<T> adaptorClass) {
+    GeometryAdaptor(@NotNull Class<T> adaptorClass) {
         super(adaptorClass);
     }
 

@@ -7,7 +7,6 @@ import com.surrealdb.connection.exception.SurrealExceptionUtils;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.patch.Patch;
 import com.surrealdb.driver.sql.QueryResult;
-import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -41,23 +40,23 @@ public class StandardSurrealDriver implements SurrealDriver {
         return connection.rpc(executorService, "info", resultType);
     }
 
-    public @NotNull CompletableFuture<Void> signInAsync(@NonNull SurrealAuthCredentials credentials) {
+    public @NotNull CompletableFuture<Void> signInAsync(@NotNull SurrealAuthCredentials credentials) {
         return connection.rpc(executorService, "signin", credentials);
     }
 
-    public @NotNull CompletableFuture<Void> useAsync(@NonNull String namespace, @NonNull String database) {
+    public @NotNull CompletableFuture<Void> useAsync(@NotNull String namespace, @NotNull String database) {
         return connection.rpc(executorService, "use", namespace, database);
     }
 
-    public @NotNull CompletableFuture<Void> setConnectionWideParameterAsync(@NonNull String key, @NonNull Object value) {
+    public @NotNull CompletableFuture<Void> setConnectionWideParameterAsync(@NotNull String key, @NotNull Object value) {
         return connection.rpc(executorService, "let", key, value);
     }
 
-    public @NotNull CompletableFuture<Void> unsetConnectionWideParameterAsync(@NonNull String key) {
+    public @NotNull CompletableFuture<Void> unsetConnectionWideParameterAsync(@NotNull String key) {
         return connection.rpc(executorService, "unset", key);
     }
 
-    public <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+    public <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         // QueryResult<T>
         TypeToken<?> queryType = TypeToken.getParameterized(QueryResult.class, queryResult);
         // List<QueryResult<T>>
@@ -81,13 +80,13 @@ public class StandardSurrealDriver implements SurrealDriver {
         return CompletableFuture.completedFuture(queryResults);
     }
 
-    public <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+    public <T> CompletableFuture<Optional<T>> sqlSingleAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         CompletableFuture<List<QueryResult<T>>> queryFuture = sqlAsync(query, queryResult, args);
         return queryFuture.thenApplyAsync(this::getFirstResultFromFirstQuery, executorService);
     }
 
     @Override
-    public <T> CompletableFuture<List<T>> sqlFirstAsync(@NonNull String query, @NonNull Class<T> queryResult, @NonNull Map<String, Object> args) {
+    public <T> CompletableFuture<List<T>> sqlFirstAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         CompletableFuture<List<QueryResult<T>>> queryFuture = sqlAsync(query, queryResult, args);
         return queryFuture.thenApplyAsync(this::getResultsFromFirstQuery, executorService);
     }
