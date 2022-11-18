@@ -12,7 +12,7 @@ import java.util.Iterator;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class LinearRing extends LineString {
+public final class LinearRing extends LineString {
 
     boolean closed;
     int pointCount;

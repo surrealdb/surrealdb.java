@@ -1,16 +1,10 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * MultiPolygons can be used to store multiple geometry polygons in a single value.
@@ -20,7 +14,7 @@ import java.util.List;
  */
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiPolygon implements GeometryPrimitive {
+public class MultiPolygon implements GeometryPrimitive, Iterable<Polygon> {
 
     @NotNull ImmutableList<Polygon> polygons;
 
@@ -68,6 +62,20 @@ public class MultiPolygon implements GeometryPrimitive {
      */
     public @NotNull Builder toBuilder() {
         return builder().addPolygons(polygons);
+    }
+
+    public int getPolygonCount() {
+        return polygons.size();
+    }
+
+    public @NotNull Polygon getPolygon(int index) {
+        return polygons.get(index);
+    }
+
+    @NonNull
+    @Override
+    public Iterator<Polygon> iterator() {
+        return polygons.iterator();
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

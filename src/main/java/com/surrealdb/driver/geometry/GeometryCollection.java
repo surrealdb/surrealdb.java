@@ -20,7 +20,7 @@ import java.util.*;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GeometryCollection implements Iterable<GeometryPrimitive> {
+public final class GeometryCollection implements Iterable<GeometryPrimitive> {
 
     /**
      * A {@code GeometryCollection} without any geometries.

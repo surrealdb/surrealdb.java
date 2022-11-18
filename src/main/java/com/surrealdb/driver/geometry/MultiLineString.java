@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * MultiLines can be used to store multiple {@code lines} in a single value.
@@ -15,9 +12,10 @@ import java.util.List;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#multiline">SurrealDB Docs - MultiLine</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.5">GeoJSON - MultiLine</a>
  */
-@Value
+@ToString
+@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiLineString implements GeometryPrimitive {
+public class MultiLineString implements GeometryPrimitive, Iterable<LineString> {
 
     @NotNull ImmutableList<LineString> lines;
 
@@ -31,6 +29,19 @@ public class MultiLineString implements GeometryPrimitive {
 
     public static @NotNull MultiLineString from(@NotNull LineString line) {
         return new MultiLineString(ImmutableList.of(line));
+    }
+
+    public int getLineCount() {
+        return lines.size();
+    }
+
+    public @NotNull LineString getLine(int index) {
+        return lines.get(index);
+    }
+
+    @Override
+    public @NotNull Iterator<LineString> iterator() {
+        return lines.iterator();
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

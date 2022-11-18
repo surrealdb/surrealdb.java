@@ -15,9 +15,11 @@ import java.util.*;
  */
 @ToString
 @EqualsAndHashCode
+// To be immutable, this class must be final, but we want to be able to extend it.
+// TODO: make sealed once we move to Java 17
 public class LineString implements GeometryPrimitive, Iterable<Point> {
 
-    protected @NotNull ImmutableList<Point> points;
+    @NotNull ImmutableList<Point> points;
 
     protected LineString(@NotNull ImmutableList<Point> points) {
         this.points = points;
