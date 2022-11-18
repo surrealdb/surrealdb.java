@@ -1,4 +1,4 @@
-package test.connection.gson;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonElement;
 import org.junit.jupiter.api.Test;

@@ -1,8 +1,5 @@
-package test.driver.geometry;
+package com.surrealdb.driver.geometry;
 
-import com.surrealdb.driver.geometry.LineString;
-import com.surrealdb.driver.geometry.Point;
-import com.surrealdb.driver.geometry.Polygon;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

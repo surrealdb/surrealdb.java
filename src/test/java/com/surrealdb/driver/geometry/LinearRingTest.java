@@ -1,12 +1,10 @@
-package test.driver.geometry;
+package com.surrealdb.driver.geometry;
 
-import com.surrealdb.driver.geometry.LineString;
-import com.surrealdb.driver.geometry.LinearRing;
-import com.surrealdb.driver.geometry.Point;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class LinearRingTest {
 

@@ -1,8 +1,6 @@
-package test.driver.geometry;
+package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import com.surrealdb.driver.geometry.LineString;
-import com.surrealdb.driver.geometry.Point;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

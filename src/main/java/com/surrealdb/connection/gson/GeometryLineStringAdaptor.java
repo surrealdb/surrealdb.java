@@ -6,9 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 
-final class GeometryLineAdaptor extends GeometryAdaptor<LineString> {
+final class GeometryLineStringAdaptor extends GeometryAdaptor<LineString> {
 
-    GeometryLineAdaptor() {
+    GeometryLineStringAdaptor() {
         super(LineString.class);
     }
 

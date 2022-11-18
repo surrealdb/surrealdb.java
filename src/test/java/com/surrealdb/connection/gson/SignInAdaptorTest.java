@@ -1,12 +1,12 @@
-package test.connection.gson;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonObject;
 import com.surrealdb.driver.auth.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static test.connection.gson.GsonTestUtils.assertJsonDoesNotHaveProperties;
-import static test.connection.gson.GsonTestUtils.assertJsonHasPropertyString;
+import static com.surrealdb.connection.gson.GsonTestUtils.assertJsonDoesNotHaveProperties;
+import static com.surrealdb.connection.gson.GsonTestUtils.assertJsonHasPropertyString;
 
 public class SignInAdaptorTest {
 

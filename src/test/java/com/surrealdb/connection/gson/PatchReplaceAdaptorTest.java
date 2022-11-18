@@ -1,4 +1,4 @@
-package test.connection.gson;
+package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static test.connection.gson.GsonTestUtils.*;
+import static com.surrealdb.connection.gson.GsonTestUtils.*;
 
 public class PatchReplaceAdaptorTest {
 
