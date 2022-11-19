@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
+
 /**
  * MultiPolygons can be used to store multiple geometry polygons in a single value.
  *
@@ -16,7 +18,7 @@ import java.util.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MultiPolygon extends GeometryPrimitive implements Iterable<Polygon> {
 
-    public static final MultiPolygon EMPTY = new MultiPolygon(ImmutableList.of());
+    public static final @NotNull MultiPolygon EMPTY = new MultiPolygon(ImmutableList.of());
 
     @NotNull ImmutableList<Polygon> polygons;
 
@@ -93,7 +95,11 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
         List<String> polygonWkts = new ArrayList<>(polygons.size());
 
         for (Polygon polygon : polygons) {
-            polygonWkts.add("FIXME");
+            List<String> wktRings = new ArrayList<>(polygon.getInteriorCount() + 1);
+            wktRings.add(calculateWktPointsPrimitive(polygon.getExterior().iterator(), true));
+            polygon.interiorIterator().forEachRemaining(interior -> wktRings.add(calculateWktPointsPrimitive(interior.iterator(), true)));
+
+            polygonWkts.add("(" +String.join(", ", wktRings) + ")");
         }
 
         return InternalGeometryUtils.calculateWktGeneric("MULTIPOLYGON", polygonWkts);
@@ -108,7 +114,7 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
          * @param polygon The polygon to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addPolygon(Polygon polygon) {
+        public @NotNull Builder addPolygon(@NotNull Polygon polygon) {
             polygons.add(polygon);
             return this;
         }
@@ -126,7 +132,7 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
          * @param polygons The polygons to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addPolygons(Polygon... polygons) {
+        public @NotNull Builder addPolygons(@NotNull Polygon... polygons) {
             Collections.addAll(this.polygons, polygons);
             return this;
         }
@@ -135,7 +141,7 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
          * @param polygon The polygon to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removePolygon(Polygon polygon) {
+        public @NotNull Builder removePolygon(@NotNull Polygon polygon) {
             polygons.remove(polygon);
             return this;
         }

@@ -62,9 +62,9 @@ public final class Polygon extends GeometryPrimitive {
     @Override
     protected @NotNull String calculateWkt() {
         List<String> wktRings = new ArrayList<>(interiors.size() + 1);
-        wktRings.add("(" + calculateWktPointsPrimitive(exterior.iterator()) + ")");
+        wktRings.add(calculateWktPointsPrimitive(exterior.iterator(), true));
         for (LinearRing interior : interiors) {
-            wktRings.add("(" + calculateWktPointsPrimitive(interior.iterator()) + ")");
+            wktRings.add(calculateWktPointsPrimitive(interior.iterator(), true));
         }
 
         return calculateWktGeneric("POLYGON", wktRings);

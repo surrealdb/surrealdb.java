@@ -64,7 +64,7 @@ public final class MultiLineString extends GeometryPrimitive implements Iterable
         List<String> lineStrings = new ArrayList<>(lines.size());
 
         for (LineString line : lines) {
-            lineStrings.add("(" + calculateWktPointsPrimitive(line.iterator()) + ")");
+            lineStrings.add(calculateWktPointsPrimitive(line.iterator(), true));
         }
 
         return calculateWktGeneric("MULTILINESTRING", lineStrings);

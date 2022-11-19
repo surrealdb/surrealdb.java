@@ -20,28 +20,24 @@ class InternalGeometryUtils {
         return geometryType + " (" + String.join(", ", args) + ")";
     }
 
-    static @NotNull String calculateWktPoint(@NotNull String geometryType, @NotNull Point point) {
-        return geometryType + " (" + calculateWktPointPrimitive(point) + ")";
-    }
-
     static @NotNull String calculateWktGeometryRepresentationPoints(@NotNull String geometryType, @NotNull Iterator<Point> pointIterator) {
         if (!pointIterator.hasNext()) {
             return geometryType + " EMPTY";
         }
 
-        return geometryType + " (" + calculateWktPointsPrimitive(pointIterator) + ")";
+        return geometryType + " " + calculateWktPointsPrimitive(pointIterator, true);
     }
 
-    static @NotNull String calculateWktGeometryRepresentationIterator(@NotNull String geometryType, @NotNull Iterator<Point> iterator) {
-        if (!iterator.hasNext()) {
-            return geometryType + " EMPTY";
-        }
-
-        return geometryType + " (" + calculateWktPointsPrimitive(iterator) + ")";
+    static @NotNull String calculateWktPoint(@NotNull String geometryType, @NotNull Point point) {
+        return geometryType + " (" + calculateWktPointPrimitive(point) + ")";
     }
 
-    static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<Point> points) {
+    static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<Point> points, boolean includeParentheses) {
         StringBuilder builder = new StringBuilder();
+
+        if (includeParentheses) {
+            builder.append("(");
+        }
 
         while (points.hasNext()) {
             Point point = points.next();
@@ -51,6 +47,10 @@ class InternalGeometryUtils {
             if (points.hasNext()) {
                 builder.append(", ");
             }
+        }
+
+        if (includeParentheses) {
+            builder.append(")");
         }
 
         return builder.toString();
