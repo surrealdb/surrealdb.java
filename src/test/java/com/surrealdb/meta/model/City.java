@@ -1,4 +1,4 @@
-package test.driver.model;
+package com.surrealdb.meta.model;
 
 import com.surrealdb.driver.geometry.Point;
 import lombok.Value;

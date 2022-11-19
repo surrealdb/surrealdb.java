@@ -3,13 +3,14 @@ package com.surrealdb.connection.gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.driver.patch.AddPatch;
+import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static com.surrealdb.connection.gson.GsonTestUtils.*;
+import static com.surrealdb.meta.utils.GsonTestUtils.*;
 
 public class PatchAddAdaptorTest {
 

@@ -1,12 +1,11 @@
-package test.connection;
+package com.surrealdb.connection;
 
-import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import test.TestUtils;
+import com.surrealdb.meta.utils.TestUtils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;

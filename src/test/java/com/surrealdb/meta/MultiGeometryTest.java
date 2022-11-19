@@ -1,4 +1,4 @@
-package com.surrealdb.driver.geometry;
+package com.surrealdb.meta;
 
 import org.junit.jupiter.api.Test;
 

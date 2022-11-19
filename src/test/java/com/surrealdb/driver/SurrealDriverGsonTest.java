@@ -1,16 +1,14 @@
-package test.driver;
+package com.surrealdb.driver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.driver.SurrealDriver;
-import com.surrealdb.driver.SurrealTable;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import test.TestUtils;
-import test.driver.model.InstantContainer;
-import test.driver.model.Person;
+import com.surrealdb.meta.utils.TestUtils;
+import com.surrealdb.meta.model.InstantContainer;
+import com.surrealdb.meta.model.Person;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

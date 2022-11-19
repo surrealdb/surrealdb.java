@@ -1,6 +1,7 @@
 package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonElement;
+import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

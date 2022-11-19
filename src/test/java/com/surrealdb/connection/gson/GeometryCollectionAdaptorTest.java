@@ -4,10 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.surrealdb.driver.geometry.*;
+import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
-import static com.surrealdb.connection.gson.GsonTestUtils.assertGeometryCoordinatesEqual;
-import static com.surrealdb.connection.gson.GsonTestUtils.assertJsonHasPropertyString;
+import static com.surrealdb.meta.utils.GsonTestUtils.assertGeometryCoordinatesEqual;
+import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonHasPropertyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeometryCollectionAdaptorTest {

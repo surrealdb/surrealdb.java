@@ -1,10 +1,8 @@
-package test.driver;
+package com.surrealdb.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.driver.SurrealDriver;
-import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.LinearRing;
 import com.surrealdb.driver.geometry.Point;
@@ -12,9 +10,9 @@ import com.surrealdb.driver.geometry.Polygon;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import test.TestUtils;
-import test.driver.model.City;
-import test.driver.model.GeoContainer;
+import com.surrealdb.meta.utils.TestUtils;
+import com.surrealdb.meta.model.City;
+import com.surrealdb.meta.model.GeoContainer;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

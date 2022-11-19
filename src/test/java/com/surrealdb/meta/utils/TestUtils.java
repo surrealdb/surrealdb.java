@@ -1,4 +1,4 @@
-package test;
+package com.surrealdb.meta.utils;
 
 import com.surrealdb.connection.SurrealConnectionProtocol;
 import com.surrealdb.connection.SurrealConnectionSettings;

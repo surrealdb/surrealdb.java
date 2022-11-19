@@ -2,11 +2,12 @@ package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonObject;
 import com.surrealdb.driver.geometry.Point;
+import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static com.surrealdb.connection.gson.GsonTestUtils.assertGeometryCoordinatesEqual;
-import static com.surrealdb.connection.gson.GsonTestUtils.assertJsonHasPropertyString;
+import static com.surrealdb.meta.utils.GsonTestUtils.assertGeometryCoordinatesEqual;
+import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonHasPropertyString;
 
 public class GeometryPointAdaptorTest {
 

@@ -1,5 +1,6 @@
 package com.surrealdb.driver.geometry;
 
+import com.surrealdb.meta.MultiGeometryTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
