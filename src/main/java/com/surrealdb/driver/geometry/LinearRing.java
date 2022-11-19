@@ -1,17 +1,13 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-@EqualsAndHashCode(callSuper = true)
-@ToString
 public final class LinearRing extends LineString {
 
     boolean closed;
@@ -62,6 +58,38 @@ public final class LinearRing extends LineString {
     @Override
     public @NotNull LinearRing toLinearRing() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+
+        if (other instanceof LineString otherLineString) {
+            if (otherLineString.getPointCount() != getPointCount()) {
+                return false;
+            }
+
+            for (int i = 0; i < getPointCount(); i++) {
+                if (!getPoint(i).equals(otherLineString.getPoint(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 0;
+
+        for (Point point : this) {
+            result = 31 * result + point.hashCode();
+        }
+
+        return result;
     }
 
     @RequiredArgsConstructor

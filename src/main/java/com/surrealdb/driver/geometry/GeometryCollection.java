@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -17,10 +16,9 @@ import java.util.*;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#collection">SurrealDB Docs - Geometry Collections</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.8">GeoJSON - Geometry Collections</a>
  */
-@ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class GeometryCollection implements Iterable<GeometryPrimitive> {
+public final class GeometryCollection extends Geometry implements Iterable<GeometryPrimitive> {
 
     /**
      * A {@code GeometryCollection} without any geometries.
@@ -98,6 +96,17 @@ public final class GeometryCollection implements Iterable<GeometryPrimitive> {
     @Override
     public @NotNull Iterator<GeometryPrimitive> iterator() {
         return geometries.iterator();
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        // Since the returned string is cached, the overhead of using a stream
+        // is negligible.
+        List<String> wktGeometries = geometries.stream()
+                .map(Geometry::getWkt)
+                .toList();
+
+        return InternalGeometryUtils.calculateWktGeneric("GEOMETRYCOLLECTION", wktGeometries);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

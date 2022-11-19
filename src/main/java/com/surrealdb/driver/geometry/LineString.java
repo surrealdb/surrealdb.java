@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeometryRepresentationPoints;
+
 /**
  * A GeoJSON LineString value for storing a geometric path. Paths must have at least two points,
  * but may have more.
@@ -13,9 +15,8 @@ import java.util.*;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#line">SurrealDB Docs - Line</a>
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.4">GeoJSON Specification - LineString</a>
  */
-@ToString
-@EqualsAndHashCode
-public sealed class LineString implements GeometryPrimitive, Iterable<Point> permits LinearRing {
+@EqualsAndHashCode(callSuper = false)
+public sealed class LineString extends GeometryPrimitive implements Iterable<Point> permits LinearRing {
 
     @NotNull ImmutableList<Point> points;
 
@@ -95,6 +96,11 @@ public sealed class LineString implements GeometryPrimitive, Iterable<Point> per
     @Override
     public @NonNull Iterator<Point> iterator() {
         return points.iterator();
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        return calculateWktGeometryRepresentationPoints("LINESTRING", iterator());
     }
 
     /**

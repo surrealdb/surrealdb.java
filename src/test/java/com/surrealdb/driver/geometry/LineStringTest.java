@@ -1,12 +1,12 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
+import com.surrealdb.meta.GeometryTest;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class LineStringTest {
+public class LineStringTest implements GeometryTest {
 
     @Test
     void testPointWithoutEnoughPoints() {
@@ -102,5 +102,41 @@ public class LineStringTest {
             Point flippedPoint = flipped.getPoint(pointCount - i - 1);
             assertEquals(originalPoint, flippedPoint);
         }
+    }
+
+    @Test
+    public void testToStringReturnsWKT() {
+        LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        assertEquals("LINESTRING (1 2, 3 4, 5 6)", line.toString());
+    }
+
+    @Test
+    public void testEqualsReturnsTrueForEqualObjects() {
+        LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        assertEquals(line1, line2);
+    }
+
+    @Test
+    public void testEqualsReturnsFalseForDifferentObjects() {
+        LineString line1 = LineString.from(
+            Point.fromXY(1, 2),
+            Point.fromXY(3, 4),
+            Point.fromXY(5, 6)
+        );
+        LineString line2 = LineString.from(
+            Point.fromXY(5, 6),
+            Point.fromXY(3, 4),
+            Point.fromXY(1, 2)
+        );
+
+        assertNotEquals(line1, line2);
+    }
+
+    @Test
+    public void testHashCodeReturnsSameValueForEqualObjects() {
+        LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        assertEquals(line1.hashCode(), line2.hashCode());
     }
 }

@@ -1,6 +1,5 @@
 package com.surrealdb.connection.gson;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -63,10 +62,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         LineString exterior = polygon.getExterior();
         coordinates.add(serializeLine(exterior));
 
-        ImmutableList<LinearRing> interiors = polygon.getInteriors();
-        for (LineString interior : interiors) {
-            coordinates.add(serializeLine(interior));
-        }
+        polygon.interiorIterator().forEachRemaining((interior) -> coordinates.add(serializeLine(interior)));
 
         return coordinates;
     }

@@ -6,16 +6,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
+
 /**
  * MultiLines can be used to store multiple {@code lines} in a single value.
  *
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#multiline">SurrealDB Docs - MultiLine</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.5">GeoJSON - MultiLine</a>
  */
-@ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class MultiLineString implements GeometryPrimitive, Iterable<LineString> {
+public final class MultiLineString extends GeometryPrimitive implements Iterable<LineString> {
 
     public static final MultiLineString EMPTY = new MultiLineString(ImmutableList.of());
 
@@ -56,6 +57,17 @@ public final class MultiLineString implements GeometryPrimitive, Iterable<LineSt
     @Override
     public @NotNull Iterator<LineString> iterator() {
         return lines.iterator();
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        List<String> lineStrings = new ArrayList<>(lines.size());
+
+        for (LineString line : lines) {
+            lineStrings.add("(" + calculateWktPointsPrimitive(line.iterator()) + ")");
+        }
+
+        return calculateWktGeneric("MULTILINESTRING", lineStrings);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

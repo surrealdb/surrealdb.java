@@ -1,16 +1,18 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeneric;
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
 
 /**
  * A GeoJSON Polygon value for storing a geometric area.
@@ -18,8 +20,8 @@ import java.util.List;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#polygon">SurrealDB Docs - Polygon</a>
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.6">GeoJSON Specification - Polygon</a>
  */
-@Value
-public class Polygon implements GeometryPrimitive {
+@EqualsAndHashCode(callSuper = false)
+public final class Polygon extends GeometryPrimitive {
 
     @NotNull LinearRing exterior;
     @NotNull ImmutableList<LinearRing> interiors;
@@ -39,6 +41,33 @@ public class Polygon implements GeometryPrimitive {
 
     public static @NotNull Builder builder() {
         return new Builder();
+    }
+
+    public @NonNull LinearRing getExterior() {
+        return exterior;
+    }
+
+    public int getInteriorCount() {
+        return interiors.size();
+    }
+
+    public @NotNull LinearRing getInterior(int index) {
+        return interiors.get(index);
+    }
+
+    public @NotNull Iterator<LinearRing> interiorIterator() {
+        return interiors.iterator();
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        List<String> wktRings = new ArrayList<>(interiors.size() + 1);
+        wktRings.add("(" + calculateWktPointsPrimitive(exterior.iterator()) + ")");
+        for (LinearRing interior : interiors) {
+            wktRings.add("(" + calculateWktPointsPrimitive(interior.iterator()) + ")");
+        }
+
+        return calculateWktGeneric("POLYGON", wktRings);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

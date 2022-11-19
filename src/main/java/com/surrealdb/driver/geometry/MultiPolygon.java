@@ -12,9 +12,9 @@ import java.util.*;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#multipolygon">SurrealDB Docs - MultiPolygon</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.7">GeoJSON - MultiPolygon</a>
  */
-@Value
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MultiPolygon implements GeometryPrimitive, Iterable<Polygon> {
+public final class MultiPolygon extends GeometryPrimitive implements Iterable<Polygon> {
 
     public static final MultiPolygon EMPTY = new MultiPolygon(ImmutableList.of());
 
@@ -86,6 +86,17 @@ public class MultiPolygon implements GeometryPrimitive, Iterable<Polygon> {
     @Override
     public Iterator<Polygon> iterator() {
         return polygons.iterator();
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        List<String> polygonWkts = new ArrayList<>(polygons.size());
+
+        for (Polygon polygon : polygons) {
+            polygonWkts.add("FIXME");
+        }
+
+        return InternalGeometryUtils.calculateWktGeneric("MULTIPOLYGON", polygonWkts);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

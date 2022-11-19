@@ -1,12 +1,12 @@
 package com.surrealdb.driver.geometry;
 
+import com.surrealdb.meta.GeometryTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class LinearRingTest {
+public class LinearRingTest implements GeometryTest {
 
     @Test
     void testOpenRingIsAutoClosed() {
@@ -53,8 +53,7 @@ public class LinearRingTest {
     }
 
     @Test
-    @Disabled
-    void testToStringReturnsWKT() {
+    public void testToStringReturnsWKT() {
         LinearRing ring = LinearRing.from(
             Point.fromXY(0, 0),
             Point.fromXY(1, 0),
@@ -62,6 +61,63 @@ public class LinearRingTest {
             Point.fromXY(0, 1)
         );
 
-        assertEquals("LINESTRING (0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)", ring.toString());
+        assertEquals("LINESTRING (0 0, 1 0, 1 1, 0 1, 0 0)", ring.toString());
+    }
+
+    @Test
+    public void testEqualsReturnsTrueForEqualObjects() {
+        LinearRing ring1 = LinearRing.from(
+            Point.fromXY(0, 0),
+            Point.fromXY(1, 0),
+            Point.fromXY(1, 1),
+            Point.fromXY(0, 1)
+        );
+        LinearRing ring2 = LinearRing.from(
+            Point.fromXY(0, 0),
+            Point.fromXY(1, 0),
+            Point.fromXY(1, 1),
+            Point.fromXY(0, 1),
+            Point.fromXY(0, 0)
+        );
+
+        assertEquals(ring1, ring2);
+    }
+
+    @Test
+    public void testEqualsReturnsFalseForDifferentObjects() {
+        LinearRing ring1 = LinearRing.from(
+            Point.fromXY(0, 0),
+            Point.fromXY(1, 0),
+            Point.fromXY(1, 1),
+            Point.fromXY(0, 1)
+        );
+        LinearRing ring2 = LinearRing.from(
+            Point.fromXY(0, 0),
+            Point.fromXY(1, 0),
+            Point.fromXY(1, 1),
+            Point.fromXY(0, 1),
+            Point.fromXY(3, 5)
+        );
+
+        assertNotEquals(ring1, ring2);
+    }
+
+    @Test
+    public void testHashCodeReturnsSameValueForEqualObjects() {
+        LinearRing ring1 = LinearRing.from(
+            Point.fromXY(0, 0),
+            Point.fromXY(1, 0),
+            Point.fromXY(1, 1),
+            Point.fromXY(0, 1)
+        );
+        LinearRing ring2 = LinearRing.from(
+            Point.fromXY(0, 0),
+            Point.fromXY(1, 0),
+            Point.fromXY(1, 1),
+            Point.fromXY(0, 1),
+            Point.fromXY(0, 0)
+        );
+
+        assertEquals(ring1.hashCode(), ring2.hashCode());
     }
 }

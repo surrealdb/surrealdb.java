@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPoint;
+
 /**
  * SurrealDB's representation of a geolocation point. This is a 2D point with a longitude and latitude.
  * <p>To create a point, use: <p>
@@ -18,9 +20,8 @@ import org.jetbrains.annotations.NotNull;
  * @see <a href="https://en.wikipedia.org/wiki/Geographic_coordinate_system">Geographical Coordinate System (Wikipedia)</a>
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString
-@EqualsAndHashCode
-public final class Point implements GeometryPrimitive {
+@EqualsAndHashCode(callSuper = false)
+public final class Point extends GeometryPrimitive {
 
     double x;
     double y;
@@ -160,6 +161,11 @@ public final class Point implements GeometryPrimitive {
      */
     public double getY() {
         return y;
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        return calculateWktPoint("POINT", this);
     }
 
     @AllArgsConstructor

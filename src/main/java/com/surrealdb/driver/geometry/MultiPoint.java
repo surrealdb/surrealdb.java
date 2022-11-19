@@ -1,10 +1,15 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeometryRepresentationPoints;
 
 /**
  * MultiPoints can be used to store multiple geometry points in a single value.
@@ -12,10 +17,9 @@ import java.util.*;
  * @see <a href="https://surrealdb.com/docs/surrealql/datamodel/geometries#multipoint">Surreal Docs - MultiPoint</a>
  * @see <a href="https://www.rfc-editor.org/rfc/rfc7946#section-3.1.3">GeoJSON - MultiPoint</a>
  */
-@ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
+public final class MultiPoint extends GeometryPrimitive implements Iterable<Point> {
 
     public static final MultiPoint EMPTY = new MultiPoint(ImmutableList.of());
 
@@ -74,6 +78,11 @@ public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
     @Override
     public @NotNull Iterator<Point> iterator() {
         return points.iterator();
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        return calculateWktGeometryRepresentationPoints("MULTIPOINT", iterator());
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

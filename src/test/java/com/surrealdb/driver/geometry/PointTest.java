@@ -1,10 +1,12 @@
 package com.surrealdb.driver.geometry;
 
+import com.surrealdb.meta.GeometryTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class PointTest {
+public class PointTest implements GeometryTest {
 
     private static final double GEO_HASH_PRECISION = 0.00000001;
 
@@ -67,6 +69,37 @@ public class PointTest {
         Point point2 = Point.fromXY(23, 73);
 
         assertEquals(point1, point2);
+        assertEquals(point1.hashCode(), point2.hashCode());
+    }
+
+    @Test
+    public void testToStringReturnsWKT() {
+        assertEquals("POINT (3.14159 12)", Point.fromXY(3.14159, 12).toString());
+        assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString());
+    }
+
+    @Test
+    public void testEqualsReturnsTrueForEqualObjects() {
+        Point point1 = Point.fromXY(64, 128);
+        Point point2 = Point.fromXY(64, 128);
+
+        assertEquals(point1, point2);
+
+    }
+
+    @Test
+    public void testEqualsReturnsFalseForDifferentObjects() {
+        Point point1 = Point.fromXY(64, 128);
+        Point point2 = Point.fromXY(128, 64);
+
+        assertNotEquals(point1, point2);
+    }
+
+    @Test
+    public void testHashCodeReturnsSameValueForEqualObjects() {
+        Point point1 = Point.fromXY(64, 128);
+        Point point2 = Point.fromXY(64, 128);
+
         assertEquals(point1.hashCode(), point2.hashCode());
     }
 }
