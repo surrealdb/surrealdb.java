@@ -22,6 +22,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          java-package: 'jdk'
+          architecture: 'x64'
 
       - name: Run Tests
         uses: gradle/gradle-build-action@v2
@@ -40,6 +42,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          java-package: 'jdk'
+          architecture: 'x64'
 
       - name: Build
         uses: gradle/gradle-build-action@v2
