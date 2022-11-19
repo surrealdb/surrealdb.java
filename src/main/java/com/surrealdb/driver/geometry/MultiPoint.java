@@ -17,6 +17,8 @@ import java.util.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
 
+    public static final MultiPoint EMPTY = new MultiPoint(ImmutableList.of());
+
     @NotNull ImmutableList<Point> points;
 
     /**
@@ -25,6 +27,10 @@ public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
      * @throws NullPointerException If {@code points} contains a null value.
      */
     public static @NotNull MultiPoint from(@NotNull Collection<Point> points) {
+        if (points.isEmpty()) {
+            return EMPTY;
+        }
+
         return new MultiPoint(ImmutableList.copyOf(points));
     }
 
@@ -34,6 +40,10 @@ public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
      * @throws NullPointerException If {@code points} contains a null value.
      */
     public static @NotNull MultiPoint from(Point @NotNull ... points) {
+        if (points.length == 0) {
+            return EMPTY;
+        }
+
         return new MultiPoint(ImmutableList.copyOf(points));
     }
 
@@ -157,7 +167,7 @@ public final class MultiPoint implements GeometryPrimitive, Iterable<Point> {
          * @return A new {@link MultiPoint} with the points added to this {@code Builder}
          */
         public @NotNull MultiPoint build() {
-            return new MultiPoint(ImmutableList.copyOf(this.points));
+            return MultiPoint.from(points);
         }
     }
 }

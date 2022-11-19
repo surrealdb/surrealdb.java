@@ -17,18 +17,32 @@ import java.util.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MultiLineString implements GeometryPrimitive, Iterable<LineString> {
 
+    public static final MultiLineString EMPTY = new MultiLineString(ImmutableList.of());
+
     @NotNull ImmutableList<LineString> lines;
 
     public static @NotNull MultiLineString from(@NotNull Collection<LineString> lines) {
+        if (lines.isEmpty()) {
+            return EMPTY;
+        }
+
         return new MultiLineString(ImmutableList.copyOf(lines));
     }
 
     public static @NotNull MultiLineString from(LineString @NotNull ... lines) {
+        if (lines.length == 0) {
+            return EMPTY;
+        }
+
         return new MultiLineString(ImmutableList.copyOf(lines));
     }
 
     public static @NotNull MultiLineString from(@NotNull LineString line) {
         return new MultiLineString(ImmutableList.of(line));
+    }
+
+    public static @NotNull Builder builder() {
+        return new Builder();
     }
 
     public int getLineCount() {

@@ -1,9 +1,9 @@
 package com.surrealdb.connection.gson;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.connection.gson.SurrealGsonUtils;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Type;
@@ -57,5 +57,13 @@ public class GsonTestUtils {
         assertEquals(2, actual.getAsJsonArray().size(), "Check coordinate array size");
         assertEquals(expectedX, actual.getAsJsonArray().get(0).getAsDouble(), "Check x coordinate");
         assertEquals(expectedY, actual.getAsJsonArray().get(1).getAsDouble(), "Check y coordinate");
+    }
+
+    public static JsonElement createJsonArray(double... values) {
+        JsonArray array = new JsonArray();
+        for (double value : values) {
+            array.add(value);
+        }
+        return array;
     }
 }

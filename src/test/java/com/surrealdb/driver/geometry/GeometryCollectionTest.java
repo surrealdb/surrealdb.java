@@ -2,22 +2,22 @@ package com.surrealdb.driver.geometry;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-class GeometryCollectionTest {
+class GeometryCollectionTest implements MultiGeometryTest {
 
     @Test
-    void testEmpty() {
+    public void testEmptyConstantHasZeroElements() {
         assertEquals(0, GeometryCollection.EMPTY.getGeometryCount());
     }
 
     @Test
-    void testEmptyCreateReturnsSameInstance() {
+    public void testProvidingZeroElementsToFromGivesBackSingletonInstance() {
         assertSame(GeometryCollection.EMPTY, GeometryCollection.from());
-        assertSame(GeometryCollection.EMPTY, GeometryCollection.from(new ArrayList<>()));
+        assertSame(GeometryCollection.EMPTY, GeometryCollection.from(List.of()));
         assertSame(GeometryCollection.EMPTY, GeometryCollection.builder().build());
     }
 

@@ -16,6 +16,8 @@ import java.util.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiPolygon implements GeometryPrimitive, Iterable<Polygon> {
 
+    public static final MultiPolygon EMPTY = new MultiPolygon(ImmutableList.of());
+
     @NotNull ImmutableList<Polygon> polygons;
 
     /**
@@ -26,6 +28,10 @@ public class MultiPolygon implements GeometryPrimitive, Iterable<Polygon> {
      * @throws NullPointerException If {@code polygons} contains a null value.
      */
     public static @NotNull MultiPolygon from(@NotNull Collection<Polygon> polygons) {
+        if (polygons.isEmpty()) {
+            return EMPTY;
+        }
+
         return new MultiPolygon(ImmutableList.copyOf(polygons));
     }
 
@@ -36,6 +42,10 @@ public class MultiPolygon implements GeometryPrimitive, Iterable<Polygon> {
      * @return A new MultiPolygon with the given {@code polygons}
      */
     public static @NotNull MultiPolygon from(Polygon @NotNull ... polygons) {
+        if (polygons.length == 0) {
+            return EMPTY;
+        }
+
         return new MultiPolygon(ImmutableList.copyOf(polygons));
     }
 
