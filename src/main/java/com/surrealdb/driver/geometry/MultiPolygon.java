@@ -5,6 +5,7 @@ import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
 
@@ -88,6 +89,39 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
     @Override
     public Iterator<Polygon> iterator() {
         return polygons.iterator();
+    }
+
+    public @NotNull MultiPolygon translate(double x, double y) {
+        return transform(polygon -> polygon.translate(x, y));
+    }
+
+    public @NotNull MultiPolygon rotate(double angle) {
+        return transform(polygon -> polygon.rotate(angle));
+    }
+
+    public @NotNull MultiPolygon rotate(@NotNull Point center, double angle) {
+        return transform(polygon -> polygon.rotate(center, angle));
+    }
+
+    public @NotNull MultiPolygon scale(double scaleX, double scaleY) {
+        return transform(polygon -> polygon.scale(scaleX, scaleY));
+    }
+
+    public @NotNull MultiPolygon scale(@NotNull Point center, double scaleX, double scaleY) {
+        return transform(polygon -> polygon.scale(center, scaleX, scaleY));
+    }
+
+    public @NotNull MultiPolygon transform(@NotNull Function<Polygon, Polygon> transformation) {
+        if (polygons.isEmpty()) {
+            return EMPTY;
+        }
+
+        List<Polygon> transformed = new ArrayList<>(polygons.size());
+        for (Polygon polygon : polygons) {
+            transformed.add(transformation.apply(polygon));
+        }
+
+        return MultiPolygon.from(transformed);
     }
 
     @Override

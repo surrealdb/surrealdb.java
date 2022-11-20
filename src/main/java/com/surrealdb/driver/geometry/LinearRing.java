@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 public final class LinearRing extends LineString {
 
@@ -99,18 +100,51 @@ public final class LinearRing extends LineString {
         return getCircumferenceInKilometers() * 1000;
     }
 
-    public @NotNull LinearRing scale(double factorX, double factorY) {
-        Point center = getCenter();
-        List<Point> scaledPoints = new ArrayList<>(getPointCount());
+    public @NotNull LinearRing translate(double x, double y) {
+        return transform((point) -> point.add(x, y));
+    }
 
-        for (Point point : this) {
+    public @NotNull LinearRing scale(double factorX, double factorY) {
+        return scale(getCenter(), factorX, factorY);
+    }
+
+    public @NotNull LinearRing rotate(double degrees) {
+        return rotate(getCenter(), degrees);
+    }
+
+    public @NotNull LinearRing rotate(@NotNull Point center, double degrees) {
+        return transform(point -> {
+            double x = point.getX() - center.getX();
+            double y = point.getY() - center.getY();
+
+            double radians = Math.toRadians(degrees);
+            double cos = Math.cos(radians);
+            double sin = Math.sin(radians);
+
+            double newX = x * cos - y * sin;
+            double newY = x * sin + y * cos;
+
+            return center.add(newX, newY);
+        });
+    }
+
+    public @NotNull LinearRing scale(@NotNull Point center, double factorX, double factorY) {
+        return transform(point -> {
             double x = center.getX() + (point.getX() - center.getX()) * factorX;
             double y = center.getY() + (point.getY() - center.getY()) * factorY;
 
-            scaledPoints.add(Point.fromXY(x, y));
+            return Point.fromXY(x, y);
+        });
+    }
+
+    public @NotNull LinearRing transform(@NotNull Function<Point, Point> transform) {
+        List<Point> transformedPoints = new ArrayList<>(getPointCount());
+
+        for (Point point : this) {
+            transformedPoints.add(transform.apply(point));
         }
 
-        return LinearRing.from(scaledPoints);
+        return LinearRing.from(transformedPoints);
     }
 
     @Override

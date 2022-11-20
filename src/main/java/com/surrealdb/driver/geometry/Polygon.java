@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeneric;
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
@@ -60,6 +61,33 @@ public final class Polygon extends GeometryPrimitive {
 
     public @NotNull Iterator<LinearRing> interiorIterator() {
         return interiors.iterator();
+    }
+
+    public @NotNull Polygon translate(double x, double y) {
+        return transform(linearRing -> linearRing.translate(x, y));
+    }
+
+    public @NotNull Polygon rotate(double degrees) {
+        return transform(linearRing -> linearRing.rotate(degrees));
+    }
+
+    public @NotNull Polygon rotate(Point center, double degrees) {
+        return transform(linearRing -> linearRing.rotate(center, degrees));
+    }
+
+    public @NotNull Polygon scale(double x, double y) {
+        return transform(linearRing -> linearRing.scale(x, y));
+    }
+
+    public @NotNull Polygon scale(Point center, double x, double y) {
+        return transform(linearRing -> linearRing.scale(center, x, y));
+    }
+
+    public @NotNull Polygon transform(@NotNull Function<LinearRing, LinearRing> transformation) {
+        LinearRing newExterior = transformation.apply(exterior);
+        ImmutableList<LinearRing> newInteriors = interiors.stream().map(transformation).collect(ImmutableList.toImmutableList());
+
+        return new Polygon(newExterior, newInteriors);
     }
 
     @Override
