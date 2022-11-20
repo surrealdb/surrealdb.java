@@ -1,17 +1,26 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public final class LinearRing extends LineString {
 
     boolean closed;
     int pointCount;
+
+    @Getter(lazy = true)
+    private @NotNull Point center = calculateCenter();
+
+    @Getter(lazy = true)
+    private double circumferenceInKilometers = calculateCircumferenceInKilometers();
 
     private LinearRing(@NotNull ImmutableList<Point> points) {
         super(points);
@@ -58,6 +67,50 @@ public final class LinearRing extends LineString {
     @Override
     public @NotNull LinearRing toLinearRing() {
         return this;
+    }
+
+    private @NotNull Point calculateCenter() {
+        double x = 0;
+        double y = 0;
+
+        for (int i = 0; i < getPointCount() - 1; i++) {
+            Point point = getPoint(i);
+            x += point.getX();
+            y += point.getY();
+        }
+
+        return Point.fromXY(x / pointCount, y / pointCount);
+    }
+
+    private double calculateCircumferenceInKilometers() {
+        double circumference = 0;
+
+        for (int i = 0; i < getPointCount() - 1; i++) {
+            Point point1 = getPoint(i);
+            Point point2 = getPoint(i + 1);
+
+            circumference += Point.distanceInKilometers(point1, point2);
+        }
+
+        return circumference;
+    }
+
+    public double getCircumferenceInMeters() {
+        return getCircumferenceInKilometers() * 1000;
+    }
+
+    public @NotNull LinearRing scale(double factorX, double factorY) {
+        Point center = getCenter();
+        List<Point> scaledPoints = new ArrayList<>(getPointCount());
+
+        for (Point point : this) {
+            double x = center.getX() + (point.getX() - center.getX()) * factorX;
+            double y = center.getY() + (point.getY() - center.getY()) * factorY;
+
+            scaledPoints.add(Point.fromXY(x, y));
+        }
+
+        return LinearRing.from(scaledPoints);
     }
 
     @Override

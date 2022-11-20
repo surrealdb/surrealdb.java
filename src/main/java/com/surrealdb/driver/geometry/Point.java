@@ -26,6 +26,10 @@ import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPo
 @EqualsAndHashCode(callSuper = false)
 public final class Point extends GeometryPrimitive {
 
+    // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
+    // Volumetric mean radius (km) = 6371
+    private static final double EARTH_RADIUS = 6371;
+
     double x;
     double y;
 
@@ -95,6 +99,29 @@ public final class Point extends GeometryPrimitive {
         throw new IllegalArgumentException("Invalid character in geo hash: " + character);
     }
 
+    public static double distanceInKilometers(Point p1, Point p2) {
+        // https://en.wikipedia.org/wiki/Haversine_formula
+        // Return distance in meters
+
+        double lat1 = p1.y;
+        double lon1 = p1.x;
+        double lat2 = p2.y;
+        double lon2 = p2.x;
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        double a = Math.pow(Math.sin(dLat / 2), 2) + Math.pow(Math.sin(dLon / 2), 2) * Math.cos(lat1) * Math.cos(lat2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        return EARTH_RADIUS * c;
+    }
+
+    public static double distanceInMeters(Point p1, Point p2) {
+        return distanceInKilometers(p1, p2) * 1000;
+    }
+
     /**
      * @param newX The newX of the new point
      * @return A new point with the same latitude as this point, but with the provided newX.
@@ -150,6 +177,30 @@ public final class Point extends GeometryPrimitive {
         }
 
         throw new IllegalArgumentException("Invalid value in geo hash: " + value);
+    }
+
+    public double distanceInKilometers(@NotNull Point other) {
+        return distanceInKilometers(this, other);
+    }
+
+    public double distanceInMeters(@NotNull Point other) {
+        return distanceInMeters(this, other);
+    }
+
+    public @NotNull Point add(@NotNull Point other) {
+        return add(other.x, other.y);
+    }
+
+    public @NotNull Point add(double x, double y) {
+        return new Point(this.x + x, this.y + y);
+    }
+
+    public @NotNull Point subtract(@NotNull Point other) {
+        return subtract(other.x, other.y);
+    }
+
+    public @NotNull Point subtract(double x, double y) {
+        return new Point(this.x - x, this.y - y);
     }
 
     /**

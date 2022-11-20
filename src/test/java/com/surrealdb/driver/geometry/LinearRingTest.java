@@ -1,6 +1,7 @@
 package com.surrealdb.driver.geometry;
 
 import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.utils.GeometryUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,7 +23,7 @@ public class LinearRingTest implements GeometryTest {
     }
 
     @Test
-    void testClosedRingDoesNotChange() {
+    void testCreatingALinearRingWithClosedPointsDoesNotChange() {
         LinearRing ring = LinearRing.from(
             Point.fromXY(0, 0),
             Point.fromXY(1, 0),
@@ -34,6 +35,20 @@ public class LinearRingTest implements GeometryTest {
         assertEquals(5, ring.getPointCount());
         assertEquals(Point.fromXY(0, 0), ring.getPoint(0), "First point");
         assertEquals(Point.fromXY(0, 0), ring.getPoint(4), "Last point");
+    }
+
+    @Test
+    void testGetCenterReturnsExpectedCenter() {
+        LinearRing quadLinearRing = GeometryUtils.createQuadLinearRing(true);
+
+        assertEquals(Point.fromXY(0, 0), quadLinearRing.getCenter());
+    }
+
+    @Test
+    void testGetCircumferenceReturnsExpectedCircumference() {
+        LinearRing quadLinearRing = GeometryUtils.createQuadLinearRing(true);
+
+        assertEquals(889, quadLinearRing.getCircumferenceInKilometers(), 1);
     }
 
     // Test that a new object is not created when calling toRing() on a LinearRing

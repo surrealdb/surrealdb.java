@@ -23,10 +23,10 @@ public class PolygonTest implements GeometryTest {
     @Test
     public void testToStringReturnsWKT() {
         Polygon quad = createQuadPolygon(true);
-        assertEquals("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", quad.toString());
+        assertEquals("POLYGON ((-1 -1, -1 1, 1 1, 1 -1, -1 -1))", quad.toString());
 
         Polygon quadWithHole = createQuadPolygonWithHole();
-        assertEquals("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0), (0.1 0.1, 0.1 0.9, 0.9 0.9, 0.9 0.1, 0.1 0.1))", quadWithHole.toString());
+        assertEquals("POLYGON ((-1 -1, -1 1, 1 1, 1 -1, -1 -1), (-0.75 -0.75, -0.75 0.75, 0.75 0.75, 0.75 -0.75, -0.75 -0.75))", quadWithHole.toString());
     }
 
     @Test

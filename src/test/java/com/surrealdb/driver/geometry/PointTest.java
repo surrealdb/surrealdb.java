@@ -59,6 +59,22 @@ public class PointTest implements GeometryTest {
     }
 
     @Test
+    void testDistanceInMeters() {
+        // Use https://www.omnicalculator.com/other/latitude-longitude-distance to verify the correctness of the assertions.
+        Point p1 = Point.fromXY(0, 0);
+        Point p2 = Point.fromXY(1, 0);
+        assertEquals(111_195, p1.distanceInMeters(p2), 1);
+
+        p1 = Point.fromXY(0, 0);
+        p2 = Point.fromXY(0, 1);
+        assertEquals(111_195, p1.distanceInMeters(p2), 1);
+
+        p1 = Point.fromXY(96, 64);
+        p2 = Point.fromXY(48, 32);
+        assertEquals(4840, p1.distanceInKilometers(p2), 1);
+    }
+
+    @Test
     void testWithY() {
         Point point = Point.fromXY(3, 5).withY(7);
 
