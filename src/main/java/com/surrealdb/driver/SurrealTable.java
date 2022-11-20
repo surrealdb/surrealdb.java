@@ -37,7 +37,7 @@ public final class SurrealTable<T> {
      * representation of the record.
      *
      * @param type The class representing the table schema
-     * @param <U> The type of the table
+     * @param <U>  The type of the table
      * @return A new {@code SurrealTable} that shares the name of this table, but has the given type
      */
     public <U> @NotNull SurrealTable<U> withType(@NotNull Class<U> type) {

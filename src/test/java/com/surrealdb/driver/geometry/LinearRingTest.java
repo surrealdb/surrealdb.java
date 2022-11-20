@@ -1,7 +1,6 @@
 package com.surrealdb.driver.geometry;
 
 import com.surrealdb.meta.GeometryTest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,7 +9,7 @@ public class LinearRingTest implements GeometryTest {
 
     @Test
     void testOpenRingIsAutoClosed() {
-        LineString ring = LinearRing.from(
+        LinearRing ring = LinearRing.from(
             Point.fromXY(0, 0),
             Point.fromXY(1, 0),
             Point.fromXY(1, 1),
@@ -24,7 +23,7 @@ public class LinearRingTest implements GeometryTest {
 
     @Test
     void testClosedRingDoesNotChange() {
-        LineString ring = LinearRing.from(
+        LinearRing ring = LinearRing.from(
             Point.fromXY(0, 0),
             Point.fromXY(1, 0),
             Point.fromXY(1, 1),

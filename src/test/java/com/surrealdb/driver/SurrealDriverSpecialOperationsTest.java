@@ -4,12 +4,12 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
+import com.surrealdb.meta.model.Person;
+import com.surrealdb.meta.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import com.surrealdb.meta.utils.TestUtils;
-import com.surrealdb.meta.model.Person;
 
 import static org.junit.jupiter.api.Assertions.*;
 

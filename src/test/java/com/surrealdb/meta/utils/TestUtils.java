@@ -4,10 +4,12 @@ import com.surrealdb.connection.SurrealConnectionProtocol;
 import com.surrealdb.connection.SurrealConnectionSettings;
 import com.surrealdb.driver.auth.SurrealAuthCredentials;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
+import lombok.experimental.UtilityClass;
 
 /**
  * @author Khalid Alharisi
  */
+@UtilityClass
 public class TestUtils {
 
     private static final String HOST = System.getenv("TEST_SURREAL_HOST");

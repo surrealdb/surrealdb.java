@@ -1,7 +1,10 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.Lists;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 

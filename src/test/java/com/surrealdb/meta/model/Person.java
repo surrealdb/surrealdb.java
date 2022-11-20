@@ -26,5 +26,4 @@ public class Person {
         private String first;
         private String last;
     }
-
 }

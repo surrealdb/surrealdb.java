@@ -9,15 +9,15 @@ import org.junit.jupiter.api.Test;
 
 import static com.surrealdb.meta.utils.GsonTestUtils.assertGeometryCoordinatesEqual;
 import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonHasPropertyString;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GeometryLineStringAdaptorTest {
 
     @Test
     void testSerialize() {
         LineString lineString = LineString.from(
-                Point.fromXY(1.5, 2.25),
-                Point.fromXY(3.75, 4.125)
+            Point.fromXY(1.5, 2.25),
+            Point.fromXY(3.75, 4.125)
         );
 
         JsonObject serialized = GsonTestUtils.serialize(lineString).getAsJsonObject();

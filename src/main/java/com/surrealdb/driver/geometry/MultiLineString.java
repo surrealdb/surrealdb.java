@@ -6,7 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeneric;
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
 
 /**
  * MultiLines can be used to store multiple {@code lines} in a single value.

@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Type;
 import java.time.Instant;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.surrealdb.meta.utils.GsonTestUtils.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PatchChangeAdaptorTest {
 

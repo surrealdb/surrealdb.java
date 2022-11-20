@@ -4,15 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
-import com.surrealdb.driver.sql.QueryResult;
 import com.surrealdb.driver.patch.Patch;
 import com.surrealdb.driver.patch.ReplacePatch;
+import com.surrealdb.driver.sql.QueryResult;
+import com.surrealdb.meta.model.PartialPerson;
+import com.surrealdb.meta.model.Person;
+import com.surrealdb.meta.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.surrealdb.meta.utils.TestUtils;
-import com.surrealdb.meta.model.PartialPerson;
-import com.surrealdb.meta.model.Person;
 
 import java.util.Arrays;
 import java.util.List;
@@ -96,7 +96,7 @@ public class SurrealDriverTest {
         );
         Optional<Person> optionalPerson = driver.sqlSingle("SELECT * FROM person WHERE marketing = $marketing ORDER BY name.first DESC LIMIT 1", Person.class, args);
 
-        assertFalse(optionalPerson.isPresent());
+        assertTrue(optionalPerson.isEmpty());
     }
 
     @Test

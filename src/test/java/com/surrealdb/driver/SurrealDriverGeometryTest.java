@@ -1,47 +1,24 @@
 package com.surrealdb.driver;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.LinearRing;
-import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
+import com.surrealdb.meta.model.City;
+import com.surrealdb.meta.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.surrealdb.meta.utils.TestUtils;
-import com.surrealdb.meta.model.City;
-import com.surrealdb.meta.model.GeoContainer;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SurrealDriverGeometryTest {
 
-    private static final ImmutableList<City> CITIES = ImmutableList.of(
-        new City(Point.fromGeoHash("xn76urx6"), "Tokyo", 37),
-        new City(Point.fromGeoHash("ttnghcy0"), "Delhi", 28),
-        new City(Point.fromGeoHash("wtw3sjq6"), "Shanghai", 25),
-        new City(Point.fromGeoHash("6gyf4bdx"), "São Paulo", 21),
-        new City(Point.fromGeoHash("9g3w81t7"), "Mexico City", 21),
-        new City(Point.fromGeoHash("stq4yv3j"), "Cairo", 20),
-        new City(Point.fromGeoHash("te7ud2ev"), "Mumbai", 20),
-        new City(Point.fromGeoHash("wx4g0bm6"), "Beijing", 20),
-        new City(Point.fromGeoHash("wh0r3qs3"), "Dhaka", 20),
-        new City(Point.fromGeoHash("xn0m77v9"), "Osaka", 19),
-        new City(Point.fromGeoHash("dr5regw3"), "New York", 19),
-        new City(Point.fromGeoHash("tkrtkvgh"), "Karachi", 19),
-        new City(Point.fromGeoHash("69y7pkxf"), "Buenos Aires", 19),
-        new City(Point.fromGeoHash("wm7b0tu3"), "Chongqing", 19),
-        new City(Point.fromGeoHash("sxk973m6"), "Istanbul", 18)
-    );
-
-    private static final SurrealTable<GeoContainer> geometryTable = SurrealTable.of("geometry", GeoContainer.class);
     private static final SurrealTable<City> citiesTable = SurrealTable.of("cities", City.class);
 
     private SurrealConnection connection;
@@ -55,7 +32,7 @@ public class SurrealDriverGeometryTest {
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        CompletableFuture<?>[] cityCreationFutures = CITIES.stream()
+        CompletableFuture<?>[] cityCreationFutures = City.allCityCenters().stream()
             .map((city) -> driver.createRecordAsync(citiesTable, city))
             .toArray(CompletableFuture[]::new);
         CompletableFuture.allOf(cityCreationFutures).join();
@@ -63,7 +40,6 @@ public class SurrealDriverGeometryTest {
 
     @AfterEach
     void cleanup() {
-        driver.deleteAllRecordsInTable(geometryTable);
         driver.deleteAllRecordsInTable(citiesTable);
         connection.disconnect();
     }
@@ -86,7 +62,7 @@ public class SurrealDriverGeometryTest {
 
         assertEquals(2, cities.size());
 
-        List<String> cityNames = cities.stream().map(City::getName).collect(Collectors.toList());
+        List<String> cityNames = cities.stream().map(City::getName).toList();
         assertTrue(cityNames.contains("Tokyo"), "Tokyo should be in the selection");
         assertTrue(cityNames.contains("Osaka"), "Osaka should be in the selection");
     }

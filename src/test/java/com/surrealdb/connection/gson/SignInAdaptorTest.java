@@ -5,9 +5,9 @@ import com.surrealdb.driver.auth.*;
 import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonDoesNotHaveProperties;
 import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonHasPropertyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SignInAdaptorTest {
 
