@@ -71,6 +71,11 @@ public final class MultiLineString extends GeometryPrimitive implements Iterable
         return calculateWktGeneric("MULTILINESTRING", lineStrings);
     }
 
+    @Override
+    protected @NotNull Point calculateCenter() {
+        return InternalGeometryUtils.calculateCenterOfGeometries(lines);
+    }
+
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 

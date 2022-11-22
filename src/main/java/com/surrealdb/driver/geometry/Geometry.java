@@ -7,9 +7,14 @@ import org.jetbrains.annotations.NotNull;
 public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollection {
 
     @Getter(lazy = true, value = AccessLevel.PROTECTED)
-    String wkt = calculateWkt();
+    @NotNull String wkt = calculateWkt();
+
+    @Getter(lazy = true, value = AccessLevel.PUBLIC)
+    @NotNull Point center = calculateCenter();
 
     protected abstract @NotNull String calculateWkt();
+
+    protected abstract @NotNull Point calculateCenter();
 
     @Override
     public String toString() {

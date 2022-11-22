@@ -8,5 +8,10 @@ import lombok.experimental.StandardException;
  * @author Khalid Alharisi
  */
 @StandardException
-public class SurrealException extends RuntimeException {
+public sealed class SurrealException extends RuntimeException permits
+    SurrealAuthenticationException,
+    SurrealConnectionTimeoutException,
+    SurrealNoDatabaseSelectedException,
+    SurrealNotConnectedException,
+    SurrealRecordAlreadyExistsException {
 }

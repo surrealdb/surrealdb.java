@@ -21,9 +21,6 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
 
     @NotNull ImmutableList<Point> points;
 
-    @Getter(lazy = true)
-    private @NotNull Point center = calculateCenter();
-
     protected LineString(@NotNull ImmutableList<Point> points) {
         this.points = points;
 
@@ -135,19 +132,6 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
         return LinearRing.from(transformedPoints);
     }
 
-    private @NotNull Point calculateCenter() {
-        double x = 0;
-        double y = 0;
-
-        for (int i = 0; i < getPointCount() - 1; i++) {
-            Point point = getPoint(i);
-            x += point.getX();
-            y += point.getY();
-        }
-
-        return Point.fromXY(x / getPointCount(), y / getPointCount());
-    }
-
     @Override
     public @NonNull Iterator<Point> iterator() {
         return points.iterator();
@@ -155,7 +139,12 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
 
     @Override
     protected @NotNull String calculateWkt() {
-        return calculateWktGeometryRepresentationPoints("LINESTRING", iterator());
+        return calculateWktGeometryRepresentationPoints("LINESTRING", this);
+    }
+
+    @Override
+    protected @NotNull Point calculateCenter() {
+        return InternalGeometryUtils.calculateCenterOfPointsIterable(this);
     }
 
     /**

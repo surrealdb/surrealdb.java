@@ -30,7 +30,7 @@ public final class Point extends GeometryPrimitive {
 
     // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
     // Volumetric mean radius (km) = 6371
-    private static final double EARTH_RADIUS = 6371;
+    private static final double EARTH_RADIUS_KM = 6371;
 
     double x;
     double y;
@@ -89,7 +89,7 @@ public final class Point extends GeometryPrimitive {
         if (character >= 'b' && character <= 'h') {
             return character - 'b' + 10;
         }
-        if (character >= 'j' && character <= 'l') {
+        if (character >= 'j' && character <= 'k') {
             return character - 'j' + 17;
         }
         if (character >= 'm' && character <= 'n') {
@@ -99,29 +99,6 @@ public final class Point extends GeometryPrimitive {
             return character - 'p' + 21;
         }
         throw new IllegalArgumentException("Invalid character in geo hash: " + character);
-    }
-
-    public static double distanceInKilometers(Point p1, Point p2) {
-        // https://en.wikipedia.org/wiki/Haversine_formula
-        // Return distance in meters
-
-        double lat1 = p1.y;
-        double lon1 = p1.x;
-        double lat2 = p2.y;
-        double lon2 = p2.x;
-
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        lat1 = Math.toRadians(lat1);
-        lat2 = Math.toRadians(lat2);
-
-        double a = Math.pow(Math.sin(dLat / 2), 2) + Math.pow(Math.sin(dLon / 2), 2) * Math.cos(lat1) * Math.cos(lat2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        return EARTH_RADIUS * c;
-    }
-
-    public static double distanceInMeters(Point p1, Point p2) {
-        return distanceInKilometers(p1, p2) * 1000;
     }
 
     /**
@@ -141,8 +118,8 @@ public final class Point extends GeometryPrimitive {
     }
 
     public @NotNull String toGeoHash(int precision) {
-        EncodedGeoHashCoord xCoord = new EncodedGeoHashCoord(-180, 180, x);
-        EncodedGeoHashCoord yCoord = new EncodedGeoHashCoord(-90, 90, y);
+        EncodingGeoHashCoord xCoord = new EncodingGeoHashCoord(-180, 180, x);
+        EncodingGeoHashCoord yCoord = new EncodingGeoHashCoord(-90, 90, y);
         StringBuilder geoHash = new StringBuilder(precision);
         boolean lng = true;
 
@@ -150,7 +127,7 @@ public final class Point extends GeometryPrimitive {
             int hash = 0;
 
             for (int shift = 4; shift >= 0; --shift) {
-                EncodedGeoHashCoord coord = lng ? xCoord : yCoord;
+                EncodingGeoHashCoord coord = lng ? xCoord : yCoord;
                 hash = (hash << 1) + (coord.cut() ? 1 : 0);
                 lng = !lng;
             }
@@ -181,12 +158,29 @@ public final class Point extends GeometryPrimitive {
         throw new IllegalArgumentException("Invalid value in geo hash: " + value);
     }
 
+    public static double distanceInKilometers(@NotNull Point point1, @NotNull Point point2) {
+        return point1.distanceInKilometers(point2);
+    }
+
+    public static double distanceInMeters(Point point1, Point point2) {
+        return point1.distanceInMeters(point2);
+    }
+
     public double distanceInKilometers(@NotNull Point other) {
-        return distanceInKilometers(this, other);
+        // https://en.wikipedia.org/wiki/Haversine_formula
+
+        double deltaX = Math.toRadians(other.x - x);
+        double deltaY = Math.toRadians(other.y - y);
+
+        double a = Math.sin(deltaY / 2) * Math.sin(deltaY / 2) + Math.cos(Math.toRadians(y)) * Math.cos(Math.toRadians(other.y)) * Math.sin(deltaX / 2) * Math.sin(deltaX / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_KM * c;
     }
 
     public double distanceInMeters(@NotNull Point other) {
-        return distanceInMeters(this, other);
+        return distanceInKilometers(other) * 1000;
     }
 
     public @NotNull Point add(@NotNull Point other) {
@@ -254,6 +248,11 @@ public final class Point extends GeometryPrimitive {
         return calculateWktPoint("POINT", this);
     }
 
+    @Override
+    protected @NotNull Point calculateCenter() {
+        return this;
+    }
+
     @AllArgsConstructor
     private abstract static class GeoHashCoord {
 
@@ -268,11 +267,11 @@ public final class Point extends GeometryPrimitive {
     }
 
 
-    private static final class EncodedGeoHashCoord extends GeoHashCoord {
+    private static final class EncodingGeoHashCoord extends GeoHashCoord {
 
         double actual;
 
-        public EncodedGeoHashCoord(double min, double max, double actual) {
+        public EncodingGeoHashCoord(double min, double max, double actual) {
             super(min, max);
             this.actual = actual;
         }

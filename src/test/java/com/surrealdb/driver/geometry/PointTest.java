@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static com.surrealdb.meta.utils.GeometryUtils.assertPointEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PointTest {
 
@@ -29,11 +28,19 @@ public class PointTest {
 
     @Test
     void testFromGeoHash() {
-        // You can use http://geohash.co/ to verify the correctness of the assertions.
-        // The site looks a little sketchy, so I'll find a better one later.
+        // You can use http://geohash.org/ to verify the correctness of the assertions.
         assertPointEquals(Point.fromYX(51.50070948, -0.12456732), Point.fromGeoHash("gcpuvpmm3k5f"));
         assertPointEquals(Point.fromYX(29.97923900, 31.13425897), Point.fromGeoHash("stq4s3x38z4n"));
         assertPointEquals(Point.fromYX(37.81962781, -122.47855028), Point.fromGeoHash("9q8zhuvg6cte"));
+    }
+
+    @Test
+    void testInvalidGeoHash() {
+        assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("B"), "capital letters are not allowed.");
+        assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("a"), "'a' is not a valid character.");
+        assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("i"), "'i' is not a valid character.");
+        assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("l"), "'l' is not a valid character.");
+        assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("o"), "'o' is not a valid character.");
     }
 
     @Test
@@ -54,6 +61,14 @@ public class PointTest {
     }
 
     @Test
+    void testWithY() {
+        Point point = Point.fromXY(3, 5).withY(7);
+
+        assertEquals(3, point.getX());
+        assertEquals(7, point.getY());
+    }
+
+    @Test
     void testDistanceInMeters() {
         // Use https://www.omnicalculator.com/other/latitude-longitude-distance to verify the correctness of the assertions.
         Point p1 = Point.fromXY(0, 0);
@@ -69,21 +84,14 @@ public class PointTest {
         assertEquals(4840, p1.distanceInKilometers(p2), 1);
     }
 
-    @Test
-    void testWithY() {
-        Point point = Point.fromXY(3, 5).withY(7);
-
-        assertEquals(3, point.getX());
-        assertEquals(7, point.getY());
-    }
-
     @Nested
     class StandardGeometryTests implements GeometryTest {
 
         @Test
         public void testToStringReturnsWKT() {
-            assertEquals("POINT (3.14159 12)", Point.fromXY(3.14159, 12).toString());
-            assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString());
+            assertEquals("POINT (3.141592653589793 2.718281828459045)", Point.fromXY(Math.PI, Math.E).toString(), "Decimal precision");
+            assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString(), "Zero");
+            assertEquals("POINT (-1 -1)", Point.fromXY(-1, -1).toString(), "Negative");
         }
 
         @Test

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateCenterOfGeometries;
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
 
 /**
@@ -137,6 +138,11 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
         }
 
         return InternalGeometryUtils.calculateWktGeneric("MULTIPOLYGON", polygonWkts);
+    }
+
+    @Override
+    protected @NotNull Point calculateCenter() {
+        return calculateCenterOfGeometries(polygons);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

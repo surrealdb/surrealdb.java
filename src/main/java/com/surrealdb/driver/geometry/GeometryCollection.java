@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateCenterOfGeometries;
+
 /**
  * Geometry Collections can be used to store multiple different geometry types in a single value. {@link Point}, {@link LineString},
  * {@link Polygon}, {@link MultiPoint}, {@link MultiLineString}, and {@link MultiPolygon} are supported. It's possible to store more
@@ -107,6 +109,11 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
             .toList();
 
         return InternalGeometryUtils.calculateWktGeneric("GEOMETRYCOLLECTION", wktGeometries);
+    }
+
+    @Override
+    protected @NotNull Point calculateCenter() {
+        return calculateCenterOfGeometries(geometries);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

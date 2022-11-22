@@ -10,7 +10,7 @@ import java.util.List;
 @UtilityClass
 class InternalGeometryUtils {
 
-    private static final DecimalFormat POINT_FORMATTER = new DecimalFormat("#.###########");
+    private static final @NotNull DecimalFormat POINT_FORMATTER = new DecimalFormat("#.################");
 
     static @NotNull String calculateWktGeneric(@NotNull String geometryType, @NotNull List<String> args) {
         if (args.isEmpty()) {
@@ -20,19 +20,21 @@ class InternalGeometryUtils {
         return geometryType + " (" + String.join(", ", args) + ")";
     }
 
-    static @NotNull String calculateWktGeometryRepresentationPoints(@NotNull String geometryType, @NotNull Iterator<Point> pointIterator) {
-        if (!pointIterator.hasNext()) {
+    static @NotNull String calculateWktGeometryRepresentationPoints(@NotNull String geometryType, @NotNull Iterable<? extends Point> pointIterable) {
+        Iterator<? extends Point> pointsIterator = pointIterable.iterator();
+
+        if (!pointsIterator.hasNext()) {
             return geometryType + " EMPTY";
         }
 
-        return geometryType + " " + calculateWktPointsPrimitive(pointIterator, true);
+        return geometryType + " " + calculateWktPointsPrimitive(pointsIterator, true);
     }
 
     static @NotNull String calculateWktPoint(@NotNull String geometryType, @NotNull Point point) {
         return geometryType + " (" + calculateWktPointPrimitive(point) + ")";
     }
 
-    static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<Point> points, boolean includeParentheses) {
+    static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<? extends Point> points, boolean includeParentheses) {
         StringBuilder builder = new StringBuilder();
 
         if (includeParentheses) {
@@ -61,5 +63,42 @@ class InternalGeometryUtils {
         String formattedY = POINT_FORMATTER.format(point.getY());
 
         return formattedX + " " + formattedY;
+    }
+
+    /**
+     * <b>CAREFUL: </b> This method could cause a recursive stack overflow if the geometries provided use
+     * this method to calculate their center.
+     *
+     * @param geometries The geometries to calculate the center of.
+     * @return The center of the geometries.
+     */
+    static @NotNull Point calculateCenterOfGeometries(List<? extends GeometryPrimitive> geometries) {
+        double x = 0;
+        double y = 0;
+        int count = 0;
+
+        for (GeometryPrimitive geometry : geometries) {
+            Point geometryCenter = geometry.getCenter();
+
+            x += geometryCenter.getX();
+            y += geometryCenter.getY();
+            count++;
+        }
+
+        return Point.fromXY(x / count, y / count);
+    }
+
+    static @NotNull Point calculateCenterOfPointsIterable(Iterable<? extends Point> iterable) {
+        double x = 0;
+        double y = 0;
+        int count = 0;
+
+        for (Point point : iterable) {
+            x += point.getX();
+            y += point.getY();
+            count++;
+        }
+
+        return Point.fromXY(x / count, y / count);
     }
 }

@@ -15,8 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeneric;
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
 
 /**
  * A GeoJSON Polygon value for storing a geometric area.
@@ -107,6 +106,15 @@ public final class Polygon extends GeometryPrimitive {
         }
 
         return calculateWktGeneric("POLYGON", wktRings);
+    }
+
+    @Override
+    protected @NotNull Point calculateCenter() {
+        List<LinearRing> rings = new ArrayList<>(interiors.size() + 1);
+        rings.add(exterior);
+        rings.addAll(interiors);
+
+        return calculateCenterOfGeometries(rings);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

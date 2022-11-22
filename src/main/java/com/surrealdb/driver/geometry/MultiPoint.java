@@ -23,9 +23,6 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
 
     @NotNull ImmutableList<Point> points;
 
-    @Getter(lazy = true)
-    private @NotNull Point center = calculateCenter();
-
     /**
      * @param points The points to store in this MultiPoint.
      * @return A new MultiPoint with the given points.
@@ -122,21 +119,13 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
         return MultiPoint.from(transformedPoints);
     }
 
-    private @NotNull Point calculateCenter() {
-        double x = 0;
-        double y = 0;
-        for (Point point : this) {
-            x += point.getX();
-            y += point.getY();
-        }
-
-        int pointCount = getPointCount();
-        return Point.fromXY(x / pointCount, y / pointCount);
-    }
-
     @Override
     protected @NotNull String calculateWkt() {
-        return calculateWktGeometryRepresentationPoints("MULTIPOINT", iterator());
+        return calculateWktGeometryRepresentationPoints("MULTIPOINT", this);
+    }
+
+    protected @NotNull Point calculateCenter() {
+        return InternalGeometryUtils.calculateCenterOfPointsIterable(this);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
