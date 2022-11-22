@@ -1,13 +1,11 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeometryRepresentationPoints;
 
@@ -24,6 +22,9 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
     public static final MultiPoint EMPTY = new MultiPoint(ImmutableList.of());
 
     @NotNull ImmutableList<Point> points;
+
+    @Getter(lazy = true)
+    private @NotNull Point center = calculateCenter();
 
     /**
      * @param points The points to store in this MultiPoint.
@@ -78,6 +79,59 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
     @Override
     public @NotNull Iterator<Point> iterator() {
         return points.iterator();
+    }
+
+    public @NotNull MultiPoint translate(double x, double y) {
+        return transform(point -> point.add(x, y));
+    }
+
+    public @NotNull MultiPoint rotate(@NotNull Point center, double angle) {
+        return transform((point -> point.rotate(center, angle)));
+    }
+
+    public @NotNull MultiPoint rotate(double angle) {
+        return transform(point -> point.rotate(getCenter(), angle));
+    }
+
+    public @NotNull MultiPoint scale(double factor) {
+        return transform(point -> point.scale(getCenter(), factor));
+    }
+
+    public @NotNull MultiPoint scale(double factorX, double factorY) {
+        return transform(point -> point.scale(getCenter(), factorX, factorY));
+    }
+
+    public @NotNull MultiPoint scale(@NotNull Point center, double factor) {
+        return transform(point -> point.scale(center, factor));
+    }
+
+    public @NotNull MultiPoint scale(@NotNull Point center, double factorX, double factorY) {
+        return transform(point -> point.scale(center, factorX, factorY));
+    }
+
+    public @NotNull MultiPoint transform(@NotNull Function<Point, Point> transform) {
+        if (points.isEmpty()) {
+            return EMPTY;
+        }
+
+        List<Point> transformedPoints = new ArrayList<>(points.size());
+        for (Point point : points) {
+            transformedPoints.add(transform.apply(point));
+        }
+
+        return MultiPoint.from(transformedPoints);
+    }
+
+    private @NotNull Point calculateCenter() {
+        double x = 0;
+        double y = 0;
+        for (Point point : this) {
+            x += point.getX();
+            y += point.getY();
+        }
+
+        int pointCount = getPointCount();
+        return Point.fromXY(x / pointCount, y / pointCount);
     }
 
     @Override

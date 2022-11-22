@@ -26,10 +26,10 @@ import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPo
 @EqualsAndHashCode(callSuper = false)
 public final class Point extends GeometryPrimitive {
 
+    public static final @NotNull Point ZERO = new Point(0, 0);
     // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
     // Volumetric mean radius (km) = 6371
     private static final double EARTH_RADIUS = 6371;
-
     double x;
     double y;
 
@@ -201,6 +201,36 @@ public final class Point extends GeometryPrimitive {
 
     public @NotNull Point subtract(double x, double y) {
         return new Point(this.x - x, this.y - y);
+    }
+
+    public @NotNull Point rotate(Point center, double angle) {
+        double x = center.getX() + (this.getX() - center.getX()) * Math.cos(angle) - (this.getY() - center.getY()) * Math.sin(angle);
+        double y = center.getY() + (this.getX() - center.getX()) * Math.sin(angle) + (this.getY() - center.getY()) * Math.cos(angle);
+
+        return Point.fromXY(x, y);
+    }
+
+    public @NotNull Point rotate(double angle) {
+        return rotate(ZERO, angle);
+    }
+
+    public @NotNull Point scale(Point center, double scaleX, double scaleY) {
+        double x = center.getX() + (this.getX() - center.getX()) * scaleX;
+        double y = center.getY() + (this.getY() - center.getY()) * scaleY;
+
+        return Point.fromXY(x, y);
+    }
+
+    public @NotNull Point scale(Point center, double scale) {
+        return scale(center, scale, scale);
+    }
+
+    public @NotNull Point scale(double scaleX, double scaleY) {
+        return scale(ZERO, scaleX, scaleY);
+    }
+
+    public @NotNull Point scale(double scale) {
+        return scale(ZERO, scale, scale);
     }
 
     /**

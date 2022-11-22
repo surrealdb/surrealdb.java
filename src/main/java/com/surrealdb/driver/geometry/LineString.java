@@ -1,13 +1,11 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeometryRepresentationPoints;
 
@@ -22,6 +20,9 @@ import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGe
 public sealed class LineString extends GeometryPrimitive implements Iterable<Point> permits LinearRing {
 
     @NotNull ImmutableList<Point> points;
+
+    @Getter(lazy = true)
+    private @NotNull Point center = calculateCenter();
 
     protected LineString(@NotNull ImmutableList<Point> points) {
         this.points = points;
@@ -94,6 +95,57 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
      */
     public @NotNull LineString flip() {
         return new LineString(points.reverse());
+    }
+
+    public @NotNull LineString translate(double x, double y) {
+        return transform((point) -> point.add(x, y));
+    }
+
+    public @NotNull LineString rotate(double degrees) {
+        return rotate(getCenter(), degrees);
+    }
+
+    public @NotNull LineString rotate(@NotNull Point center, double degrees) {
+        return transform(point -> point.rotate(center, degrees));
+    }
+
+    public @NotNull LineString scale(@NotNull Point center, double scaleX, double scaleY) {
+        return transform(point -> point.scale(center, scaleX, scaleY));
+    }
+
+    public @NotNull LineString scale(double scaleX, double scaleY) {
+        return scale(getCenter(), scaleX, scaleY);
+    }
+
+    public @NotNull LineString scale(@NotNull Point center, double scale) {
+        return scale(center, scale, scale);
+    }
+
+    public @NotNull LineString scale(double scale) {
+        return scale(scale, scale);
+    }
+
+    public @NotNull LineString transform(@NotNull Function<Point, Point> transform) {
+        List<Point> transformedPoints = new ArrayList<>(getPointCount());
+
+        for (Point point : this) {
+            transformedPoints.add(transform.apply(point));
+        }
+
+        return LinearRing.from(transformedPoints);
+    }
+
+    private @NotNull Point calculateCenter() {
+        double x = 0;
+        double y = 0;
+
+        for (int i = 0; i < getPointCount() - 1; i++) {
+            Point point = getPoint(i);
+            x += point.getX();
+            y += point.getY();
+        }
+
+        return Point.fromXY(x / getPointCount(), y / getPointCount());
     }
 
     @Override

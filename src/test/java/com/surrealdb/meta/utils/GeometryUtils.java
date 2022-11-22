@@ -32,7 +32,7 @@ public class GeometryUtils {
 
     public static Polygon createQuadPolygonWithHole() {
         LineString exterior = createQuadLinearRing(true);
-        LinearRing interior = createQuadLinearRing(false).scale(0.75, 0.75);
+        LinearRing interior = createQuadLinearRing(false).scale(0.75, 0.75).toLinearRing();
 
         return Polygon.builder()
             .setExterior(exterior)

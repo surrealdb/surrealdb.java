@@ -64,23 +64,31 @@ public final class Polygon extends GeometryPrimitive {
     }
 
     public @NotNull Polygon translate(double x, double y) {
-        return transform(linearRing -> linearRing.translate(x, y));
+        return transform(linearRing -> linearRing.translate(x, y).toLinearRing());
     }
 
     public @NotNull Polygon rotate(double degrees) {
-        return transform(linearRing -> linearRing.rotate(degrees));
+        return transform(linearRing -> linearRing.rotate(degrees).toLinearRing());
     }
 
     public @NotNull Polygon rotate(Point center, double degrees) {
-        return transform(linearRing -> linearRing.rotate(center, degrees));
+        return transform(linearRing -> linearRing.rotate(center, degrees).toLinearRing());
+    }
+
+    public @NotNull Polygon scale(double factor) {
+        return transform(linearRing -> linearRing.scale(factor).toLinearRing());
+    }
+
+    public @NotNull Polygon scale(Point center, double factor) {
+        return transform(linearRing -> linearRing.scale(center, factor).toLinearRing());
     }
 
     public @NotNull Polygon scale(double x, double y) {
-        return transform(linearRing -> linearRing.scale(x, y));
+        return transform(linearRing -> linearRing.scale(x, y).toLinearRing());
     }
 
     public @NotNull Polygon scale(Point center, double x, double y) {
-        return transform(linearRing -> linearRing.scale(center, x, y));
+        return transform(linearRing -> linearRing.scale(center, x, y).toLinearRing());
     }
 
     public @NotNull Polygon transform(@NotNull Function<LinearRing, LinearRing> transformation) {
