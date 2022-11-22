@@ -27,9 +27,11 @@ import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPo
 public final class Point extends GeometryPrimitive {
 
     public static final @NotNull Point ZERO = new Point(0, 0);
+
     // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
     // Volumetric mean radius (km) = 6371
     private static final double EARTH_RADIUS = 6371;
+
     double x;
     double y;
 

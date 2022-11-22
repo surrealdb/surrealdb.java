@@ -2,13 +2,17 @@ package com.surrealdb.driver.geometry;
 
 import com.surrealdb.meta.GeometryTest;
 import com.surrealdb.meta.MultiGeometryTest;
+import com.surrealdb.meta.utils.GeometryUtils;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.function.Supplier;
 
+import static com.surrealdb.meta.utils.GeometryUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class MultiPolygonTest implements GeometryTest, MultiGeometryTest {
+class MultiPolygonTest implements MultiGeometryTest {
 
     @Test
     public void testEmptyConstantHasZeroElements() {
@@ -21,137 +25,57 @@ class MultiPolygonTest implements GeometryTest, MultiGeometryTest {
         assertSame(MultiPolygon.EMPTY, MultiPolygon.from(List.of()));
     }
 
-    @Test
-    public void testToStringReturnsWKT() {
-        Polygon poly1 = Polygon.from(
-            LinearRing.from(
-                Point.fromXY(0, 0),
-                Point.fromXY(1, 0),
-                Point.fromXY(1, 1),
-                Point.fromXY(0, 1)
-            )
-        );
+    @Nested
+    class StandardGeometryTests implements GeometryTest {
 
-        Polygon poly2 = Polygon.withInteriorPolygons(
-            LinearRing.from(
-                Point.fromXY(-5, -1),
-                Point.fromXY(3, 1),
-                Point.fromXY(8, 12),
-                Point.fromXY(-4, 5)
-            ),
-            List.of(
-                LinearRing.from(
-                    Point.fromXY(0.1, 0.1),
-                    Point.fromXY(0.9, 0.1),
-                    Point.fromXY(0.9, 0.9),
-                    Point.fromXY(0.1, 0.9)
-                )
-            )
-        );
+        @Test
+        public void testToStringReturnsWKT() {
+            Polygon poly1 = GeometryUtils.createQuadPolygon(false);
+            Polygon poly2 = createQuadPolygonWithHole();
 
-        MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
-        assertEquals("MULTIPOLYGON (((0 0, 1 0, 1 1, 0 1, 0 0)), ((-5 -1, 3 1, 8 12, -4 5, -5 -1), (0.1 0.1, 0.9 0.1, 0.9 0.9, 0.1 0.9, 0.1 0.1)))", multiPolygon.toString());
-    }
+            MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
+            assertEquals("MULTIPOLYGON (((-1 -1, -1 1, 1 1, 1 -1, -1 -1)), ((-1 -1, -1 1, 1 1, 1 -1, -1 -1), (-0.75 -0.75, -0.75 0.75, 0.75 0.75, 0.75 -0.75, -0.75 -0.75)))", multiPolygon.toString());
+        }
 
-    @Test
-    public void testEqualsReturnsTrueForEqualObjects() {
-        Polygon poly1 = Polygon.from(
-            LinearRing.from(
-                Point.fromXY(0, 0),
-                Point.fromXY(1, 0),
-                Point.fromXY(1, 1),
-                Point.fromXY(0, 1)
-            )
-        );
+        @Test
+        public void testEqualsReturnsTrueForEqualObjects() {
+            Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
+                createCirclePolygon(10, 1),
+                createQuadPolygonWithHole()
+            );
 
-        Polygon poly2 = Polygon.withInteriorPolygons(
-            LinearRing.from(
-                Point.fromXY(-5, -1),
-                Point.fromXY(3, 1),
-                Point.fromXY(8, 12),
-                Point.fromXY(-4, 5)
-            ),
-            List.of(
-                LinearRing.from(
-                    Point.fromXY(0.1, 0.1),
-                    Point.fromXY(0.9, 0.1),
-                    Point.fromXY(0.9, 0.9),
-                    Point.fromXY(0.1, 0.9)
-                )
-            )
-        );
+            MultiPolygon multiPolygon1 = supplier.get();
+            MultiPolygon multiPolygon2 = supplier.get();
 
-        MultiPolygon multiPolygon1 = MultiPolygon.from(poly1, poly2);
-        MultiPolygon multiPolygon2 = MultiPolygon.from(poly1, poly2);
+            assertEquals(multiPolygon1, multiPolygon2);
+        }
 
-        assertEquals(multiPolygon1, multiPolygon2);
-    }
+        @Test
+        public void testEqualsReturnsFalseForDifferentObjects() {
+            MultiPolygon multiPolygon1 = MultiPolygon.builder()
+                .addPolygon(createCirclePolygon(4, 2))
+                .addPolygon(createQuadPolygon(false))
+                .addPolygon(createQuadPolygonWithHole())
+                .build();
+            MultiPolygon multiPolygon2 = MultiPolygon.builder()
+                .addPolygon(createQuadPolygonWithHole())
+                .build();
 
-    @Test
-    public void testEqualsReturnsFalseForDifferentObjects() {
-        Polygon poly1 = Polygon.from(
-            LinearRing.from(
-                Point.fromXY(0, 0),
-                Point.fromXY(1, 0),
-                Point.fromXY(1, 1),
-                Point.fromXY(0, 1)
-            )
-        );
+            assertNotEquals(multiPolygon1, multiPolygon2);
+        }
 
-        Polygon poly2 = Polygon.withInteriorPolygons(
-            LinearRing.from(
-                Point.fromXY(-5, -1),
-                Point.fromXY(3, 1),
-                Point.fromXY(8, 12),
-                Point.fromXY(-4, 5)
-            ),
-            List.of(
-                LinearRing.from(
-                    Point.fromXY(0.1, 0.1),
-                    Point.fromXY(0.9, 0.1),
-                    Point.fromXY(0.9, 0.9),
-                    Point.fromXY(0.1, 0.9)
-                )
-            )
-        );
+        @Test
+        public void testHashCodeReturnsSameValueForEqualObjects() {
+            Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
+                createCirclePolygon(12, 4),
+                createQuadPolygonWithHole(),
+                createQuadPolygon(false)
+            );
 
-        MultiPolygon multiPolygon1 = MultiPolygon.from(poly1, poly2);
-        MultiPolygon multiPolygon2 = MultiPolygon.from(poly2, poly1);
+            MultiPolygon multiPolygon1 = supplier.get();
+            MultiPolygon multiPolygon2 = supplier.get();
 
-        assertNotEquals(multiPolygon1, multiPolygon2);
-    }
-
-    @Test
-    public void testHashCodeReturnsSameValueForEqualObjects() {
-        Polygon poly1 = Polygon.from(
-            LinearRing.from(
-                Point.fromXY(0, 0),
-                Point.fromXY(1, 0),
-                Point.fromXY(1, 1),
-                Point.fromXY(0, 1)
-            )
-        );
-
-        Polygon poly2 = Polygon.withInteriorPolygons(
-            LinearRing.from(
-                Point.fromXY(-5, -1),
-                Point.fromXY(3, 1),
-                Point.fromXY(8, 12),
-                Point.fromXY(-4, 5)
-            ),
-            List.of(
-                LinearRing.from(
-                    Point.fromXY(0.1, 0.1),
-                    Point.fromXY(0.9, 0.1),
-                    Point.fromXY(0.9, 0.9),
-                    Point.fromXY(0.1, 0.9)
-                )
-            )
-        );
-
-        MultiPolygon multiPolygon1 = MultiPolygon.from(poly1, poly2);
-        MultiPolygon multiPolygon2 = MultiPolygon.from(poly1, poly2);
-
-        assertEquals(multiPolygon1.hashCode(), multiPolygon2.hashCode());
+            assertEquals(multiPolygon1.hashCode(), multiPolygon2.hashCode());
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.surrealdb.driver.geometry;
 
 import com.surrealdb.meta.GeometryTest;
 import com.surrealdb.meta.MultiGeometryTest;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-class MultiPointTest implements GeometryTest, MultiGeometryTest {
+class MultiPointTest implements MultiGeometryTest {
 
     @Test
     public void testEmptyConstantHasZeroElements() {
@@ -22,61 +23,65 @@ class MultiPointTest implements GeometryTest, MultiGeometryTest {
         assertEquals(MultiPoint.EMPTY, MultiPoint.from(List.of()));
     }
 
-    @Test
-    public void testToStringReturnsWKT() {
-        MultiPoint multiPoint = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24),
-            Point.fromXY(3.9, 7)
-        );
+    @Nested
+    class StandardGeometryTests implements GeometryTest {
 
-        assertEquals("MULTIPOINT (-91.6711 -13.4225, -68.295 7.24, 3.9 7)", multiPoint.toString());
-    }
+        @Test
+        public void testToStringReturnsWKT() {
+            MultiPoint multiPoint = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
 
-    @Test
-    public void testEqualsReturnsTrueForEqualObjects() {
-        MultiPoint multiPoint1 = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24),
-            Point.fromXY(3.9, 7)
-        );
-        MultiPoint multiPoint2 = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24),
-            Point.fromXY(3.9, 7)
-        );
+            assertEquals("MULTIPOINT (-91.6711 -13.4225, -68.295 7.24, 3.9 7)", multiPoint.toString());
+        }
 
-        assertEquals(multiPoint1, multiPoint2);
-    }
+        @Test
+        public void testEqualsReturnsTrueForEqualObjects() {
+            MultiPoint multiPoint1 = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
+            MultiPoint multiPoint2 = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
 
-    @Test
-    public void testEqualsReturnsFalseForDifferentObjects() {
-        MultiPoint multiPoint1 = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24),
-            Point.fromXY(3.9, 7)
-        );
-        MultiPoint multiPoint2 = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24)
-        );
+            assertEquals(multiPoint1, multiPoint2);
+        }
 
-        assertNotEquals(multiPoint1, multiPoint2);
-    }
+        @Test
+        public void testEqualsReturnsFalseForDifferentObjects() {
+            MultiPoint multiPoint1 = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
+            MultiPoint multiPoint2 = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24)
+            );
 
-    @Test
-    public void testHashCodeReturnsSameValueForEqualObjects() {
-        MultiPoint multiPoint1 = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24),
-            Point.fromXY(3.9, 7)
-        );
-        MultiPoint multiPoint2 = MultiPoint.from(
-            Point.fromXY(-91.6711, -13.4225),
-            Point.fromXY(-68.295, 7.24),
-            Point.fromXY(3.9, 7)
-        );
+            assertNotEquals(multiPoint1, multiPoint2);
+        }
 
-        assertEquals(multiPoint1.hashCode(), multiPoint2.hashCode());
+        @Test
+        public void testHashCodeReturnsSameValueForEqualObjects() {
+            MultiPoint multiPoint1 = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
+            MultiPoint multiPoint2 = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
+
+            assertEquals(multiPoint1.hashCode(), multiPoint2.hashCode());
+        }
     }
 }

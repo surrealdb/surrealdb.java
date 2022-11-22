@@ -2,14 +2,14 @@ package com.surrealdb.driver.geometry;
 
 import com.surrealdb.meta.GeometryTest;
 import com.surrealdb.meta.model.City;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static com.surrealdb.meta.utils.GeometryUtils.assertPointEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class PointTest implements GeometryTest {
-
-    private static final double GEO_HASH_PRECISION = 0.00000001;
+public class PointTest {
 
     @Test
     void testFromXY() {
@@ -45,11 +45,6 @@ public class PointTest implements GeometryTest {
         assertEquals("7zzzzzzzzzzz", Point.fromYX(0, 0).toGeoHash(12));
     }
 
-    void assertPointEquals(Point expected, Point actual) {
-        assertEquals(expected.getX(), actual.getX(), PointTest.GEO_HASH_PRECISION);
-        assertEquals(expected.getY(), actual.getY(), PointTest.GEO_HASH_PRECISION);
-    }
-
     @Test
     void testWithX() {
         Point point = Point.fromXY(3, 5).withX(7);
@@ -82,34 +77,38 @@ public class PointTest implements GeometryTest {
         assertEquals(7, point.getY());
     }
 
-    @Test
-    public void testToStringReturnsWKT() {
-        assertEquals("POINT (3.14159 12)", Point.fromXY(3.14159, 12).toString());
-        assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString());
-    }
+    @Nested
+    class StandardGeometryTests implements GeometryTest {
 
-    @Test
-    public void testEqualsReturnsTrueForEqualObjects() {
-        Point point1 = Point.fromXY(64, 128);
-        Point point2 = Point.fromXY(64, 128);
+        @Test
+        public void testToStringReturnsWKT() {
+            assertEquals("POINT (3.14159 12)", Point.fromXY(3.14159, 12).toString());
+            assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString());
+        }
 
-        assertEquals(point1, point2);
+        @Test
+        public void testEqualsReturnsTrueForEqualObjects() {
+            Point point1 = Point.fromXY(64, 128);
+            Point point2 = Point.fromXY(64, 128);
 
-    }
+            assertEquals(point1, point2);
 
-    @Test
-    public void testEqualsReturnsFalseForDifferentObjects() {
-        Point point1 = City.BEIJING.getLocation();
-        Point point2 = City.CAIRO.getLocation();
+        }
 
-        assertNotEquals(point1, point2);
-    }
+        @Test
+        public void testEqualsReturnsFalseForDifferentObjects() {
+            Point point1 = City.BEIJING.getLocation();
+            Point point2 = City.CAIRO.getLocation();
 
-    @Test
-    public void testHashCodeReturnsSameValueForEqualObjects() {
-        Point point1 = Point.fromXY(64, 128);
-        Point point2 = Point.fromXY(64, 128);
+            assertNotEquals(point1, point2);
+        }
 
-        assertEquals(point1.hashCode(), point2.hashCode());
+        @Test
+        public void testHashCodeReturnsSameValueForEqualObjects() {
+            Point point1 = Point.fromXY(64, 128);
+            Point point2 = Point.fromXY(64, 128);
+
+            assertEquals(point1.hashCode(), point2.hashCode());
+        }
     }
 }
