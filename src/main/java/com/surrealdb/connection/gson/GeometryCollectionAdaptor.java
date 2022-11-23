@@ -37,7 +37,7 @@ final class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollect
         List<GeometryPrimitive> geometryList = new ArrayList<>(geometries.size());
         for (JsonElement geometry : geometries) {
             String type = geometry.getAsJsonObject().get("type").getAsString();
-            Class<?> geometryClass = switch (type) {
+            Class<? extends GeometryPrimitive> geometryClass = switch (type) {
                 case "Point" -> Point.class;
                 case "MultiPoint" -> MultiPoint.class;
                 case "LineString" -> LineString.class;

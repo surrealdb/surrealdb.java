@@ -46,6 +46,7 @@ public class PolygonTest {
     class StandardGeometryTests implements GeometryTest {
 
         @Test
+        @Override
         public void testToStringReturnsWKT() {
             ImmutableList<Polygon> quads = ImmutableList.of(
                 createQuadPolygon(false),
@@ -58,6 +59,7 @@ public class PolygonTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             Polygon poly1 = createQuadPolygon(true);
             Polygon poly2 = createQuadPolygon(false);
@@ -65,6 +67,7 @@ public class PolygonTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsFalseForDifferentObjects() {
             Polygon poly1 = createQuadPolygon(true);
             Polygon poly2 = createQuadPolygonWithHole();
@@ -72,6 +75,7 @@ public class PolygonTest {
         }
 
         @Test
+        @Override
         public void testHashCodeReturnsSameValueForEqualObjects() {
             Polygon poly1 = createQuadPolygon(true);
             Polygon poly2 = createQuadPolygon(false);

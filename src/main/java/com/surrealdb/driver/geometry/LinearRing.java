@@ -82,6 +82,24 @@ public final class LinearRing extends LineString {
     }
 
     @Override
+    protected @NotNull Point calculateCenter() {
+        // Is there a cleaner way to do this? This is almost exactly the same
+        // as the methods in InternalGeometryUtils. The last point MUST NOT
+        // be included in the calculation, as it is the same as the first point.
+        double x = 0;
+        double y = 0;
+
+        for (int i = 0; i < getPointCount() - 1; i++) {
+            Point point = getPoint(i);
+
+            x += point.getX();
+            y += point.getY();
+        }
+
+        return Point.fromXY(x / pointCount, y / pointCount);
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (this == other) return true;
 
@@ -104,7 +122,7 @@ public final class LinearRing extends LineString {
 
     @Override
     public int hashCode() {
-        int result = 0;
+        int result = 23;
 
         for (Point point : this) {
             result = 31 * result + point.hashCode();

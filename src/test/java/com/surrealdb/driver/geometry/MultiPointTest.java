@@ -27,6 +27,7 @@ class MultiPointTest implements MultiGeometryTest {
     class StandardGeometryTests implements GeometryTest {
 
         @Test
+        @Override
         public void testToStringReturnsWKT() {
             MultiPoint multiPoint = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),
@@ -38,6 +39,7 @@ class MultiPointTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             MultiPoint multiPoint1 = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),
@@ -54,6 +56,7 @@ class MultiPointTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsFalseForDifferentObjects() {
             MultiPoint multiPoint1 = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),
@@ -69,6 +72,7 @@ class MultiPointTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testHashCodeReturnsSameValueForEqualObjects() {
             MultiPoint multiPoint1 = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),

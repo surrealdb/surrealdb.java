@@ -28,6 +28,7 @@ class MultiLineStringTest implements MultiGeometryTest {
     class StandardGeometryTests implements GeometryTest {
 
         @Test
+        @Override
         public void testToStringReturnsWKT() {
             assertEquals("MULTILINESTRING EMPTY", MultiLineString.EMPTY.toString());
             assertEquals("MULTILINESTRING ((1 2, 3 4))", MultiLineString.from(LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4))).toString());
@@ -35,16 +36,19 @@ class MultiLineStringTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
 
         }
 
         @Test
+        @Override
         public void testEqualsReturnsFalseForDifferentObjects() {
 
         }
 
         @Test
+        @Override
         public void testHashCodeReturnsSameValueForEqualObjects() {
 
         }

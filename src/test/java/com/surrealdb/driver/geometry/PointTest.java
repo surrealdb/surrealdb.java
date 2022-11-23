@@ -88,6 +88,7 @@ public class PointTest {
     class StandardGeometryTests implements GeometryTest {
 
         @Test
+        @Override
         public void testToStringReturnsWKT() {
             assertEquals("POINT (3.141592653589793 2.718281828459045)", Point.fromXY(Math.PI, Math.E).toString(), "Decimal precision");
             assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString(), "Zero");
@@ -95,6 +96,7 @@ public class PointTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             Point point1 = Point.fromXY(64, 128);
             Point point2 = Point.fromXY(64, 128);
@@ -104,6 +106,7 @@ public class PointTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsFalseForDifferentObjects() {
             Point point1 = City.BEIJING.getLocation();
             Point point2 = City.CAIRO.getLocation();
@@ -112,6 +115,7 @@ public class PointTest {
         }
 
         @Test
+        @Override
         public void testHashCodeReturnsSameValueForEqualObjects() {
             Point point1 = Point.fromXY(64, 128);
             Point point2 = Point.fromXY(64, 128);

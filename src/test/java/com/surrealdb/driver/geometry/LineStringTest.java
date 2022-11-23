@@ -109,12 +109,14 @@ public class LineStringTest {
     class StandardGeometryTests implements GeometryTest {
 
         @Test
+        @Override
         public void testToStringReturnsWKT() {
             LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             assertEquals("LINESTRING (1 2, 3 4, 5 6)", line.toString());
         }
 
         @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
@@ -122,6 +124,7 @@ public class LineStringTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsFalseForDifferentObjects() {
             LineString line1 = LineString.from(
                 Point.fromXY(1, 2),
@@ -138,6 +141,7 @@ public class LineStringTest {
         }
 
         @Test
+        @Override
         public void testHashCodeReturnsSameValueForEqualObjects() {
             LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));

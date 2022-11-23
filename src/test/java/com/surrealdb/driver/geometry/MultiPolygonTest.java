@@ -26,9 +26,28 @@ class MultiPolygonTest implements MultiGeometryTest {
     }
 
     @Nested
+    class MultiGeometryTests implements MultiGeometryTest {
+
+        @Test
+        @Override
+        public void testEmptyConstantHasZeroElements() {
+            assertEquals(0, MultiPolygon.EMPTY.getPolygonCount());
+        }
+
+        @Test
+        @Override
+        public void testProvidingZeroElementsToFromGivesBackSingletonInstance() {
+            assertSame(MultiPolygon.EMPTY, MultiPolygon.from());
+            assertSame(MultiPolygon.EMPTY, MultiPolygon.from(List.of()));
+            assertSame(MultiPolygon.EMPTY, MultiPolygon.builder().build());
+        }
+    }
+
+    @Nested
     class StandardGeometryTests implements GeometryTest {
 
         @Test
+        @Override
         public void testToStringReturnsWKT() {
             Polygon poly1 = GeometryUtils.createQuadPolygon(false);
             Polygon poly2 = createQuadPolygonWithHole();
@@ -38,6 +57,7 @@ class MultiPolygonTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
                 createCirclePolygon(10, 1),
@@ -51,6 +71,7 @@ class MultiPolygonTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testEqualsReturnsFalseForDifferentObjects() {
             MultiPolygon multiPolygon1 = MultiPolygon.builder()
                 .addPolygon(createCirclePolygon(4, 2))
@@ -65,6 +86,7 @@ class MultiPolygonTest implements MultiGeometryTest {
         }
 
         @Test
+        @Override
         public void testHashCodeReturnsSameValueForEqualObjects() {
             Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
                 createCirclePolygon(12, 4),
