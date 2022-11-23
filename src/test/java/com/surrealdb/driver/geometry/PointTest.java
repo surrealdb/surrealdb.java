@@ -69,6 +69,40 @@ public class PointTest {
     }
 
     @Test
+    void testRotate() {
+        Point point = Point.fromXY(0, 0);
+        assertPointEquals(point, point.rotateDegrees(90),"Rot: 90");
+        assertPointEquals(point, point.rotateDegrees(180), "Rot: 180");
+        assertPointEquals(point, point.rotateDegrees(270), "Rot: 270");
+        assertPointEquals(point, point.rotateDegrees(360), "Rot: 360");
+
+        point = Point.fromXY(50, 0);
+        assertPointEquals(Point.fromXY(35.355339059327, -35.355339059327), point.rotateDegrees(-45), "Rot: -45");
+        assertPointEquals(Point.fromXY(35.355339059327, -35.355339059327), point.rotateDegrees(315), "Rot: 315");
+
+        assertPointEquals(Point.fromXY(0, -50), point.rotateDegrees(-90), "Rot: -90");
+        assertPointEquals(Point.fromXY(0, -50), point.rotateDegrees(270), "Rot: 270");
+
+        assertPointEquals(Point.fromXY(-35.355339059327, -35.355339059327), point.rotateDegrees(-135), "Rot: -135");
+        assertPointEquals(Point.fromXY(-35.355339059327, -35.355339059327), point.rotateDegrees(225), "Rot: 225");
+
+        assertPointEquals(Point.fromXY(-50, 0), point.rotateDegrees(-180), "Rot: -180");
+        assertPointEquals(Point.fromXY(-50, 0), point.rotateDegrees(180), "Rot: 180");
+
+        assertPointEquals(Point.fromXY(-35.355339059327, 35.355339059327), point.rotateDegrees(-225), "Rot: -225");
+        assertPointEquals(Point.fromXY(-35.355339059327, 35.355339059327), point.rotateDegrees(135), "Rot: 135");
+
+        assertPointEquals(Point.fromXY(0, 50), point.rotateDegrees(-270), "Rot: -270");
+        assertPointEquals(Point.fromXY(0, 50), point.rotateDegrees(90), "Rot: 90");
+
+        assertPointEquals(Point.fromXY(35.355339059327, 35.355339059327), point.rotateDegrees(-315), "Rot: -315");
+        assertPointEquals(Point.fromXY(35.355339059327, 35.355339059327), point.rotateDegrees(45), "Rot: 45");
+
+        assertPointEquals(Point.fromXY(50, 0), point.rotateDegrees(-360), "Rot: -360");
+        assertPointEquals(Point.fromXY(50, 0), point.rotateDegrees(0), "Rot: 0");
+    }
+
+    @Test
     void testDistanceInMeters() {
         // Use https://www.omnicalculator.com/other/latitude-longitude-distance to verify the correctness of the assertions.
         Point p1 = Point.fromXY(0, 0);

@@ -199,22 +199,29 @@ public final class Point extends GeometryPrimitive {
         return new Point(this.x - x, this.y - y);
     }
 
-    public @NotNull Point rotate(Point center, double degrees) {
-        double radians = Math.toRadians(degrees);
+    public @NotNull Point rotate(@NotNull Point origin, double radians) {
         double sin = Math.sin(radians);
         double cos = Math.cos(radians);
 
-        double deltaX = this.x - center.x;
-        double deltaY = this.y - center.y;
+        double deltaX = this.x - origin.x;
+        double deltaY = this.y - origin.y;
 
-        double newX = deltaX * cos - deltaY * sin;
-        double newY = deltaX * sin + deltaY * cos;
+        double rotatedDeltaX = deltaX * cos - deltaY * sin;
+        double rotatedDeltaY = deltaX * sin + deltaY * cos;
 
-        return Point.fromXY(newX, newY);
+        return origin.add(rotatedDeltaX, rotatedDeltaY);
     }
 
-    public @NotNull Point rotate(double angle) {
-        return rotate(ZERO, angle);
+    public @NotNull Point rotate(double radians) {
+        return rotate(ZERO, radians);
+    }
+
+    public @NotNull Point rotateDegrees(Point center, double degrees) {
+        return rotate(center, Math.toRadians(degrees));
+    }
+
+    public @NotNull Point rotateDegrees(double angle) {
+        return rotateDegrees(ZERO, angle);
     }
 
     public @NotNull Point scale(Point center, double scaleX, double scaleY) {

@@ -83,11 +83,11 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
     }
 
     public @NotNull MultiPoint rotate(@NotNull Point center, double angle) {
-        return transform((point -> point.rotate(center, angle)));
+        return transform((point -> point.rotateDegrees(center, angle)));
     }
 
     public @NotNull MultiPoint rotate(double angle) {
-        return transform(point -> point.rotate(getCenter(), angle));
+        return transform(point -> point.rotateDegrees(getCenter(), angle));
     }
 
     public @NotNull MultiPoint scale(double factor) {

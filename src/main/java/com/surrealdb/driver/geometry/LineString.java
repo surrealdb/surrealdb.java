@@ -103,7 +103,7 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
     }
 
     public @NotNull LineString rotate(@NotNull Point center, double degrees) {
-        return transform(point -> point.rotate(center, degrees));
+        return transform(point -> point.rotateDegrees(center, degrees));
     }
 
     public @NotNull LineString scale(@NotNull Point center, double scaleX, double scaleY) {
