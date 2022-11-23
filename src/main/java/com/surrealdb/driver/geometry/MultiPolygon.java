@@ -146,7 +146,7 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    static class Builder {
+    public static class Builder {
 
         @NotNull List<Polygon> polygons = new ArrayList<>();
 

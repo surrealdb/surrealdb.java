@@ -199,11 +199,18 @@ public final class Point extends GeometryPrimitive {
         return new Point(this.x - x, this.y - y);
     }
 
-    public @NotNull Point rotate(Point center, double angle) {
-        double x = center.getX() + (this.getX() - center.getX()) * Math.cos(angle) - (this.getY() - center.getY()) * Math.sin(angle);
-        double y = center.getY() + (this.getX() - center.getX()) * Math.sin(angle) + (this.getY() - center.getY()) * Math.cos(angle);
+    public @NotNull Point rotate(Point center, double degrees) {
+        double radians = Math.toRadians(degrees);
+        double sin = Math.sin(radians);
+        double cos = Math.cos(radians);
 
-        return Point.fromXY(x, y);
+        double deltaX = this.x - center.x;
+        double deltaY = this.y - center.y;
+
+        double newX = deltaX * cos - deltaY * sin;
+        double newY = deltaX * sin + deltaY * cos;
+
+        return Point.fromXY(newX, newY);
     }
 
     public @NotNull Point rotate(double angle) {
@@ -211,8 +218,11 @@ public final class Point extends GeometryPrimitive {
     }
 
     public @NotNull Point scale(Point center, double scaleX, double scaleY) {
-        double x = center.getX() + (this.getX() - center.getX()) * scaleX;
-        double y = center.getY() + (this.getY() - center.getY()) * scaleY;
+        double deltaX = this.getX() - center.getX();
+        double deltaY = this.getY() - center.getY();
+
+        double x = center.getX() + deltaX * scaleX;
+        double y = center.getY() + deltaY * scaleY;
 
         return Point.fromXY(x, y);
     }
