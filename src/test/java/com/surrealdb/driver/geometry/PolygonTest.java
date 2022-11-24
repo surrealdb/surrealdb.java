@@ -1,7 +1,7 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +43,20 @@ public class PolygonTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return createQuadPolygon(true);
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return Polygon.builder()
+                .setExterior(createCircleLinearRing(24, 12))
+                .addInterior(createCircleLinearRing(24, 3))
+                .build();
+        }
 
         @Test
         @Override
@@ -60,47 +73,12 @@ public class PolygonTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            Polygon polygon = createQuadPolygon(false);
-
-            String first = polygon.toString();
-            String second = polygon.toString();
-
-            assertSame(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             Polygon quad = createQuadPolygon(false);
             assertEquals(5, quad.getPointCount());
 
             Polygon quadWithHole = createQuadPolygonWithHole();
             assertEquals(10, quadWithHole.getPointCount());
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsTrueForEqualObjects() {
-            Polygon poly1 = createQuadPolygon(true);
-            Polygon poly2 = createQuadPolygon(false);
-            assertEquals(poly1, poly2);
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            Polygon poly1 = createQuadPolygon(true);
-            Polygon poly2 = createQuadPolygonWithHole();
-            assertNotEquals(poly1, poly2);
-        }
-
-        @Test
-        @Override
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            Polygon poly1 = createQuadPolygon(true);
-            Polygon poly2 = createQuadPolygon(false);
-            assertEquals(poly1.hashCode(), poly2.hashCode());
         }
     }
 }

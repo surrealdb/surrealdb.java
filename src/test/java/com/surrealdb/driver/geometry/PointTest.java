@@ -1,6 +1,6 @@
 package com.surrealdb.driver.geometry;
 
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.model.City;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -119,7 +119,17 @@ public class PointTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return Point.fromXY(3, -5);
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return City.NEW_YORK.getLocation();
+        }
 
         @Test
         @Override
@@ -131,48 +141,9 @@ public class PointTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            Point point = Point.fromXY(0, 0);
-
-            String first = point.toString();
-            String second = point.toString();
-
-            assertSame(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             assertEquals(1, Point.fromXY(0, 0).getPointCount());
             assertEquals(1, Point.fromXY(5, -10).getPointCount());
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsTrueForEqualObjects() {
-            Point point1 = Point.fromXY(64, 128);
-            Point point2 = Point.fromXY(64, 128);
-
-            assertEquals(point1, point2);
-
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            Point point1 = City.BEIJING.getLocation();
-            Point point2 = City.CAIRO.getLocation();
-
-            assertNotEquals(point1, point2);
-        }
-
-        @Test
-        @Override
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            Point point1 = Point.fromXY(64, 128);
-            Point point2 = Point.fromXY(64, 128);
-
-            assertEquals(point1.hashCode(), point2.hashCode());
         }
     }
 }

@@ -1,11 +1,12 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LineStringTest {
 
@@ -106,7 +107,17 @@ public class LineStringTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4));
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+        }
 
         @Test
         @Override
@@ -117,53 +128,9 @@ public class LineStringTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
-
-            String first = line.toString();
-            String second = line.toString();
-
-            assertSame(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             assertEquals(3, line.getPointCount());
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsTrueForEqualObjects() {
-            LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
-            LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
-            assertEquals(line1, line2);
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            LineString line1 = LineString.from(
-                Point.fromXY(1, 2),
-                Point.fromXY(3, 4),
-                Point.fromXY(5, 6)
-            );
-            LineString line2 = LineString.from(
-                Point.fromXY(5, 6),
-                Point.fromXY(3, 4),
-                Point.fromXY(1, 2)
-            );
-
-            assertNotEquals(line1, line2);
-        }
-
-        @Test
-        @Override
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
-            LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
-            assertEquals(line1.hashCode(), line2.hashCode());
         }
     }
 }

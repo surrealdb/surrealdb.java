@@ -1,6 +1,6 @@
 package com.surrealdb.driver.geometry;
 
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.MultiGeometryTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class MultiPointTest implements MultiGeometryTest {
 
@@ -24,7 +23,17 @@ class MultiPointTest implements MultiGeometryTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return MultiPoint.from(Point.fromXY(0, 0), Point.fromXY(1, 1));
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return MultiPoint.from(Point.fromXY(0, 0), Point.fromXY(1, 1), Point.fromXY(2, 2));
+        }
 
         @Test
         @Override
@@ -40,21 +49,6 @@ class MultiPointTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            MultiPoint multiPoint = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24),
-                Point.fromXY(3.9, 7)
-            );
-
-            String first = multiPoint.toString();
-            String second = multiPoint.toString();
-
-            assertEquals(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             MultiPoint multiPoint = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),
@@ -63,56 +57,6 @@ class MultiPointTest implements MultiGeometryTest {
             );
 
             assertEquals(3, multiPoint.getPointCount());
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsTrueForEqualObjects() {
-            MultiPoint multiPoint1 = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24),
-                Point.fromXY(3.9, 7)
-            );
-            MultiPoint multiPoint2 = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24),
-                Point.fromXY(3.9, 7)
-            );
-
-            assertEquals(multiPoint1, multiPoint2);
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            MultiPoint multiPoint1 = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24),
-                Point.fromXY(3.9, 7)
-            );
-            MultiPoint multiPoint2 = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24)
-            );
-
-            assertNotEquals(multiPoint1, multiPoint2);
-        }
-
-        @Test
-        @Override
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            MultiPoint multiPoint1 = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24),
-                Point.fromXY(3.9, 7)
-            );
-            MultiPoint multiPoint2 = MultiPoint.from(
-                Point.fromXY(-91.6711, -13.4225),
-                Point.fromXY(-68.295, 7.24),
-                Point.fromXY(3.9, 7)
-            );
-
-            assertEquals(multiPoint1.hashCode(), multiPoint2.hashCode());
         }
     }
 }

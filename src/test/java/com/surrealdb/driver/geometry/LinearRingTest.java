@@ -1,6 +1,6 @@
 package com.surrealdb.driver.geometry;
 
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.utils.GeometryUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,17 @@ public class LinearRingTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return createQuadLinearRing(true);
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return createCircleLinearRing(24, 5);
+        }
 
         @Test
         public void testToStringReturnsWKT() {
@@ -58,45 +68,10 @@ public class LinearRingTest {
         }
 
         @Test
-        @Override
-        public void testToStringReturnsCachedString() {
-            LinearRing ring = createCircleLinearRing(8, 5);
-
-            String firstString = ring.toString();
-            String secondString = ring.toString();
-
-            assertSame(firstString, secondString);
-        }
-
-        @Test
         public void testGetPointCountReturnsCorrectCount() {
             LinearRing circle = GeometryUtils.createCircleLinearRing(16, 5);
 
             assertEquals(17, circle.getPointCount());
-        }
-
-        @Test
-        public void testEqualsReturnsTrueForEqualObjects() {
-            LinearRing ring1 = createQuadLinearRing(true);
-            LinearRing ring2 = createQuadLinearRing(false);
-
-            assertEquals(ring1, ring2);
-        }
-
-        @Test
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            LinearRing ring1 = createCircleLinearRing(16, 5);
-            LinearRing ring2 = createCircleLinearRing(8, 5);
-
-            assertNotEquals(ring1, ring2);
-        }
-
-        @Test
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            LinearRing ring1 = createQuadLinearRing(true);
-            LinearRing ring2 = createQuadLinearRing(false);
-
-            assertEquals(ring1.hashCode(), ring2.hashCode());
         }
     }
 }

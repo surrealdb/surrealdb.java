@@ -1,6 +1,6 @@
 package com.surrealdb.driver.geometry;
 
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.MultiGeometryTest;
 import com.surrealdb.meta.utils.GeometryUtils;
 import org.junit.jupiter.api.Nested;
@@ -8,7 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.surrealdb.meta.utils.GeometryUtils.createCirclePolygon;
+import static com.surrealdb.meta.utils.GeometryUtils.createQuadPolygon;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class GeometryCollectionTest {
 
@@ -20,7 +23,7 @@ class GeometryCollectionTest {
                 Point.fromXY(5, 12),
                 Point.fromXY(8, 3)
             ),
-            GeometryUtils.createCirclePolygon(12, 4)
+            createCirclePolygon(12, 4)
         );
 
         assertEquals(3, collection.getGeometryCount());
@@ -60,7 +63,34 @@ class GeometryCollectionTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return GeometryCollection.from(
+                Point.fromXY(5, 12),
+                LineString.from(
+                    Point.fromXY(5, 12),
+                    Point.fromXY(8, 3)
+                )
+            );
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return GeometryCollection.from(
+                Point.fromXY(5, 12),
+                LineString.from(
+                    Point.fromXY(5, 12),
+                    Point.fromXY(8, 3)
+                ),
+                MultiPolygon.from(
+                    createCirclePolygon(12, 4),
+                    createCirclePolygon(30, 12).translate(10, 10),
+                    createQuadPolygon(false)
+                )
+            );
+        }
 
         @Test
         public void testToStringReturnsWKT() {
@@ -82,27 +112,6 @@ class GeometryCollectionTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            GeometryCollection collection = GeometryCollection.from(
-                Point.fromXY(0, 0),
-                LineString.from(
-                    Point.fromXY(5, 12),
-                    Point.fromXY(8, 3)
-                ),
-                MultiPoint.from(
-                    Point.fromXY(2, 3),
-                    Point.fromXY(4, 5)
-                )
-            );
-
-            String first = collection.toString();
-            String second = collection.toString();
-
-            assertSame(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             GeometryCollection collection = GeometryCollection.from(
                 Point.fromXY(0, 0),
@@ -117,89 +126,6 @@ class GeometryCollectionTest {
             );
 
             assertEquals(5, collection.getPointCount());
-        }
-
-        @Test
-        public void testEqualsReturnsTrueForEqualObjects() {
-            GeometryCollection collection1 = GeometryCollection.from(
-                Point.fromXY(0, 0),
-                MultiLineString.from(
-                    LineString.from(
-                        Point.fromXY(5, 12),
-                        Point.fromXY(8, 3)
-                    ),
-                    LineString.from(
-                        Point.fromXY(2, 3),
-                        Point.fromXY(4, 5)
-                    )
-                )
-            );
-            GeometryCollection collection2 = GeometryCollection.from(
-                Point.fromXY(0, 0),
-                MultiLineString.from(
-                    LineString.from(
-                        Point.fromXY(5, 12),
-                        Point.fromXY(8, 3)
-                    ),
-                    LineString.from(
-                        Point.fromXY(2, 3),
-                        Point.fromXY(4, 5)
-                    )
-                )
-            );
-
-            assertEquals(collection1, collection2);
-        }
-
-        @Test
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            GeometryCollection collection1 = GeometryCollection.from(
-                LineString.from(
-                    Point.fromXY(13, -1),
-                    Point.fromXY(3, 51)
-                ),
-                Point.fromXY(0, 0)
-            );
-            GeometryCollection collection2 = GeometryCollection.from(
-                LineString.from(
-                    Point.fromXY(5, 12),
-                    Point.fromXY(8, 3)
-                ),
-                MultiPoint.from(
-                    Point.fromXY(2, 3),
-                    Point.fromXY(4, 5)
-                )
-            );
-
-            assertNotEquals(collection1, collection2);
-        }
-
-        @Test
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            GeometryCollection collection1 = GeometryCollection.from(
-                Point.fromXY(0, 0),
-                LineString.from(
-                    Point.fromXY(5, 12),
-                    Point.fromXY(8, 3)
-                ),
-                MultiPoint.from(
-                    Point.fromXY(2, 3),
-                    Point.fromXY(4, 5)
-                )
-            );
-            GeometryCollection collection2 = GeometryCollection.from(
-                Point.fromXY(0, 0),
-                LineString.from(
-                    Point.fromXY(5, 12),
-                    Point.fromXY(8, 3)
-                ),
-                MultiPoint.from(
-                    Point.fromXY(2, 3),
-                    Point.fromXY(4, 5)
-                )
-            );
-
-            assertEquals(collection1.hashCode(), collection2.hashCode());
         }
     }
 }

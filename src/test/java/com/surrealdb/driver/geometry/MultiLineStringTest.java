@@ -1,6 +1,6 @@
 package com.surrealdb.driver.geometry;
 
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.MultiGeometryTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,24 @@ class MultiLineStringTest implements MultiGeometryTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return MultiLineString.from(
+                LineString.from(Point.fromXY(0, 0), Point.fromXY(1, 1)),
+                LineString.from(Point.fromXY(2, 2), Point.fromXY(3, 3))
+            );
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return MultiLineString.from(
+                LineString.from(Point.fromXY(0, 0), Point.fromXY(1, 1)),
+                LineString.from(Point.fromXY(2, 2), Point.fromXY(3, 3)),
+                LineString.from(Point.fromXY(4, 4), Point.fromXY(5, 5))
+            );
+        }
 
         @Test
         @Override
@@ -37,39 +54,10 @@ class MultiLineStringTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            MultiLineString multiLineString = MultiLineString.from(LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4)));
-
-            String first = multiLineString.toString();
-            String second = multiLineString.toString();
-
-            assertSame(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             assertEquals(0, MultiLineString.EMPTY.getPointCount());
             assertEquals(2, MultiLineString.from(LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4))).getPointCount());
             assertEquals(4, MultiLineString.from(LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4)), LineString.from(Point.fromXY(5, 6), Point.fromXY(7, 8))).getPointCount());
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsTrueForEqualObjects() {
-
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsFalseForDifferentObjects() {
-
-        }
-
-        @Test
-        @Override
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-
         }
     }
 }

@@ -1,16 +1,16 @@
 package com.surrealdb.driver.geometry;
 
-import com.surrealdb.meta.GeometryTest;
+import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.MultiGeometryTest;
 import com.surrealdb.meta.utils.GeometryUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import static com.surrealdb.meta.utils.GeometryUtils.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class MultiPolygonTest implements MultiGeometryTest {
 
@@ -44,7 +44,21 @@ class MultiPolygonTest implements MultiGeometryTest {
     }
 
     @Nested
-    class StandardGeometryTests implements GeometryTest {
+    class StandardGeometryTests extends GeometryTests {
+
+        @Override
+        protected Geometry createSimpleGeometry() {
+            return MultiPolygon.from(createQuadPolygon(true));
+        }
+
+        @Override
+        protected Geometry createComplexGeometry() {
+            return MultiPolygon.builder()
+                .addPolygon(createCirclePolygon(24, 5))
+                .addPolygon(createCirclePolygon(24, 10))
+                .addPolygon(createQuadPolygonWithHole())
+                .build();
+        }
 
         @Test
         @Override
@@ -58,70 +72,12 @@ class MultiPolygonTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testToStringReturnsCachedString() {
-            Polygon poly1 = GeometryUtils.createQuadPolygon(false);
-            Polygon poly2 = createQuadPolygonWithHole();
-
-            MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
-
-            String first = multiPolygon.toString();
-            String second = multiPolygon.toString();
-
-            assertSame(first, second);
-        }
-
-        @Test
-        @Override
         public void testGetPointCountReturnsCorrectCount() {
             Polygon poly1 = GeometryUtils.createQuadPolygon(false);
             Polygon poly2 = createQuadPolygonWithHole();
 
             MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
             assertEquals(15, multiPolygon.getPointCount());
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsTrueForEqualObjects() {
-            Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
-                createCirclePolygon(10, 1),
-                createQuadPolygonWithHole()
-            );
-
-            MultiPolygon multiPolygon1 = supplier.get();
-            MultiPolygon multiPolygon2 = supplier.get();
-
-            assertEquals(multiPolygon1, multiPolygon2);
-        }
-
-        @Test
-        @Override
-        public void testEqualsReturnsFalseForDifferentObjects() {
-            MultiPolygon multiPolygon1 = MultiPolygon.builder()
-                .addPolygon(createCirclePolygon(4, 2))
-                .addPolygon(createQuadPolygon(false))
-                .addPolygon(createQuadPolygonWithHole())
-                .build();
-            MultiPolygon multiPolygon2 = MultiPolygon.builder()
-                .addPolygon(createQuadPolygonWithHole())
-                .build();
-
-            assertNotEquals(multiPolygon1, multiPolygon2);
-        }
-
-        @Test
-        @Override
-        public void testHashCodeReturnsSameValueForEqualObjects() {
-            Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
-                createCirclePolygon(12, 4),
-                createQuadPolygonWithHole(),
-                createQuadPolygon(false)
-            );
-
-            MultiPolygon multiPolygon1 = supplier.get();
-            MultiPolygon multiPolygon2 = supplier.get();
-
-            assertEquals(multiPolygon1.hashCode(), multiPolygon2.hashCode());
         }
     }
 }
