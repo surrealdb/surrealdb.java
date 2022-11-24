@@ -60,6 +60,17 @@ public class PolygonTest {
 
         @Test
         @Override
+        public void testToStringReturnsCachedString() {
+            Polygon polygon = createQuadPolygon(false);
+
+            String first = polygon.toString();
+            String second = polygon.toString();
+
+            assertSame(first, second);
+        }
+
+        @Test
+        @Override
         public void testGetPointCountReturnsCorrectCount() {
             Polygon quad = createQuadPolygon(false);
             assertEquals(5, quad.getPointCount());

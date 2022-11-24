@@ -58,6 +58,17 @@ public class LinearRingTest {
         }
 
         @Test
+        @Override
+        public void testToStringReturnsCachedString() {
+            LinearRing ring = createCircleLinearRing(8, 5);
+
+            String firstString = ring.toString();
+            String secondString = ring.toString();
+
+            assertSame(firstString, secondString);
+        }
+
+        @Test
         public void testGetPointCountReturnsCorrectCount() {
             LinearRing circle = GeometryUtils.createCircleLinearRing(16, 5);
 

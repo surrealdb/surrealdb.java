@@ -131,6 +131,17 @@ public class PointTest {
 
         @Test
         @Override
+        public void testToStringReturnsCachedString() {
+            Point point = Point.fromXY(0, 0);
+
+            String first = point.toString();
+            String second = point.toString();
+
+            assertSame(first, second);
+        }
+
+        @Test
+        @Override
         public void testGetPointCountReturnsCorrectCount() {
             assertEquals(1, Point.fromXY(0, 0).getPointCount());
             assertEquals(1, Point.fromXY(5, -10).getPointCount());

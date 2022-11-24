@@ -58,6 +58,20 @@ class MultiPolygonTest implements MultiGeometryTest {
 
         @Test
         @Override
+        public void testToStringReturnsCachedString() {
+            Polygon poly1 = GeometryUtils.createQuadPolygon(false);
+            Polygon poly2 = createQuadPolygonWithHole();
+
+            MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
+
+            String first = multiPolygon.toString();
+            String second = multiPolygon.toString();
+
+            assertSame(first, second);
+        }
+
+        @Test
+        @Override
         public void testGetPointCountReturnsCorrectCount() {
             Polygon poly1 = GeometryUtils.createQuadPolygon(false);
             Polygon poly2 = createQuadPolygonWithHole();

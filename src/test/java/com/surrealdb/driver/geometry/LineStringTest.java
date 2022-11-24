@@ -117,6 +117,17 @@ public class LineStringTest {
 
         @Test
         @Override
+        public void testToStringReturnsCachedString() {
+            LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+
+            String first = line.toString();
+            String second = line.toString();
+
+            assertSame(first, second);
+        }
+
+        @Test
+        @Override
         public void testGetPointCountReturnsCorrectCount() {
             LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             assertEquals(3, line.getPointCount());

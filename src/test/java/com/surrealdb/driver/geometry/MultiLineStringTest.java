@@ -37,6 +37,17 @@ class MultiLineStringTest implements MultiGeometryTest {
 
         @Test
         @Override
+        public void testToStringReturnsCachedString() {
+            MultiLineString multiLineString = MultiLineString.from(LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4)));
+
+            String first = multiLineString.toString();
+            String second = multiLineString.toString();
+
+            assertSame(first, second);
+        }
+
+        @Test
+        @Override
         public void testGetPointCountReturnsCorrectCount() {
             assertEquals(0, MultiLineString.EMPTY.getPointCount());
             assertEquals(2, MultiLineString.from(LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4))).getPointCount());
