@@ -42,15 +42,6 @@ public class LinearRingTest {
         assertEquals(889, quadLinearRing.getCircumferenceInKilometers(), 1);
     }
 
-    // Test that a new object is not created when calling toRing() on a LinearRing
-    @Test
-    void testToLinearRingReturnsSelf() {
-        LinearRing ring = createQuadLinearRing(true);
-
-        // Equivalent to ring == ring.toLinearRing()
-        assertSame(ring, ring.toLinearRing());
-    }
-
     @Nested
     class StandardGeometryTests implements GeometryTest {
 
@@ -63,7 +54,7 @@ public class LinearRingTest {
                 Point.fromXY(0, 1)
             );
 
-            assertEquals("LINESTRING (0 0, 1 0, 1 1, 0 1, 0 0)", ring.toString());
+            assertEquals("LINEARRING (0 0, 1 0, 1 1, 0 1, 0 0)", ring.toString());
         }
 
         @Test

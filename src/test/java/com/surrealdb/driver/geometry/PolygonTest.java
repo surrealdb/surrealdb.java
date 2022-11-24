@@ -17,7 +17,7 @@ public class PolygonTest {
 
     @Test
     void testBuildDoesNotThrowWhenExteriorHasBeenSet() {
-        LineString exterior = createQuadLinearRing(true);
+        LinearRing exterior = createQuadLinearRing(true);
 
         assertDoesNotThrow(() -> Polygon.builder().setExterior(exterior).build());
     }

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateCenterOfPointsIterable;
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeometryRepresentationPoints;
 
 /**
@@ -17,11 +18,11 @@ import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGe
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.4">GeoJSON Specification - LineString</a>
  */
 @EqualsAndHashCode(callSuper = false)
-public sealed class LineString extends GeometryPrimitive implements Iterable<Point> permits LinearRing {
+public final class LineString extends GeometryPrimitive implements Iterable<Point> {
 
     @NotNull ImmutableList<Point> points;
 
-    protected LineString(@NotNull ImmutableList<Point> points) {
+    private LineString(@NotNull ImmutableList<Point> points) {
         this.points = points;
 
         if (points.size() < 2) {
@@ -129,7 +130,7 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
             transformedPoints.add(transform.apply(point));
         }
 
-        return LinearRing.from(transformedPoints);
+        return LineString.from(transformedPoints);
     }
 
     @Override
@@ -144,7 +145,7 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
 
     @Override
     protected @NotNull Point calculateCenter() {
-        return InternalGeometryUtils.calculateCenterOfPointsIterable(this);
+        return calculateCenterOfPointsIterable(this);
     }
 
     /**
@@ -243,10 +244,6 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
          */
         public @NotNull LineString build() {
             return LineString.from(points);
-        }
-
-        public @NotNull LinearRing buildLinearRing() {
-            return LinearRing.from(points);
         }
     }
 }

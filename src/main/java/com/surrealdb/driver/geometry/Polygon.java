@@ -9,10 +9,7 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
@@ -63,31 +60,31 @@ public final class Polygon extends GeometryPrimitive {
     }
 
     public @NotNull Polygon translate(double x, double y) {
-        return transform(linearRing -> linearRing.translate(x, y).toLinearRing());
+        return transform(linearRing -> linearRing.translate(x, y));
     }
 
     public @NotNull Polygon rotate(double degrees) {
-        return transform(linearRing -> linearRing.rotate(degrees).toLinearRing());
+        return transform(linearRing -> linearRing.rotate(degrees));
     }
 
     public @NotNull Polygon rotate(Point center, double degrees) {
-        return transform(linearRing -> linearRing.rotate(center, degrees).toLinearRing());
+        return transform(linearRing -> linearRing.rotate(center, degrees));
     }
 
     public @NotNull Polygon scale(double factor) {
-        return transform(linearRing -> linearRing.scale(factor).toLinearRing());
+        return transform(linearRing -> linearRing.scale(factor));
     }
 
     public @NotNull Polygon scale(Point center, double factor) {
-        return transform(linearRing -> linearRing.scale(center, factor).toLinearRing());
+        return transform(linearRing -> linearRing.scale(center, factor));
     }
 
     public @NotNull Polygon scale(double x, double y) {
-        return transform(linearRing -> linearRing.scale(x, y).toLinearRing());
+        return transform(linearRing -> linearRing.scale(x, y));
     }
 
     public @NotNull Polygon scale(Point center, double x, double y) {
-        return transform(linearRing -> linearRing.scale(center, x, y).toLinearRing());
+        return transform(linearRing -> linearRing.scale(center, x, y));
     }
 
     public @NotNull Polygon transform(@NotNull Function<LinearRing, LinearRing> transformation) {
@@ -131,45 +128,41 @@ public final class Polygon extends GeometryPrimitive {
         @NonFinal
         @Nullable LinearRing exterior;
 
-        public @NotNull Builder setExterior(@NotNull LineString exterior) {
-            this.exterior = exterior.toLinearRing();
+        public @NotNull Builder setExterior(@NotNull LinearRing exterior) {
+            this.exterior = exterior;
             return this;
         }
 
-        public @NotNull Builder addInterior(@NotNull LineString interior) {
-            this.interiors.add(interior.toLinearRing());
+        public @NotNull Builder addInterior(@NotNull LinearRing interior) {
+            this.interiors.add(interior);
             return this;
         }
 
-        public @NotNull Builder addInteriors(@NotNull Collection<LineString> interiors) {
-            for (LineString interior : interiors) {
-                this.interiors.add(interior.toLinearRing());
+        public @NotNull Builder addInteriors(@NotNull Collection<LinearRing> interiors) {
+            this.interiors.addAll(interiors);
+            return this;
+        }
+
+        public @NotNull Builder addInteriors(@NotNull LinearRing @NotNull ... interiors) {
+            Collections.addAll(this.interiors, interiors);
+            return this;
+        }
+
+        public @NotNull Builder removeInterior(@NotNull LinearRing interior) {
+            this.interiors.remove(interior);
+            return this;
+        }
+
+        public @NotNull Builder removeInteriors(@NotNull Collection<LinearRing> interiors) {
+            for (LinearRing interior : interiors) {
+                this.interiors.remove(interior);
             }
             return this;
         }
 
-        public @NotNull Builder addInteriors(@NotNull LineString @NotNull ... interiors) {
-            for (LineString interior : interiors) {
-                this.interiors.add(interior.toLinearRing());
-            }
-            return this;
-        }
-
-        public @NotNull Builder removeInterior(@NotNull LineString interior) {
-            this.interiors.remove(interior.toLinearRing());
-            return this;
-        }
-
-        public @NotNull Builder removeInteriors(@NotNull Collection<LineString> interiors) {
-            for (LineString interior : interiors) {
-                this.interiors.remove(interior.toLinearRing());
-            }
-            return this;
-        }
-
-        public @NotNull Builder removeInteriors(@NotNull LineString @NotNull ... interiors) {
-            for (LineString interior : interiors) {
-                this.interiors.remove(interior.toLinearRing());
+        public @NotNull Builder removeInteriors(@NotNull LinearRing @NotNull ... interiors) {
+            for (LinearRing interior : interiors) {
+                this.interiors.remove(interior);
             }
             return this;
         }

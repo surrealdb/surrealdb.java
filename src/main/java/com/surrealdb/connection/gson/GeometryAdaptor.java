@@ -48,6 +48,14 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return lineStringArray;
     }
 
+    @NotNull JsonArray serializeLinearRing(@NotNull LinearRing ring) {
+        JsonArray linearRingCoords = new JsonArray();
+        for (Point point : ring) {
+            linearRingCoords.add(serializePoint(point));
+        }
+        return linearRingCoords;
+    }
+
     @NotNull LineString deserializeLine(@NotNull JsonArray coordinates) {
         List<Point> points = new ArrayList<>(coordinates.size());
         for (JsonElement pointCoordinatesElement : coordinates) {
@@ -59,10 +67,10 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
     @NotNull JsonArray serializePolygon(@NotNull Polygon polygon) {
         JsonArray coordinates = new JsonArray();
 
-        LineString exterior = polygon.getExterior();
-        coordinates.add(serializeLine(exterior));
+        LinearRing exterior = polygon.getExterior();
+        coordinates.add(serializeLinearRing(exterior));
 
-        polygon.interiorIterator().forEachRemaining((interior) -> coordinates.add(serializeLine(interior)));
+        polygon.interiorIterator().forEachRemaining((interior) -> coordinates.add(serializeLinearRing(interior)));
 
         return coordinates;
     }

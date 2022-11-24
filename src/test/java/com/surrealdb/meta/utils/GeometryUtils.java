@@ -1,6 +1,5 @@
 package com.surrealdb.meta.utils;
 
-import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.LinearRing;
 import com.surrealdb.driver.geometry.Point;
 import com.surrealdb.driver.geometry.Polygon;
@@ -14,7 +13,7 @@ public class GeometryUtils {
     private static final double POINT_EQUALS_PRECISION = 0.00000001;
 
     public static LinearRing createQuadLinearRing(boolean autoClose) {
-        LineString.Builder builder = LinearRing.builder()
+        LinearRing.Builder builder = LinearRing.builder()
             .addPointXY(-1, -1)
             .addPointXY(-1, 1)
             .addPointXY(1, 1)
@@ -24,7 +23,7 @@ public class GeometryUtils {
             builder.addPointXY(-1, -1);
         }
 
-        return builder.buildLinearRing();
+        return builder.build();
     }
 
     public static Polygon createQuadPolygon(boolean autoClose) {
@@ -36,8 +35,8 @@ public class GeometryUtils {
     }
 
     public static Polygon createQuadPolygonWithHole() {
-        LineString exterior = createQuadLinearRing(true);
-        LinearRing interior = createQuadLinearRing(false).scale(0.75, 0.75).toLinearRing();
+        LinearRing exterior = createQuadLinearRing(true);
+        LinearRing interior = createQuadLinearRing(false).scale(0.75, 0.75);
 
         return Polygon.builder()
             .setExterior(exterior)
@@ -46,7 +45,7 @@ public class GeometryUtils {
     }
 
     public static LinearRing createCircleLinearRing(int vertexCount, double radius) {
-        LineString.Builder linearRingBuilder = LinearRing.builder();
+        LinearRing.Builder linearRingBuilder = LinearRing.builder();
 
         double angle = 0;
         double angleIncrement = 2 * Math.PI / vertexCount;
@@ -56,7 +55,7 @@ public class GeometryUtils {
             angle += angleIncrement;
         }
 
-        return linearRingBuilder.buildLinearRing();
+        return linearRingBuilder.build();
     }
 
     public static Polygon createCirclePolygon(int vertexCount, double radius) {

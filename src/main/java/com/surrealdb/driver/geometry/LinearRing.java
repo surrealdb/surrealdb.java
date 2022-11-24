@@ -1,27 +1,30 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
+import java.util.function.Function;
 
-public final class LinearRing extends LineString {
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeometryRepresentationPoints;
 
-    boolean closed;
-    int pointCount;
+public final class LinearRing extends GeometryPrimitive implements Iterable<Point> {
+
+    @NotNull ImmutableList<Point> points;
+
+    @Getter(lazy = true, value = AccessLevel.PRIVATE)
+    boolean closed = calculateIsClosed();
 
     @Getter(lazy = true)
     private double circumferenceInKilometers = calculateCircumferenceInKilometers();
 
     private LinearRing(@NotNull ImmutableList<Point> points) {
-        super(points);
-
-        closed = isClosedLinearRing();
-        pointCount = points.size() + (closed ? 0 : 1);
+        this.points = points;
     }
 
     public static @NotNull LinearRing from(@NotNull Collection<Point> points) {
@@ -32,12 +35,21 @@ public final class LinearRing extends LineString {
         return new LinearRing(ImmutableList.copyOf(points));
     }
 
-    public boolean isClosedLinearRing() {
-        // Line Strings are guaranteed to have at least 2 points
-        Point firstPoint = getPoint(0);
-        Point lastPoint = getPoint(super.calculatePointCount() - 1);
+    public boolean calculateIsClosed() {
+        assert points != null; // is this an IntelliJ bug?
+
+        Point firstPoint = points.get(0);
+        Point lastPoint = points.get(points.size() - 1);
 
         return firstPoint.equals(lastPoint);
+    }
+
+    public static @NotNull LinearRing.Builder builder() {
+        return new LinearRing.Builder();
+    }
+
+    public @NotNull LinearRing.Builder toBuilder() {
+        return new LinearRing.Builder().addPoints(this.points);
     }
 
     @Override
@@ -45,23 +57,64 @@ public final class LinearRing extends LineString {
         return new LinearRingIterator(this);
     }
 
-    @Override
-    public int calculatePointCount() {
-        return pointCount;
+    public @NotNull LinearRing translate(double x, double y) {
+        return transform((point) -> point.add(x, y));
     }
 
-    @Override
-    public @NotNull Point getPoint(int index) {
-        if (!closed && index == super.calculatePointCount()) {
-            return super.getPoint(0);
+    public @NotNull LinearRing rotate(double degrees) {
+        return rotate(getCenter(), degrees);
+    }
+
+    public @NotNull LinearRing rotate(@NotNull Point center, double degrees) {
+        return transform(point -> point.rotateDegrees(center, degrees));
+    }
+
+    public @NotNull LinearRing scale(@NotNull Point center, double scaleX, double scaleY) {
+        return transform(point -> point.scale(center, scaleX, scaleY));
+    }
+
+    public @NotNull LinearRing scale(double scaleX, double scaleY) {
+        return scale(getCenter(), scaleX, scaleY);
+    }
+
+    public @NotNull LinearRing scale(@NotNull Point center, double scale) {
+        return scale(center, scale, scale);
+    }
+
+    public @NotNull LinearRing scale(double scale) {
+        return scale(scale, scale);
+    }
+
+    public @NotNull LinearRing transform(@NotNull Function<Point, Point> transformFunction) {
+        ImmutableList.Builder<Point> builder = ImmutableList.builder();
+
+        for (Point point : this) {
+            builder.add(transformFunction.apply(point));
         }
 
-        return super.getPoint(index);
+        return new LinearRing(builder.build());
     }
 
     @Override
-    public @NotNull LinearRing toLinearRing() {
-        return this;
+    public int calculatePointCount() {
+        return points.size() + (isClosed() ? 0 : 1);
+    }
+
+    @Override
+    protected @NotNull String calculateWkt() {
+        return calculateWktGeometryRepresentationPoints("LINEARRING", this);
+    }
+
+    public @NotNull Point getPoint(int index) {
+        if (!isClosed() && index == getPointCount() - 1) {
+            return points.get(0);
+        }
+
+        return points.get(index);
+    }
+
+    public @NotNull LineString toLineString () {
+        return LineString.from(points);
     }
 
     private double calculateCircumferenceInKilometers() {
@@ -96,6 +149,7 @@ public final class LinearRing extends LineString {
             y += point.getY();
         }
 
+        int pointCount = getPointCount();
         return Point.fromXY(x / pointCount, y / pointCount);
     }
 
@@ -103,13 +157,13 @@ public final class LinearRing extends LineString {
     public boolean equals(Object other) {
         if (this == other) return true;
 
-        if (other instanceof LineString otherLineString) {
-            if (otherLineString.calculatePointCount() != calculatePointCount()) {
+        if (other instanceof LinearRing otherLinearRing) {
+            if (otherLinearRing.getPointCount() != getPointCount()) {
                 return false;
             }
 
-            for (int i = 0; i < calculatePointCount(); i++) {
-                if (!getPoint(i).equals(otherLineString.getPoint(i))) {
+            for (int i = 0; i < getPointCount(); i++) {
+                if (!getPoint(i).equals(otherLinearRing.getPoint(i))) {
                     return false;
                 }
             }
@@ -147,6 +201,101 @@ public final class LinearRing extends LineString {
         @Override
         public @NotNull Point next() {
             return linearRing.getPoint(index++);
+        }
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Builder {
+
+        @NotNull List<Point> points = new ArrayList<>();
+
+        /**
+         * @param point The point to add
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder addPoint(Point point) {
+            points.add(point);
+            return this;
+        }
+
+        /**
+         * Convenience method for adding a point in the form {@code x, y}.
+         *
+         * @param x The x of the point to add
+         * @param y The y of the point to add
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder addPointXY(double x, double y) {
+            return addPoint(Point.fromXY(x, y));
+        }
+
+        /**
+         * Convenience method for adding a point in the form {@code y, x}.
+         *
+         * @param y The y of the point to add
+         * @param x The x of the point to add
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder addPointYX(double y, double x) {
+            return addPoint(Point.fromYX(y, x));
+        }
+
+        /**
+         * @param points The points to add
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder addPoints(@NotNull Collection<Point> points) {
+            this.points.addAll(points);
+            return this;
+        }
+
+        /**
+         * @param points The points to add
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder addPoints(Point... points) {
+            Collections.addAll(this.points, points);
+            return this;
+        }
+
+        /**
+         * @param point The point to remove
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder removePoint(Point point) {
+            points.remove(point);
+            return this;
+        }
+
+        /**
+         * @param points The points to remove
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder removePoints(@NotNull Collection<Point> points) {
+            this.points.removeAll(points);
+            return this;
+        }
+
+        /**
+         * @param points The points to remove
+         * @return This {@code Builder} object
+         */
+        public @NotNull LinearRing.Builder removePoints(Point @NotNull ... points) {
+            for (Point point : points) {
+                this.points.remove(point);
+            }
+            return this;
+        }
+
+        /**
+         * Creates and returns a new {@code Line} with the geometries added to this {@code Builder}.
+         * This Builder's backing list is copied, meaning that this Builder can be reused after calling this method.
+         *
+         * @return A new {@link LineString} instance with the points added to this builder.
+         * @throws IllegalArgumentException If the line has less than 2 points.
+         */
+        public @NotNull LinearRing build() {
+            return LinearRing.from(points);
         }
     }
 }

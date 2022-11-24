@@ -80,7 +80,7 @@ public class MultiPolygonTransformBenchmark {
     @OutputTimeUnit(MILLISECONDS)
     public void transform(Blackhole blackhole) {
         Function<Point, Point> pointTransform = point -> Point.fromXY(point.getX() * 50, point.getY() * 50);
-        Function<LinearRing, LinearRing> linearRingTransform = linearRing -> linearRing.transform(pointTransform).toLinearRing();
+        Function<LinearRing, LinearRing> linearRingTransform = linearRing -> linearRing.transform(pointTransform);
         Function<Polygon, Polygon> polygonTransform = polygon -> polygon.transform(linearRingTransform);
 
         blackhole.consume(multiPolygon.transform(polygonTransform));

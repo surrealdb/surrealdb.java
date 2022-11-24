@@ -47,13 +47,13 @@ public class SurrealDriverGeometryTest {
     @Test
     void testQueryingPointsInsidePolygon() {
         // A VERY approximate polygon around Japan
-        LinearRing selectionExterior = LineString.builder()
+        LinearRing selectionExterior = LinearRing.builder()
             .addPointYX(41.41758775838002, 139.36688850517004)
             .addPointYX(32.84100934819944, 128.34142926401432)
             .addPointYX(29.029439014623353, 131.00084055673764)
             .addPointYX(43.78908772017741, 150.52424042309514)
             .addPointYX(45.935268573361704, 139.057803663134)
-            .buildLinearRing();
+            .build();
         Polygon selection = Polygon.from(selectionExterior);
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);
