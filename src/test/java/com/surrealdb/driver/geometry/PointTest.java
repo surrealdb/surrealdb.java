@@ -131,6 +131,13 @@ public class PointTest {
 
         @Test
         @Override
+        public void testGetPointCountReturnsCorrectCount() {
+            assertEquals(1, Point.fromXY(0, 0).getPointCount());
+            assertEquals(1, Point.fromXY(5, -10).getPointCount());
+        }
+
+        @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             Point point1 = Point.fromXY(64, 128);
             Point point2 = Point.fromXY(64, 128);

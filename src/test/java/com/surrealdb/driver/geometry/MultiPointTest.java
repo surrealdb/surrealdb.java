@@ -40,6 +40,18 @@ class MultiPointTest implements MultiGeometryTest {
 
         @Test
         @Override
+        public void testGetPointCountReturnsCorrectCount() {
+            MultiPoint multiPoint = MultiPoint.from(
+                Point.fromXY(-91.6711, -13.4225),
+                Point.fromXY(-68.295, 7.24),
+                Point.fromXY(3.9, 7)
+            );
+
+            assertEquals(3, multiPoint.getPointCount());
+        }
+
+        @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             MultiPoint multiPoint1 = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),

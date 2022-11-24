@@ -60,6 +60,16 @@ public class PolygonTest {
 
         @Test
         @Override
+        public void testGetPointCountReturnsCorrectCount() {
+            Polygon quad = createQuadPolygon(false);
+            assertEquals(5, quad.getPointCount());
+
+            Polygon quadWithHole = createQuadPolygonWithHole();
+            assertEquals(10, quadWithHole.getPointCount());
+        }
+
+        @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             Polygon poly1 = createQuadPolygon(true);
             Polygon poly2 = createQuadPolygon(false);

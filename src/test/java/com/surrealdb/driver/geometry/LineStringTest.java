@@ -117,6 +117,13 @@ public class LineStringTest {
 
         @Test
         @Override
+        public void testGetPointCountReturnsCorrectCount() {
+            LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
+            assertEquals(3, line.getPointCount());
+        }
+
+        @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             LineString line1 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             LineString line2 = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));

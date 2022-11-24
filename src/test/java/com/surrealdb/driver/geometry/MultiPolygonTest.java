@@ -58,6 +58,16 @@ class MultiPolygonTest implements MultiGeometryTest {
 
         @Test
         @Override
+        public void testGetPointCountReturnsCorrectCount() {
+            Polygon poly1 = GeometryUtils.createQuadPolygon(false);
+            Polygon poly2 = createQuadPolygonWithHole();
+
+            MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
+            assertEquals(15, multiPolygon.getPointCount());
+        }
+
+        @Test
+        @Override
         public void testEqualsReturnsTrueForEqualObjects() {
             Supplier<MultiPolygon> supplier = () -> MultiPolygon.from(
                 createCirclePolygon(10, 1),

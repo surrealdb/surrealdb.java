@@ -8,6 +8,9 @@ public interface GeometryTest {
     void testToStringReturnsWKT();
 
     @Test
+    void testGetPointCountReturnsCorrectCount();
+
+    @Test
     void testEqualsReturnsTrueForEqualObjects();
 
     @Test

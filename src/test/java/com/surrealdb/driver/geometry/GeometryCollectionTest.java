@@ -80,6 +80,23 @@ class GeometryCollectionTest {
             assertEquals("GEOMETRYCOLLECTION EMPTY", GeometryCollection.EMPTY.toString());
         }
 
+        @Override
+        public void testGetPointCountReturnsCorrectCount() {
+            GeometryCollection collection = GeometryCollection.from(
+                Point.fromXY(0, 0),
+                LineString.from(
+                    Point.fromXY(5, 12),
+                    Point.fromXY(8, 3)
+                ),
+                MultiPoint.from(
+                    Point.fromXY(2, 3),
+                    Point.fromXY(4, 5)
+                )
+            );
+
+            assertEquals(5, collection.getPointCount());
+        }
+
         @Test
         public void testEqualsReturnsTrueForEqualObjects() {
             GeometryCollection collection1 = GeometryCollection.from(

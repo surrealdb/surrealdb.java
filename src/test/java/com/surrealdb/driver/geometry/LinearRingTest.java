@@ -58,6 +58,13 @@ public class LinearRingTest {
         }
 
         @Test
+        public void testGetPointCountReturnsCorrectCount() {
+            LinearRing circle = GeometryUtils.createCircleLinearRing(16, 5);
+
+            assertEquals(17, circle.getPointCount());
+        }
+
+        @Test
         public void testEqualsReturnsTrueForEqualObjects() {
             LinearRing ring1 = createQuadLinearRing(true);
             LinearRing ring2 = createQuadLinearRing(false);
