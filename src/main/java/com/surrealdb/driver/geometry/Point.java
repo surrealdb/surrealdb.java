@@ -188,7 +188,7 @@ public final class Point extends GeometryPrimitive {
     }
 
     public @NotNull Point add(double x, double y) {
-        return Point.fromXY(this.x + x, this.y + y);
+        return new Point(this.x + x, this.y + y);
     }
 
     public @NotNull Point subtract(@NotNull Point other) {
@@ -209,7 +209,7 @@ public final class Point extends GeometryPrimitive {
         double rotatedDeltaX = deltaX * cos - deltaY * sin;
         double rotatedDeltaY = deltaX * sin + deltaY * cos;
 
-        return origin.add(rotatedDeltaX, rotatedDeltaY);
+        return new Point(rotatedDeltaX + origin.x, rotatedDeltaY + origin.y);
     }
 
     public @NotNull Point rotate(double radians) {
@@ -231,7 +231,7 @@ public final class Point extends GeometryPrimitive {
         double x = center.getX() + deltaX * scaleX;
         double y = center.getY() + deltaY * scaleY;
 
-        return Point.fromXY(x, y);
+        return new Point(x, y);
     }
 
     public @NotNull Point scale(Point center, double scale) {

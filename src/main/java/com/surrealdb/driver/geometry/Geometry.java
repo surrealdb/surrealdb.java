@@ -1,19 +1,19 @@
 package com.surrealdb.driver.geometry;
 
-import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollection {
 
-    @Getter(lazy = true, value = AccessLevel.PUBLIC)
-    int pointCount = calculatePointCount();
+    @NonFinal
+    int pointCount = -1;
 
-    @Getter(lazy = true, value = AccessLevel.PROTECTED)
-    @NotNull String wkt = calculateWkt();
+    @NonFinal
+    @Nullable String wkt;
 
-    @Getter(lazy = true, value = AccessLevel.PUBLIC)
-    @NotNull Point center = calculateCenter();
+    @NonFinal
+    @Nullable Point center;
 
     protected abstract int calculatePointCount();
 
@@ -21,8 +21,28 @@ public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollect
 
     protected abstract @NotNull Point calculateCenter();
 
+    public final int getPointCount() {
+        if (pointCount == -1) {
+            pointCount = calculatePointCount();
+        }
+
+        return pointCount;
+    }
+
+    public final @NotNull Point getCenter() {
+        if (center == null) {
+            center = calculateCenter();
+        }
+
+        return center;
+    }
+
     @Override
-    public String toString() {
-        return getWkt();
+    public final String toString() {
+        if (wkt == null) {
+            wkt = calculateWkt();
+        }
+
+        return wkt;
     }
 }

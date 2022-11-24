@@ -89,9 +89,12 @@ public final class Polygon extends GeometryPrimitive {
 
     public @NotNull Polygon transform(@NotNull Function<LinearRing, LinearRing> transformation) {
         LinearRing newExterior = transformation.apply(exterior);
-        ImmutableList<LinearRing> newInteriors = interiors.stream().map(transformation).collect(ImmutableList.toImmutableList());
+        List<LinearRing> newInteriors = new ArrayList<>(interiors.size());
+        for (LinearRing interior : interiors) {
+            newInteriors.add(transformation.apply(interior));
+        }
 
-        return new Polygon(newExterior, newInteriors);
+        return Polygon.withInteriorPolygons(newExterior, newInteriors);
     }
 
     @Override

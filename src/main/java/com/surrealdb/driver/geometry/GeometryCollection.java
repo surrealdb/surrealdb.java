@@ -110,7 +110,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
         // Since the returned string is cached, the overhead of using a stream
         // is negligible.
         List<String> wktGeometries = geometries.stream()
-            .map(Geometry::getWkt)
+            .map(GeometryPrimitive::toString)
             .toList();
 
         return InternalGeometryUtils.calculateWktGeneric("GEOMETRYCOLLECTION", wktGeometries);

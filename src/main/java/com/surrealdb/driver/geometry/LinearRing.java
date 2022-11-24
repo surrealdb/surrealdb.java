@@ -17,14 +17,20 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
 
     @NotNull ImmutableList<Point> points;
 
-    @Getter(lazy = true, value = AccessLevel.PRIVATE)
-    boolean closed = calculateIsClosed();
+    boolean closed;
+    int pointCount;
 
     @Getter(lazy = true)
     private double circumferenceInKilometers = calculateCircumferenceInKilometers();
 
     private LinearRing(@NotNull ImmutableList<Point> points) {
         this.points = points;
+
+        Point firstPoint = points.get(0);
+        Point lastPoint = points.get(points.size() - 1);
+
+        closed = firstPoint.equals(lastPoint);
+        pointCount = points.size() + (closed ? 0 : 1);
     }
 
     public static @NotNull LinearRing from(@NotNull Collection<Point> points) {
@@ -33,15 +39,6 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
 
     public static @NotNull LinearRing from(Point @NotNull ... points) {
         return new LinearRing(ImmutableList.copyOf(points));
-    }
-
-    public boolean calculateIsClosed() {
-        assert points != null; // is this an IntelliJ bug?
-
-        Point firstPoint = points.get(0);
-        Point lastPoint = points.get(points.size() - 1);
-
-        return firstPoint.equals(lastPoint);
     }
 
     public static @NotNull LinearRing.Builder builder() {
@@ -86,18 +83,18 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     }
 
     public @NotNull LinearRing transform(@NotNull Function<Point, Point> transformFunction) {
-        ImmutableList.Builder<Point> builder = ImmutableList.builder();
+        List<Point> transformedPoints = new ArrayList<>(points.size());
 
         for (Point point : this) {
-            builder.add(transformFunction.apply(point));
+            transformedPoints.add(transformFunction.apply(point));
         }
 
-        return new LinearRing(builder.build());
+        return LinearRing.from(transformedPoints);
     }
 
     @Override
     public int calculatePointCount() {
-        return points.size() + (isClosed() ? 0 : 1);
+        return pointCount;
     }
 
     @Override
@@ -106,7 +103,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     }
 
     public @NotNull Point getPoint(int index) {
-        if (!isClosed() && index == getPointCount() - 1) {
+        if (!closed && index == pointCount - 1) {
             return points.get(0);
         }
 
@@ -120,7 +117,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     private double calculateCircumferenceInKilometers() {
         double circumference = 0;
 
-        for (int i = 0; i < calculatePointCount() - 1; i++) {
+        for (int i = 0; i < pointCount - 1; i++) {
             Point point1 = getPoint(i);
             Point point2 = getPoint(i + 1);
 
@@ -142,14 +139,13 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
         double x = 0;
         double y = 0;
 
-        for (int i = 0; i < calculatePointCount() - 1; i++) {
+        for (int i = 0; i < pointCount - 1; i++) {
             Point point = getPoint(i);
 
             x += point.getX();
             y += point.getY();
         }
 
-        int pointCount = getPointCount();
         return Point.fromXY(x / pointCount, y / pointCount);
     }
 
@@ -158,11 +154,11 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
         if (this == other) return true;
 
         if (other instanceof LinearRing otherLinearRing) {
-            if (otherLinearRing.getPointCount() != getPointCount()) {
+            if (otherLinearRing.getPointCount() != pointCount) {
                 return false;
             }
 
-            for (int i = 0; i < getPointCount(); i++) {
+            for (int i = 0; i < pointCount; i++) {
                 if (!getPoint(i).equals(otherLinearRing.getPoint(i))) {
                     return false;
                 }
@@ -195,7 +191,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
 
         @Override
         public boolean hasNext() {
-            return index < linearRing.calculatePointCount();
+            return index < linearRing.getPointCount();
         }
 
         @Override
