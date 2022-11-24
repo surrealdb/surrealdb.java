@@ -5,6 +5,7 @@ import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
 
@@ -54,6 +55,35 @@ public final class MultiLineString extends GeometryPrimitive implements Iterable
         return lines.get(index);
     }
 
+    public @NotNull MultiLineString translate(double x, double y) {
+        return transform(line -> line.translate(x, y));
+    }
+
+    public @NotNull MultiLineString scale(double x, double y) {
+        return transform(line -> line.scale(x, y));
+    }
+
+    public @NotNull MultiLineString rotate(@NotNull Point center, double angle) {
+        return transform(line -> line.rotate(center, angle));
+    }
+
+    public @NotNull MultiLineString rotate(double angle) {
+        return transform(line -> line.rotate(getCenter(), angle));
+    }
+
+    public @NotNull MultiLineString transform(@NotNull Function<LineString, LineString> transform) {
+        if (this == EMPTY) {
+            return EMPTY;
+        }
+
+        List<LineString> transformedLines = new ArrayList<>(lines.size());
+        for (LineString line : lines) {
+            transformedLines.add(transform.apply(line));
+        }
+
+        return MultiLineString.from(transformedLines);
+    }
+
     @Override
     public @NotNull Iterator<LineString> iterator() {
         return lines.iterator();
@@ -73,7 +103,7 @@ public final class MultiLineString extends GeometryPrimitive implements Iterable
         List<String> lineStrings = new ArrayList<>(lines.size());
 
         for (LineString line : lines) {
-            lineStrings.add(calculateWktPointsPrimitive(line.iterator(), true));
+            lineStrings.add(calculateWktPointsPrimitive(line.iterator()));
         }
 
         return calculateWktGeneric("MULTILINESTRING", lineStrings);

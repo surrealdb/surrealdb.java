@@ -27,19 +27,17 @@ class InternalGeometryUtils {
             return geometryType + " EMPTY";
         }
 
-        return geometryType + " " + calculateWktPointsPrimitive(pointsIterator, true);
+        return geometryType + " " + calculateWktPointsPrimitive(pointsIterator);
     }
 
     static @NotNull String calculateWktPoint(@NotNull String geometryType, @NotNull Point point) {
         return geometryType + " (" + calculateWktPointPrimitive(point) + ")";
     }
 
-    static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<? extends Point> points, boolean includeParentheses) {
+    static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<? extends Point> points) {
         StringBuilder builder = new StringBuilder();
 
-        if (includeParentheses) {
-            builder.append("(");
-        }
+        builder.append("(");
 
         while (points.hasNext()) {
             Point point = points.next();
@@ -51,9 +49,7 @@ class InternalGeometryUtils {
             }
         }
 
-        if (includeParentheses) {
-            builder.append(")");
-        }
+        builder.append(")");
 
         return builder.toString();
     }

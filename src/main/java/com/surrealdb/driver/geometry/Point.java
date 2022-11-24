@@ -216,8 +216,8 @@ public final class Point extends GeometryPrimitive {
         return rotate(ZERO, radians);
     }
 
-    public @NotNull Point rotateDegrees(Point center, double degrees) {
-        return rotate(center, Math.toRadians(degrees));
+    public @NotNull Point rotateDegrees(@NotNull Point origin, double degrees) {
+        return rotate(origin, Math.toRadians(degrees));
     }
 
     public @NotNull Point rotateDegrees(double angle) {

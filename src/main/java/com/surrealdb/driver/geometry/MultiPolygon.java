@@ -112,7 +112,7 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
     }
 
     public @NotNull MultiPolygon transform(@NotNull Function<Polygon, Polygon> transformation) {
-        if (polygons.isEmpty()) {
+        if (this == EMPTY) {
             return EMPTY;
         }
 
@@ -135,8 +135,8 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
 
         for (Polygon polygon : polygons) {
             List<String> wktRings = new ArrayList<>(polygon.getInteriorCount() + 1);
-            wktRings.add(calculateWktPointsPrimitive(polygon.getExterior().iterator(), true));
-            polygon.interiorIterator().forEachRemaining(interior -> wktRings.add(calculateWktPointsPrimitive(interior.iterator(), true)));
+            wktRings.add(calculateWktPointsPrimitive(polygon.getExterior().iterator()));
+            polygon.interiorIterator().forEachRemaining(interior -> wktRings.add(calculateWktPointsPrimitive(interior.iterator())));
 
             polygonWkts.add("(" + String.join(", ", wktRings) + ")");
         }

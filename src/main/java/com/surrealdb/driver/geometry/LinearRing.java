@@ -26,10 +26,11 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     private LinearRing(@NotNull ImmutableList<Point> points) {
         this.points = points;
 
+        // If the first and last points are the same, then this is a closed ring.
         Point firstPoint = points.get(0);
         Point lastPoint = points.get(points.size() - 1);
-
         closed = firstPoint.equals(lastPoint);
+
         pointCount = points.size() + (closed ? 0 : 1);
     }
 
@@ -46,7 +47,13 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     }
 
     public @NotNull LinearRing.Builder toBuilder() {
-        return new LinearRing.Builder().addPoints(this.points);
+        Builder builder = new Builder();
+
+        for (int i = 0; i < pointCount - 1; i++) {
+            builder.addPoint(points.get(i));
+        }
+
+        return builder;
     }
 
     @Override
@@ -58,16 +65,24 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
         return transform((point) -> point.add(x, y));
     }
 
-    public @NotNull LinearRing rotate(double degrees) {
-        return rotate(getCenter(), degrees);
+    public @NotNull LinearRing rotate(@NotNull Point origin, double radians) {
+        return transform(point -> point.rotate(origin, radians));
     }
 
-    public @NotNull LinearRing rotate(@NotNull Point center, double degrees) {
-        return transform(point -> point.rotateDegrees(center, degrees));
+    public @NotNull LinearRing rotate(double radians) {
+        return rotate(getCenter(), radians);
     }
 
-    public @NotNull LinearRing scale(@NotNull Point center, double scaleX, double scaleY) {
-        return transform(point -> point.scale(center, scaleX, scaleY));
+    public @NotNull LinearRing rotateDegrees(@NotNull Point origin, double degrees) {
+        return transform(point -> point.rotateDegrees(origin, degrees));
+    }
+    public @NotNull LinearRing rotateDegrees(double degrees) {
+        return rotateDegrees(getCenter(), degrees);
+    }
+
+
+    public @NotNull LinearRing scale(@NotNull Point origin, double scaleX, double scaleY) {
+        return transform(point -> point.scale(origin, scaleX, scaleY));
     }
 
     public @NotNull LinearRing scale(double scaleX, double scaleY) {
@@ -79,7 +94,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     }
 
     public @NotNull LinearRing scale(double scale) {
-        return scale(scale, scale);
+        return scale(getCenter(), scale, scale);
     }
 
     public @NotNull LinearRing transform(@NotNull Function<Point, Point> transformFunction) {

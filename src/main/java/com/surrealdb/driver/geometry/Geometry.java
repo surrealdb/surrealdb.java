@@ -17,10 +17,6 @@ public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollect
 
     protected abstract int calculatePointCount();
 
-    protected abstract @NotNull String calculateWkt();
-
-    protected abstract @NotNull Point calculateCenter();
-
     public final int getPointCount() {
         if (pointCount == -1) {
             pointCount = calculatePointCount();
@@ -29,6 +25,8 @@ public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollect
         return pointCount;
     }
 
+    protected abstract @NotNull Point calculateCenter();
+
     public final @NotNull Point getCenter() {
         if (center == null) {
             center = calculateCenter();
@@ -36,6 +34,8 @@ public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollect
 
         return center;
     }
+
+    protected abstract @NotNull String calculateWkt();
 
     @Override
     public final String toString() {

@@ -99,24 +99,32 @@ public final class LineString extends GeometryPrimitive implements Iterable<Poin
         return transform((point) -> point.add(x, y));
     }
 
-    public @NotNull LineString rotate(double degrees) {
-        return rotate(getCenter(), degrees);
+    public @NotNull LineString rotate(@NotNull Point origin, double radians) {
+        return transform(point -> point.rotateDegrees(origin, radians));
     }
 
-    public @NotNull LineString rotate(@NotNull Point center, double degrees) {
-        return transform(point -> point.rotateDegrees(center, degrees));
+    public @NotNull LineString rotate(double radians) {
+        return rotate(getCenter(), radians);
     }
 
-    public @NotNull LineString scale(@NotNull Point center, double scaleX, double scaleY) {
-        return transform(point -> point.scale(center, scaleX, scaleY));
+    public @NotNull LineString rotateDegrees(@NotNull Point origin, double degrees) {
+        return transform(point -> point.rotateDegrees(origin, degrees));
+    }
+
+    public @NotNull LineString rotateDegrees(double degrees) {
+        return rotateDegrees(getCenter(), degrees);
+    }
+
+    public @NotNull LineString scale(@NotNull Point origin, double scaleX, double scaleY) {
+        return transform(point -> point.scale(origin, scaleX, scaleY));
+    }
+
+    public @NotNull LineString scale(@NotNull Point origin, double scale) {
+        return scale(origin, scale, scale);
     }
 
     public @NotNull LineString scale(double scaleX, double scaleY) {
         return scale(getCenter(), scaleX, scaleY);
-    }
-
-    public @NotNull LineString scale(@NotNull Point center, double scale) {
-        return scale(center, scale, scale);
     }
 
     public @NotNull LineString scale(double scale) {

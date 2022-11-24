@@ -63,28 +63,36 @@ public final class Polygon extends GeometryPrimitive {
         return transform(linearRing -> linearRing.translate(x, y));
     }
 
-    public @NotNull Polygon rotate(double degrees) {
-        return transform(linearRing -> linearRing.rotate(degrees));
+    public @NotNull Polygon rotate(@NotNull Point origin, double radians) {
+        return transform(linearRing -> linearRing.rotate(origin, radians));
     }
 
-    public @NotNull Polygon rotate(Point center, double degrees) {
-        return transform(linearRing -> linearRing.rotate(center, degrees));
+    public @NotNull Polygon rotate(double radians) {
+        return rotate(getCenter(), radians);
     }
 
-    public @NotNull Polygon scale(double factor) {
-        return transform(linearRing -> linearRing.scale(factor));
+    public @NotNull Polygon rotateDegrees(@NotNull Point origin, double degrees) {
+        return transform(linearRing -> linearRing.rotateDegrees(origin, degrees));
     }
 
-    public @NotNull Polygon scale(Point center, double factor) {
-        return transform(linearRing -> linearRing.scale(center, factor));
+    public @NotNull Polygon rotateDegrees(double degrees) {
+        return rotateDegrees(getCenter(), degrees);
+    }
+
+    public @NotNull Polygon scale(@NotNull Point origin, double factorX, double factorY) {
+        return transform(linearRing -> linearRing.scale(origin, factorX, factorY));
+    }
+
+    public @NotNull Polygon scale(@NotNull Point origin, double factor) {
+        return scale(origin, factor, factor);
     }
 
     public @NotNull Polygon scale(double x, double y) {
-        return transform(linearRing -> linearRing.scale(x, y));
+        return scale(getCenter(), x, y);
     }
 
-    public @NotNull Polygon scale(Point center, double x, double y) {
-        return transform(linearRing -> linearRing.scale(center, x, y));
+    public @NotNull Polygon scale(double factor) {
+        return scale(getCenter(), factor, factor);
     }
 
     public @NotNull Polygon transform(@NotNull Function<LinearRing, LinearRing> transformation) {
@@ -107,9 +115,9 @@ public final class Polygon extends GeometryPrimitive {
     @Override
     protected @NotNull String calculateWkt() {
         List<String> wktRings = new ArrayList<>(interiors.size() + 1);
-        wktRings.add(calculateWktPointsPrimitive(exterior.iterator(), true));
+        wktRings.add(calculateWktPointsPrimitive(exterior.iterator()));
         for (LinearRing interior : interiors) {
-            wktRings.add(calculateWktPointsPrimitive(interior.iterator(), true));
+            wktRings.add(calculateWktPointsPrimitive(interior.iterator()));
         }
 
         return calculateWktGeneric("POLYGON", wktRings);

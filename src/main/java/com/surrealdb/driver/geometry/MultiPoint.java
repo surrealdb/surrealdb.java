@@ -82,32 +82,40 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
         return transform(point -> point.add(x, y));
     }
 
-    public @NotNull MultiPoint rotate(@NotNull Point center, double angle) {
-        return transform((point -> point.rotateDegrees(center, angle)));
+    public @NotNull MultiPoint rotate(@NotNull Point origin, double radians) {
+        return transform((point -> point.rotateDegrees(origin, radians)));
     }
 
-    public @NotNull MultiPoint rotate(double angle) {
-        return transform(point -> point.rotateDegrees(getCenter(), angle));
+    public @NotNull MultiPoint rotate(double radians) {
+        return rotate(getCenter(), radians);
     }
 
-    public @NotNull MultiPoint scale(double factor) {
-        return transform(point -> point.scale(getCenter(), factor));
+    public @NotNull MultiPoint rotateDegrees(@NotNull Point origin, double degrees) {
+        return transform((point -> point.rotateDegrees(origin, degrees)));
     }
 
-    public @NotNull MultiPoint scale(double factorX, double factorY) {
-        return transform(point -> point.scale(getCenter(), factorX, factorY));
-    }
-
-    public @NotNull MultiPoint scale(@NotNull Point center, double factor) {
-        return transform(point -> point.scale(center, factor));
+    public @NotNull MultiPoint rotateDegrees(double degrees) {
+        return rotateDegrees(getCenter(), degrees);
     }
 
     public @NotNull MultiPoint scale(@NotNull Point center, double factorX, double factorY) {
         return transform(point -> point.scale(center, factorX, factorY));
     }
 
+    public @NotNull MultiPoint scale(@NotNull Point center, double factor) {
+        return scale(center, factor, factor);
+    }
+
+    public @NotNull MultiPoint scale(double factorX, double factorY) {
+        return scale(getCenter(), factorX, factorY);
+    }
+
+    public @NotNull MultiPoint scale(double factor) {
+        return scale(getCenter(), factor, factor);
+    }
+
     public @NotNull MultiPoint transform(@NotNull Function<Point, Point> transform) {
-        if (points.isEmpty()) {
+        if (this == EMPTY) {
             return EMPTY;
         }
 
