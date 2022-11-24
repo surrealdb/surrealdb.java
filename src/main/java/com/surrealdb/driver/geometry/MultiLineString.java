@@ -6,8 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktGeneric;
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
 
 /**
  * MultiLines can be used to store multiple {@code lines} in a single value.
@@ -61,6 +60,15 @@ public final class MultiLineString extends GeometryPrimitive implements Iterable
     }
 
     @Override
+    protected int calculatePointCount() {
+        int count = 0;
+        for (LineString line : lines) {
+            count += line.getPointCount();
+        }
+        return count;
+    }
+
+    @Override
     protected @NotNull String calculateWkt() {
         List<String> lineStrings = new ArrayList<>(lines.size());
 
@@ -73,7 +81,7 @@ public final class MultiLineString extends GeometryPrimitive implements Iterable
 
     @Override
     protected @NotNull Point calculateCenter() {
-        return InternalGeometryUtils.calculateCenterOfGeometries(lines);
+        return calculateCenterOfGeometries(lines);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

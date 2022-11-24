@@ -98,6 +98,13 @@ public final class Polygon extends GeometryPrimitive {
     }
 
     @Override
+    protected int calculatePointCount() {
+        int count = exterior.getPointCount();
+        count += calculatePointCountOfGeometries(interiors);
+        return count;
+    }
+
+    @Override
     protected @NotNull String calculateWkt() {
         List<String> wktRings = new ArrayList<>(interiors.size() + 1);
         wktRings.add(calculateWktPointsPrimitive(exterior.iterator(), true));

@@ -101,6 +101,11 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
     }
 
     @Override
+    public int calculatePointCount() {
+        return InternalGeometryUtils.calculatePointCountOfGeometries(this);
+    }
+
+    @Override
     protected @NotNull String calculateWkt() {
         // Since the returned string is cached, the overhead of using a stream
         // is negligible.

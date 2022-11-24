@@ -65,6 +65,16 @@ class InternalGeometryUtils {
         return formattedX + " " + formattedY;
     }
 
+    static int calculatePointCountOfGeometries(@NotNull Iterable<? extends GeometryPrimitive> geometries) {
+        int pointCount = 0;
+
+        for (Geometry geometry : geometries) {
+            pointCount += geometry.getPointCount();
+        }
+
+        return pointCount;
+    }
+
     /**
      * <b>CAREFUL: </b> This method could cause a recursive stack overflow if the geometries provided use
      * this method to calculate their center.

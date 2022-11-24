@@ -9,10 +9,13 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+@SuppressWarnings("unused")
 @State(Scope.Benchmark)
+@Fork(value = 1)
 public class MultiPolygonTransformBenchmark {
 
     private final MultiPolygon multiPolygon = createMultiPolygon();
@@ -34,44 +37,52 @@ public class MultiPolygonTransformBenchmark {
     }
 
     private MultiPolygon createMultiPolygon() {
-        return MultiPolygon.builder()
+        MultiPolygon multiPolygon = MultiPolygon.builder()
             .addPolygon(createCircle(1024, 20))
             .addPolygon(createCircle(360, 10).translate(-50, 0))
             .addPolygon(createCircle(360, 10).translate(50, 0))
             .addPolygon(createCircle(360, 10).translate(0, -50))
             .addPolygon(createCircle(360, 10).translate(0, 50))
             .build();
+
+        System.out.println("Point count: " + multiPolygon.getPointCount());
+
+        return multiPolygon;
     }
 
     @Benchmark
-    @Warmup(iterations = 5, time = 500, timeUnit = MILLISECONDS)
-    @Measurement(iterations = 5, time = 200, timeUnit = MILLISECONDS)
+    @Warmup(iterations = 12, time = 500, timeUnit = MILLISECONDS)
+    @Measurement(iterations = 5, time = 1000, timeUnit = MILLISECONDS)
     @OutputTimeUnit(MILLISECONDS)
     public void translate(Blackhole blackhole) {
         blackhole.consume(multiPolygon.translate(10, 10));
     }
 
     @Benchmark
-    @Warmup(iterations = 5, time = 500, timeUnit = MILLISECONDS)
-    @Measurement(iterations = 5, time = 200, timeUnit = MILLISECONDS)
+    @Warmup(iterations = 12, time = 500, timeUnit = MILLISECONDS)
+    @Measurement(iterations = 5, time = 1000, timeUnit = MILLISECONDS)
     @OutputTimeUnit(MILLISECONDS)
     public void rotate(Blackhole blackhole) {
         blackhole.consume(multiPolygon.rotate(10));
     }
 
     @Benchmark
-    @Warmup(iterations = 5, time = 500, timeUnit = MILLISECONDS)
-    @Measurement(iterations = 5, time = 200, timeUnit = MILLISECONDS)
+    @Warmup(iterations = 12, time = 500, timeUnit = MILLISECONDS)
+    @Measurement(iterations = 5, time = 1000, timeUnit = MILLISECONDS)
     @OutputTimeUnit(MILLISECONDS)
     public void scale(Blackhole blackhole) {
         blackhole.consume(multiPolygon.scale(10, 10));
     }
 
     @Benchmark
-    @Warmup(iterations = 5, time = 500, timeUnit = MILLISECONDS)
-    @Measurement(iterations = 5, time = 200, timeUnit = MILLISECONDS)
+    @Warmup(iterations = 12, time = 500, timeUnit = MILLISECONDS)
+    @Measurement(iterations = 5, time = 1000, timeUnit = MILLISECONDS)
     @OutputTimeUnit(MILLISECONDS)
     public void transform(Blackhole blackhole) {
-        blackhole.consume(multiPolygon.transform(polygon -> polygon.transform(linearRing -> linearRing.transform(point -> Point.fromXY(point.getX() * 50, point.getY() * 50)).toLinearRing())));
+        Function<Point, Point> pointTransform = point -> Point.fromXY(point.getX() * 50, point.getY() * 50);
+        Function<LinearRing, LinearRing> linearRingTransform = linearRing -> linearRing.transform(pointTransform).toLinearRing();
+        Function<Polygon, Polygon> polygonTransform = polygon -> polygon.transform(linearRingTransform);
+
+        blackhole.consume(multiPolygon.transform(polygonTransform));
     }
 }

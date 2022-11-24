@@ -188,7 +188,7 @@ public final class Point extends GeometryPrimitive {
     }
 
     public @NotNull Point add(double x, double y) {
-        return new Point(this.x + x, this.y + y);
+        return Point.fromXY(this.x + x, this.y + y);
     }
 
     public @NotNull Point subtract(@NotNull Point other) {
@@ -258,6 +258,11 @@ public final class Point extends GeometryPrimitive {
      */
     public double getY() {
         return y;
+    }
+
+    @Override
+    protected int calculatePointCount() {
+        return 1;
     }
 
     @Override

@@ -65,7 +65,7 @@ public final class MultiPoint extends GeometryPrimitive implements Iterable<Poin
         return builder().addPoints(points);
     }
 
-    public int getPointCount() {
+    public int calculatePointCount() {
         return points.size();
     }
 

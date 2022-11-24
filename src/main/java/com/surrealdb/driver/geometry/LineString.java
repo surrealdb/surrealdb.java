@@ -75,7 +75,7 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
         return LinearRing.from(points);
     }
 
-    public int getPointCount() {
+    public int calculatePointCount() {
         return points.size();
     }
 
@@ -123,7 +123,7 @@ public sealed class LineString extends GeometryPrimitive implements Iterable<Poi
     }
 
     public @NotNull LineString transform(@NotNull Function<Point, Point> transform) {
-        List<Point> transformedPoints = new ArrayList<>(getPointCount());
+        List<Point> transformedPoints = new ArrayList<>(calculatePointCount());
 
         for (Point point : this) {
             transformedPoints.add(transform.apply(point));

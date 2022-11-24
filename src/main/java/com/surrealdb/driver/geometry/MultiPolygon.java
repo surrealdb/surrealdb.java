@@ -7,8 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateCenterOfGeometries;
-import static com.surrealdb.driver.geometry.InternalGeometryUtils.calculateWktPointsPrimitive;
+import static com.surrealdb.driver.geometry.InternalGeometryUtils.*;
 
 /**
  * MultiPolygons can be used to store multiple geometry polygons in a single value.
@@ -123,6 +122,11 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
         }
 
         return MultiPolygon.from(transformed);
+    }
+
+    @Override
+    protected int calculatePointCount() {
+        return calculatePointCountOfGeometries(this);
     }
 
     @Override

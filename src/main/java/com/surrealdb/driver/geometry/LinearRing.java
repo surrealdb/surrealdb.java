@@ -35,7 +35,7 @@ public final class LinearRing extends LineString {
     public boolean isClosedLinearRing() {
         // Line Strings are guaranteed to have at least 2 points
         Point firstPoint = getPoint(0);
-        Point lastPoint = getPoint(super.getPointCount() - 1);
+        Point lastPoint = getPoint(super.calculatePointCount() - 1);
 
         return firstPoint.equals(lastPoint);
     }
@@ -46,13 +46,13 @@ public final class LinearRing extends LineString {
     }
 
     @Override
-    public int getPointCount() {
+    public int calculatePointCount() {
         return pointCount;
     }
 
     @Override
     public @NotNull Point getPoint(int index) {
-        if (!closed && index == super.getPointCount()) {
+        if (!closed && index == super.calculatePointCount()) {
             return super.getPoint(0);
         }
 
@@ -67,7 +67,7 @@ public final class LinearRing extends LineString {
     private double calculateCircumferenceInKilometers() {
         double circumference = 0;
 
-        for (int i = 0; i < getPointCount() - 1; i++) {
+        for (int i = 0; i < calculatePointCount() - 1; i++) {
             Point point1 = getPoint(i);
             Point point2 = getPoint(i + 1);
 
@@ -89,7 +89,7 @@ public final class LinearRing extends LineString {
         double x = 0;
         double y = 0;
 
-        for (int i = 0; i < getPointCount() - 1; i++) {
+        for (int i = 0; i < calculatePointCount() - 1; i++) {
             Point point = getPoint(i);
 
             x += point.getX();
@@ -104,11 +104,11 @@ public final class LinearRing extends LineString {
         if (this == other) return true;
 
         if (other instanceof LineString otherLineString) {
-            if (otherLineString.getPointCount() != getPointCount()) {
+            if (otherLineString.calculatePointCount() != calculatePointCount()) {
                 return false;
             }
 
-            for (int i = 0; i < getPointCount(); i++) {
+            for (int i = 0; i < calculatePointCount(); i++) {
                 if (!getPoint(i).equals(otherLineString.getPoint(i))) {
                     return false;
                 }
@@ -141,7 +141,7 @@ public final class LinearRing extends LineString {
 
         @Override
         public boolean hasNext() {
-            return index < linearRing.getPointCount();
+            return index < linearRing.calculatePointCount();
         }
 
         @Override
