@@ -121,14 +121,14 @@ public class LineStringTest {
 
         @Test
         @Override
-        public void testToStringReturnsWKT() {
+        public void toString_whenCalled_returnValidWkt() {
             LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             assertEquals("LINESTRING (1 2, 3 4, 5 6)", line.toString());
         }
 
         @Test
         @Override
-        public void testGetPointCountReturnsCorrectCount() {
+        public void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
             LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
             assertEquals(3, line.getPointCount());
         }

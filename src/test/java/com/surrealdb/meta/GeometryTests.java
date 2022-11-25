@@ -12,13 +12,11 @@ public abstract class GeometryTests {
     protected abstract Geometry createComplexGeometry();
 
     @Test
-    protected abstract void testToStringReturnsWKT();
+    protected abstract void getPointCount_whenCalled_returnCorrectNumberOfPoints();
+
 
     @Test
-    protected abstract void testGetPointCountReturnsCorrectCount();
-
-    @Test
-    void testEqualsReturnsTrueForEqualObjects() {
+    void equals_whenProvidedObjectIsIdentical_returnTrue() {
         Geometry simpleGeo1 = createSimpleGeometry();
         Geometry simpleGeo2 = createSimpleGeometry();
 
@@ -27,20 +25,11 @@ public abstract class GeometryTests {
         Geometry complexGeo1 = createComplexGeometry();
         Geometry complexGeo2 = createComplexGeometry();
 
-        assertEquals(complexGeo1, complexGeo2,"Equal geometries should be equal - complex");
+        assertEquals(complexGeo1, complexGeo2, "Equal geometries should be equal - complex");
     }
 
     @Test
-    void testEqualsReturnsFalseForNull() {
-        Geometry simpleGeo = createSimpleGeometry();
-        assertNotEquals(simpleGeo, null, "Geometries should not be equal to null - simple");
-
-        Geometry complexGeo = createComplexGeometry();
-        assertNotEquals(complexGeo, null, "Geometries should not be equal to null - complex");
-    }
-
-    @Test
-    void testEqualsReturnsFalseForDifferentGeometries() {
+    void equals_whenProvidedObjectIsDifferent_returnFalse() {
         Geometry simpleGeo = createSimpleGeometry();
         Geometry complexGeo = createComplexGeometry();
 
@@ -49,7 +38,16 @@ public abstract class GeometryTests {
     }
 
     @Test
-    void testHashCodesAreEqualForEqualObjects() {
+    void equals_whenProvidedObjectIsNull_returnFalse() {
+        Geometry simpleGeo = createSimpleGeometry();
+        assertNotEquals(simpleGeo, null, "Geometries should not be equal to null - simple");
+
+        Geometry complexGeo = createComplexGeometry();
+        assertNotEquals(complexGeo, null, "Geometries should not be equal to null - complex");
+    }
+
+    @Test
+    void hashCode_whenCalledByTwoIdenticalObjects_bothReturnSameHashcode() {
         Geometry simpleGeo1 = createSimpleGeometry();
         Geometry simpleGeo2 = createSimpleGeometry();
 
@@ -62,7 +60,7 @@ public abstract class GeometryTests {
     }
 
     @Test
-    void testHashCodesAreNotEqualForDifferentObjects() {
+    void hashCode_whenCalledByTwoDifferentObjects_eachObjectReturnsAUniqueHashcode() {
         Geometry simpleGeo = createSimpleGeometry();
         Geometry complexGeo = createComplexGeometry();
 
@@ -71,11 +69,13 @@ public abstract class GeometryTests {
     }
 
     @Test
-    void testToStringReturnsCachedValue() {
+    void toString_whenCalledMultipleTimes_returnsSameString() {
         Geometry simpleGeo = createSimpleGeometry();
         assertSame(simpleGeo.toString(), simpleGeo.toString(), "toString should return the same value each time - simple");
 
         Geometry complexGeo = createComplexGeometry();
         assertSame(complexGeo.toString(), complexGeo.toString(), "toString should return the same value each time - complex");
     }
+
+    protected abstract void toString_whenCalled_returnValidWkt();
 }

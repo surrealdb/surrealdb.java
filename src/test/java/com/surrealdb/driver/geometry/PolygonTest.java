@@ -60,7 +60,7 @@ public class PolygonTest {
 
         @Test
         @Override
-        public void testToStringReturnsWKT() {
+        public void toString_whenCalled_returnValidWkt() {
             ImmutableList<Polygon> quads = ImmutableList.of(
                 createQuadPolygon(false),
                 createQuadPolygon(true)
@@ -73,7 +73,7 @@ public class PolygonTest {
 
         @Test
         @Override
-        public void testGetPointCountReturnsCorrectCount() {
+        public void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
             Polygon quad = createQuadPolygon(false);
             assertEquals(5, quad.getPointCount());
 

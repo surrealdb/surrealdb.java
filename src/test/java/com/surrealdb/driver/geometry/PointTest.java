@@ -133,7 +133,7 @@ public class PointTest {
 
         @Test
         @Override
-        public void testToStringReturnsWKT() {
+        public void toString_whenCalled_returnValidWkt() {
             assertEquals("POINT (3.141592653589793 2.718281828459045)", Point.fromXY(Math.PI, Math.E).toString(), "Decimal precision");
             assertEquals("POINT (0 0)", Point.fromXY(0, 0).toString(), "Zero");
             assertEquals("POINT (-1 -1)", Point.fromXY(-1, -1).toString(), "Negative");
@@ -141,7 +141,7 @@ public class PointTest {
 
         @Test
         @Override
-        public void testGetPointCountReturnsCorrectCount() {
+        public void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
             assertEquals(1, Point.fromXY(0, 0).getPointCount());
             assertEquals(1, Point.fromXY(5, -10).getPointCount());
         }

@@ -47,7 +47,7 @@ class GeometryCollectionTest {
     }
 
     @Nested
-    class MultiGeometryTests implements MultiGeometryTest {
+    class MultiGeometryTests extends MultiGeometryTest {
 
         @Test
         public void testEmptyConstantHasZeroElements() {
@@ -93,7 +93,26 @@ class GeometryCollectionTest {
         }
 
         @Test
-        public void testToStringReturnsWKT() {
+        @Override
+        protected void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
+            GeometryCollection collection = GeometryCollection.from(
+                Point.fromXY(0, 0),
+                LineString.from(
+                    Point.fromXY(5, 12),
+                    Point.fromXY(8, 3)
+                ),
+                MultiPoint.from(
+                    Point.fromXY(2, 3),
+                    Point.fromXY(4, 5)
+                )
+            );
+
+            assertEquals(5, collection.getPointCount());
+        }
+
+        @Test
+        @Override
+        protected void toString_whenCalled_returnValidWkt() {
             GeometryCollection collection = GeometryCollection.from(
                 Point.fromXY(0, 0),
                 LineString.from(
@@ -108,24 +127,6 @@ class GeometryCollectionTest {
 
             assertEquals("GEOMETRYCOLLECTION (POINT (0 0), LINESTRING (5 12, 8 3), MULTIPOINT (2 3, 4 5))", collection.toString());
             assertEquals("GEOMETRYCOLLECTION EMPTY", GeometryCollection.EMPTY.toString());
-        }
-
-        @Test
-        @Override
-        public void testGetPointCountReturnsCorrectCount() {
-            GeometryCollection collection = GeometryCollection.from(
-                Point.fromXY(0, 0),
-                LineString.from(
-                    Point.fromXY(5, 12),
-                    Point.fromXY(8, 3)
-                ),
-                MultiPoint.from(
-                    Point.fromXY(2, 3),
-                    Point.fromXY(4, 5)
-                )
-            );
-
-            assertEquals(5, collection.getPointCount());
         }
     }
 }

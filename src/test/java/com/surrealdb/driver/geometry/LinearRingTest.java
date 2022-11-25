@@ -56,7 +56,7 @@ public class LinearRingTest {
         }
 
         @Test
-        public void testToStringReturnsWKT() {
+        public void toString_whenCalled_returnValidWkt() {
             LinearRing ring = LinearRing.from(
                 Point.fromXY(0, 0),
                 Point.fromXY(1, 0),
@@ -68,7 +68,7 @@ public class LinearRingTest {
         }
 
         @Test
-        public void testGetPointCountReturnsCorrectCount() {
+        public void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
             LinearRing circle = GeometryUtils.createCircleLinearRing(16, 5);
 
             assertEquals(17, circle.getPointCount());

@@ -2,11 +2,11 @@ package com.surrealdb.meta;
 
 import org.junit.jupiter.api.Test;
 
-public interface MultiGeometryTest {
+public abstract class MultiGeometryTest {
 
     @Test
-    void testEmptyConstantHasZeroElements();
+    public abstract void testEmptyConstantHasZeroElements();
 
     @Test
-    void testProvidingZeroElementsToFromGivesBackSingletonInstance();
+    public abstract void testProvidingZeroElementsToFromGivesBackSingletonInstance();
 }

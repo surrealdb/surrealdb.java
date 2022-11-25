@@ -12,7 +12,7 @@ import static com.surrealdb.meta.utils.GeometryUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-class MultiPolygonTest implements MultiGeometryTest {
+class MultiPolygonTest extends MultiGeometryTest {
 
     @Test
     public void testEmptyConstantHasZeroElements() {
@@ -26,7 +26,7 @@ class MultiPolygonTest implements MultiGeometryTest {
     }
 
     @Nested
-    class MultiGeometryTests implements MultiGeometryTest {
+    class MultiGeometryTests extends MultiGeometryTest {
 
         @Test
         @Override
@@ -62,7 +62,7 @@ class MultiPolygonTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testToStringReturnsWKT() {
+        public void toString_whenCalled_returnValidWkt() {
             Polygon poly1 = GeometryUtils.createQuadPolygon(false);
             Polygon poly2 = createQuadPolygonWithHole();
 
@@ -72,7 +72,7 @@ class MultiPolygonTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testGetPointCountReturnsCorrectCount() {
+        public void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
             Polygon poly1 = GeometryUtils.createQuadPolygon(false);
             Polygon poly2 = createQuadPolygonWithHole();
 

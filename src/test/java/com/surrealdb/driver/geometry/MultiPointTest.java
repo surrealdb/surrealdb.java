@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class MultiPointTest implements MultiGeometryTest {
+class MultiPointTest extends MultiGeometryTest {
 
     @Test
     public void testEmptyConstantHasZeroElements() {
@@ -37,7 +37,7 @@ class MultiPointTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testToStringReturnsWKT() {
+        public void toString_whenCalled_returnValidWkt() {
             MultiPoint multiPoint = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),
                 Point.fromXY(-68.295, 7.24),
@@ -49,7 +49,7 @@ class MultiPointTest implements MultiGeometryTest {
 
         @Test
         @Override
-        public void testGetPointCountReturnsCorrectCount() {
+        public void getPointCount_whenCalled_returnCorrectNumberOfPoints() {
             MultiPoint multiPoint = MultiPoint.from(
                 Point.fromXY(-91.6711, -13.4225),
                 Point.fromXY(-68.295, 7.24),
