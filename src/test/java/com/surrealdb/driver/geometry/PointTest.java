@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PointTest {
 
     @Test
-    void testFromXY() {
+    void Point_fromXY_whenProvidedWithCoords_returnsAPointWithThoseCoords() {
         Point point = Point.fromXY(3, 5);
 
         assertEquals(3, point.getX());
@@ -19,7 +19,7 @@ public class PointTest {
     }
 
     @Test
-    void testFromYX() {
+    void Point_fromYX_whenProvidedWithCoords_returnsAPointWithThoseCoords() {
         Point point = Point.fromYX(5, 3);
 
         assertEquals(3, point.getX());
@@ -27,7 +27,7 @@ public class PointTest {
     }
 
     @Test
-    void testFromGeoHash() {
+    void Point_fromGeoHash_whenGivenAValidGeoHash_returnsMatchingPoint() {
         // You can use http://geohash.org/ to verify the correctness of the assertions.
         assertPointEquals(Point.fromYX(51.50070948, -0.12456732), Point.fromGeoHash("gcpuvpmm3k5f"));
         assertPointEquals(Point.fromYX(29.97923900, 31.13425897), Point.fromGeoHash("stq4s3x38z4n"));
@@ -35,7 +35,7 @@ public class PointTest {
     }
 
     @Test
-    void testInvalidGeoHash() {
+    void Point_fromGeoHash_whenGivenAnInvalidGeoHash_throwException() {
         assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("B"), "capital letters are not allowed.");
         assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("a"), "'a' is not a valid character.");
         assertThrows(IllegalArgumentException.class, () -> Point.fromGeoHash("i"), "'i' is not a valid character.");
@@ -44,7 +44,7 @@ public class PointTest {
     }
 
     @Test
-    void testToGeoHash() {
+    void toGeoHash_whenCalled_returnsAMatchingGeoHash() {
         // You can use http://geohash.co/ to verify the correctness of the assertions.
         // The site looks a little sketchy, so I'll find a better one later.
         assertEquals("u09tunqtwdtx", Point.fromYX(48.85853327, 2.29436914).toGeoHash(12));
@@ -53,7 +53,7 @@ public class PointTest {
     }
 
     @Test
-    void testWithX() {
+    void withX_whenCalled_returnsAPointWithTheProvidedX() {
         Point point = Point.fromXY(3, 5).withX(7);
 
         assertEquals(7, point.getX());
@@ -61,7 +61,7 @@ public class PointTest {
     }
 
     @Test
-    void testWithY() {
+    void withY_whenCalled_returnsAPointWithTheProvidedY() {
         Point point = Point.fromXY(3, 5).withY(7);
 
         assertEquals(3, point.getX());
@@ -69,7 +69,7 @@ public class PointTest {
     }
 
     @Test
-    void testRotate() {
+    void rotate_whenCalled_returnsARotatedPoint() {
         Point point = Point.fromXY(0, 0);
         assertPointEquals(point, point.rotateDegrees(90),"Rot: 90");
         assertPointEquals(point, point.rotateDegrees(180), "Rot: 180");

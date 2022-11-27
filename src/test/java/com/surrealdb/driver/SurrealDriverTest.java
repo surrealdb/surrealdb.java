@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
+import com.surrealdb.driver.patch.AddPatch;
 import com.surrealdb.driver.patch.Patch;
 import com.surrealdb.driver.patch.ReplacePatch;
 import com.surrealdb.driver.sql.QueryResult;
@@ -100,7 +101,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testCreateRecordWithoutSpecifyingId() {
+    void createRecord_whenRecordNameIsNotSpecified_successfullyCreatesRecord() {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
 
@@ -109,7 +110,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testCreateRecordWithId() {
+    void createRecord_whenRecordNameIsSpecified_successfullyCreatesRecordWithTheGivenName() {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
 
@@ -118,7 +119,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testCreateIdThatAlreadyExists() {
+    void createRecord_whenAttemptingToCreateARecordThatAlreadyExists_throwsException() {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         driver.createRecord(personTable, "khalid", person);
 
@@ -131,20 +132,20 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testRetrieveAllRecordsFromTableExists() {
+    void retrieveAllRecordsFromTable_whenTableExists_returnsAllRecordsFromThatTable() {
         List<Person> result = driver.retrieveAllRecordsFromTable(personTable);
         assertEquals(2, result.size());
     }
 
     @Test
-    void testRetrieveAllRecordsFromTableWhenTableDoesNotExist() {
+    void retrieveAllRecordsFromTable_whenTableDoesNotExist_returnsEmptyList() {
         SurrealTable<Person> table = SurrealTable.of("non_existing_table", Person.class);
         List<Person> result = driver.retrieveAllRecordsFromTable(table);
         assertEquals(0, result.size());
     }
 
     @Test
-    void testRetrieveRecordThatExists() {
+    void retrieveRecord_whenRecordWithTheGivenNameExists_returnsSpecifiedRecord() {
         Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
         expected.setId("person:tobie");
 
@@ -154,14 +155,14 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testRetrieveRecordThatDoesNotExist() {
+    void retrieveRecord_whenRecordWithTheGivenNameDoesNotExist_returnsAnEmptyOptional() {
         Optional<Person> person = driver.retrieveRecord(personTable, "404");
 
-        assertFalse(person.isPresent());
+        assertTrue(person.isEmpty());
     }
 
     @Test
-    public void testUpdateOne() {
+    public void updateRecord_whenGivenARecordThatExists_updatesTheRecord() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
         expected.setId("person:tobie");
 
@@ -171,7 +172,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    public void testUpdateAll() {
+    public void updateAllRecordsInTable_() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
         List<Person> actual = driver.updateAllRecordsInTable(personTable, expected);
@@ -185,27 +186,28 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testChangeRecord() {
+    void changeRecord_whenProvidedWithPartialRecord_updatesOnlyChangesValues() {
         PartialPerson patch = new PartialPerson(false);
 
+        // TODO: Change how withType works
         PartialPerson actual = driver.changeRecord(personTable.withType(PartialPerson.class), "tobie", patch);
 
         assertEquals(patch.isMarketing(), actual.isMarketing());
     }
 
     @Test
-    void testChangeAllRecordsInTable() {
+    void changeAllRecordsInTable_whenProvidedPartialRecord_onlyUpdatesValuesInPartialRecord() {
         PartialPerson patch = new PartialPerson(false);
 
         SurrealTable<PartialPerson> partialPersonView = personTable.withType(PartialPerson.class);
-        List<PartialPerson> actual = driver.changeAllRecordsInTable(partialPersonView, patch);
+        List<PartialPerson> results = driver.changeAllRecordsInTable(partialPersonView, patch);
 
-        assertEquals(2, actual.size());
-        actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
+        assertEquals(2, results.size());
+        results.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
     }
 
     @Test
-    void testPatchRecord() {
+    void patchRecord_whenPatchingARecordThatExists_successfullyAppliesPatches() {
         List<Patch> patches = Arrays.asList(
             ReplacePatch.create("/name/first", "Khalid"),
             ReplacePatch.create("/name/last", "Alharisi"),
@@ -223,7 +225,24 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testPatchAllRecordsInTable() {
+    void patchRecord_whenPatchingARecordThatDoesNotExist_createsANewRecord() {
+        List<Patch> patches = Arrays.asList(
+            AddPatch.create("/name/first", "Damian"),
+            AddPatch.create("/name/last", "Kocher")
+        );
+
+        Person patched = driver.patchRecord(personTable, "damian", patches);
+        Person actual = driver.retrieveRecord(personTable, "damian").get();
+
+        assertEquals(patched, actual);
+
+        assertEquals("Damian", actual.getName().getFirst());
+        assertEquals("Kocher", actual.getName().getLast());
+        assertNull(actual.getTitle());
+    }
+
+    @Test
+    void patchAllRecordsInTable_whenCalled_patchesAllRecordsInTable() {
         List<Patch> patches = ImmutableList.of(
             ReplacePatch.create("/name/first", "Khalid"),
             ReplacePatch.create("/name/last", "Alharisi"),
@@ -244,7 +263,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testDeleteRecord() {
+    void deleteRecord_whenProvidedTheNameOfARecordThatExists_successfullyDeletesRecord() {
         Person deletedPerson = driver.deleteRecord(personTable, "tobie");
         assertEquals("person:tobie", deletedPerson.getId());
 
@@ -253,11 +272,18 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testDeleteAllRecordsInTable() {
+    void deleteAllRecordsInTable_whenProvidedWithATableContainingRecords_deletesAllRecords() {
         List<Person> deletedPeople = driver.deleteAllRecordsInTable(personTable);
         assertEquals(2, deletedPeople.size());
 
         List<Person> people = driver.retrieveAllRecordsFromTable(personTable);
         assertEquals(0, people.size());
+    }
+
+    @Test
+    void deleteAllRecordsInTable_whenProvidedWithATableContainingNoRecords_returnsEmptyList() {
+        SurrealTable<Person> table = SurrealTable.of("non_existing_table", Person.class);
+        List<Person> deletedPeople = driver.deleteAllRecordsInTable(table);
+        assertEquals(0, deletedPeople.size());
     }
 }

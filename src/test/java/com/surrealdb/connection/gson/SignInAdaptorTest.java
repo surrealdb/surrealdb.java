@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SignInAdaptorTest {
 
     @Test
-    void testSerializationOfRootUserSignIn() {
+    void gson_toJson_whenProvidedWithRootUserCredentials_returnsSerializedJson() {
         SurrealAuthCredentials signIn = SurrealRootCredentials.from("generic_username", "a_password");
         JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
@@ -25,7 +25,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testSerializationOfNamespaceUserSignIn() {
+    void gson_toJson_whenProvidedWithNamespaceUserCredentials_returnsSerializedJson() {
         SurrealAuthCredentials signIn = SurrealNamespaceCredentials.from("generic_username", "a_password", "the_namespace");
         JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
@@ -37,7 +37,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testSerializationOfDatabaseUserSignIn() {
+    void gson_toJson_whenProvidedWithDatabaseUserCredentials_returnsSerializedJson() {
         SurrealAuthCredentials signIn = SurrealDatabaseCredentials.from("generic_username", "a_password", "the_namespace", "database_name");
         JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
@@ -49,7 +49,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testSerializationOfScopeUserSignIn() {
+    void gson_toJson_whenProvidedWithScopeUserCredentials_returnsSerializedJson() {
         SurrealAuthCredentials signIn = SurrealScopeCredentials.from("the_namespace", "database_name", "auth_scope");
         JsonObject serialized = GsonTestUtils.serialize(signIn).getAsJsonObject();
 
@@ -61,7 +61,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testDeserializationOfRootUserSignIn() {
+    void gson_fromJson_whenGivenSerializedRootUserCredentials_returnsRootUserCredentialsObject() {
         JsonObject signInJson = new JsonObject();
         signInJson.addProperty("user", "root_user");
         signInJson.addProperty("pass", "root_user_password");
@@ -73,7 +73,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testDeserializationOfNamespaceUserSignIn() {
+    void gson_fromJson_whenGivenSerializedNamespaceUserCredentials_returnsNamespaceUserCredentialsObject() {
         JsonObject signInJson = new JsonObject();
         signInJson.addProperty("user", "namespace_user");
         signInJson.addProperty("pass", "namespace_user_password");
@@ -87,7 +87,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testDeserializationOfDatabaseUserSignIn() {
+    void gson_fromJson_whenGivenSerializedDatabaseUserCredentials_returnsDatabaseUserCredentialsObject() {
         JsonObject signInJson = new JsonObject();
         signInJson.addProperty("user", "database_user");
         signInJson.addProperty("pass", "database_user_password");
@@ -103,7 +103,7 @@ public class SignInAdaptorTest {
     }
 
     @Test
-    void testDeserializationOfScopeUserSignIn() {
+    void gson_fromJson_whenGivenSerializeScopeUserCredentials_returnsScopeUserCredentialsObject() {
         JsonObject signInJson = new JsonObject();
         signInJson.addProperty("NS", "some_namespace");
         signInJson.addProperty("DB", "some_database");

@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.surrealdb.driver.geometry.*;
+import com.surrealdb.meta.GsonAdaptorTest;
 import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -11,10 +12,11 @@ import static com.surrealdb.meta.utils.GsonTestUtils.assertGeometryCoordinatesEq
 import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonHasPropertyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GeometryCollectionAdaptorTest {
+public class GeometryCollectionAdaptorTest extends GsonAdaptorTest {
 
     @Test
-    void testGeometryCollectionSerialization() {
+    @Override
+    protected void gson_toJson_whenProvidedWithJavaObject_returnsAProperlySerializedJsonRepresentation() {
         GeometryCollection geometryCollection = GeometryCollection.builder()
             .addGeometry(Point.fromXY(1.5, 2.25))
             .addGeometry(MultiPoint.from(Point.fromXY(10, 12), Point.fromXY(14, 16)))
@@ -40,7 +42,8 @@ public class GeometryCollectionAdaptorTest {
     }
 
     @Test
-    void testGeometryCollectionDeserialization() {
+    @Override
+    protected void gson_fromJson_whenProvidedWithASerializedObject_returnsAnEqualJavaObject() {
         GeometryCollection expected = GeometryCollection.builder()
             .addGeometry(Point.fromXY(1.5, 2.25))
             .addGeometry(MultiPoint.from(Point.fromXY(10, 12), Point.fromXY(14, 16)))

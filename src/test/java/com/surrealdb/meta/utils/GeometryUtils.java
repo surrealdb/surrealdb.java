@@ -64,8 +64,7 @@ public class GeometryUtils {
     }
 
     public static void assertPointEquals(Point expected, Point actual) {
-        assertEquals(expected.getX(), actual.getX(), POINT_EQUALS_PRECISION);
-        assertEquals(expected.getY(), actual.getY(), POINT_EQUALS_PRECISION);
+        assertPointEquals(expected, actual, "Point");
     }
 
     public static void assertPointEquals(Point expected, Point actual, String message) {

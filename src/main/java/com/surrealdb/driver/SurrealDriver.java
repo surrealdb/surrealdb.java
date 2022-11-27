@@ -21,11 +21,11 @@ import static com.surrealdb.driver.InternalDriverUtils.getResultSynchronously;
 public interface SurrealDriver {
 
     static @NotNull SurrealDriver create(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
-        return new StandardSurrealDriver(connection, settings);
+        return RegularSurrealDriver.create(connection, settings);
     }
 
     static @NotNull SurrealDriver create(@NotNull SurrealConnection connection) {
-        return new StandardSurrealDriver(connection, SurrealDriverSettings.DEFAULT);
+        return create(connection, SurrealDriverSettings.DEFAULT);
     }
 
     @NotNull CompletableFuture<Void> pingAsync();

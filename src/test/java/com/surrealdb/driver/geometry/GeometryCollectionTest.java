@@ -10,13 +10,12 @@ import java.util.List;
 
 import static com.surrealdb.meta.utils.GeometryUtils.createCirclePolygon;
 import static com.surrealdb.meta.utils.GeometryUtils.createQuadPolygon;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GeometryCollectionTest {
 
     @Test
-    void testGetGeometryCount() {
+    void getGeometryCount_whenCalled_returnsCorrectNumberOfGeometries() {
         GeometryCollection collection = GeometryCollection.from(
             Point.fromXY(0, 0),
             LineString.from(
@@ -30,7 +29,7 @@ class GeometryCollectionTest {
     }
 
     @Test
-    void testGetGeometry() {
+    void getGeometry_whenGivenIndexWithinBounds_returnsGeometryAtIndex() {
         MultiPoint multiPoint = MultiPoint.from(
             Point.fromXY(2, 3),
             Point.fromXY(4, 5)
@@ -44,6 +43,17 @@ class GeometryCollectionTest {
 
         assertSame(multiPoint, collection.getGeometry(0));
         assertSame(ring, collection.getGeometry(1));
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void getGeometry_whenGivenIndexOutsideOfBounds_throwsException() {
+        GeometryCollection collection = GeometryCollection.builder()
+            .addGeometry(GeometryUtils.createQuadPolygon(true))
+            .build();
+
+        assertThrows(IndexOutOfBoundsException.class, () -> collection.getGeometry(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> collection.getGeometry(2));
     }
 
     @Nested

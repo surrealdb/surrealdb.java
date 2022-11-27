@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.surrealdb.driver.geometry.LineString;
 import com.surrealdb.driver.geometry.Point;
+import com.surrealdb.meta.GsonAdaptorTest;
 import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -11,10 +12,11 @@ import static com.surrealdb.meta.utils.GsonTestUtils.assertGeometryCoordinatesEq
 import static com.surrealdb.meta.utils.GsonTestUtils.assertJsonHasPropertyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class GeometryLineStringAdaptorTest {
+class GeometryLineStringAdaptorTest extends GsonAdaptorTest {
 
     @Test
-    void testSerialize() {
+    @Override
+    protected void gson_toJson_whenProvidedWithJavaObject_returnsAProperlySerializedJsonRepresentation() {
         LineString lineString = LineString.from(
             Point.fromXY(1.5, 2.25),
             Point.fromXY(3.75, 4.125)
@@ -31,7 +33,8 @@ class GeometryLineStringAdaptorTest {
     }
 
     @Test
-    void testDeserialize() {
+    @Override
+    protected void gson_fromJson_whenProvidedWithASerializedObject_returnsAnEqualJavaObject() {
         JsonObject json = new JsonObject();
         json.addProperty("type", "LineString");
         JsonArray coordinates = new JsonArray();

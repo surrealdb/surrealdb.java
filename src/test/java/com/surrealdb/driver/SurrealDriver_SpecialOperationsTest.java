@@ -12,11 +12,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * @author Khalid Alharisi
  */
-public class SurrealDriverSpecialOperationsTest {
+@SuppressWarnings("NewClassNamingConvention")
+public class SurrealDriver_SpecialOperationsTest {
 
     private SurrealDriver driver;
 
@@ -34,26 +36,27 @@ public class SurrealDriverSpecialOperationsTest {
     }
 
     @Test
-    void testPing() {
+    void ping_whenCalled_doesNotThrowException() {
         assertDoesNotThrow(() -> driver.ping());
     }
 
     @Test
     @Disabled("Disabled until Surreal supports the version command")
-    void testGetDatabaseVersion() {
+    void getDatabaseVersion_whenCalled_returnsAValidSurrealVersion() {
         // Surreal uses the format '{}-{}' when responding to the 'version' RPC.
         assertTrue(driver.databaseVersion().matches(".*-.*"));
     }
 
     @Test
-    void testSignIn() {
+    void signIn_whenCalledWithValidCredentials_doesNotThrowException() {
         assertDoesNotThrow(() -> driver.signIn(TestUtils.getAuthCredentials()));
     }
 
     @Test
-    void testBadCredentials() {
+    void signIn_whenCalledWithInvalidCredentials_throwsException() {
         assertThrows(SurrealAuthenticationException.class, () -> {
-            driver.signIn(SurrealRootCredentials.from("invalid_username", "invalid_password"));
+            SurrealRootCredentials credentials = SurrealRootCredentials.from("invalid_username", "invalid_password");
+            driver.signIn(credentials);
         });
     }
 

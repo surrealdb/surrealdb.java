@@ -11,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PolygonTest {
 
     @Test
-    void testBuildThrowsWhenExteriorHasNotBeenSet() {
+    void builder_build_whenExteriorHasNotBeenSet_throwsException() {
         assertThrows(IllegalStateException.class, () -> Polygon.builder().build());
     }
 
     @Test
-    void testBuildDoesNotThrowWhenExteriorHasBeenSet() {
+    void builder_build_whenExteriorHasBeenSet_doesNotThrowException() {
         LinearRing exterior = createQuadLinearRing(true);
 
         assertDoesNotThrow(() -> Polygon.builder().setExterior(exterior).build());

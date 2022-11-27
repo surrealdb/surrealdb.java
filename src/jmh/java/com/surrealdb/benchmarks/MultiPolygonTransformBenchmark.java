@@ -33,7 +33,10 @@ public class MultiPolygonTransformBenchmark {
     }
 
     private Polygon createCircle(int vertexCount, double radius) {
-        return Polygon.builder().setExterior(createCircularLinearRing(vertexCount, radius)).addInterior(createCircularLinearRing(vertexCount, radius / 2)).build();
+        return Polygon.builder()
+            .setExterior(createCircularLinearRing(vertexCount, radius))
+            .addInterior(createCircularLinearRing(vertexCount, radius / 2))
+            .build();
     }
 
     private MultiPolygon createMultiPolygon() {

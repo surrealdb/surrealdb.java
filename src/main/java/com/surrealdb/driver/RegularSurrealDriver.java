@@ -21,14 +21,22 @@ import java.util.concurrent.ExecutorService;
 /**
  * @author Khalid Alharisi
  */
-public class StandardSurrealDriver implements SurrealDriver {
+public class RegularSurrealDriver implements SurrealDriver {
 
     @NotNull SurrealConnection connection;
     @NotNull ExecutorService executorService;
 
-    public StandardSurrealDriver(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
+    private RegularSurrealDriver(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
         this.connection = connection;
         this.executorService = settings.getAsyncOperationExecutorService();
+    }
+
+    public static @NotNull RegularSurrealDriver create(@NotNull SurrealConnection connection, @NotNull SurrealDriverSettings settings) {
+        return new RegularSurrealDriver(connection, settings);
+    }
+
+    public static @NotNull RegularSurrealDriver create(@NotNull SurrealConnection connection) {
+        return new RegularSurrealDriver(connection, SurrealDriverSettings.DEFAULT);
     }
 
     public @NotNull CompletableFuture<Void> pingAsync() {

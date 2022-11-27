@@ -18,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * E2E serialization tests
  */
-public class SurrealDriverGsonTest {
+@SuppressWarnings("NewClassNamingConvention")
+public class SurrealDriver_GsonTest {
 
     private static final SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
     private static final SurrealTable<InstantContainer> timeTable = SurrealTable.of("time", InstantContainer.class);

@@ -3,6 +3,7 @@ package com.surrealdb.connection.gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.driver.patch.ChangePatch;
+import com.surrealdb.meta.GsonAdaptorTest;
 import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -12,10 +13,11 @@ import java.time.Instant;
 import static com.surrealdb.meta.utils.GsonTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PatchChangeAdaptorTest {
+public class PatchChangeAdaptorTest extends GsonAdaptorTest {
 
     @Test
-    void testIntSerialization() {
+    @Override
+    protected void gson_toJson_whenProvidedWithJavaObject_returnsAProperlySerializedJsonRepresentation() {
         ChangePatch<Integer> changePatch = ChangePatch.create("followers", 32);
         Type type = TypeToken.getParameterized(ChangePatch.class, Integer.class).getType();
         JsonObject serialized = serialize(changePatch, type).getAsJsonObject();
@@ -26,7 +28,8 @@ public class PatchChangeAdaptorTest {
     }
 
     @Test
-    void testInstantDeserialization() {
+    @Override
+    protected void gson_fromJson_whenProvidedWithASerializedObject_returnsAnEqualJavaObject() {
         JsonObject object = new JsonObject();
         object.addProperty("op", "change");
         object.addProperty("path", "lastVisit");

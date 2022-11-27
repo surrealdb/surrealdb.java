@@ -29,10 +29,10 @@ public class LinearRingTest {
     }
 
     @Test
-    void testGetCenterReturnsExpectedCenter() {
-        LinearRing circleLinearRing = GeometryUtils.createCircleLinearRing(16, 5);
+    void getCenter_whenCalled_returnsCenterOfLinearRing() {
+        LinearRing circleLinearRing = GeometryUtils.createCircleLinearRing(16, 5).translate(5, 5);
 
-        assertPointEquals(Point.fromXY(0, 0), circleLinearRing.getCenter());
+        assertPointEquals(Point.fromXY(5, 5), circleLinearRing.getCenter());
     }
 
     @Test

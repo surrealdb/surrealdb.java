@@ -161,7 +161,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
             y += point.getY();
         }
 
-        return Point.fromXY(x / pointCount, y / pointCount);
+        return Point.fromXY(x / (pointCount - 1), y / (pointCount - 1));
     }
 
     @Override
