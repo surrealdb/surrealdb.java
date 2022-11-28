@@ -1,7 +1,10 @@
-package com.surrealdb.driver;
+package com.surrealdb.meta.driver;
 
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.SurrealDriver;
+import com.surrealdb.driver.SurrealDriverSettings;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.geometry.LinearRing;
 import com.surrealdb.driver.geometry.Polygon;
 import com.surrealdb.meta.model.City;
@@ -16,19 +19,20 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SuppressWarnings("NewClassNamingConvention")
-public class SurrealDriver_GeometryTest {
+public abstract class SurrealDriverGeometryTests {
 
     private static final SurrealTable<City> citiesTable = SurrealTable.of("cities", City.class);
 
     private SurrealConnection connection;
     private SurrealDriver driver;
 
+    protected abstract SurrealDriver createDriver(SurrealConnection connection, SurrealDriverSettings settings);
+
     @BeforeEach
     void setup() {
         connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(3);
-        driver = SurrealDriver.create(connection);
+        driver = createDriver(connection, SurrealDriverSettings.DEFAULT);
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 

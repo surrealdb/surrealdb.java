@@ -1,4 +1,4 @@
-package com.surrealdb.meta;
+package com.surrealdb.meta.driver;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
@@ -13,7 +13,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
-public abstract class SurrealDriver_MockTest {
+public abstract class SurrealDriverMockTests {
 
     protected abstract SurrealDriver createDriver(SurrealConnection connection);
 

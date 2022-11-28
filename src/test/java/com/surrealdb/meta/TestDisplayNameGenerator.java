@@ -11,24 +11,13 @@ public class TestDisplayNameGenerator extends Standard {
     @Override
     public String generateDisplayNameForClass(Class<?> testClass) {
         String className = testClass.getSimpleName();
-        String[] split = className.split("_");
-
-        if (split.length == 1) {
-            return className;
-        }
-
-        if (split.length == 2) {
-            String testedClassName = split[0];
-            String feature = toSentence(split[1].replace("Test", "")).toUpperCase();
-            return String.format("%s - %s", testedClassName, feature);
-        }
-
-        return "(invalid test class name) " + className;
+        return className.substring(0, className.length() - 4);
     }
 
     @Override
     public String generateDisplayNameForNestedClass(Class<?> nestedClass) {
-        return String.format("[%s]", toSentence(nestedClass.getSimpleName()).toUpperCase());
+        String situation = toSentence(nestedClass.getSimpleName()).toUpperCase();
+        return String.format("[%s]", situation);
     }
 
     @Override
@@ -57,6 +46,7 @@ public class TestDisplayNameGenerator extends Standard {
 
     private @NotNull String toSentence(@NotNull String testMethod) {
         String[] words = testMethod.split("(?=[A-Z])");
+
         return String.join(" ", words).toLowerCase();
     }
 }

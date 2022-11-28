@@ -1,8 +1,11 @@
-package com.surrealdb.driver;
+package com.surrealdb.meta.driver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.driver.SurrealDriver;
+import com.surrealdb.driver.SurrealDriverSettings;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.meta.model.InstantContainer;
 import com.surrealdb.meta.model.Person;
 import com.surrealdb.meta.utils.TestUtils;
@@ -18,13 +21,14 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * E2E serialization tests
  */
-@SuppressWarnings("NewClassNamingConvention")
-public class SurrealDriver_GsonTest {
+public abstract class SurrealDriverGsonTests {
 
     private static final SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
     private static final SurrealTable<InstantContainer> timeTable = SurrealTable.of("time", InstantContainer.class);
 
     private SurrealDriver driver;
+
+    protected abstract SurrealDriver createDriver(SurrealConnection connection, SurrealDriverSettings settings);
 
     @AfterEach
     void cleanup() {
@@ -42,7 +46,7 @@ public class SurrealDriver_GsonTest {
 
         val connection = SurrealConnection.create(connectionSettings);
 
-        driver = SurrealDriver.create(connection);
+        driver = createDriver(connection, SurrealDriverSettings.DEFAULT);
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }

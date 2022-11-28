@@ -1,9 +1,12 @@
-package com.surrealdb.driver;
+package com.surrealdb.meta.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExistsException;
+import com.surrealdb.driver.SurrealDriver;
+import com.surrealdb.driver.SurrealDriverSettings;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.patch.AddPatch;
 import com.surrealdb.driver.patch.Patch;
 import com.surrealdb.driver.patch.ReplacePatch;
@@ -13,6 +16,7 @@ import com.surrealdb.meta.model.Person;
 import com.surrealdb.meta.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -26,19 +30,21 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Khalid Alharisi
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
-public class SurrealDriverTest {
+public abstract class SurrealDriverTests {
 
     private static final SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
 
     private SurrealConnection connection;
     private SurrealDriver driver;
 
+    protected abstract SurrealDriver createDriver(SurrealConnection connection, SurrealDriverSettings settings);
+
     @BeforeEach
     public void setup() {
         connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
 
-        driver = SurrealDriver.create(connection);
+        driver = createDriver(connection, SurrealDriverSettings.DEFAULT);
 
         driver.signIn(TestUtils.getAuthCredentials());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
@@ -56,12 +62,13 @@ public class SurrealDriverTest {
     }
 
     @Test
+    @Disabled("This doesn't seem to do anything")
     void testInfo() {
         driver.info();
     }
 
     @Test
-    void testSetConnectionWideParameter() {
+    void setConnectionWideParameter_whenProvidedWithAParam_setsTheParamOnTheConnection() {
         Person.Name expectedName = new Person.Name("First", "Last");
         driver.setConnectionWideParameter("default_name", expectedName);
         Person person = driver.sqlSingle("CREATE person:global_test SET name = $default_name", Person.class).get();
@@ -70,7 +77,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testQueryWithParameters() {
+    void sql_whenProvidedWithParams_usesThoseParamsWhenExecutingTheQuery() {
         Map<String, Object> args = ImmutableMap.of(
             "firstName", "Tobie"
         );
@@ -82,7 +89,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testQuerySingleExists() {
+    void sqlSingle_whenTheQueryWillFindARecord_returnsANonEmptyOptionalContainingTheSpecifiedRecord() {
         Optional<Person> optionalPerson = driver.sqlSingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", Person.class);
 
         assertTrue(optionalPerson.isPresent());
@@ -91,7 +98,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    void testQuerySingleWhenWhenMatchingRecordDoesNotExist() {
+    void sqlSingle_whenTheQueryWillNotFindARecord_returnsAnEmptyOptional() {
         Map<String, Object> args = ImmutableMap.of(
             "marketing", false
         );
@@ -172,7 +179,7 @@ public class SurrealDriverTest {
     }
 
     @Test
-    public void updateAllRecordsInTable_() {
+    public void updateAllRecordsInTable_whenProvidedData_setsAllRecordsToThatData() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
         List<Person> actual = driver.updateAllRecordsInTable(personTable, expected);

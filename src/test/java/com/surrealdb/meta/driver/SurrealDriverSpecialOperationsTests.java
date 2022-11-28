@@ -1,8 +1,11 @@
-package com.surrealdb.driver;
+package com.surrealdb.meta.driver;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.driver.SurrealDriver;
+import com.surrealdb.driver.SurrealDriverSettings;
+import com.surrealdb.driver.SurrealTable;
 import com.surrealdb.driver.auth.SurrealRootCredentials;
 import com.surrealdb.meta.model.Person;
 import com.surrealdb.meta.utils.TestUtils;
@@ -17,16 +20,17 @@ import static org.mockito.ArgumentMatchers.any;
 /**
  * @author Khalid Alharisi
  */
-@SuppressWarnings("NewClassNamingConvention")
-public class SurrealDriver_SpecialOperationsTest {
+public abstract class SurrealDriverSpecialOperationsTests {
 
     private SurrealDriver driver;
+
+    protected abstract SurrealDriver createDriver(SurrealConnection connection, SurrealDriverSettings settings);
 
     @BeforeEach
     public void setup() {
         SurrealConnection connection = SurrealConnection.create(TestUtils.getConnectionSettings());
         connection.connect(5);
-        driver = SurrealDriver.create(connection);
+        driver = createDriver(connection, SurrealDriverSettings.DEFAULT);
     }
 
     @AfterEach
