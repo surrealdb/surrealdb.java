@@ -13,6 +13,7 @@ import java.util.Optional;
  * @author Khalid Alharisi
  */
 @Value
+public
 class RpcResponse {
 
     @NotNull String id;
@@ -27,7 +28,7 @@ class RpcResponse {
      * An internal representation of an RPC error.
      */
     @Value
-    static class Error {
+    public static class Error {
         int code;
         @NotNull String message;
     }

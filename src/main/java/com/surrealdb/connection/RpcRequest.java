@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Khalid Alharisi
  */
 @Value
+public
 class RpcRequest {
 
     @NotNull String id;

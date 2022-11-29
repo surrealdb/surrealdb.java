@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
  * Used to store result type for deserialization, as well as a future to callback.
  */
 @Value
+public
 class RequestEntry {
 
     @NotNull String id;
