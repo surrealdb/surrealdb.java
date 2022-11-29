@@ -61,27 +61,6 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
 
     private void onClose(boolean closedByRemote) {
         this.client = new InternalWebsocketClient(settings, gson, this::onClose);
-
-        if (closedByRemote && settings.isReconnectOnUnexpectedDisconnect()) {
-            reconnect(0);
-        }
-    }
-
-    private void reconnect(int attemptCount) {
-        if (attemptCount >= settings.getMaxReconnectAttempts()) {
-            log.error("Failed to reconnect to SurrealDB server after {} attempts", attemptCount);
-            return;
-        }
-
-        int currentAttempt = attemptCount + 1;
-        log.info("Reconnecting to SurrealDB server (attempt {})", currentAttempt);
-
-        try {
-            connect(settings.getDefaultConnectTimeoutSeconds(), TimeUnit.SECONDS);
-        } catch (SurrealConnectionTimeoutException e) {
-            log.warn("Failed to reconnect to SurrealDB server (attempt {})", currentAttempt);
-            reconnect(currentAttempt);
-        }
     }
 
     private @NotNull <T> CompletableFuture<T> rpc(@NotNull String method, @Nullable Type resultType, @NotNull Object... params) {
@@ -89,7 +68,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     }
 
     @Override
-    public @NotNull CompletableFuture<Void> connectAsync(int timeout, @NotNull TimeUnit timeUnit) {
+    public @NotNull CompletableFuture<Void> connectAsync(long timeout, @NotNull TimeUnit timeUnit) {
         return client.connectAsync(timeout, timeUnit);
     }
 
@@ -324,7 +303,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
             log.debug("Incoming RPC [id: {}, method: {}, response: {}]", id, method, message);
         }
 
-        public CompletableFuture<Void> connectAsync(int timeout, @NotNull TimeUnit timeUnit) {
+        @NotNull CompletableFuture<Void> connectAsync(long timeout, @NotNull TimeUnit timeUnit) {
             return CompletableFuture.runAsync(() -> {
                 if (isOpen()) {
                     log.debug("Already connected, ignoring connect request");

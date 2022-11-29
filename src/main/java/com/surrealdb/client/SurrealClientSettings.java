@@ -26,8 +26,6 @@ import java.util.concurrent.ForkJoinPool;
  *     <li>logOutgoingRPCs: true</li>
  *     <li>logIncomingResponses: true</li>
  *     <li>logSignInCredentials: false</li>
- *     <li>auto connect: false</li>
- *     <li>defaultConnectTimeoutSeconds: 15 seconds</li>
  * </ul>
  */
 @Builder(builderClassName = "Builder", setterPrefix = "set")
@@ -70,15 +68,6 @@ public final class SurrealClientSettings {
      */
     @lombok.Builder.Default
     boolean logAuthenticationCredentials = false;
-
-    @lombok.Builder.Default
-    int defaultConnectTimeoutSeconds = 15;
-
-    @lombok.Builder.Default
-    boolean reconnectOnUnexpectedDisconnect = true;
-
-    @lombok.Builder.Default
-    int maxReconnectAttempts = 5;
 
     /**
      * The {@link ExecutorService} to use for asynchronous operations. If not provided, a

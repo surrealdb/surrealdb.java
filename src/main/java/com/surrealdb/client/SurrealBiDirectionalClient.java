@@ -14,9 +14,9 @@ public non-sealed interface SurrealBiDirectionalClient extends SurrealClient {
         return disconnectAsync();
     }
 
-    @NotNull CompletableFuture<Void> connectAsync(int timeout, @NotNull TimeUnit timeUnit);
+    @NotNull CompletableFuture<Void> connectAsync(long timeout, @NotNull TimeUnit timeUnit);
 
-    default void connect(int timeout, @NotNull TimeUnit timeUnit) {
+    default void connect(long timeout, @NotNull TimeUnit timeUnit) {
         getResultSynchronously(connectAsync(timeout, timeUnit));
     }
 

@@ -39,10 +39,11 @@ public class MaximumConfiguration {
         // or you can leave the setting unchanged to use Java's fork-join common pool.
         // All implementations of ExecutorService are supported. Benchmarking is recommended to determine
         // which implementation is best for your use case.
-        ExecutorService asyncExecutor = Executors.newSingleThreadExecutor();
+        ExecutorService asyncExecutor = Executors.newCachedThreadPool();
+
         /*
+         * ExecutorService asyncExecutor = Executors.newSingleThreadExecutor();
          * ExecutorService asyncExecutor = Executors.newFixedThreadPool(4);
-         * ExecutorService asyncExecutor = Executors.newCachedThreadPool();
          * ExecutorService asyncExecutor = Executors.newWorkStealingPool();
          */
 
@@ -61,9 +62,6 @@ public class MaximumConfiguration {
             // Enable/disable logging authentication credentials
             // Disabling this is recommended if there is a chance that logs will be exposed
             .setLogAuthenticationCredentials(false)
-            // Set the default timeout for connection attempts. This is the time to wait for a connection to be established
-            // before giving up and throwing an exception.
-            .setDefaultConnectTimeoutSeconds(15)
             // Set the executor service to use for async operations
             .setAsyncOperationExecutorService(asyncExecutor)
             .build();
