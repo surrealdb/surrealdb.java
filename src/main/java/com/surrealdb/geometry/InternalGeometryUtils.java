@@ -30,8 +30,8 @@ class InternalGeometryUtils {
         return geometryType + " " + calculateWktPointsPrimitive(pointsIterator);
     }
 
-    static @NotNull String calculateWktPoint(@NotNull String geometryType, @NotNull Point point) {
-        return geometryType + " (" + calculateWktPointPrimitive(point) + ")";
+    static @NotNull String calculateWktPoint(@NotNull Point point) {
+        return "POINT (" + calculateWktPointPrimitive(point) + ")";
     }
 
     static @NotNull String calculateWktPointsPrimitive(@NotNull Iterator<? extends Point> points) {
@@ -95,14 +95,20 @@ class InternalGeometryUtils {
     }
 
     static @NotNull Point calculateCenterOfPointsIterable(Iterable<? extends Point> iterable) {
+        return calculateCenterOfPointsIterator(iterable.iterator());
+    }
+
+    static @NotNull Point calculateCenterOfPointsIterator(Iterator<? extends Point> iterator) {
         double x = 0;
         double y = 0;
         int count = 0;
 
-        for (Point point : iterable) {
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+
             x += point.getX();
             y += point.getY();
-            count++;
+            ++count;
         }
 
         return Point.fromXY(x / count, y / count);

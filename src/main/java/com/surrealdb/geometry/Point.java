@@ -265,7 +265,7 @@ public final class Point extends GeometryPrimitive {
 
     @Override
     protected @NotNull String calculateWkt() {
-        return InternalGeometryUtils.calculateWktPoint("POINT", this);
+        return InternalGeometryUtils.calculateWktPoint(this);
     }
 
     @Override

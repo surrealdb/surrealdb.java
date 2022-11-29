@@ -6,8 +6,10 @@ import com.surrealdb.client.SurrealClientSettings;
 import com.surrealdb.client.SurrealTable;
 import com.surrealdb.exception.SurrealAuthenticationException;
 import com.surrealdb.exception.SurrealNoDatabaseSelectedException;
+import meta.model.InstantContainer;
 import meta.model.Person;
 import meta.utils.TestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -22,7 +24,7 @@ public abstract class SurrealClientSpecialOperationsTests {
 
     private SurrealClient client;
 
-    protected abstract SurrealClient createClient(SurrealClientSettings settings);
+    protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
     @BeforeEach
     public void setup() {
@@ -57,6 +59,17 @@ public abstract class SurrealClientSpecialOperationsTests {
             SurrealRootCredentials credentials = SurrealRootCredentials.from("invalid_username", "invalid_password");
             client.signIn(credentials);
         });
+    }
+
+    @Test
+    void signOut_whenCalled_signsOut() {
+        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client.signOut();
+
+        SurrealTable<InstantContainer> table = SurrealTable.of("people", InstantContainer.class);
+        InstantContainer instantContainer = InstantContainer.builder().build();
+
+        assertThrows(SurrealAuthenticationException.class, () -> client.createRecord(table, instantContainer));
     }
 
     @Test

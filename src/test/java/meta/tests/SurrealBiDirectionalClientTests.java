@@ -19,11 +19,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("unused")
 public abstract class SurrealBiDirectionalClientTests {
 
-    protected abstract @NotNull SurrealBiDirectionalClient createClient(SurrealClientSettings settings);
+    protected abstract @NotNull SurrealBiDirectionalClient createClient(@NotNull SurrealClientSettings settings);
 
     @Test
     public void testConnectSuccessfully() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
 
         assertDoesNotThrow(() -> client.connect(3, TimeUnit.SECONDS));
     }
@@ -33,7 +33,7 @@ public abstract class SurrealBiDirectionalClientTests {
         SurrealClientSettings settings = TestUtils.createClientSettingsBuilderWithDefaults()
             .setUriFromComponents(TestUtils.getProtocol(), "0.255.255.255", TestUtils.getPort())
             .build();
-        val client = createClient(settings);
+        SurrealBiDirectionalClient client = createClient(settings);
 
         assertThrows(SurrealConnectionTimeoutException.class, () -> client.connect(3, TimeUnit.SECONDS));
     }
@@ -43,7 +43,7 @@ public abstract class SurrealBiDirectionalClientTests {
         SurrealClientSettings settings = TestUtils.createClientSettingsBuilderWithDefaults()
             .setUriFromComponents(TestUtils.getProtocol(), TestUtils.getHost(), 9999)
             .build();
-        val client = createClient(settings);
+        SurrealBiDirectionalClient client = createClient(settings);
 
         assertThrows(SurrealConnectionTimeoutException.class, () -> client.connect(3, TimeUnit.SECONDS));
     }
@@ -53,21 +53,21 @@ public abstract class SurrealBiDirectionalClientTests {
         SurrealClientSettings settings = TestUtils.createClientSettingsBuilderWithDefaults()
             .setUriFromComponents(TestUtils.getProtocol(), "some_hostname", TestUtils.getPort())
             .build();
-        val client = createClient(settings);
+        SurrealBiDirectionalClient client = createClient(settings);
 
         assertThrows(SurrealConnectionTimeoutException.class, () -> client.connect(3, TimeUnit.SECONDS));
     }
 
     @Test
     public void testUserForgotToConnect() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
 
         assertThrows(SurrealNotConnectedException.class, client::ping);
     }
 
     @Test
     public void testUserConnectsThenDisconnects() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
 
         client.connect(3, TimeUnit.SECONDS);
 
@@ -82,10 +82,12 @@ public abstract class SurrealBiDirectionalClientTests {
 
     @Test
     void testConnectThenDisconnectThenConnect() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
 
         client.connect(3, TimeUnit.SECONDS);
+        assertTrue(client.isConnected());
         client.disconnect();
+        assertFalse(client.isConnected());
         client.connect(3, TimeUnit.SECONDS);
 
         assertTrue(client.isConnected());
@@ -94,7 +96,7 @@ public abstract class SurrealBiDirectionalClientTests {
 
     @Test
     void testDoubleConnect() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
 
         client.connect(3, TimeUnit.SECONDS);
 
@@ -104,7 +106,7 @@ public abstract class SurrealBiDirectionalClientTests {
 
     @Test
     void testIsConnected() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
 
         // Verify that the connection is not connected.
         assertFalse(client.isConnected());
@@ -123,10 +125,10 @@ public abstract class SurrealBiDirectionalClientTests {
     @Test
     @Timeout(value = 10_000, unit = TimeUnit.MILLISECONDS)
     void testHighVolumeConcurrentTraffic() {
-        val client = createClient(TestUtils.getClientSettings());
+        SurrealBiDirectionalClient client = createClient(TestUtils.getClientSettings());
         client.connect(3, TimeUnit.SECONDS);
 
-        val pings = IntStream.range(0, 1000)
+        CompletableFuture<?>[] pings = IntStream.range(0, 1000)
             .parallel()
             .mapToObj(i -> client.pingAsync())
             .toArray(CompletableFuture[]::new);

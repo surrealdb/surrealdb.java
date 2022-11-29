@@ -25,7 +25,7 @@ public abstract class SurrealClientGeometryTests {
 
     private SurrealClient client;
 
-    protected abstract @NotNull SurrealClient createClient(SurrealClientSettings settings);
+    protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
     @BeforeEach
     void setup() {

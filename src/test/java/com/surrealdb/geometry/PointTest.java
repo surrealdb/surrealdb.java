@@ -1,12 +1,13 @@
 package com.surrealdb.geometry;
 
-import meta.tests.GeometryTests;
 import meta.model.City;
+import meta.tests.GeometryTests;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static meta.utils.GeometryUtils.assertPointEquals;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PointTest {
 
@@ -71,7 +72,7 @@ public class PointTest {
     @Test
     void rotate_whenCalled_returnsARotatedPoint() {
         Point point = Point.fromXY(0, 0);
-        assertPointEquals(point, point.rotateDegrees(90),"Rot: 90");
+        assertPointEquals(point, point.rotateDegrees(90), "Rot: 90");
         assertPointEquals(point, point.rotateDegrees(180), "Rot: 180");
         assertPointEquals(point, point.rotateDegrees(270), "Rot: 270");
         assertPointEquals(point, point.rotateDegrees(360), "Rot: 360");
@@ -103,7 +104,7 @@ public class PointTest {
     }
 
     @Test
-    void testDistanceInMeters() {
+    void distanceInMeters_whenProvidedWithAnotherPoint_returnsTheTrueDistanceBetweenThePoints() {
         // Use https://www.omnicalculator.com/other/latitude-longitude-distance to verify the correctness of the assertions.
         Point p1 = Point.fromXY(0, 0);
         Point p2 = Point.fromXY(1, 0);
@@ -112,9 +113,13 @@ public class PointTest {
         p1 = Point.fromXY(0, 0);
         p2 = Point.fromXY(0, 1);
         assertEquals(111_195, p1.distanceInMeters(p2), 1);
+    }
 
-        p1 = Point.fromXY(96, 64);
-        p2 = Point.fromXY(48, 32);
+    @Test
+    void distanceInKilometers_whenProvidedWithAnotherPoint_returnsTheTrueDistanceBetweenThePoints() {
+        // Use https://www.omnicalculator.com/other/latitude-longitude-distance to verify the correctness of the assertions.
+        Point p1 = Point.fromXY(96, 64);
+        Point p2 = Point.fromXY(48, 32);
         assertEquals(4840, p1.distanceInKilometers(p2), 1);
     }
 

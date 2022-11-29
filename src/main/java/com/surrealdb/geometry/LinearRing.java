@@ -47,16 +47,18 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     public @NotNull LinearRing.Builder toBuilder() {
         Builder builder = new Builder();
 
-        for (int i = 0; i < pointCount - 1; i++) {
-            builder.addPoint(points.get(i));
-        }
+        iterator(false).forEachRemaining(builder::addPoint);
 
         return builder;
     }
 
     @Override
     public @NotNull Iterator<Point> iterator() {
-        return new LinearRingIterator(this);
+        return iterator(true);
+    }
+
+    public @NotNull Iterator<Point> iterator(boolean includeLastPoint) {
+        return new LinearRingIterator(this, includeLastPoint);
     }
 
     public @NotNull LinearRing translate(double x, double y) {
@@ -135,7 +137,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
             Point point1 = getPoint(i);
             Point point2 = getPoint(i + 1);
 
-            circumference += Point.distanceInKilometers(point1, point2);
+            circumference += point1.distanceInKilometers(point2);
         }
 
         return circumference;
@@ -147,20 +149,8 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
 
     @Override
     protected @NotNull Point calculateCenter() {
-        // Is there a cleaner way to do this? This is almost exactly the same
-        // as the methods in InternalGeometryUtils. The last point MUST NOT
-        // be included in the calculation, as it is the same as the first point.
-        double x = 0;
-        double y = 0;
-
-        for (int i = 0; i < pointCount - 1; i++) {
-            Point point = getPoint(i);
-
-            x += point.getX();
-            y += point.getY();
-        }
-
-        return Point.fromXY(x / (pointCount - 1), y / (pointCount - 1));
+        Iterator<Point> iteratorWithoutLastPoint = iterator(false);
+        return InternalGeometryUtils.calculateCenterOfPointsIterator(iteratorWithoutLastPoint);
     }
 
     @Override
@@ -172,16 +162,22 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
                 return false;
             }
 
-            for (int i = 0; i < pointCount; i++) {
-                if (!getPoint(i).equals(otherLinearRing.getPoint(i))) {
+            Iterator<Point> iteratorA = iterator(false);
+            Iterator<Point> iteratorB = otherLinearRing.iterator(false);
+
+            while (iteratorA.hasNext()) {
+                Point pointA = iteratorA.next();
+                Point pointB = iteratorB.next();
+
+                if (!pointA.equals(pointB)) {
                     return false;
                 }
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     @Override
@@ -199,17 +195,22 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     private static class LinearRingIterator implements Iterator<Point> {
 
         @NotNull LinearRing linearRing;
+        boolean includeLastPoint;
 
         @NonFinal
         int index = 0;
 
         @Override
         public boolean hasNext() {
-            return index < linearRing.getPointCount();
+            return index < linearRing.pointCount - (includeLastPoint ? 0 : 1);
         }
 
         @Override
         public @NotNull Point next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
             return linearRing.getPoint(index++);
         }
     }

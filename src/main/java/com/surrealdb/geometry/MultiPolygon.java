@@ -129,17 +129,17 @@ public final class MultiPolygon extends GeometryPrimitive implements Iterable<Po
 
     @Override
     protected @NotNull String calculateWkt() {
-        List<String> polygonWkts = new ArrayList<>(polygons.size());
+        List<String> polygonWKTs = new ArrayList<>(polygons.size());
 
         for (Polygon polygon : polygons) {
             List<String> wktRings = new ArrayList<>(polygon.getInteriorCount() + 1);
             wktRings.add(InternalGeometryUtils.calculateWktPointsPrimitive(polygon.getExterior().iterator()));
             polygon.interiorIterator().forEachRemaining(interior -> wktRings.add(InternalGeometryUtils.calculateWktPointsPrimitive(interior.iterator())));
 
-            polygonWkts.add("(" + String.join(", ", wktRings) + ")");
+            polygonWKTs.add("(" + String.join(", ", wktRings) + ")");
         }
 
-        return InternalGeometryUtils.calculateWktGeneric("MULTIPOLYGON", polygonWkts);
+        return InternalGeometryUtils.calculateWktGeneric("MULTIPOLYGON", polygonWKTs);
     }
 
     @Override

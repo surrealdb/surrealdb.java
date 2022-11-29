@@ -1,13 +1,16 @@
 package com.surrealdb.client;
 
 import lombok.NonNull;
-import meta.tests.*;
+import meta.tests.SurrealBiDirectionalClientTests;
+import meta.tests.SurrealClientGeometryTests;
+import meta.tests.SurrealClientGsonTests;
+import meta.tests.SurrealClientSpecialOperationsTests;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Nested;
 
 import java.util.concurrent.TimeUnit;
 
-public class WebSocketSurrealClientTest extends SurrealClientTests {
+public class WebSocketSurrealClientTest {
 
     private static @NotNull SurrealBiDirectionalClient makeClient(@NotNull SurrealClientSettings settings, boolean connect) {
         SurrealBiDirectionalClient client = SurrealWebSocketClient.create(settings);
@@ -19,17 +22,21 @@ public class WebSocketSurrealClientTest extends SurrealClientTests {
         return client;
     }
 
-    @Override
-    protected SurrealClient createClient(SurrealClientSettings settings) {
-        return makeClient(settings, true);
+    @Nested
+    class SurrealClientTests extends meta.tests.SurrealClientTests {
+
+        @Override
+        protected @NonNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
+            return makeClient(settings, true);
+        }
     }
 
     @Nested
     class GeometryTests extends SurrealClientGeometryTests {
 
         @Override
-        protected @NotNull SurrealClient createClient(SurrealClientSettings settings) {
-            return makeClient(settings, true );
+        protected @NotNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
+            return makeClient(settings, true);
         }
     }
 
@@ -37,7 +44,7 @@ public class WebSocketSurrealClientTest extends SurrealClientTests {
     class GsonTests extends SurrealClientGsonTests {
 
         @Override
-        protected @NotNull SurrealClient createClient(SurrealClientSettings settings) {
+        protected @NotNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
             return makeClient(settings, true);
         }
     }
@@ -46,7 +53,7 @@ public class WebSocketSurrealClientTest extends SurrealClientTests {
     class SpecialOperationsTests extends SurrealClientSpecialOperationsTests {
 
         @Override
-        public SurrealClient createClient(SurrealClientSettings settings) {
+        public @NonNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
             return makeClient(settings, true);
         }
     }
@@ -55,7 +62,7 @@ public class WebSocketSurrealClientTest extends SurrealClientTests {
     class BiDirectionalClientTests extends SurrealBiDirectionalClientTests {
 
         @Override
-        public @NonNull SurrealBiDirectionalClient createClient(SurrealClientSettings settings) {
+        public @NonNull SurrealBiDirectionalClient createClient(@NonNull SurrealClientSettings settings) {
             return makeClient(settings, false);
         }
     }

@@ -13,7 +13,7 @@ public class SurrealExceptionUtils {
     private static final @NotNull Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("Database record `(.+):(.+)` already exists");
 
     public static @NotNull SurrealException createExceptionFromMessage(@NotNull String message) {
-        if (message.contains("There was a problem with authentication")) {
+        if (message.contains("There was a problem with authentication") || message.contains("You don't have permission to perform this query type")) {
             return new SurrealAuthenticationException();
         }
 

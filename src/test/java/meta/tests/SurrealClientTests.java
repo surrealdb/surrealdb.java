@@ -13,6 +13,7 @@ import com.surrealdb.query.QueryResult;
 import meta.model.PartialPerson;
 import meta.model.Person;
 import meta.utils.TestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -35,7 +36,7 @@ public abstract class SurrealClientTests {
 
     private SurrealClient client;
 
-    protected abstract SurrealClient createClient(SurrealClientSettings settings);
+    protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
     @BeforeEach
     public void setup() {

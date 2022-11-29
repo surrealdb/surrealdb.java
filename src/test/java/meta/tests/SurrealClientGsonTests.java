@@ -9,6 +9,7 @@ import lombok.val;
 import meta.model.InstantContainer;
 import meta.model.Person;
 import meta.utils.TestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ public abstract class SurrealClientGsonTests {
 
     private SurrealClient client;
 
-    protected abstract SurrealClient createClient(SurrealClientSettings settings);
+    protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
     @AfterEach
     void cleanup() {
