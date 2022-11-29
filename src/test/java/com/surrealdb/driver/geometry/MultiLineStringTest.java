@@ -1,5 +1,9 @@
 package com.surrealdb.driver.geometry;
 
+import com.surrealdb.geometry.Geometry;
+import com.surrealdb.geometry.LineString;
+import com.surrealdb.geometry.MultiLineString;
+import com.surrealdb.geometry.Point;
 import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.MultiGeometryTest;
 import org.junit.jupiter.api.Nested;

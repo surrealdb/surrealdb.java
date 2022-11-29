@@ -2,8 +2,8 @@ package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.surrealdb.driver.geometry.LineString;
-import com.surrealdb.driver.geometry.Point;
+import com.surrealdb.geometry.LineString;
+import com.surrealdb.geometry.Point;
 import com.surrealdb.meta.GsonAdaptorTest;
 import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;

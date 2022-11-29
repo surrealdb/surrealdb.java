@@ -2,7 +2,7 @@ package com.surrealdb.connection.gson;
 
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.surrealdb.driver.patch.ReplacePatch;
+import com.surrealdb.patch.ReplacePatch;
 import com.surrealdb.meta.GsonAdaptorTest;
 import com.surrealdb.meta.utils.GsonTestUtils;
 import org.junit.jupiter.api.Test;

@@ -2,10 +2,9 @@ package com.surrealdb.meta.driver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.driver.SurrealDriver;
-import com.surrealdb.driver.SurrealDriverSettings;
-import com.surrealdb.driver.SurrealTable;
+import com.surrealdb.SurrealClient;
+import com.surrealdb.SurrealClientSettings;
+import com.surrealdb.SurrealTable;
 import com.surrealdb.meta.model.InstantContainer;
 import com.surrealdb.meta.model.Person;
 import com.surrealdb.meta.utils.TestUtils;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,29 +26,28 @@ public abstract class SurrealDriverGsonTests {
     private static final SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
     private static final SurrealTable<InstantContainer> timeTable = SurrealTable.of("time", InstantContainer.class);
 
-    private SurrealDriver driver;
+    private SurrealClient client;
 
-    protected abstract SurrealDriver createDriver(SurrealConnection connection, SurrealDriverSettings settings);
+    protected abstract SurrealClient createClient(SurrealClientSettings settings);
 
     @AfterEach
     void cleanup() {
-        if (driver != null) {
-            driver.deleteAllRecordsInTable(personTable);
-            driver.deleteAllRecordsInTable(timeTable);
+        if (client != null) {
+            client.deleteAllRecordsInTable(personTable);
+            client.deleteAllRecordsInTable(timeTable);
         }
     }
 
     void setupDriver(Gson gson) {
-        val connectionSettings = TestUtils.createConnectionSettingsBuilderWithDefaults()
+        SurrealClientSettings settings = TestUtils.createClientSettingsBuilderWithDefaults()
             .setGson(gson)
-            .setAutoConnect(true)
             .build();
 
-        val connection = SurrealConnection.create(connectionSettings);
+        client = createClient(settings);
 
-        driver = createDriver(connection, SurrealDriverSettings.DEFAULT);
-        driver.signIn(TestUtils.getAuthCredentials());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client.connect(5, TimeUnit.SECONDS);
+        client.signIn(TestUtils.getAuthCredentials());
+        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @Test
@@ -57,9 +56,9 @@ public abstract class SurrealDriverGsonTests {
         setupDriver(gson);
 
         val person = new Person("Contributor", "Damian", "Kocher", false);
-        assertDoesNotThrow(() -> driver.createRecord(personTable, "damian", person));
+        assertDoesNotThrow(() -> client.createRecord(personTable, "damian", person));
 
-        val optionalPersonFromDb = driver.retrieveRecord(personTable, "damian");
+        val optionalPersonFromDb = client.retrieveRecord(personTable, "damian");
         assertTrue(optionalPersonFromDb.isPresent());
         Person personFromDb = optionalPersonFromDb.get();
 
@@ -75,9 +74,9 @@ public abstract class SurrealDriverGsonTests {
         setupDriver(gson);
 
         val person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
-        assertDoesNotThrow(() -> driver.createRecord(personTable, "prince", person));
+        assertDoesNotThrow(() -> client.createRecord(personTable, "prince", person));
 
-        val deserializedPerson = driver.retrieveRecord(personTable, "prince");
+        val deserializedPerson = client.retrieveRecord(personTable, "prince");
         assertTrue(deserializedPerson.isPresent());
         // Since person.Name overrides equals, we can use assertEquals
         assertEquals(person.getName(), deserializedPerson.get().getName());
@@ -94,7 +93,7 @@ public abstract class SurrealDriverGsonTests {
             .instant(now)
             .instant(oneDayFromNow)
             .build();
-        val deserializedDateContainer = driver.createRecord(timeTable, instantContainer);
+        val deserializedDateContainer = client.createRecord(timeTable, instantContainer);
 
         assertEquals(instantContainer, deserializedDateContainer);
     }

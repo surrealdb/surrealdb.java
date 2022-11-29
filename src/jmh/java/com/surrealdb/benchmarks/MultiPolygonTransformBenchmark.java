@@ -1,9 +1,9 @@
 package com.surrealdb.benchmarks;
 
-import com.surrealdb.driver.geometry.LinearRing;
-import com.surrealdb.driver.geometry.MultiPolygon;
-import com.surrealdb.driver.geometry.Point;
-import com.surrealdb.driver.geometry.Polygon;
+import com.surrealdb.geometry.LinearRing;
+import com.surrealdb.geometry.MultiPolygon;
+import com.surrealdb.geometry.Point;
+import com.surrealdb.geometry.Polygon;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 

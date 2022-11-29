@@ -1,7 +1,7 @@
 package com.surrealdb;
 
-import com.surrealdb.connection.exception.SurrealException;
-import com.surrealdb.driver.sql.QueryResult;
+import com.surrealdb.exception.SurrealException;
+import com.surrealdb.sql.QueryResult;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 

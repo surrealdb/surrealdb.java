@@ -1,5 +1,7 @@
 package com.surrealdb.driver.geometry;
 
+import com.surrealdb.geometry.Geometry;
+import com.surrealdb.geometry.Point;
 import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.model.City;
 import org.junit.jupiter.api.Nested;

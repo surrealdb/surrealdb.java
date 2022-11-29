@@ -2,41 +2,51 @@ package com.surrealdb.examples;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.connection.SurrealConnectionProtocol;
-import com.surrealdb.connection.SurrealConnectionSettings;
-import com.surrealdb.driver.SurrealDriver;
-import com.surrealdb.driver.SurrealDriverSettings;
+import com.surrealdb.BiDirectionalSurrealClient;
+import com.surrealdb.SurrealClientSettings;
+import com.surrealdb.SurrealConnectionProtocol;
+import com.surrealdb.WebSocketSurrealClient;
 
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MaximumConfiguration {
 
     public static void main(String[] args) {
-        SurrealConnectionSettings connectionSettings = createConnectionSettings();
-        SurrealConnection connection = SurrealConnection.create(connectionSettings);
+        SurrealClientSettings settings = createClientSettings();
+        BiDirectionalSurrealClient client = WebSocketSurrealClient.create(settings);
 
-        SurrealDriverSettings driverSettings = createDriverSettings();
-        SurrealDriver driver = SurrealDriver.create(connection, driverSettings);
+        client.connect(5, TimeUnit.SECONDS);
 
         // ... insert business logic here ...
 
-        // Disconnect to shut down the connection thread
-        connection.disconnect();
+        // Disconnect to shut down the client thread
+        client.disconnect();
         // Shut down the executor service to prevent the program from hanging
         // This is only needed if you are using a custom executor service with without daemon threads
-        driver.getAsyncOperationExecutorService().shutdown();
+        client.getAsyncOperationExecutorService().shutdown();
     }
 
-    private static SurrealConnectionSettings createConnectionSettings() {
+    private static SurrealClientSettings createClientSettings() {
         // Provide your own Gson instance to customize the serialization of your data
         Gson gson = new GsonBuilder()
             // Register your custom type adapters here
             .create();
 
-        return SurrealConnectionSettings.builder()
+        // Drivers use executor services to run async tasks. You can provide your own executor service,
+        // or you can leave the setting unchanged to use Java's fork-join common pool.
+        // All implementations of ExecutorService are supported. Benchmarking is recommended to determine
+        // which implementation is best for your use case.
+        ExecutorService asyncExecutor = Executors.newSingleThreadExecutor();
+        /*
+         * ExecutorService asyncExecutor = Executors.newFixedThreadPool(4);
+         * ExecutorService asyncExecutor = Executors.newCachedThreadPool();
+         * ExecutorService asyncExecutor = Executors.newWorkStealingPool();
+         */
+
+        return SurrealClientSettings.builder()
             // Conveniently specify the host, and port to connect to, along with the protocol to use
             // This example will evaluate to "ws://localhost:8000/rpc"
             .setUriFromComponents(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000)
@@ -54,25 +64,7 @@ public class MaximumConfiguration {
             // Set the default timeout for connection attempts. This is the time to wait for a connection to be established
             // before giving up and throwing an exception.
             .setDefaultConnectTimeoutSeconds(15)
-            // If enabled, the SurrealConnection will automatically connect to the server when it's created.
-            // If disabled, you will need to call connect() manually.
-            .setAutoConnect(true)
-            .build();
-    }
-
-    private static SurrealDriverSettings createDriverSettings() {
-        // Drivers use executor services to run async tasks. You can provide your own executor service,
-        // or you can leave the setting unchanged to use Java's fork-join common pool.
-        // All implementations of ExecutorService are supported. Benchmarking is recommended to determine
-        // which implementation is best for your use case.
-        ExecutorService asyncExecutor = Executors.newSingleThreadExecutor();
-        /*
-         * ExecutorService asyncExecutor = Executors.newFixedThreadPool(4);
-         * ExecutorService asyncExecutor = Executors.newCachedThreadPool();
-         * ExecutorService asyncExecutor = Executors.newWorkStealingPool();
-         */
-
-        return SurrealDriverSettings.builder()
+            // Set the executor service to use for async operations
             .setAsyncOperationExecutorService(asyncExecutor)
             .build();
     }

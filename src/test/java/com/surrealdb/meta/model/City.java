@@ -1,7 +1,7 @@
 package com.surrealdb.meta.model;
 
 import com.google.common.collect.ImmutableList;
-import com.surrealdb.driver.geometry.Point;
+import com.surrealdb.geometry.Point;
 import lombok.Value;
 
 @Value

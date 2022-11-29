@@ -1,8 +1,8 @@
 package com.surrealdb.meta.utils;
 
-import com.surrealdb.driver.geometry.LinearRing;
-import com.surrealdb.driver.geometry.Point;
-import com.surrealdb.driver.geometry.Polygon;
+import com.surrealdb.geometry.LinearRing;
+import com.surrealdb.geometry.Point;
+import com.surrealdb.geometry.Polygon;
 import lombok.experimental.UtilityClass;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

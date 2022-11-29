@@ -3,15 +3,12 @@ package com.surrealdb;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import com.surrealdb.connection.RequestEntry;
-import com.surrealdb.connection.RpcRequest;
-import com.surrealdb.connection.RpcResponse;
-import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
-import com.surrealdb.connection.exception.SurrealException;
-import com.surrealdb.connection.exception.SurrealExceptionUtils;
-import com.surrealdb.connection.exception.SurrealNotConnectedException;
-import com.surrealdb.driver.auth.SurrealAuthCredentials;
-import com.surrealdb.driver.sql.QueryResult;
+import com.surrealdb.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.exception.SurrealException;
+import com.surrealdb.exception.SurrealExceptionUtils;
+import com.surrealdb.exception.SurrealNotConnectedException;
+import com.surrealdb.auth.SurrealAuthCredentials;
+import com.surrealdb.sql.QueryResult;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
@@ -33,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-import static com.surrealdb.connection.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
+import static com.surrealdb.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
 
 @Slf4j
 public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
@@ -53,6 +50,13 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
 
     public static @NotNull WebSocketSurrealClient create(@NotNull SurrealClientSettings settings) {
         return new WebSocketSurrealClient(settings);
+    }
+
+    public static @NotNull WebSocketSurrealClient create(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
+        SurrealClientSettings settings = SurrealClientSettings.builder()
+            .setUriFromComponents(protocol, host, port)
+            .build();
+        return create(settings);
     }
 
     private void onClose(boolean closedByRemote) {
@@ -91,7 +95,7 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
 
     @Override
     public @NotNull CompletableFuture<Void> signInAsync(@NotNull SurrealAuthCredentials credentials) {
-        return rpc("signIn", null, credentials);
+        return rpc("signin", null, credentials);
     }
 
     @Override
@@ -106,7 +110,7 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
 
     @Override
     public @NotNull CompletableFuture<Void> useAsync(@NotNull String namespace, @NotNull String database) {
-        return null;
+        return rpc("use", null, namespace, database);
     }
 
     @Override
@@ -116,12 +120,12 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
 
     @Override
     public @NotNull CompletableFuture<Void> setConnectionWideParameterAsync(@NotNull String key, @NotNull Object value) {
-        return null;
+        return rpc("let", null, key, value);
     }
 
     @Override
     public @NotNull CompletableFuture<Void> unsetConnectionWideParameterAsync(@NotNull String key) {
-        return null;
+        return rpc("unset", null, key);
     }
 
     @Override

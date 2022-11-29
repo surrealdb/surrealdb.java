@@ -1,5 +1,8 @@
 package com.surrealdb.driver.geometry;
 
+import com.surrealdb.geometry.Geometry;
+import com.surrealdb.geometry.MultiPolygon;
+import com.surrealdb.geometry.Polygon;
 import com.surrealdb.meta.GeometryTests;
 import com.surrealdb.meta.MultiGeometryTest;
 import com.surrealdb.meta.utils.GeometryUtils;

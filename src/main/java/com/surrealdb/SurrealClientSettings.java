@@ -2,7 +2,6 @@ package com.surrealdb;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.connection.SurrealConnectionProtocol;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
@@ -40,7 +39,7 @@ public final class SurrealClientSettings {
      * A connection settings instance set to connect to a local SurrealDB server using the default
      * port (8000).
      */
-    public static final SurrealClientSettings LOCAL_DEFAULT = SurrealClientSettings.builder().build();
+    public static final SurrealClientSettings WEBSOCKET_LOCAL_DEFAULT = SurrealClientSettings.builder().build();
 
     @lombok.Builder.Default
     @NotNull URI uri = createURI(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000);
@@ -71,9 +70,6 @@ public final class SurrealClientSettings {
      */
     @lombok.Builder.Default
     boolean logAuthenticationCredentials = false;
-
-    @lombok.Builder.Default
-    boolean autoConnect = false;
 
     @lombok.Builder.Default
     int defaultConnectTimeoutSeconds = 15;

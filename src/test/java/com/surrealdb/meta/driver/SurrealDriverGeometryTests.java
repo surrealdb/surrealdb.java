@@ -1,20 +1,21 @@
 package com.surrealdb.meta.driver;
 
 import com.google.common.collect.ImmutableMap;
-import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.driver.SurrealDriver;
-import com.surrealdb.driver.SurrealDriverSettings;
-import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.geometry.LinearRing;
-import com.surrealdb.driver.geometry.Polygon;
+import com.surrealdb.SurrealClient;
+import com.surrealdb.SurrealClientSettings;
+import com.surrealdb.SurrealTable;
+import com.surrealdb.geometry.LinearRing;
+import com.surrealdb.geometry.Polygon;
 import com.surrealdb.meta.model.City;
 import com.surrealdb.meta.utils.TestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,29 +24,27 @@ public abstract class SurrealDriverGeometryTests {
 
     private static final SurrealTable<City> citiesTable = SurrealTable.of("cities", City.class);
 
-    private SurrealConnection connection;
-    private SurrealDriver driver;
+    private SurrealClient client;
 
-    protected abstract SurrealDriver createDriver(SurrealConnection connection, SurrealDriverSettings settings);
+    protected abstract @NotNull SurrealClient createClient(SurrealClientSettings settings);
 
     @BeforeEach
     void setup() {
-        connection = SurrealConnection.create(TestUtils.getConnectionSettings());
-        connection.connect(3);
-        driver = createDriver(connection, SurrealDriverSettings.DEFAULT);
-        driver.signIn(TestUtils.getAuthCredentials());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client = createClient(TestUtils.getClientSettings());
+        client.connect(3, TimeUnit.SECONDS);
+        client.signIn(TestUtils.getAuthCredentials());
+        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
         CompletableFuture<?>[] cityCreationFutures = City.allCityCenters().stream()
-            .map((city) -> driver.createRecordAsync(citiesTable, city))
+            .map((city) -> client.createRecordAsync(citiesTable, city))
             .toArray(CompletableFuture[]::new);
         CompletableFuture.allOf(cityCreationFutures).join();
     }
 
     @AfterEach
     void cleanup() {
-        driver.deleteAllRecordsInTable(citiesTable);
-        connection.disconnect();
+        client.deleteAllRecordsInTable(citiesTable);
+        client.disconnect();
     }
 
     @Test
@@ -62,7 +61,7 @@ public abstract class SurrealDriverGeometryTests {
 
         ImmutableMap<String, Object> args = ImmutableMap.of("selection", selection);
         String query = "SELECT * FROM cities WHERE location INSIDE $selection";
-        List<City> cities = driver.sqlFirst(query, City.class, args);
+        List<City> cities = client.sqlFirst(query, City.class, args);
 
         assertEquals(2, cities.size());
 

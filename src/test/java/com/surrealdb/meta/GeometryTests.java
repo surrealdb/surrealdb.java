@@ -1,6 +1,6 @@
 package com.surrealdb.meta;
 
-import com.surrealdb.driver.geometry.Geometry;
+import com.surrealdb.geometry.Geometry;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

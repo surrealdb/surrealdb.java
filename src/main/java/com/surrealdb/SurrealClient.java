@@ -2,10 +2,9 @@ package com.surrealdb;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import com.surrealdb.driver.SurrealTable;
-import com.surrealdb.driver.auth.SurrealAuthCredentials;
-import com.surrealdb.driver.patch.Patch;
-import com.surrealdb.driver.sql.QueryResult;
+import com.surrealdb.auth.SurrealAuthCredentials;
+import com.surrealdb.patch.Patch;
+import com.surrealdb.sql.QueryResult;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

@@ -1,6 +1,9 @@
 package com.surrealdb.driver.geometry;
 
 import com.google.common.collect.ImmutableList;
+import com.surrealdb.geometry.Geometry;
+import com.surrealdb.geometry.LineString;
+import com.surrealdb.geometry.Point;
 import com.surrealdb.meta.GeometryTests;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

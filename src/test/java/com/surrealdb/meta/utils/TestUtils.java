@@ -1,9 +1,9 @@
 package com.surrealdb.meta.utils;
 
-import com.surrealdb.connection.SurrealConnectionProtocol;
-import com.surrealdb.connection.SurrealConnectionSettings;
-import com.surrealdb.driver.auth.SurrealAuthCredentials;
-import com.surrealdb.driver.auth.SurrealRootCredentials;
+import com.surrealdb.SurrealClientSettings;
+import com.surrealdb.SurrealConnectionProtocol;
+import com.surrealdb.auth.SurrealAuthCredentials;
+import com.surrealdb.auth.SurrealRootCredentials;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -21,13 +21,14 @@ public class TestUtils {
     private static final String NAMESPACE = System.getenv("TEST_SURREAL_NAMESPACE");
     private static final String DATABASE = System.getenv("TEST_SURREAL_DATABASE");
 
-    public static SurrealConnectionSettings.Builder createConnectionSettingsBuilderWithDefaults() {
-        return SurrealConnectionSettings.builder()
-            .setUriFromComponents(getProtocol(), HOST, PORT);
+    public static SurrealClientSettings.Builder createClientSettingsBuilderWithDefaults() {
+        SurrealClientSettings.Builder builder = SurrealClientSettings.builder();
+        builder.setUriFromComponents(getProtocol(), HOST, PORT);
+        return builder;
     }
 
-    public static SurrealConnectionSettings getConnectionSettings() {
-        return createConnectionSettingsBuilderWithDefaults().build();
+    public static SurrealClientSettings getClientSettings() {
+        return createClientSettingsBuilderWithDefaults().build();
     }
 
     public static SurrealConnectionProtocol getProtocol() {
