@@ -74,6 +74,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
     public @NotNull LinearRing rotateDegrees(@NotNull Point origin, double degrees) {
         return transform(point -> point.rotateDegrees(origin, degrees));
     }
+
     public @NotNull LinearRing rotateDegrees(double degrees) {
         return rotateDegrees(getCenter(), degrees);
     }
@@ -123,7 +124,7 @@ public final class LinearRing extends GeometryPrimitive implements Iterable<Poin
         return points.get(index);
     }
 
-    public @NotNull LineString toLineString () {
+    public @NotNull LineString toLineString() {
         return LineString.from(points);
     }
 

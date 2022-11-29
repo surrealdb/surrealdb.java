@@ -1,4 +1,4 @@
-package com.surrealdb.sql;
+package com.surrealdb.query;
 
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;

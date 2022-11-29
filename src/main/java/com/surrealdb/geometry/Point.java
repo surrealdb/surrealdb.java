@@ -99,6 +99,14 @@ public final class Point extends GeometryPrimitive {
         throw new IllegalArgumentException("Invalid character in geo hash: " + character);
     }
 
+    public static double distanceInKilometers(@NotNull Point point1, @NotNull Point point2) {
+        return point1.distanceInKilometers(point2);
+    }
+
+    public static double distanceInMeters(Point point1, Point point2) {
+        return point1.distanceInMeters(point2);
+    }
+
     /**
      * @param newX The newX of the new point
      * @return A new point with the same latitude as this point, but with the provided newX.
@@ -154,14 +162,6 @@ public final class Point extends GeometryPrimitive {
         }
 
         throw new IllegalArgumentException("Invalid value in geo hash: " + value);
-    }
-
-    public static double distanceInKilometers(@NotNull Point point1, @NotNull Point point2) {
-        return point1.distanceInKilometers(point2);
-    }
-
-    public static double distanceInMeters(Point point1, Point point2) {
-        return point1.distanceInMeters(point2);
     }
 
     public double distanceInKilometers(@NotNull Point other) {

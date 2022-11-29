@@ -2,19 +2,18 @@ package meta.tests;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.SurrealClient;
-import com.surrealdb.SurrealClientSettings;
-import com.surrealdb.SurrealTable;
+import com.surrealdb.client.SurrealClient;
+import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.SurrealTable;
+import lombok.val;
 import meta.model.InstantContainer;
 import meta.model.Person;
 import meta.utils.TestUtils;
-import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +34,8 @@ public abstract class SurrealClientGsonTests {
         if (client != null) {
             client.deleteAllRecordsInTable(personTable);
             client.deleteAllRecordsInTable(timeTable);
+
+            client.cleanup();
         }
     }
 
@@ -45,7 +46,6 @@ public abstract class SurrealClientGsonTests {
 
         client = createClient(settings);
 
-        client.connect(5, TimeUnit.SECONDS);
         client.signIn(TestUtils.getAuthCredentials());
         client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }

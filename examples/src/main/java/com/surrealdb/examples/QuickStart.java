@@ -1,8 +1,11 @@
 package com.surrealdb.examples;
 
-import com.surrealdb.*;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.auth.SurrealRootCredentials;
+import com.surrealdb.client.SurrealBiDirectionalClient;
+import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.SurrealTable;
+import com.surrealdb.client.SurrealWebSocketClient;
 import com.surrealdb.examples.models.Person;
 import com.surrealdb.exception.SurrealRecordAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,7 @@ public class QuickStart {
 
     public static void main(String[] args) {
         // Create a client with the minimal amount of configuration
-        BiDirectionalSurrealClient client = WebSocketSurrealClient.create(SurrealClientSettings.WEBSOCKET_LOCAL_DEFAULT);
+        SurrealBiDirectionalClient client = SurrealWebSocketClient.create(SurrealClientSettings.WEBSOCKET_LOCAL_DEFAULT);
 
         // Connect to the server. An exception will be thrown if it takes longer than 5 seconds to connect
         client.connect(5, TimeUnit.SECONDS);

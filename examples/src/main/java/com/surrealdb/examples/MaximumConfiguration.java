@@ -2,10 +2,10 @@ package com.surrealdb.examples;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.BiDirectionalSurrealClient;
-import com.surrealdb.SurrealClientSettings;
-import com.surrealdb.SurrealConnectionProtocol;
-import com.surrealdb.WebSocketSurrealClient;
+import com.surrealdb.client.SurrealBiDirectionalClient;
+import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.SurrealConnectionProtocol;
+import com.surrealdb.client.SurrealWebSocketClient;
 
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +16,7 @@ public class MaximumConfiguration {
 
     public static void main(String[] args) {
         SurrealClientSettings settings = createClientSettings();
-        BiDirectionalSurrealClient client = WebSocketSurrealClient.create(settings);
+        SurrealBiDirectionalClient client = SurrealWebSocketClient.create(settings);
 
         client.connect(5, TimeUnit.SECONDS);
 

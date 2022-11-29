@@ -1,4 +1,4 @@
-package com.surrealdb;
+package com.surrealdb.client;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -45,7 +45,7 @@ public final class SurrealTable<T> {
     }
 
 
-    public @NotNull String makeThing(@NotNull String record) {
+    @NotNull String makeThing(@NotNull String record) {
         return name + ":" + record;
     }
 

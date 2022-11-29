@@ -1,10 +1,10 @@
-package com.surrealdb;
+package com.surrealdb.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.patch.Patch;
-import com.surrealdb.sql.QueryResult;
+import com.surrealdb.query.QueryResult;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -12,16 +12,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
-import static com.surrealdb.InternalClientUtils.getResultSynchronously;
+import static com.surrealdb.client.InternalClientUtils.getResultSynchronously;
 
-public sealed interface SurrealClient permits BiDirectionalSurrealClient, UniDirectionalSurrealClient {
+public sealed interface SurrealClient permits SurrealBiDirectionalClient, SurrealUniDirectionalClient {
 
-    @NotNull CompletableFuture<Void> connectAsync(int timeout, @NotNull TimeUnit timeUnit);
+    @NotNull CompletableFuture<Void> cleanupAsync();
 
-    default void connect(int timeout, @NotNull TimeUnit timeUnit) {
-        getResultSynchronously(connectAsync(timeout, timeUnit));
+    default void cleanup() {
+        getResultSynchronously(cleanupAsync());
     }
 
     @NotNull CompletableFuture<Void> signInAsync(@NotNull SurrealAuthCredentials credentials);
@@ -34,12 +33,6 @@ public sealed interface SurrealClient permits BiDirectionalSurrealClient, UniDir
 
     default void signOut() {
         getResultSynchronously(signOutAsync());
-    }
-
-    @NotNull CompletableFuture<Void> disconnectAsync();
-
-    default void disconnect() {
-        getResultSynchronously(disconnectAsync());
     }
 
     @NotNull CompletableFuture<Void> useAsync(@NotNull String namespace, @NotNull String database);

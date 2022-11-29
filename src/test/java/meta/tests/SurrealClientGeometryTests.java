@@ -1,9 +1,9 @@
 package meta.tests;
 
 import com.google.common.collect.ImmutableMap;
-import com.surrealdb.SurrealClient;
-import com.surrealdb.SurrealClientSettings;
-import com.surrealdb.SurrealTable;
+import com.surrealdb.client.SurrealClient;
+import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.SurrealTable;
 import com.surrealdb.geometry.LinearRing;
 import com.surrealdb.geometry.Polygon;
 import meta.model.City;
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,7 +30,6 @@ public abstract class SurrealClientGeometryTests {
     @BeforeEach
     void setup() {
         client = createClient(TestUtils.getClientSettings());
-        client.connect(3, TimeUnit.SECONDS);
         client.signIn(TestUtils.getAuthCredentials());
         client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
@@ -44,7 +42,6 @@ public abstract class SurrealClientGeometryTests {
     @AfterEach
     void cleanup() {
         client.deleteAllRecordsInTable(citiesTable);
-        client.disconnect();
     }
 
     @Test

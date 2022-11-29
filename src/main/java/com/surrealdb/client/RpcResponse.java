@@ -1,4 +1,4 @@
-package com.surrealdb;
+package com.surrealdb.client;
 
 import com.google.gson.JsonElement;
 import lombok.Value;
@@ -13,7 +13,6 @@ import java.util.Optional;
  * @author Khalid Alharisi
  */
 @Value
-public
 class RpcResponse {
 
     @NotNull String id;
@@ -28,7 +27,7 @@ class RpcResponse {
      * An internal representation of an RPC error.
      */
     @Value
-    public static class Error {
+    static class Error {
         int code;
         @NotNull String message;
     }

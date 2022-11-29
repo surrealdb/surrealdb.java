@@ -1,4 +1,4 @@
-package com.surrealdb;
+package com.surrealdb.client;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

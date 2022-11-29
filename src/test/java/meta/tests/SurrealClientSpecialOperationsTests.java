@@ -1,9 +1,9 @@
 package meta.tests;
 
-import com.surrealdb.SurrealClient;
-import com.surrealdb.SurrealClientSettings;
-import com.surrealdb.SurrealTable;
 import com.surrealdb.auth.SurrealRootCredentials;
+import com.surrealdb.client.SurrealClient;
+import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.SurrealTable;
 import com.surrealdb.exception.SurrealAuthenticationException;
 import com.surrealdb.exception.SurrealNoDatabaseSelectedException;
 import meta.model.Person;
@@ -12,8 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,12 +27,11 @@ public abstract class SurrealClientSpecialOperationsTests {
     @BeforeEach
     public void setup() {
         client = createClient(TestUtils.getClientSettings());
-        client.connect(3, TimeUnit.SECONDS);
     }
 
     @AfterEach
     public void teardown() {
-        client.disconnect();
+        client.cleanup();
     }
 
     @Test

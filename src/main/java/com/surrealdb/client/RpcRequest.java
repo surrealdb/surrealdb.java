@@ -1,4 +1,4 @@
-package com.surrealdb;
+package com.surrealdb.client;
 
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
  * @author Khalid Alharisi
  */
 @Value
-public
 class RpcRequest {
 
     @NotNull String id;

@@ -1,7 +1,7 @@
 package meta.utils;
 
-import com.surrealdb.SurrealClientSettings;
-import com.surrealdb.SurrealConnectionProtocol;
+import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.SurrealConnectionProtocol;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.auth.SurrealRootCredentials;
 import lombok.experimental.UtilityClass;

@@ -1,14 +1,14 @@
-package com.surrealdb;
+package com.surrealdb.client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.exception.SurrealException;
 import com.surrealdb.exception.SurrealExceptionUtils;
 import com.surrealdb.exception.SurrealNotConnectedException;
-import com.surrealdb.auth.SurrealAuthCredentials;
-import com.surrealdb.sql.QueryResult;
+import com.surrealdb.query.QueryResult;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 import static com.surrealdb.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
 
 @Slf4j
-public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
+public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
 
     @NotNull SurrealClientSettings settings;
     @NotNull Gson gson;
@@ -41,18 +41,18 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
     @NonFinal
     @NotNull InternalWebsocketClient client;
 
-    private WebSocketSurrealClient(@NotNull SurrealClientSettings settings) {
+    private SurrealWebSocketClient(@NotNull SurrealClientSettings settings) {
         this.settings = settings;
 
         this.gson = makeGsonInstanceSurrealCompatible(settings.getGson());
         this.client = new InternalWebsocketClient(settings, gson, this::onClose);
     }
 
-    public static @NotNull WebSocketSurrealClient create(@NotNull SurrealClientSettings settings) {
-        return new WebSocketSurrealClient(settings);
+    public static @NotNull SurrealWebSocketClient create(@NotNull SurrealClientSettings settings) {
+        return new SurrealWebSocketClient(settings);
     }
 
-    public static @NotNull WebSocketSurrealClient create(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
+    public static @NotNull SurrealWebSocketClient create(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
         SurrealClientSettings settings = SurrealClientSettings.builder()
             .setUriFromComponents(protocol, host, port)
             .build();
@@ -106,6 +106,11 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
     @Override
     public @NotNull CompletableFuture<Void> disconnectAsync() {
         return client.disconnectAsync();
+    }
+
+    @Override
+    public boolean isConnected() {
+        return client.isOpen();
     }
 
     @Override
@@ -321,7 +326,7 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
 
         public CompletableFuture<Void> connectAsync(int timeout, @NotNull TimeUnit timeUnit) {
             return CompletableFuture.runAsync(() -> {
-                if (isConnected()) {
+                if (isOpen()) {
                     log.debug("Already connected, ignoring connect request");
                     return;
                 }
@@ -333,7 +338,7 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
                     throw new SurrealConnectionTimeoutException();
                 }
 
-                if (!isConnected()) {
+                if (!isOpen()) {
                     throw new SurrealConnectionTimeoutException();
                 }
             }, executorService);
@@ -348,10 +353,6 @@ public class WebSocketSurrealClient implements BiDirectionalSurrealClient {
                     throw new RuntimeException(e);
                 }
             }, executorService);
-        }
-
-        public boolean isConnected() {
-            return isOpen();
         }
 
         @Override
