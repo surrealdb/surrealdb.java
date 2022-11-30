@@ -6,7 +6,7 @@ The official SurrealDB library for Java.
 
 ### Features
 - Sync & Async driver implementations available.
-- Complex JSON serialization & deserialization to Java classes.
+- Complex JSON serialization & deserialization to and from Java objects.
 - Simple API for CRUD operations.
 - Fluent API for building queries. (_Coming soon_)
 
@@ -16,6 +16,7 @@ The official SurrealDB library for Java.
 - [X] Querying via SurrealQL
 - [ ] Querying via Fluent API
 - [ ] Live queries (when SurrealDB re-enables it)
+- [X] Geometry support (GeoJSON)
 
 ### Installation
 - For now, you can grab the JAR from the releases page [here](https://github.com/surrealdb/surrealdb.java/releases).
@@ -44,22 +45,20 @@ Maven:
 public class QuickStart {
 
     public static void main(String[] args) {
-        // Create a connection with the minimal amount of configuration
-        SurrealConnection connection = SurrealConnection.create(SurrealConnectionProtocol.WEB_SOCKET, "localhost", 8000);
-        // If the connection is not established within 15 seconds, an exception will be thrown.
-        connection.connect(15);
+        // Create a client with the minimal amount of configuration
+        SurrealBiDirectionalClient client = SurrealWebSocketClient.create(SurrealClientSettings.WEBSOCKET_LOCAL_DEFAULT);
 
-        // Create a synchronous driver without any driver settings
-        SurrealDriver driver = SurrealDriver.create(connection);
+        // Connect to the server. An exception will be thrown if it takes longer than 5 seconds to connect
+        client.connect(5, TimeUnit.SECONDS);
 
         // Sign in with the user 'root' and the password 'root'
         SurrealAuthCredentials credentials = SurrealRootCredentials.from("root", "root");
 
         // Sign in with the newly created credentials
-        driver.signIn(credentials);
+        client.signIn(credentials);
 
         // Use the namespace 'examples' and the database 'quickstart'
-        driver.use("examples", "quickstart");
+        client.setNamespaceAndDatabase("examples", "quickstart");
 
         // Create a reference to the "person" table
         // note: Creating a table reference has no effect on the database.
@@ -75,8 +74,8 @@ public class QuickStart {
 
         try {
             // Save the person to the database
-            System.out.println("Saving person to database...");
-            driver.createRecord(personTable, "tobie", tobie);
+            log.info("Saving person to the database...");
+            client.createRecord(personTable, "tobie", tobie);
         } catch (SurrealRecordAlreadyExistsException e) {
             // This exception will be thrown if the record already exists
             // in the database. In this case, we will just update the record
@@ -84,24 +83,24 @@ public class QuickStart {
 
             // Try running the program twice to see this behavior in action
 
-            System.out.println("Record already exists, updating instead...");
-            driver.updateRecord(personTable, "tobie", tobie);
+            log.info("Record already exists, updating instead...");
+            client.updateRecord(personTable, "tobie", tobie);
         }
 
         // Retrieve the person from the database
         // note: Retrieving a record from the DB returns an Optional. This is to
         //       make it almost impossible to throw a null pointer exception.
-        Optional<Person> retrievedTobie = driver.retrieveRecord(personTable, "tobie");
+        Optional<Person> retrievedTobie = client.retrieveRecord(personTable, "tobie");
 
         // Print the retrieved person
         retrievedTobie.ifPresentOrElse(
-            person -> System.out.println("Retrieved person: " + person),
-            () -> System.err.println("Failed to retrieve person")
+            person -> log.info("Retrieved person: {}", person),
+            () -> log.error("Failed to retrieve person")
         );
 
         // Disconnect from the database. This is required in order to exit since
         // the connection is running in a separate thread.
-        connection.disconnect();
+        client.disconnect();
     }
 }
 

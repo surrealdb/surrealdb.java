@@ -22,7 +22,7 @@ class RequestEntry {
     @NotNull String method;
     @Nullable Type resultType;
 
-    public @NotNull Optional<Type> getResultType() {
+    @NotNull Optional<Type> getResultType() {
         return Optional.ofNullable(resultType);
     }
 }

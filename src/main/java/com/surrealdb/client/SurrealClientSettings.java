@@ -12,10 +12,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * A container for all the settings {@link SurrealClient} needs to connect to a SurrealDB server.
- * Since this class is immutable, it's safe to share it between multiple threads.
+ * A class that holds all settings needed to configure a {@link SurrealClient}. It's important to note that the
+ * {@code ExecutorService} used for async operations is not immutable, so shutting it down will affect all
+ * {@link SurrealClient} instances that use it.
  * <p>
- * Use {@code SurrealClientSettings.builder()} to create a new instance.
+ * Use {@link  SurrealClientSettings#builder()} to create a new instance.
  * If the builder is not configured, it will use the default values.
  * Default values are:
  * <ul>
@@ -26,6 +27,7 @@ import java.util.concurrent.ForkJoinPool;
  *     <li>logOutgoingRPCs: true</li>
  *     <li>logIncomingResponses: true</li>
  *     <li>logSignInCredentials: false</li>
+ *     <li>Async Operation Executor Service: ForkJoin Common Pool</li>
  * </ul>
  */
 @Builder(builderClassName = "Builder", setterPrefix = "set")

@@ -44,7 +44,6 @@ public final class SurrealTable<T> {
         return new SurrealTable<>(name, type);
     }
 
-
     @NotNull String makeThing(@NotNull String record) {
         return name + ":" + record;
     }

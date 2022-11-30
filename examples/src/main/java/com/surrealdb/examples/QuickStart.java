@@ -30,7 +30,7 @@ public class QuickStart {
         client.signIn(credentials);
 
         // Use the namespace 'examples' and the database 'quickstart'
-        client.use("examples", "quickstart");
+        client.setNamespaceAndDatabase("examples", "quickstart");
 
         // Create a reference to the "person" table
         // note: Creating a table reference has no effect on the database.

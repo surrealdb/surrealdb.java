@@ -8,6 +8,16 @@ import org.jetbrains.annotations.NotNull;
 public enum SurrealConnectionProtocol {
 
     /**
+     * HTTP is not supported yet.
+     */
+    HTTP("http"),
+
+    /**
+     * HTTPS is not supported yet.
+     */
+    HTTPS("https"),
+
+    /**
      * WebSocket without encryption. Uses <b>ws://</b> as the protocol scheme.
      */
     WEB_SOCKET("ws"),

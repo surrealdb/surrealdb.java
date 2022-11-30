@@ -31,7 +31,7 @@ public abstract class SurrealClientGeometryTests {
     void setup() {
         client = createClient(TestUtils.getClientSettings());
         client.signIn(TestUtils.getAuthCredentials());
-        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
 
         CompletableFuture<?>[] cityCreationFutures = City.allCityCenters().stream()
             .map((city) -> client.createRecordAsync(citiesTable, city))

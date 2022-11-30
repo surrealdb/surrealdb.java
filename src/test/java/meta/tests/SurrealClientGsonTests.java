@@ -48,7 +48,7 @@ public abstract class SurrealClientGsonTests {
         client = createClient(settings);
 
         client.signIn(TestUtils.getAuthCredentials());
-        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @Test

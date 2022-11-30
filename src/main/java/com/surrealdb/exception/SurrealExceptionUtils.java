@@ -6,19 +6,30 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A parser for SurrealDB exception messages.
+ */
 @UtilityClass
 public class SurrealExceptionUtils {
 
     // precomputed private variables
+    private static final @NotNull Pattern AUTH_PROBLEM_PATTERN = Pattern.compile("(There was a problem with authentication|You don't have permission to perform this query type)");
+    private static final @NotNull Pattern NO_DATABASE_SELECTED_PATTERN = Pattern.compile("Specify a (namespace|database) to use");
     private static final @NotNull Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("Database record `(.+):(.+)` already exists");
 
+    /**
+     * Parses an exception message and returns a {@link SurrealException} instance.
+     *
+     * @param message The exception message to parse
+     * @return The parsed exception
+     */
     public static @NotNull SurrealException createExceptionFromMessage(@NotNull String message) {
-        if (message.contains("There was a problem with authentication") || message.contains("You don't have permission to perform this query type")) {
-            return new SurrealAuthenticationException();
+        if (AUTH_PROBLEM_PATTERN.matcher(message).matches()) {
+            return new SurrealAuthenticationException(message);
         }
 
-        if (message.contains("Specify a namespace to use")) {
-            return new SurrealNoDatabaseSelectedException();
+        if (NO_DATABASE_SELECTED_PATTERN.matcher(message).matches()) {
+            return new SurrealNoDatabaseSelectedException(message);
         }
 
         Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(message);

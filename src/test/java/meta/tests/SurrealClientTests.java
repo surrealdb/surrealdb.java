@@ -43,7 +43,7 @@ public abstract class SurrealClientTests {
         client = createClient(TestUtils.getClientSettings());
 
         client.signIn(TestUtils.getAuthCredentials());
-        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
 
         client.createRecord(personTable, "tobie", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
         client.createRecord(personTable, "jaime", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));

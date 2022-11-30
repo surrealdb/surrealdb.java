@@ -11,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public final class SurrealRecordAlreadyExistsException extends SurrealException {
 
-    private @NotNull String tableName;
-    private @NotNull String recordId;
+    @NotNull String tableName;
+    @NotNull String recordId;
 
     public SurrealRecordAlreadyExistsException(@NotNull String tableName, @NotNull String recordId) {
         super("Record `" + tableName + ":" + recordId + "` already exists");

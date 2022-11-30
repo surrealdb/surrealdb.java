@@ -6,7 +6,6 @@ import com.surrealdb.client.SurrealClientSettings;
 import com.surrealdb.client.SurrealTable;
 import com.surrealdb.exception.SurrealAuthenticationException;
 import com.surrealdb.exception.SurrealNoDatabaseSelectedException;
-import meta.model.InstantContainer;
 import meta.model.Person;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -63,18 +62,28 @@ public abstract class SurrealClientSpecialOperationsTests {
 
     @Test
     void signOut_whenCalled_signsOut() {
-        client.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
         client.signOut();
 
-        SurrealTable<InstantContainer> table = SurrealTable.of("people", InstantContainer.class);
-        InstantContainer instantContainer = InstantContainer.builder().build();
+        SurrealTable<Object> table = SurrealTable.of("generic_table", Object.class);
+        Object record = new Object();
 
-        assertThrows(SurrealAuthenticationException.class, () -> client.createRecord(table, instantContainer));
+        assertThrows(SurrealAuthenticationException.class, () -> client.createRecord(table, record));
     }
 
     @Test
     void testUse() {
-        assertDoesNotThrow(() -> client.use(TestUtils.getNamespace(), TestUtils.getDatabase()));
+        assertDoesNotThrow(() -> client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase()));
+    }
+
+    @Test
+    void createRecord_whenCalledBeforeSettingNamespaceAndDatabase_throwsException() {
+        client.signIn(TestUtils.getAuthCredentials());
+
+        SurrealTable<Object> table = SurrealTable.of("generic_table", Object.class);
+        Object record = new Object();
+
+        assertThrows(SurrealNoDatabaseSelectedException.class, () -> client.createRecord(table, record));
     }
 
     @Test

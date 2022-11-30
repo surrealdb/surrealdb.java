@@ -32,6 +32,9 @@ import java.util.function.Consumer;
 
 import static com.surrealdb.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
 
+/**
+ * A WebSocket based SurrealDB client.
+ */
 @Slf4j
 public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
 
@@ -48,10 +51,22 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
         this.client = new InternalWebsocketClient(settings, gson, this::onClose);
     }
 
+    /**
+     * Creates a new WebSocket client.
+     *
+     * @param settings The settings to use to configure the client
+     * @return A new {@link SurrealWebSocketClient} instance
+     */
     public static @NotNull SurrealWebSocketClient create(@NotNull SurrealClientSettings settings) {
         return new SurrealWebSocketClient(settings);
     }
 
+    /**
+     * @param protocol The protocol to use (must be either {@code WEBSOCKET} or {@code WEB_SOCKET_SSL})
+     * @param host     The host to connect to
+     * @param port     The port to connect to
+     * @return A new {@link SurrealWebSocketClient} instance
+     */
     public static @NotNull SurrealWebSocketClient create(@NotNull SurrealConnectionProtocol protocol, @NotNull String host, int port) {
         SurrealClientSettings settings = SurrealClientSettings.builder()
             .setUriFromComponents(protocol, host, port)
@@ -93,7 +108,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     }
 
     @Override
-    public @NotNull CompletableFuture<Void> useAsync(@NotNull String namespace, @NotNull String database) {
+    public @NotNull CompletableFuture<Void> setNamespaceAndDatabaseAsync(@NotNull String namespace, @NotNull String database) {
         return rpc("use", null, namespace, database);
     }
 
