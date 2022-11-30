@@ -2,8 +2,8 @@ package com.surrealdb.client.communication;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.surrealdb.client.listener.ListenerManager;
 import com.surrealdb.client.bidirectional.rpc.RpcResponse;
+import com.surrealdb.client.listener.ListenerManager;
 import com.surrealdb.exception.SurrealException;
 import com.surrealdb.exception.SurrealExceptionUtils;
 import lombok.NonNull;
@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.surrealdb.client.listener.SurrealGenericLogListener.Type.REQUEST_ID_NOT_FOUND_IN_PENDING_REQUESTS;
 
 @ApiStatus.Internal
 public final class CommunicationManager<T> {
@@ -56,12 +58,18 @@ public final class CommunicationManager<T> {
             if (resultType.equals(Void.TYPE)) {
                 callback.complete(null);
             } else {
-                callback.complete(gson.fromJson(data, resultType));
+                callback.complete(deserialize(data, resultType));
             }
         } catch (Exception e) {
             RuntimeException wrappedException = SurrealExceptionUtils.wrapException("Failed to deserialize response", e);
             callback.completeExceptionally(wrappedException);
         }
+    }
+
+    private <U> @NotNull U deserialize(@NotNull JsonElement data, @NotNull Type type) {
+        U deserialized = gson.fromJson(data, type);
+
+        return deserialized;
     }
 
     public void completeRequest(@NotNull String id, @NotNull RpcResponse.Error error) {
@@ -94,6 +102,7 @@ public final class CommunicationManager<T> {
         RequestEntry<T, ?> entry = pendingRequests.remove(id);
 
         if (entry == null) {
+            listenerManager.onLog(REQUEST_ID_NOT_FOUND_IN_PENDING_REQUESTS, messageIfNotFound);
             return null;
         }
 

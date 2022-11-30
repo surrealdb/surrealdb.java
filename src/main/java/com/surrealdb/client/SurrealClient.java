@@ -717,7 +717,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
 
     default <T extends SurrealRecord> @NotNull CompletableFuture<T> relateAsync(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id with, @NotNull T data) {
         // SQL query to relate two records
-        String sql = "RELATE type::thing($from)->type::table($edge_tb)->type::thing($with) CONTENT $data RETURN AFTER;";
+        String sql = "RELATE (type::thing($from))->(type::table($edge_tb))->(type::thing($with)) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
             "from", from,

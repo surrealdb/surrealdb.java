@@ -41,13 +41,30 @@ public class SurrealExceptionUtils {
         return new SurrealException(message);
     }
 
-    public static @NotNull RuntimeException wrapException(@NotNull String message, @NotNull Exception exception) {
-        System.out.println(exception.getClass());
+    private static @NotNull Throwable getRootCause(@NotNull Throwable exception) {
+        // Initialize the root cause to the given throwable
+        Throwable rootCause = exception;
 
-        if (exception instanceof SurrealException surrealException) {
+        // While the root cause has a cause and is not an instance of SurrealException,
+        // set the root cause to that cause
+        while (rootCause.getCause() != null && !(rootCause instanceof SurrealException)) {
+            rootCause = rootCause.getCause();
+        }
+
+        // Return the root cause
+        return rootCause;
+    }
+
+    public static @NotNull RuntimeException wrapException(@NotNull String message, @NotNull Exception exception) {
+        // Find the root cause of the exception
+        Throwable rootCause = getRootCause(exception);
+
+        // If the root cause is an instance of SurrealException, return it
+        if (rootCause instanceof SurrealException surrealException) {
             return surrealException;
         }
 
-        return new SurrealException(message, exception);
+        // Otherwise, return a new SurrealException with the given message and root cause
+        return new SurrealException(message, rootCause);
     }
 }

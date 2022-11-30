@@ -148,7 +148,9 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
         // List<QueryResult<T>>
         Type resultType = TypeToken.getParameterized(List.class, queryType.getType()).getType();
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> queryFuture = rpc("query", resultType, query, args);
+        CompletableFuture<List<QueryResult<T>>> queryFuture = args.size() > 0 ?
+            rpc("query", resultType, query, args) : // query with args
+            rpc("query", resultType, query);        // query without args
         // Check for errors and return the result
         ExecutorService executorService = getAsyncOperationExecutorService();
         return queryFuture.thenComposeAsync(this::checkResultsForErrors, executorService);

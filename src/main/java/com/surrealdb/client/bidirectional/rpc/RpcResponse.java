@@ -38,8 +38,14 @@ public class RpcResponse {
         @SerializedName("code")
         int code;
 
-        @SerializedName(value="message", alternate={"description"})
+        @SerializedName("detail")
+        @Nullable String detail;
+
+        @SerializedName(value = "message", alternate = {"description"})
         @NotNull String message;
 
+        @SerializedName("information")
+        @Nullable String information;
+        
     }
 }
