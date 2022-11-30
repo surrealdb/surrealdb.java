@@ -16,7 +16,6 @@ import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -55,12 +54,6 @@ public abstract class SurrealClientTests {
         client.deleteAllRecordsInTable(personTable);
         // Disconnect gracefully
         client.cleanup();
-    }
-
-    @Test
-    @Disabled("This doesn't seem to do anything")
-    void testInfo() {
-        client.info();
     }
 
     @Test

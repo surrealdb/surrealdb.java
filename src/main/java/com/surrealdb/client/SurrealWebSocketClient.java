@@ -133,11 +133,6 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     }
 
     @Override
-    public @NotNull CompletableFuture<Map<String, String>> infoAsync() {
-        return null;
-    }
-
-    @Override
     public @NotNull <T> CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         // QueryResult<T>
         TypeToken<?> queryType = TypeToken.getParameterized(QueryResult.class, queryResult);

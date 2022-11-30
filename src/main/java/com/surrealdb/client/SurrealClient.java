@@ -155,58 +155,157 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
         return getResultSynchronously(databaseVersionAsync());
     }
 
-    @NotNull CompletableFuture<Map<String, String>> infoAsync();
+    /**
+     * Executes one or more queries against the SurrealDB server.
+     *
+     * @param query      the query to execute
+     * @param resultType the type of the result
+     * @param args       a map of arguments to use in the query. Use '{@code $key}' in the query to access the value.
+     * @param <T>        the type of the result
+     * @return a {@link CompletableFuture} that will complete with the result of the query.
+     */
+    <T> @NotNull CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> resultType, @NotNull Map<String, Object> args);
 
-    default @NotNull Map<String, String> info() {
-        return getResultSynchronously(infoAsync());
-    }
-
-    <T> @NotNull CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args);
-
+    /**
+     * Executes a query against the SurrealDB server. Returns an optional containing the first result of the first query.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param args        a map of arguments to use in the query. Use '{@code $key}' in the query to access the value.
+     * @param <T>         the type of the result
+     * @return a {@link CompletableFuture} that will complete with an optional containing the first result of the first query, or an empty optional if the query returned no results.
+     */
     default <T> @NotNull CompletableFuture<Optional<T>> sqlSingleAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         CompletableFuture<List<QueryResult<T>>> queryFuture = sqlAsync(query, queryResult, args);
         ExecutorService executorService = getAsyncOperationExecutorService();
         return queryFuture.thenApplyAsync(InternalClientUtils::getFirstResultFromFirstQuery, executorService);
     }
 
+    /**
+     * Executes a single query against the SurrealDB server. Returns a list containing the results of the first query.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param args        a map of arguments to use in the query. Use '{@code $key}' in the query to access the value.
+     * @param <T>         the type of the result
+     * @return a {@link CompletableFuture} that will complete with the result of the first query.
+     */
     default <T> @NotNull CompletableFuture<List<T>> sqlFirstAsync(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         CompletableFuture<List<QueryResult<T>>> queryFuture = sqlAsync(query, queryResult, args);
         ExecutorService executorService = getAsyncOperationExecutorService();
         return queryFuture.thenApplyAsync(InternalClientUtils::getResultsFromFirstQuery, executorService);
     }
 
+    /**
+     * Executes a single query against the SurrealDB server. Returns a list containing the results of the first query.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param <T>         the type of the result
+     * @return a {@link CompletableFuture} that will complete with the result of the first query.
+     */
     default <T> @NotNull CompletableFuture<List<QueryResult<T>>> sqlAsync(@NotNull String query, @NotNull Class<T> queryResult) {
         return sqlAsync(query, queryResult, ImmutableMap.of());
     }
 
+    /**
+     * Executes one or more queries against the SurrealDB server. Blocks until the queries have been executed.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param args        a map of arguments to use in the query. Use '{@code $key}' in the query to access the value.
+     * @param <T>         the type of the result
+     * @return a list containing all query results
+     */
     default <T> @NotNull List<QueryResult<T>> sql(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         return getResultSynchronously(sqlAsync(query, queryResult, args));
     }
 
+    /**
+     * Executes one or more queries against the SurrealDB server. Blocks until the queries have been executed.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param <T>         the type of the result
+     * @return a list containing all query results
+     */
     default <T> @NotNull List<QueryResult<T>> sql(@NotNull String query, @NotNull Class<T> queryResult) {
         return getResultSynchronously(sqlAsync(query, queryResult));
     }
 
+    /**
+     * Executes a query against the SurrealDB server. Returns an optional containing the first result of the first query.
+     * Blocks until the query has been executed.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param args        a map of arguments to use in the query. Use '{@code $key}' in the query to access the value.
+     * @param <T>         the type of the result
+     * @return an optional containing the first result of the first query, or an empty optional if the query returned no results.
+     */
     default <T> @NotNull Optional<T> sqlSingle(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         return getResultSynchronously(sqlSingleAsync(query, queryResult, args));
     }
 
+    /**
+     * Executes a query against the SurrealDB server. Returns an optional containing the first result of the first query.
+     * Blocks until the query has been executed.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param <T>         the type of the result
+     * @return an optional containing the first result of the first query, or an empty optional if the query returned no results.
+     */
     default <T> @NotNull Optional<T> sqlSingle(@NotNull String query, @NotNull Class<T> queryResult) {
         return getResultSynchronously(sqlSingleAsync(query, queryResult));
     }
 
+    /**
+     * Executes a single query against the SurrealDB server. Returns a list containing the results of the first query.
+     * Blocks until the query has been executed.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param args        a map of arguments to use in the query. Use '{@code $key}' in the query to access the value.
+     * @param <T>         the type of the result
+     * @return a list containing the results of the first query.
+     */
     default <T> @NotNull List<T> sqlFirst(@NotNull String query, @NotNull Class<T> queryResult, @NotNull Map<String, Object> args) {
         return getResultSynchronously(sqlFirstAsync(query, queryResult, args));
     }
 
+    /**
+     * Executes a single query against the SurrealDB server. Returns a list containing the results of the first query.
+     *
+     * @param query       the query to execute
+     * @param queryResult the type of the result
+     * @param <T>         the type of the result
+     * @return a {@link CompletableFuture} that will complete with the result of the first query.
+     */
     default <T> @NotNull CompletableFuture<List<T>> sqlFirstAsync(@NotNull String query, @NotNull Class<T> queryResult) {
         return sqlFirstAsync(query, queryResult, ImmutableMap.of());
     }
 
+    /**
+     * Executes a single query against the SurrealDB server. Returns a list containing the results of the first query.
+     *
+     * @param query      the query to execute
+     * @param queryResult the type of the result
+     * @param <T>       the type of the result
+     * @return a list containing the results of the first query.
+     */
     default <T> @NotNull List<T> sqlFirst(@NotNull String query, @NotNull Class<T> queryResult) {
         return getResultSynchronously(sqlFirstAsync(query, queryResult));
     }
 
+    /**
+     * Executes a query against the SurrealDB server. Returns an optional containing the first result of the first query.
+     *
+     * @param query the query to execute
+     * @param queryResult the type of the result
+     * @param <T> the type of the result
+     * @return a {@link CompletableFuture} that will complete with the result of the first query.
+     */
     default <T> @NotNull CompletableFuture<Optional<T>> sqlSingleAsync(@NotNull String query, @NotNull Class<T> queryResult) {
         return sqlSingleAsync(query, queryResult, ImmutableMap.of());
     }
