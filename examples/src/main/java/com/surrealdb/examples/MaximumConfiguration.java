@@ -35,14 +35,14 @@ public class MaximumConfiguration {
             // Register your custom type adapters here
             .create();
 
-        // Drivers use executor services to run async tasks. You can provide your own executor service,
+        // Clients use an ExecutorService to run async tasks. You can provide your own ExecutorService,
         // or you can leave the setting unchanged to use Java's fork-join common pool.
         // All implementations of ExecutorService are supported. Benchmarking is recommended to determine
         // which implementation is best for your use case.
         ExecutorService asyncExecutor = Executors.newCachedThreadPool();
 
         /*
-         * ExecutorService asyncExecutor = Executors.newSingleThreadExecutor();
+         * ExecutorService asyncExecutor = Executors.newSingleThreadExecutor(); // This is NOT recommended
          * ExecutorService asyncExecutor = Executors.newFixedThreadPool(4);
          * ExecutorService asyncExecutor = Executors.newWorkStealingPool();
          */
@@ -55,9 +55,9 @@ public class MaximumConfiguration {
             .setUri(URI.create("ws://localhost:8000/rpc"))
             // Set our custom Gson instance
             .setGson(gson)
-            // Enable/disable logging outgoing messages
-            .setLogIncomingMessages(true)
             // Enable/disable logging incoming messages
+            .setLogIncomingMessages(true)
+            // Enable/disable logging outgoing messages
             .setLogOutgoingMessages(true)
             // Enable/disable logging authentication credentials
             // Disabling this is recommended if there is a chance that logs will be exposed
