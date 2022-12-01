@@ -235,9 +235,9 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Executes a query against the SurrealDB server. Returns an optional containing the first result of the first query.
      *
-     * @param query the query to execute
+     * @param query       the query to execute
      * @param queryResult the type of the result
-     * @param <T> the type of the result
+     * @param <T>         the type of the result
      * @return a {@link CompletableFuture} that will complete with the result of the first query.
      */
     default <T> @NotNull CompletableFuture<Optional<T>> sqlSingleAsync(@NotNull String query, @NotNull Class<T> queryResult) {
@@ -301,9 +301,9 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Executes a single query against the SurrealDB server. Returns a list containing the results of the first query.
      *
-     * @param query      the query to execute
+     * @param query       the query to execute
      * @param queryResult the type of the result
-     * @param <T>       the type of the result
+     * @param <T>         the type of the result
      * @return a list containing the results of the first query.
      */
     default <T> @NotNull List<T> sqlFirst(@NotNull String query, @NotNull Class<T> queryResult) {
@@ -345,17 +345,17 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Retrieves the specified record from the specified table.
      *
-     * @param table  the table to retrieve the record from
-     * @param record the record to retrieve
-     * @param <T>    the type of the record
+     * @param table    the table to retrieve the record from
+     * @param recordId the record to retrieve
+     * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the record if it exists, or an empty {@link Optional} if it does not.
      */
-    default <T> @NotNull CompletableFuture<Optional<T>> retrieveRecordAsync(@NotNull SurrealTable<T> table, @NotNull String record) {
+    default <T> @NotNull CompletableFuture<Optional<T>> retrieveRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId) {
         // SQL query to retrieve a record from the table
         String sql = "SELECT * FROM type::thing($what);";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
-            "what", table.makeThing(record)
+            "what", table.makeThing(recordId)
         );
         // Execute the query
         return sqlSingleAsync(sql, table.getType(), args);
@@ -364,13 +364,13 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Retrieves the specified record from the specified table. Blocks until the record has been retrieved.
      *
-     * @param table  the table to retrieve the record from
-     * @param record the record to retrieve
-     * @param <T>    the type of the record
+     * @param table    the table to retrieve the record from
+     * @param recordId the record to retrieve
+     * @param <T>      the type of the record
      * @return the record if it exists, or an empty {@link Optional} if it does not.
      */
-    default <T> @NotNull Optional<T> retrieveRecord(@NotNull SurrealTable<T> table, @NotNull String record) {
-        return getResultSynchronously(retrieveRecordAsync(table, record));
+    default <T> @NotNull Optional<T> retrieveRecord(@NotNull SurrealTable<T> table, @NotNull String recordId) {
+        return getResultSynchronously(retrieveRecordAsync(table, recordId));
     }
 
     /**
@@ -411,18 +411,18 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Creates a new record with the specified id in the specified table.
      *
-     * @param table the table to create the record in
-     * @param id    the id of the record to create
-     * @param data  the record to create
-     * @param <T>   the type of the record
+     * @param table    the table to create the record in
+     * @param recordId the id of the record to create
+     * @param data     the record to create
+     * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the created record.
      */
-    default <T> @NotNull CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull String id, @NotNull T data) {
+    default <T> @NotNull CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::thing($what) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
-            "what", table.makeThing(id),
+            "what", table.makeThing(recordId),
             "data", data
         );
         // Execute the query
@@ -435,25 +435,25 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Creates a new record with the specified id in the specified table. Blocks until the record has been created.
      *
-     * @param table  the table to create the record in
-     * @param record the record to create
-     * @param data   the record to create
-     * @param <T>    the type of the record
+     * @param table    the table to create the record in
+     * @param recordId the record to create
+     * @param data     the record to create
+     * @param <T>      the type of the record
      * @return the created record.
      */
-    default <T> @NotNull T createRecord(@NotNull SurrealTable<T> table, @NotNull String record, @NotNull T data) {
-        return getResultSynchronously(createRecordAsync(table, record, data));
+    default <T> @NotNull T createRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+        return getResultSynchronously(createRecordAsync(table, recordId, data));
     }
 
     /**
-     * Updates all records in the specified table.
+     * Sets all records in the specified table to the given data.
      *
-     * @param table the table to update records
-     * @param data  the data to update the records with
+     * @param table the table in which to set the records
+     * @param data  the data to set the records to
      * @param <T>   the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all updated records.
      */
-    default <T> @NotNull CompletableFuture<List<T>> updateAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T> @NotNull CompletableFuture<List<T>> setAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to update records
         String sql = "UPDATE type::table($tb) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
@@ -469,32 +469,32 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     }
 
     /**
-     * Updates all records in the specified table. Blocks until the records have been updated.
+     * Sets all records in the specified table to the given data. Blocks until the records have been updated.
      *
-     * @param table the table to update records
-     * @param data  the data to update the records with
+     * @param table the table in which to set the records
+     * @param data  the data to set the records to
      * @param <T>   the type of the records
      * @return a list of all updated records.
      */
-    default <T> @NotNull List<T> updateAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull T data) {
-        return getResultSynchronously(updateAllRecordsInTableAsync(table, data));
+    default <T> @NotNull List<T> setAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull T data) {
+        return getResultSynchronously(setAllRecordsInTableAsync(table, data));
     }
 
     /**
-     * Updates the specified record in the specified table.
+     * Sets the specified record to the given data.
      *
-     * @param table the table of the record to update
-     * @param id    the record to update
-     * @param data  the data to update the record with
-     * @param <T>   the type of the record
+     * @param table    the table in which to set the record
+     * @param recordId the record to set
+     * @param data     the data to update the record with
+     * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the updated record.
      */
-    default <T> @NotNull CompletableFuture<T> updateRecordAsync(@NotNull SurrealTable<T> table, @NotNull String id, @NotNull T data) {
+    default <T> @NotNull CompletableFuture<T> setRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         // SQL query to update a record
         String sql = "UPDATE type::thing($what) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
-            "what", table.makeThing(id),
+            "what", table.makeThing(recordId),
             "data", data
         );
         // Execute the query
@@ -505,16 +505,16 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     }
 
     /**
-     * Updates a record in the specified table. Blocks until the record has been updated.
+     * Sets the specified record to the given data. Blocks until the record has been updated.
      *
-     * @param table  the table of the record to update
-     * @param record the record to update
-     * @param data   the data to update the record with
-     * @param <T>    the type of the record
+     * @param table    the table in which to set the record
+     * @param recordId the record to set
+     * @param data     the data to update the record with
+     * @param <T>      the type of the record
      * @return the updated record.
      */
-    default <T> @NotNull T updateRecord(@NotNull SurrealTable<T> table, @NotNull String record, @NotNull T data) {
-        return getResultSynchronously(updateRecordAsync(table, record, data));
+    default <T> @NotNull T setRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+        return getResultSynchronously(setRecordAsync(table, recordId, data));
     }
 
     /**
@@ -555,18 +555,18 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Changes the specified record in the specified table.
      *
-     * @param table  the table of the record to change
-     * @param record the record to change
-     * @param data   the data to change the record with
-     * @param <T>    the type of the record
+     * @param table    the table of the record to change
+     * @param recordId the record to change
+     * @param data     the data to change the record with
+     * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the changed record.
      */
-    default <T> @NotNull CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, @NotNull String record, @NotNull T data) {
+    default <T> @NotNull CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         // SQL query to change a record
         String sql = "UPDATE type::thing($what) MERGE $data RETURN AFTER;";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
-            "what", table.makeThing(record),
+            "what", table.makeThing(recordId),
             "data", data
         );
         // Execute the query
@@ -579,14 +579,14 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Changes a record in the specified table. Blocks until the record has been changed.
      *
-     * @param table  the table of the record to change
-     * @param record the record to change
-     * @param data   the data to change the record with
-     * @param <T>    the type of the record
+     * @param table    the table of the record to change
+     * @param recordId the record to change
+     * @param data     the data to change the record with
+     * @param <T>      the type of the record
      * @return the changed record.
      */
-    default <T> @NotNull T changeRecord(@NotNull SurrealTable<T> table, @NotNull String record, @NotNull T data) {
-        return getResultSynchronously(changeRecordAsync(table, record, data));
+    default <T> @NotNull T changeRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+        return getResultSynchronously(changeRecordAsync(table, recordId, data));
     }
 
     /**
@@ -627,18 +627,18 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Patches the specified record in the specified table.
      *
-     * @param table   the table of the record to patch
-     * @param id      the record to patch
-     * @param patches the patches to apply to the record
-     * @param <T>     the type of the record
+     * @param table    the table of the record to patch
+     * @param recordId the record to patch
+     * @param patches  the patches to apply to the record
+     * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the patched record.
      */
-    default <T> @NotNull CompletableFuture<T> patchRecordAsync(@NotNull SurrealTable<T> table, @NotNull String id, @NotNull List<Patch> patches) {
+    default <T> @NotNull CompletableFuture<T> patchRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull List<Patch> patches) {
         // SQL query to patch a record
         String sql = "UPDATE type::thing($what) PATCH $data RETURN AFTER;";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
-            "what", table.makeThing(id),
+            "what", table.makeThing(recordId),
             "data", patches
         );
         // Execute the query
@@ -651,14 +651,14 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Patches a record in the specified table. Blocks until the record has been patched.
      *
-     * @param table   the table of the record to patch
-     * @param record  the record to patch
-     * @param patches the patches to apply to the record
-     * @param <T>     the type of the record
+     * @param table    the table of the record to patch
+     * @param recordId the record to patch
+     * @param patches  the patches to apply to the record
+     * @param <T>      the type of the record
      * @return the patched record.
      */
-    default <T> @NotNull T patchRecord(@NotNull SurrealTable<T> table, @NotNull String record, @NotNull List<Patch> patches) {
-        return getResultSynchronously(patchRecordAsync(table, record, patches));
+    default <T> @NotNull T patchRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull List<Patch> patches) {
+        return getResultSynchronously(patchRecordAsync(table, recordId, patches));
     }
 
     /**
@@ -696,17 +696,17 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
     /**
      * Deletes a record from the specified table.
      *
-     * @param table  The table of the record to be deleted
-     * @param record The record to delete
-     * @param <T>    The type of the record
+     * @param table    The table of the record to be deleted
+     * @param recordId The record to delete
+     * @param <T>      The type of the record
      * @return The deleted record
      */
-    default <T> @NotNull CompletableFuture<T> deleteRecordAsync(@NotNull SurrealTable<T> table, @NotNull String record) {
+    default <T> @NotNull CompletableFuture<T> deleteRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId) {
         // SQL query to delete a record
         String sql = "DELETE type::thing($what) RETURN BEFORE;";
         // Arguments to use in the query
         Map<String, Object> args = ImmutableMap.of(
-            "what", table.makeThing(record)
+            "what", table.makeThing(recordId)
         );
         // Execute the query
         CompletableFuture<Optional<T>> deleteFuture = sqlSingleAsync(sql, table.getType(), args);

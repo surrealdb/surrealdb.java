@@ -78,13 +78,13 @@ public class QuickStart {
             client.createRecord(personTable, "tobie", tobie);
         } catch (SurrealRecordAlreadyExistsException e) {
             // This exception will be thrown if the record already exists
-            // in the database. In this case, we will just update the record
-            // instead of creating a new one.
+            // in the database. In this case, we will just force set the
+            // existing record.
 
             // Try running the program twice to see this behavior in action
 
-            log.info("Record already exists, updating instead...");
-            client.updateRecord(personTable, "tobie", tobie);
+            log.info("Record already exists, setting instead...");
+            client.setRecord(personTable, "tobie", tobie);
         }
 
         // Retrieve the person from the database

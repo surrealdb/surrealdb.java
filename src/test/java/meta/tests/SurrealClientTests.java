@@ -158,20 +158,33 @@ public abstract class SurrealClientTests {
     }
 
     @Test
-    public void updateRecord_whenGivenARecordThatExists_updatesTheRecord() {
+    void setRecord_whenGivenARecordIdThatExists_updatesTheRecord() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
         expected.setId("person:tobie");
 
-        Person actual = client.updateRecord(personTable, "tobie", expected);
+        Person actual = client.setRecord(personTable, "tobie", expected);
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void setRecord_whenGivenARecordIdThatDoesNotExist_createsAndSetsRecordData() {
+        Person person = new Person("Contributor", "Damian", "Kocher", false);
+
+        Person createdPerson = assertDoesNotThrow(() -> client.setRecord(personTable, "khalid", person));
+
+        assertEquals("person:khalid", createdPerson.getId());
+        assertEquals("Contributor", createdPerson.getTitle());
+        assertEquals("Damian", createdPerson.getName().getFirst());
+        assertEquals("Kocher", createdPerson.getName().getLast());
+        assertFalse(createdPerson.isMarketing());
     }
 
     @Test
     public void updateAllRecordsInTable_whenProvidedData_setsAllRecordsToThatData() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
-        List<Person> actual = client.updateAllRecordsInTable(personTable, expected);
+        List<Person> actual = client.setAllRecordsInTable(personTable, expected);
 
         assertEquals(2, actual.size());
         actual.forEach(person -> {
