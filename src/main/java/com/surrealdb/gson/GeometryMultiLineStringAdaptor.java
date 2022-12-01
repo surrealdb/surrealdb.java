@@ -3,6 +3,7 @@ package com.surrealdb.gson;
 import com.google.gson.*;
 import com.surrealdb.geometry.LineString;
 import com.surrealdb.geometry.MultiLineString;
+import com.surrealdb.geometry.Point;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -16,12 +17,8 @@ final class GeometryMultiLineStringAdaptor extends GeometryAdaptor<MultiLineStri
     }
 
     @Override
-    public @NotNull JsonElement serialize(@NotNull MultiLineString src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonArray coordinates = new JsonArray();
-        for (LineString line : src) {
-            coordinates.add(serializeLine(line));
-        }
-
+    public @NotNull JsonElement serialize(@NotNull MultiLineString multiLineString, Type typeOfSrc, JsonSerializationContext context) {
+        JsonArray coordinates = serializeIterableOfPointsIterable(multiLineString);
         return createJsonObject("MultiLineString", coordinates);
     }
 
@@ -30,8 +27,10 @@ final class GeometryMultiLineStringAdaptor extends GeometryAdaptor<MultiLineStri
         JsonArray coordinates = getCoordinates(json);
         List<LineString> lines = new ArrayList<>(coordinates.size());
 
-        for (JsonElement lineCoordinatesElement : coordinates) {
-            lines.add(deserializeLine(lineCoordinatesElement.getAsJsonArray()));
+        for (JsonElement lineString : coordinates) {
+            JsonArray lineStringCoordinates = lineString.getAsJsonArray();
+            List<Point> points = deserializePoints(lineStringCoordinates);
+            lines.add(LineString.from(points));
         }
 
         return MultiLineString.from(lines);

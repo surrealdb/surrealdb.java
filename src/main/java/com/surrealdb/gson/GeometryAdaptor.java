@@ -22,7 +22,7 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return object;
     }
 
-    JsonArray getCoordinates(@NotNull JsonElement element) {
+    @NotNull JsonArray getCoordinates(@NotNull JsonElement element) {
         JsonObject object = element.getAsJsonObject();
         return object.getAsJsonArray("coordinates");
     }
@@ -40,49 +40,65 @@ abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonA
         return Point.fromXY(x, y);
     }
 
-    @NotNull JsonArray serializeLine(@NotNull LineString line) {
-        JsonArray lineStringArray = new JsonArray();
-        for (Point point : line) {
-            lineStringArray.add(serializePoint(point));
+    @NotNull JsonArray serializeIterableOfPointsIterable(@NotNull Iterable<? extends Iterable<? extends Point>> iterable) {
+        JsonArray coordinates = new JsonArray();
+
+        for (Iterable<? extends Point> points : iterable) {
+            JsonArray pointsArray = new JsonArray();
+            coordinates.add(pointsArray);
+
+            for (Point point : points) {
+                pointsArray.add(serializePoint(point));
+            }
         }
-        return lineStringArray;
+
+        return coordinates;
     }
 
-    @NotNull JsonArray serializeLinearRing(@NotNull LinearRing ring) {
-        JsonArray linearRingCoords = new JsonArray();
-        for (Point point : ring) {
-            linearRingCoords.add(serializePoint(point));
+    @NotNull JsonArray serializePoints(@NotNull Iterable<Point> points) {
+        JsonArray coordinates = new JsonArray();
+        for (Point point : points) {
+            coordinates.add(serializePoint(point));
         }
-        return linearRingCoords;
+        return coordinates;
     }
 
-    @NotNull LineString deserializeLine(@NotNull JsonArray coordinates) {
+    @NotNull List<Point> deserializePoints(@NotNull JsonArray coordinates) {
         List<Point> points = new ArrayList<>(coordinates.size());
         for (JsonElement pointCoordinatesElement : coordinates) {
             points.add(deserializePoint(pointCoordinatesElement.getAsJsonArray()));
         }
-        return LineString.from(points);
+        return points;
     }
 
     @NotNull JsonArray serializePolygon(@NotNull Polygon polygon) {
         JsonArray coordinates = new JsonArray();
 
         LinearRing exterior = polygon.getExterior();
-        coordinates.add(serializeLinearRing(exterior));
+        coordinates.add(serializePoints(exterior));
 
-        polygon.interiorIterator().forEachRemaining((interior) -> coordinates.add(serializeLinearRing(interior)));
+        polygon.interiorIterator().forEachRemaining((interior) -> coordinates.add(serializePoints(interior)));
 
         return coordinates;
     }
 
+    private @NotNull LinearRing deserializeLinearRing(@NotNull JsonElement element) {
+        JsonArray coordinates = element.getAsJsonArray();
+        List<Point> points = deserializePoints(coordinates);
+        return LinearRing.from(points);
+    }
+
     @NotNull Polygon deserializePolygon(@NotNull JsonArray coordinates) {
-        LinearRing exterior = deserializeLine(coordinates.get(0).getAsJsonArray()).toLinearRing();
+        LinearRing exterior = deserializeLinearRing(coordinates.get(0));
+
         List<LinearRing> interiors = new ArrayList<>();
         // Interior rings start at index 1, as index 0 is the exterior ring
         for (int i = 1; i < coordinates.size(); i++) {
-            LinearRing interior = deserializeLine(coordinates.get(i).getAsJsonArray()).toLinearRing();
+            JsonElement serializedInterior = coordinates.get(i);
+            LinearRing interior = deserializeLinearRing(serializedInterior);
             interiors.add(interior);
         }
+
         return Polygon.withInteriorPolygons(exterior, interiors);
     }
 }

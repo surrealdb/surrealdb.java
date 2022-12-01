@@ -13,8 +13,8 @@ final class GeometryPointAdaptor extends GeometryAdaptor<Point> {
     }
 
     @Override
-    public @NotNull JsonElement serialize(@NotNull Point src, Type typeOfSrc, JsonSerializationContext context) {
-        return createJsonObject("Point", serializePoint(src));
+    public @NotNull JsonElement serialize(@NotNull Point point, Type typeOfSrc, JsonSerializationContext context) {
+        return createJsonObject("Point", serializePoint(point));
     }
 
     @Override

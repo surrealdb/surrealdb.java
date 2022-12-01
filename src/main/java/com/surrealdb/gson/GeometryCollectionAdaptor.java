@@ -15,14 +15,14 @@ final class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollect
     }
 
     @Override
-    public @NotNull JsonElement serialize(@NotNull GeometryCollection src, Type typeOfSrc, @NotNull JsonSerializationContext context) {
+    public @NotNull JsonElement serialize(@NotNull GeometryCollection geometryCollection, Type typeOfSrc, @NotNull JsonSerializationContext context) {
         JsonObject object = new JsonObject();
         object.addProperty("type", "GeometryCollection");
 
         JsonArray geometries = new JsonArray();
         object.add("geometries", geometries);
 
-        for (GeometryPrimitive geometry : src) {
+        for (GeometryPrimitive geometry : geometryCollection) {
             geometries.add(context.serialize(geometry));
         }
 

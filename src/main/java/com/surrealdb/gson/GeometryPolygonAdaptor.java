@@ -13,8 +13,8 @@ final class GeometryPolygonAdaptor extends GeometryAdaptor<Polygon> {
     }
 
     @Override
-    public @NotNull JsonElement serialize(@NotNull Polygon src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonArray coordinates = serializePolygon(src);
+    public @NotNull JsonElement serialize(@NotNull Polygon polygon, Type typeOfSrc, JsonSerializationContext context) {
+        JsonArray coordinates = serializePolygon(polygon);
         return createJsonObject("Polygon", coordinates);
     }
 

@@ -1,6 +1,5 @@
 package com.surrealdb.gson;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
 import com.surrealdb.geometry.MultiPolygon;
 import com.surrealdb.geometry.Polygon;
@@ -17,9 +16,9 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
     }
 
     @Override
-    public @NotNull JsonElement serialize(@NotNull MultiPolygon src, Type typeOfSrc, JsonSerializationContext context) {
+    public @NotNull JsonElement serialize(@NotNull MultiPolygon multiPolygon, Type typeOfSrc, JsonSerializationContext context) {
         JsonArray coordinates = new JsonArray();
-        for (Polygon polygon : src) {
+        for (Polygon polygon : multiPolygon) {
             coordinates.add(serializePolygon(polygon));
         }
         return createJsonObject("MultiPolygon", coordinates);
@@ -31,9 +30,10 @@ final class GeometryMultiPolygonAdaptor extends GeometryAdaptor<MultiPolygon> {
 
         List<Polygon> polygons = new ArrayList<>(coordinates.size());
         for (JsonElement polygon : coordinates) {
-            polygons.add(deserializePolygon(polygon.getAsJsonArray()));
+            JsonArray polygonCoordinates = polygon.getAsJsonArray();
+            polygons.add(deserializePolygon(polygonCoordinates));
         }
 
-        return MultiPolygon.from(ImmutableList.copyOf(polygons));
+        return MultiPolygon.from(polygons);
     }
 }
