@@ -12,12 +12,22 @@ public class GeometryUtils {
 
     private static final double POINT_EQUALS_PRECISION = 0.00000001;
 
-    public static LinearRing createQuadLinearRing(boolean autoClose) {
+    public static LinearRing createQuadLinearRing(boolean counterClockwise, boolean autoClose) {
         LinearRing.Builder builder = LinearRing.builder()
-            .addPointXY(-1, -1)
-            .addPointXY(-1, 1)
-            .addPointXY(1, 1)
-            .addPointXY(1, -1);
+            .addPointXY(-1, -1);
+
+        if (counterClockwise) {
+            builder
+                .addPointXY(1, -1)
+                .addPointXY(1, 1)
+                .addPointXY(-1, 1);
+        } else {
+            builder
+                .addPointXY(-1, 1)
+                .addPointXY(1, 1)
+                .addPointXY(1, -1);
+        }
+
 
         if (!autoClose) {
             builder.addPointXY(-1, -1);
@@ -27,7 +37,7 @@ public class GeometryUtils {
     }
 
     public static Polygon createQuadPolygon(boolean autoClose) {
-        LinearRing exterior = createQuadLinearRing(autoClose);
+        LinearRing exterior = createQuadLinearRing(true, autoClose);
 
         return Polygon.builder()
             .setExterior(exterior)
@@ -35,8 +45,8 @@ public class GeometryUtils {
     }
 
     public static Polygon createQuadPolygonWithHole() {
-        LinearRing exterior = createQuadLinearRing(true);
-        LinearRing interior = createQuadLinearRing(false).scale(0.75, 0.75);
+        LinearRing exterior = createQuadLinearRing(true, true);
+        LinearRing interior = createQuadLinearRing(false, false).scale(0.75, 0.75);
 
         return Polygon.builder()
             .setExterior(exterior)

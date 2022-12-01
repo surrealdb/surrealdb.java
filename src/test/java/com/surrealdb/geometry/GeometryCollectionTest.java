@@ -34,7 +34,7 @@ class GeometryCollectionTest {
             Point.fromXY(2, 3),
             Point.fromXY(4, 5)
         );
-        LinearRing ring = GeometryUtils.createQuadLinearRing(true);
+        LinearRing ring = GeometryUtils.createQuadLinearRing(true, true);
 
         GeometryCollection collection = GeometryCollection.builder()
             .addGeometry(multiPoint)

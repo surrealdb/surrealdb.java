@@ -17,7 +17,7 @@ public class GeometryLinearRingTest extends GsonAdaptorTest {
     @Test
     @Override
     protected void gson_toJson_whenProvidedWithJavaObject_returnsAProperlySerializedJsonRepresentation() {
-        LinearRing linearRing = GeometryUtils.createQuadLinearRing(true);
+        LinearRing linearRing = GeometryUtils.createQuadLinearRing(true, true);
 
         JsonObject serialized = GsonTestUtils.serialize(linearRing).getAsJsonObject();
         JsonArray coordinates = serialized.get("coordinates").getAsJsonArray();
@@ -27,9 +27,9 @@ public class GeometryLinearRingTest extends GsonAdaptorTest {
 
         assertEquals(5, coordinates.size());
         assertGeometryCoordinatesEqual(-1, -1, coordinates.get(0));
-        assertGeometryCoordinatesEqual(-1, 1, coordinates.get(1));
+        assertGeometryCoordinatesEqual(1, -1, coordinates.get(1));
         assertGeometryCoordinatesEqual(1, 1, coordinates.get(2));
-        assertGeometryCoordinatesEqual(1, -1, coordinates.get(3));
+        assertGeometryCoordinatesEqual(-1, 1, coordinates.get(3));
         assertGeometryCoordinatesEqual(-1, -1, coordinates.get(4));
     }
 

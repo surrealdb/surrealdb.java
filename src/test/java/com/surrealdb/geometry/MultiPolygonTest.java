@@ -66,7 +66,7 @@ class MultiPolygonTest extends MultiGeometryTest {
             Polygon poly2 = createQuadPolygonWithHole();
 
             MultiPolygon multiPolygon = MultiPolygon.from(poly1, poly2);
-            assertEquals("MULTIPOLYGON (((-1 -1, -1 1, 1 1, 1 -1, -1 -1)), ((-1 -1, -1 1, 1 1, 1 -1, -1 -1), (-0.75 -0.75, -0.75 0.75, 0.75 0.75, 0.75 -0.75, -0.75 -0.75)))", multiPolygon.toString());
+            assertEquals("MULTIPOLYGON (((-1 -1, 1 -1, 1 1, -1 1, -1 -1)), ((-1 -1, 1 -1, 1 1, -1 1, -1 -1), (-0.75 -0.75, -0.75 0.75, 0.75 0.75, 0.75 -0.75, -0.75 -0.75)))", multiPolygon.toString());
         }
 
         @Test

@@ -11,7 +11,7 @@ public class LinearRingTest {
 
     @Test
     void testOpenRingIsAutoClosed() {
-        LinearRing ring = createQuadLinearRing(true);
+        LinearRing ring = createQuadLinearRing(true, true);
 
         assertEquals(5, ring.getPointCount());
         assertEquals(Point.fromXY(-1, -1), ring.getPoint(0), "First point");
@@ -20,7 +20,7 @@ public class LinearRingTest {
 
     @Test
     void testCreatingALinearRingWithClosedPointsDoesNotChange() {
-        LinearRing ring = createQuadLinearRing(false);
+        LinearRing ring = createQuadLinearRing(true, false);
 
         assertEquals(5, ring.getPointCount());
         assertEquals(Point.fromXY(-1, -1), ring.getPoint(0), "First point");
@@ -36,7 +36,7 @@ public class LinearRingTest {
 
     @Test
     void testGetCircumferenceReturnsExpectedCircumference() {
-        LinearRing quadLinearRing = createQuadLinearRing(true);
+        LinearRing quadLinearRing = createQuadLinearRing(true, true);
 
         assertEquals(889, quadLinearRing.getCircumferenceInKilometers(), 1);
     }
@@ -46,7 +46,7 @@ public class LinearRingTest {
 
         @Override
         protected Geometry createSimpleGeometry() {
-            return createQuadLinearRing(true);
+            return createQuadLinearRing(true, true);
         }
 
         @Override
