@@ -325,10 +325,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
             "tb", table.getName()
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> query = sqlAsync(sql, table.getType(), args);
-        // Return all records from the query
-        ExecutorService executorService = getAsyncOperationExecutorService();
-        return query.thenApplyAsync(InternalClientUtils::getResultsFromFirstQuery, executorService);
+        return sqlFirstAsync(sql, table.getType(), args);
     }
 
     /**
@@ -462,10 +459,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
             "data", data
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> updateFuture = sqlAsync(sql, table.getType(), args);
-        // Return the updated records
-        ExecutorService executorService = getAsyncOperationExecutorService();
-        return updateFuture.thenApplyAsync(InternalClientUtils::getResultsFromFirstQuery, executorService);
+        return sqlFirstAsync(sql, table.getType(), args);
     }
 
     /**
@@ -534,10 +528,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
             "data", data
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> changeFuture = sqlAsync(sql, table.getType(), args);
-        // Return the changed records
-        ExecutorService executorService = getAsyncOperationExecutorService();
-        return changeFuture.thenApplyAsync(InternalClientUtils::getResultsFromFirstQuery, executorService);
+        return sqlFirstAsync(sql, table.getType(), args);
     }
 
     /**
@@ -606,10 +597,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
             "data", patches
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> patchFuture = sqlAsync(sql, table.getType(), args);
-        // Return the patched records
-        ExecutorService executorService = getAsyncOperationExecutorService();
-        return patchFuture.thenApplyAsync(InternalClientUtils::getResultsFromFirstQuery, executorService);
+        return sqlFirstAsync(sql, table.getType(), args);
     }
 
     /**
@@ -676,10 +664,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
             "tb", table.getName()
         );
         // Execute the query
-        CompletableFuture<List<QueryResult<T>>> deleteFuture = sqlAsync(sql, table.getType(), args);
-        // Return the deleted records
-        ExecutorService executorService = getAsyncOperationExecutorService();
-        return deleteFuture.thenApplyAsync(InternalClientUtils::getResultsFromFirstQuery, executorService);
+        return sqlFirstAsync(sql, table.getType(), args);
     }
 
     /**
