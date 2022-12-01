@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WebSocketSurrealClientTest {
 
-    private static @NotNull SurrealBiDirectionalClient makeClient(@NotNull SurrealClientSettings settings, boolean connect) {
+    private @NotNull SurrealBiDirectionalClient makeClient(@NotNull SurrealClientSettings settings, boolean connect) {
         SurrealBiDirectionalClient client = SurrealWebSocketClient.create(settings);
 
         if (connect) {
