@@ -1,6 +1,5 @@
 package com.surrealdb.client;
 
-import lombok.NonNull;
 import meta.tests.SurrealBiDirectionalClientTests;
 import meta.tests.SurrealClientGeometryTests;
 import meta.tests.SurrealClientGsonTests;
@@ -26,7 +25,7 @@ public class WebSocketSurrealClientTest {
     class SurrealClientTests extends meta.tests.SurrealClientTests {
 
         @Override
-        protected @NonNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
+        protected @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings) {
             return makeClient(settings, true);
         }
     }
@@ -35,7 +34,7 @@ public class WebSocketSurrealClientTest {
     class GeometryTests extends SurrealClientGeometryTests {
 
         @Override
-        protected @NotNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
+        protected @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings) {
             return makeClient(settings, true);
         }
     }
@@ -44,7 +43,7 @@ public class WebSocketSurrealClientTest {
     class GsonTests extends SurrealClientGsonTests {
 
         @Override
-        protected @NotNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
+        protected @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings) {
             return makeClient(settings, true);
         }
     }
@@ -53,7 +52,7 @@ public class WebSocketSurrealClientTest {
     class SpecialOperationsTests extends SurrealClientSpecialOperationsTests {
 
         @Override
-        public @NonNull SurrealClient createClient(@NonNull SurrealClientSettings settings) {
+        public @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings) {
             return makeClient(settings, true);
         }
     }
@@ -62,7 +61,7 @@ public class WebSocketSurrealClientTest {
     class BiDirectionalClientTests extends SurrealBiDirectionalClientTests {
 
         @Override
-        public @NonNull SurrealBiDirectionalClient createClient(@NonNull SurrealClientSettings settings) {
+        public @NotNull SurrealBiDirectionalClient createClient(@NotNull SurrealClientSettings settings) {
             return makeClient(settings, false);
         }
     }

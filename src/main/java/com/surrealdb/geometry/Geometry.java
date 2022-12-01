@@ -38,7 +38,7 @@ public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollect
     protected abstract @NotNull String calculateWkt();
 
     @Override
-    public final String toString() {
+    public final @NotNull String toString() {
         if (wkt == null) {
             wkt = calculateWkt();
         }

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +40,7 @@ public final class Polygon extends GeometryPrimitive {
         return new Builder();
     }
 
-    public @NonNull LinearRing getExterior() {
+    public @NotNull LinearRing getExterior() {
         return exterior;
     }
 

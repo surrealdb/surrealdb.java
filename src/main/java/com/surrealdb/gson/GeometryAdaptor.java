@@ -3,7 +3,10 @@ package com.surrealdb.gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.geometry.*;
+import com.surrealdb.geometry.GeometryPrimitive;
+import com.surrealdb.geometry.LinearRing;
+import com.surrealdb.geometry.Point;
+import com.surrealdb.geometry.Polygon;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

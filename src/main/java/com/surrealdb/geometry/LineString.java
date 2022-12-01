@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -144,7 +143,7 @@ public final class LineString extends GeometryPrimitive implements Iterable<Poin
     }
 
     @Override
-    public @NonNull Iterator<Point> iterator() {
+    public @NotNull Iterator<Point> iterator() {
         return points.iterator();
     }
 

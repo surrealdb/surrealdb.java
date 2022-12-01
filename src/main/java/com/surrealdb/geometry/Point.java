@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +58,7 @@ public final class Point extends GeometryPrimitive {
         return new Point(x, y);
     }
 
-    public static @NotNull Point fromGeoHash(@NonNull String geoHash) {
+    public static @NotNull Point fromGeoHash(@NotNull String geoHash) {
         DecodingGeoHashCoord xCoord = new DecodingGeoHashCoord(-180, 180);
         DecodingGeoHashCoord yCoord = new DecodingGeoHashCoord(-90, 90);
         boolean lng = true;
@@ -103,7 +102,7 @@ public final class Point extends GeometryPrimitive {
         return point1.distanceInKilometers(point2);
     }
 
-    public static double distanceInMeters(Point point1, Point point2) {
+    public static double distanceInMeters(@NotNull Point point1, @NotNull Point point2) {
         return point1.distanceInMeters(point2);
     }
 
@@ -222,7 +221,7 @@ public final class Point extends GeometryPrimitive {
         return rotateDegrees(ZERO, angle);
     }
 
-    public @NotNull Point scale(Point center, double scaleX, double scaleY) {
+    public @NotNull Point scale(@NotNull Point center, double scaleX, double scaleY) {
         double deltaX = this.getX() - center.getX();
         double deltaY = this.getY() - center.getY();
 
@@ -232,7 +231,7 @@ public final class Point extends GeometryPrimitive {
         return new Point(x, y);
     }
 
-    public @NotNull Point scale(Point center, double scale) {
+    public @NotNull Point scale(@NotNull Point center, double scale) {
         return scale(center, scale, scale);
     }
 

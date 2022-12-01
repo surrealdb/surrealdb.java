@@ -293,7 +293,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
             callback.completeExceptionally(exception);
         }
 
-        private void handleRpcSuccess(RequestEntry requestEntry, @NotNull RpcResponse response, String message) {
+        private void handleRpcSuccess(@NotNull RequestEntry requestEntry, @NotNull RpcResponse response, String message) {
             logSuccessfulRpcResponse(requestEntry, message);
 
             requestEntry.getResultType().ifPresentOrElse(

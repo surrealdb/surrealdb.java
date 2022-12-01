@@ -78,7 +78,7 @@ class InternalGeometryUtils {
      * @param geometries The geometries to calculate the center of.
      * @return The center of the geometries.
      */
-    static @NotNull Point calculateCenterOfGeometries(List<? extends GeometryPrimitive> geometries) {
+    static @NotNull Point calculateCenterOfGeometries(@NotNull List<? extends GeometryPrimitive> geometries) {
         double x = 0;
         double y = 0;
         int count = 0;
@@ -94,11 +94,11 @@ class InternalGeometryUtils {
         return Point.fromXY(x / count, y / count);
     }
 
-    static @NotNull Point calculateCenterOfPointsIterable(Iterable<? extends Point> iterable) {
+    static @NotNull Point calculateCenterOfPointsIterable(@NotNull Iterable<? extends Point> iterable) {
         return calculateCenterOfPointsIterator(iterable.iterator());
     }
 
-    static @NotNull Point calculateCenterOfPointsIterator(Iterator<? extends Point> iterator) {
+    static @NotNull Point calculateCenterOfPointsIterator(@NotNull Iterator<? extends Point> iterator) {
         double x = 0;
         double y = 0;
         int count = 0;
