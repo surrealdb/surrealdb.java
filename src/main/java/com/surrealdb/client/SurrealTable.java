@@ -44,7 +44,13 @@ public final class SurrealTable<T> {
         return new SurrealTable<>(name, type);
     }
 
-    @NotNull String makeThing(@NotNull String record) {
+    /**
+     * This will change soon.
+     *
+     * @param record The record to append to the table
+     * @return A string in the format of 'table_name:recordId'
+     */
+    public @NotNull String makeThing(@NotNull String record) {
         return name + ":" + record;
     }
 

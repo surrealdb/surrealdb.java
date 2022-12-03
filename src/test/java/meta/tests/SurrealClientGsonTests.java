@@ -5,42 +5,34 @@ import com.google.gson.GsonBuilder;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.SurrealClientSettings;
 import com.surrealdb.client.SurrealTable;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import meta.model.InstantContainer;
-import meta.model.Person;
+import meta.model.KvMap;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static meta.model.KvMap.assertKvMapEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * E2E serialization tests
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
+@Slf4j
 public abstract class SurrealClientGsonTests {
 
-    private static final SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
-    private static final SurrealTable<InstantContainer> timeTable = SurrealTable.of("time", InstantContainer.class);
+    private static final @NotNull String TABLE_NAME = "gson_with_pretty_printing";
 
-    private SurrealClient client;
+    private @UnknownNullability SurrealClient client;
 
     protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
-    @AfterEach
-    void cleanup() {
-        if (client != null) {
-            client.deleteAllRecordsInTable(personTable);
-            client.deleteAllRecordsInTable(timeTable);
-
-            client.cleanup();
-        }
-    }
-
-    void createClient(Gson gson) {
+    void createClient(@NotNull Gson gson) {
         SurrealClientSettings settings = TestUtils.createClientSettingsBuilderWithDefaults()
             .setGson(gson)
             .build();
@@ -49,53 +41,100 @@ public abstract class SurrealClientGsonTests {
 
         client.signIn(TestUtils.getAuthCredentials());
         client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
+
+        log.info(" --- Finished setup --- ");
+    }
+
+    @AfterEach
+    void cleanup() {
+        if (client != null) {
+            log.info(" --- Starting cleanup --- ");
+
+            SurrealTable<Object> table = SurrealTable.of(TABLE_NAME, Object.class);
+            client.deleteAllRecordsInTable(table);
+
+            client.cleanup();
+        }
     }
 
     @Test
     void testGsonWithPrettyPrintingDoesNotBreakSerialization() {
-        val gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         createClient(gson);
 
-        val person = new Person("Contributor", "Damian", "Kocher", false);
-        assertDoesNotThrow(() -> client.createRecord(personTable, "damian", person));
+        SurrealTable<String2StringMap> table = SurrealTable.of(TABLE_NAME, String2StringMap.class);
+        String recordId = "gson_with_pretty_printing";
 
-        val optionalPersonFromDb = client.retrieveRecord(personTable, "damian");
-        assertTrue(optionalPersonFromDb.isPresent());
-        Person personFromDb = optionalPersonFromDb.get();
+        String2StringMap object = new String2StringMap(table.makeThing(recordId));
+        object.put("testName", "Gson with pretty printing");
+        object.put("testDescription", "This is a test object to verify that Gson's pretty printing does not break serialization");
 
-        assertEquals(person.getTitle(), personFromDb.getTitle());
-        assertEquals(person.getName(), personFromDb.getName());
-        assertEquals(person.isMarketing(), personFromDb.isMarketing());
+        String2StringMap setObject = client.setRecord(table, recordId, object);
+        String2StringMap retrievedObject = client.retrieveRecord(table, recordId).get();
+
+        assertKvMapEquals(object, setObject);
+        assertKvMapEquals(object, retrievedObject);
     }
 
     @Test
     void testGsonWithHtmlEscapingDoesNotBreakSerialization() {
-        val gson = new GsonBuilder().create();
+        Gson gson = new Gson();
         assertTrue(gson.htmlSafe());
         createClient(gson);
 
-        val person = new Person("Professional Database Breaker", "<>!#$", "@:)", false);
-        assertDoesNotThrow(() -> client.createRecord(personTable, "prince", person));
+        SurrealTable<String2StringMap> table = SurrealTable.of(TABLE_NAME, String2StringMap.class);
+        String recordId = "dangerous_strings";
 
-        val deserializedPerson = client.retrieveRecord(personTable, "prince");
-        assertTrue(deserializedPerson.isPresent());
-        // Since person.Name overrides equals, we can use assertEquals
-        assertEquals(person.getName(), deserializedPerson.get().getName());
+        String2StringMap object = new String2StringMap(table.makeThing(recordId));
+        object.put("backslash", "\\");
+        object.put("double_quote", "\"");
+        object.put("single_quote", "'");
+        object.put("ampersand", "&");
+        object.put("less_than", "<");
+        object.put("greater_than", ">");
+        object.put("some_html", "<html><body><h1>Some HTML</h1></body></html>");
+
+        String2StringMap setObject = client.setRecord(table, recordId, object);
+        String2StringMap retrievedObject = client.retrieveRecord(table, recordId).get();
+
+        assertKvMapEquals(object, setObject);
+        assertKvMapEquals(object, retrievedObject);
     }
 
     @Test
     void testInstantSerialization() {
-        createClient(new Gson());
+        val gson = new Gson();
+        createClient(gson);
 
-        Instant now = Instant.now();
-        Instant oneDayFromNow = now.plus(1, ChronoUnit.DAYS);
+        SurrealTable<String2InstantMap> table = SurrealTable.of("gson_serialization_test", String2InstantMap.class);
 
-        val instantContainer = InstantContainer.builder()
-            .instant(now)
-            .instant(oneDayFromNow)
-            .build();
-        val deserializedDateContainer = client.createRecord(timeTable, instantContainer);
+        String recordId = "instant_serialization";
 
-        assertEquals(instantContainer, deserializedDateContainer);
+        String2InstantMap instants = new String2InstantMap(table.makeThing(recordId));
+        instants.put("now", Instant.now());
+        instants.put("epoch", Instant.EPOCH);
+        instants.put("min", Instant.MIN);
+        instants.put("max", Instant.MAX);
+        instants.put("precision", Instant.ofEpochSecond(1670093501, 123456789));
+
+        String2InstantMap setObject = client.setRecord(table, recordId, instants);
+        String2InstantMap retrievedObject = client.retrieveRecord(table, recordId).get();
+
+        assertKvMapEquals(instants, setObject);
+        assertKvMapEquals(instants, retrievedObject);
+    }
+
+    private static class String2StringMap extends KvMap<String, String> {
+
+        public String2StringMap(@NotNull String id) {
+            super(id);
+        }
+    }
+
+    private static class String2InstantMap extends KvMap<String, Instant> {
+
+        public String2InstantMap(@NotNull String id) {
+            super(id);
+        }
     }
 }

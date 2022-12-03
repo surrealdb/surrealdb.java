@@ -6,6 +6,7 @@ import com.surrealdb.client.SurrealClientSettings;
 import com.surrealdb.client.SurrealTable;
 import com.surrealdb.exception.SurrealAuthenticationException;
 import com.surrealdb.exception.SurrealNoDatabaseSelectedException;
+import lombok.extern.slf4j.Slf4j;
 import meta.model.Person;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Khalid Alharisi
  */
+@Slf4j
 public abstract class SurrealClientSpecialOperationsTests {
 
     private SurrealClient client;
@@ -28,10 +30,14 @@ public abstract class SurrealClientSpecialOperationsTests {
     @BeforeEach
     public void setup() {
         client = createClient(TestUtils.getClientSettings());
+
+        log.info("Finished setup");
     }
 
     @AfterEach
     public void teardown() {
+        log.info("Starting cleanup");
+
         client.cleanup();
     }
 
@@ -72,7 +78,7 @@ public abstract class SurrealClientSpecialOperationsTests {
     }
 
     @Test
-    void testUse() {
+    void setNamespaceAndDatabase_whenProvidedWithValidValues_setsTheNameSpaceAndDatabase() {
         assertDoesNotThrow(() -> client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase()));
     }
 
@@ -84,14 +90,5 @@ public abstract class SurrealClientSpecialOperationsTests {
         Object record = new Object();
 
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> client.createRecord(table, record));
-    }
-
-    @Test
-    void testNoDatabaseSelected() {
-        client.signIn(TestUtils.getAuthCredentials());
-
-        assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            client.retrieveAllRecordsFromTable(SurrealTable.of("person", Person.class));
-        });
     }
 }
