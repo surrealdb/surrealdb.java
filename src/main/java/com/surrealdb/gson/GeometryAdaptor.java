@@ -3,7 +3,7 @@ package com.surrealdb.gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.geometry.GeometryPrimitive;
+import com.surrealdb.geometry.Geometry;
 import com.surrealdb.geometry.LinearRing;
 import com.surrealdb.geometry.Point;
 import com.surrealdb.geometry.Polygon;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class GeometryAdaptor<T extends GeometryPrimitive> extends SurrealGsonAdaptor<T> {
+abstract class GeometryAdaptor<T extends Geometry> extends SurrealGsonAdaptor<T> {
 
     GeometryAdaptor(@NotNull Class<T> adaptorClass) {
         super(adaptorClass);

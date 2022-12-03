@@ -61,7 +61,7 @@ class InternalGeometryUtils {
         return formattedX + " " + formattedY;
     }
 
-    static int calculatePointCountOfGeometries(@NotNull Iterable<? extends GeometryPrimitive> geometries) {
+    static int calculatePointCountOfGeometries(@NotNull Iterable<? extends Geometry> geometries) {
         int pointCount = 0;
 
         for (Geometry geometry : geometries) {
@@ -78,12 +78,12 @@ class InternalGeometryUtils {
      * @param geometries The geometries to calculate the center of.
      * @return The center of the geometries.
      */
-    static @NotNull Point calculateCenterOfGeometries(@NotNull List<? extends GeometryPrimitive> geometries) {
+    static @NotNull Point calculateCenterOfGeometries(@NotNull List<? extends Geometry> geometries) {
         double x = 0;
         double y = 0;
         int count = 0;
 
-        for (GeometryPrimitive geometry : geometries) {
+        for (Geometry geometry : geometries) {
             Point geometryCenter = geometry.getCenter();
 
             x += geometryCenter.getX();

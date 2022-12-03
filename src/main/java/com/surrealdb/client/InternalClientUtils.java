@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Shared methods used by all {@link SurrealClient} implementations. As the class name suggests, these methods are not
@@ -18,23 +17,18 @@ import java.util.concurrent.ExecutionException;
 @UtilityClass
 class InternalClientUtils {
 
-    static <T> T getResultSynchronously(@NotNull CompletableFuture<T> completableFuture) {
+    static <T> @NotNull T getResultSynchronously(@NotNull CompletableFuture<T> future) throws SurrealException {
         try {
-            return completableFuture.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof SurrealException) {
-                throw (SurrealException) e.getCause();
-            } else {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+            return future.get();
+        } catch (Exception exception) {
+            Throwable cause = exception.getCause();
 
-    static <T> @NotNull Optional<T> getFirstResultFromFirstQuery(@NotNull List<QueryResult<T>> queryResults) {
-        List<T> resultsFromFirstQuery = getResultsFromFirstQuery(queryResults);
-        return getFirstElement(resultsFromFirstQuery);
+            if (cause instanceof SurrealException surrealException) {
+                throw surrealException;
+            }
+
+            throw new RuntimeException(cause != null ? cause : exception);
+        }
     }
 
     static <T> @NotNull List<T> getResultsFromFirstQuery(@NotNull List<QueryResult<T>> queryResults) {
@@ -42,9 +36,14 @@ class InternalClientUtils {
         if (queryResults.isEmpty()) {
             return Collections.emptyList();
         }
-        // Since there is at least one query, it's safe to get the first one
+        // Since there is at least one QueryResult, it's safe to get the first one
         QueryResult<T> firstQueryResult = queryResults.get(0);
         return firstQueryResult.getResult();
+    }
+
+    static <T> @NotNull Optional<T> getFirstResultFromFirstQuery(@NotNull List<QueryResult<T>> queryResults) {
+        List<T> resultsFromFirstQuery = getResultsFromFirstQuery(queryResults);
+        return getFirstElement(resultsFromFirstQuery);
     }
 
     /**

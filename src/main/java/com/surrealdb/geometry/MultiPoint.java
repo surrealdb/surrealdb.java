@@ -20,7 +20,7 @@ import static com.surrealdb.geometry.InternalGeometryUtils.calculateCenterOfPoin
  */
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class MultiPoint extends GeometryPrimitive implements Iterable<Point> {
+public final class MultiPoint extends Geometry implements Iterable<Point> {
 
     public static final MultiPoint EMPTY = new MultiPoint(ImmutableList.of());
 

@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
-public final class Point extends GeometryPrimitive {
+public final class Point extends Geometry {
 
     public static final @NotNull Point ZERO = new Point(0, 0);
 

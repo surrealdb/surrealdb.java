@@ -19,7 +19,7 @@ import static com.surrealdb.geometry.InternalGeometryUtils.calculateCenterOfPoin
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.4">GeoJSON Specification - LineString</a>
  */
 @EqualsAndHashCode(callSuper = false)
-public final class LineString extends GeometryPrimitive implements Iterable<Point> {
+public final class LineString extends Geometry implements Iterable<Point> {
 
     @NotNull ImmutableList<Point> points;
 

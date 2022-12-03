@@ -18,7 +18,7 @@ import java.util.function.Function;
  * @see <a href="https://tools.ietf.org/html/rfc7946#section-3.1.6">GeoJSON Specification - Polygon</a>
  */
 @EqualsAndHashCode(callSuper = false)
-public final class Polygon extends GeometryPrimitive {
+public final class Polygon extends Geometry {
 
     @NotNull LinearRing exterior;
     @NotNull ImmutableList<LinearRing> interiors;

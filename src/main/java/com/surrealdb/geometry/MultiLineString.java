@@ -15,7 +15,7 @@ import java.util.function.Function;
  */
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class MultiLineString extends GeometryPrimitive implements Iterable<LineString> {
+public final class MultiLineString extends Geometry implements Iterable<LineString> {
 
     public static final MultiLineString EMPTY = new MultiLineString(ImmutableList.of());
 

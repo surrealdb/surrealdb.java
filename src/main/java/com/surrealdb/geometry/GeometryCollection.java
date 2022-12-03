@@ -18,14 +18,14 @@ import java.util.*;
  */
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class GeometryCollection extends Geometry implements Iterable<GeometryPrimitive> {
+public final class GeometryCollection extends Geometry implements Iterable<Geometry> {
 
     /**
      * A {@code GeometryCollection} without any geometries.
      */
     public static final @NotNull GeometryCollection EMPTY = new GeometryCollection(ImmutableList.of());
 
-    @NotNull ImmutableList<GeometryPrimitive> geometries;
+    @NotNull ImmutableList<Geometry> geometries;
 
     /**
      * Creates and returns a new {@code GeometryCollection} with the given geometries.
@@ -35,10 +35,10 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
      * @param geometries The geometries to store in this collection.
      * @return A new GeometryCollection containing the provided geometries
      * @throws NullPointerException If the provided {@code geometries} contains a null element
-     * @see GeometryCollection#from(GeometryPrimitive...)
-     * @see GeometryCollection#from(GeometryPrimitive)
+     * @see GeometryCollection#from(Geometry...)
+     * @see GeometryCollection#from(Geometry)
      */
-    public static @NotNull GeometryCollection from(@NotNull Collection<GeometryPrimitive> geometries) {
+    public static @NotNull GeometryCollection from(@NotNull Collection<Geometry> geometries) {
         if (geometries.isEmpty()) {
             return EMPTY;
         }
@@ -55,9 +55,9 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
      * @return A new GeometryCollection containing the provided geometries
      * @throws NullPointerException If the provided {@code geometries} contains a null element
      * @see GeometryCollection#from(Collection)
-     * @see GeometryCollection#from(GeometryPrimitive)
+     * @see GeometryCollection#from(Geometry)
      */
-    public static @NotNull GeometryCollection from(GeometryPrimitive @NotNull ... geometries) {
+    public static @NotNull GeometryCollection from(Geometry @NotNull ... geometries) {
         if (geometries.length == 0) {
             return EMPTY;
         }
@@ -71,9 +71,9 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
      * @param geometry The geometry to store in this collection.
      * @return A new GeometryCollection containing the provided geometry
      * @see GeometryCollection#from(Collection)
-     * @see GeometryCollection#from(GeometryPrimitive...)
+     * @see GeometryCollection#from(Geometry...)
      */
-    public static @NotNull GeometryCollection from(@NotNull GeometryPrimitive geometry) {
+    public static @NotNull GeometryCollection from(@NotNull Geometry geometry) {
         return new GeometryCollection(ImmutableList.of(geometry));
     }
 
@@ -85,7 +85,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
         return new Builder().addGeometries(this);
     }
 
-    public @NotNull GeometryPrimitive getGeometry(int index) {
+    public @NotNull Geometry getGeometry(int index) {
         return geometries.get(index);
     }
 
@@ -94,7 +94,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
     }
 
     @Override
-    public @NotNull Iterator<GeometryPrimitive> iterator() {
+    public @NotNull Iterator<Geometry> iterator() {
         return geometries.iterator();
     }
 
@@ -108,7 +108,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
         // Since the returned string is cached, the overhead of using a stream
         // is negligible.
         List<String> wktGeometries = geometries.stream()
-            .map(GeometryPrimitive::toString)
+            .map(Geometry::toString)
             .toList();
 
         return InternalGeometryUtils.calculateWktGeneric("GEOMETRYCOLLECTION", wktGeometries);
@@ -122,13 +122,13 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Builder {
 
-        @NotNull List<GeometryPrimitive> geometries = new ArrayList<>();
+        @NotNull List<Geometry> geometries = new ArrayList<>();
 
         /**
          * @param geometry The geometry to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addGeometry(GeometryPrimitive geometry) {
+        public @NotNull Builder addGeometry(Geometry geometry) {
             geometries.add(geometry);
             return this;
         }
@@ -137,7 +137,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
          * @param geometries The geometries to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addGeometries(@NotNull Collection<GeometryPrimitive> geometries) {
+        public @NotNull Builder addGeometries(@NotNull Collection<Geometry> geometries) {
             this.geometries.addAll(geometries);
             return this;
         }
@@ -146,7 +146,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
          * @param geometries The geometries to add
          * @return This {@code Builder} object
          */
-        public @NotNull Builder addGeometries(GeometryPrimitive... geometries) {
+        public @NotNull Builder addGeometries(Geometry... geometries) {
             Collections.addAll(this.geometries, geometries);
             return this;
         }
@@ -166,7 +166,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
          * @param geometry The geometry to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeGeometry(GeometryPrimitive geometry) {
+        public @NotNull Builder removeGeometry(Geometry geometry) {
             geometries.remove(geometry);
             return this;
         }
@@ -175,7 +175,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
          * @param geometries The geometries to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeGeometries(@NotNull Collection<GeometryPrimitive> geometries) {
+        public @NotNull Builder removeGeometries(@NotNull Collection<Geometry> geometries) {
             this.geometries.removeAll(geometries);
             return this;
         }
@@ -184,8 +184,8 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
          * @param geometries The geometries to remove
          * @return This {@code Builder} object
          */
-        public @NotNull Builder removeGeometries(GeometryPrimitive @NotNull ... geometries) {
-            for (GeometryPrimitive geometry : geometries) {
+        public @NotNull Builder removeGeometries(Geometry @NotNull ... geometries) {
+            for (Geometry geometry : geometries) {
                 this.geometries.remove(geometry);
             }
             return this;

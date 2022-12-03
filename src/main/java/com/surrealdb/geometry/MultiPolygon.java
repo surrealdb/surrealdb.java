@@ -15,7 +15,7 @@ import java.util.function.Function;
  */
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class MultiPolygon extends GeometryPrimitive implements Iterable<Polygon> {
+public final class MultiPolygon extends Geometry implements Iterable<Polygon> {
 
     public static final @NotNull MultiPolygon EMPTY = new MultiPolygon(ImmutableList.of());
 

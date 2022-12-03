@@ -4,8 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.SurrealClientSettings;
 import com.surrealdb.client.SurrealTable;
+import com.surrealdb.geometry.GeometryCollection;
 import com.surrealdb.geometry.LinearRing;
+import com.surrealdb.geometry.Point;
 import com.surrealdb.geometry.Polygon;
+import lombok.Value;
 import meta.model.City;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -32,11 +35,6 @@ public abstract class SurrealClientGeometryTests {
         client = createClient(TestUtils.getClientSettings());
         client.signIn(TestUtils.getAuthCredentials());
         client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
-
-        CompletableFuture<?>[] cityCreationFutures = City.allCityCenters().stream()
-            .map((city) -> client.createRecordAsync(citiesTable, city))
-            .toArray(CompletableFuture[]::new);
-        CompletableFuture.allOf(cityCreationFutures).join();
     }
 
     @AfterEach
@@ -44,8 +42,19 @@ public abstract class SurrealClientGeometryTests {
         client.deleteAllRecordsInTable(citiesTable);
     }
 
+    void createCities() {
+        CompletableFuture<?>[] cityCreationFutures = City.allCityCenters().stream()
+            .map(city -> client.createRecordAsync(citiesTable, city))
+            .toList()
+            .toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(cityCreationFutures).join();
+    }
+
     @Test
     void testQueryingPointsInsidePolygon() {
+        createCities();
+
         // A VERY approximate polygon around Japan
         LinearRing selectionExterior = LinearRing.builder()
             .addPointYX(41.41758775838002, 139.36688850517004)
@@ -65,5 +74,25 @@ public abstract class SurrealClientGeometryTests {
         List<String> cityNames = cities.stream().map(City::getName).toList();
         assertTrue(cityNames.contains("Tokyo"), "Tokyo should be in the selection");
         assertTrue(cityNames.contains("Osaka"), "Osaka should be in the selection");
+    }
+
+    @Value
+    static class Example {
+
+        @NotNull GeometryCollection collection;
+
+    }
+
+    @Test
+    void testAddingGeometryCollectionContainingGeometryCollection() {
+        GeometryCollection collection1 = GeometryCollection.from(Point.fromXY(1, 2));
+        GeometryCollection collection2 = GeometryCollection.from(collection1);
+
+        Example example = new Example(collection2);
+
+        SurrealTable<Example> table = SurrealTable.of("examples", Example.class);
+        client.createRecord(table, "example", example);
+        client.retrieveRecord(table, "example");
+        client.deleteAllRecordsInTable(table);
     }
 }

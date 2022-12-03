@@ -22,7 +22,7 @@ final class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollect
         JsonArray geometries = new JsonArray();
         object.add("geometries", geometries);
 
-        for (GeometryPrimitive geometry : geometryCollection) {
+        for (Geometry geometry : geometryCollection) {
             geometries.add(context.serialize(geometry));
         }
 
@@ -34,16 +34,17 @@ final class GeometryCollectionAdaptor extends SurrealGsonAdaptor<GeometryCollect
         JsonObject object = json.getAsJsonObject();
         JsonArray geometries = object.getAsJsonArray("geometries");
 
-        List<GeometryPrimitive> geometryList = new ArrayList<>(geometries.size());
+        List<Geometry> geometryList = new ArrayList<>(geometries.size());
         for (JsonElement geometry : geometries) {
             String type = geometry.getAsJsonObject().get("type").getAsString();
-            Class<? extends GeometryPrimitive> geometryClass = switch (type) {
+            Class<? extends Geometry> geometryClass = switch (type) {
                 case "Point" -> Point.class;
                 case "MultiPoint" -> MultiPoint.class;
                 case "LineString" -> LineString.class;
                 case "MultiLineString" -> MultiLineString.class;
                 case "Polygon" -> Polygon.class;
                 case "MultiPolygon" -> MultiPolygon.class;
+                case "GeometryCollection" -> GeometryCollection.class;
                 default -> throw new JsonParseException("Unknown geometry type: " + type);
             };
 

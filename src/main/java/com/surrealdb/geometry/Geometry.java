@@ -4,7 +4,15 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public sealed abstract class Geometry permits GeometryPrimitive, GeometryCollection {
+public sealed abstract class Geometry permits
+    Point,
+    MultiPoint,
+    LineString,
+    MultiLineString,
+    LinearRing,
+    Polygon,
+    MultiPolygon,
+    GeometryCollection {
 
     @NonFinal
     int pointCount = -1;

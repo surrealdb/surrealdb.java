@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
-public final class LinearRing extends GeometryPrimitive implements Iterable<Point> {
+public final class LinearRing extends Geometry implements Iterable<Point> {
 
     @NotNull ImmutableList<Point> points;
 
