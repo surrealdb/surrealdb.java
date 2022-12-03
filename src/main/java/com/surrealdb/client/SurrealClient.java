@@ -521,7 +521,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all changed records.
      */
-    default <T> @NotNull CompletableFuture<List<T>> changeAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T> @NotNull CompletableFuture<List<T>> changeAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull Object data) {
         // SQL query to change records
         String sql = "UPDATE type::table($tb) MERGE $data RETURN AFTER;";
         // Arguments to use in the query
@@ -541,7 +541,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a list of all changed records.
      */
-    default <T> @NotNull List<T> changeAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T> @NotNull List<T> changeAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull Object data) {
         return getResultSynchronously(changeAllRecordsInTableAsync(table, data));
     }
 
@@ -554,7 +554,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the changed record.
      */
-    default <T> @NotNull CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+    default <T> @NotNull CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull Object data) {
         // SQL query to change a record
         String sql = "UPDATE type::thing($what) MERGE $data RETURN AFTER;";
         // Arguments to use in the query
@@ -578,7 +578,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return the changed record.
      */
-    default <T> @NotNull T changeRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+    default <T> @NotNull T changeRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull Object data) {
         return getResultSynchronously(changeRecordAsync(table, recordId, data));
     }
 
