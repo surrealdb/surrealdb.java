@@ -10,10 +10,12 @@ import com.surrealdb.patch.AddPatch;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.patch.ReplacePatch;
 import com.surrealdb.query.QueryResult;
+import lombok.extern.slf4j.Slf4j;
 import meta.model.PartialPerson;
 import meta.model.Person;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,11 +31,15 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Khalid Alharisi
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
+@Slf4j
 public abstract class SurrealClientTests {
 
-    private static final SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
+    private static final @NotNull SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
 
-    private SurrealClient client;
+    private @UnknownNullability SurrealClient client;
+
+    private @UnknownNullability Person tobie;
+    private @UnknownNullability Person jaime;
 
     protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
@@ -44,12 +50,16 @@ public abstract class SurrealClientTests {
         client.signIn(TestUtils.getAuthCredentials());
         client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        client.createRecord(personTable, "tobie", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        client.createRecord(personTable, "jaime", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+        tobie = client.createRecord(personTable, "tobie", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        jaime = client.createRecord(personTable, "jaime", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+
+        log.info("Finished setup");
     }
 
     @AfterEach
     public void teardown() {
+        log.info("Starting cleanup");
+
         // Delete all records created by tests
         client.deleteAllRecordsInTable(personTable);
         // Disconnect gracefully
@@ -58,11 +68,11 @@ public abstract class SurrealClientTests {
 
     @Test
     void setConnectionWideParameter_whenProvidedWithAParam_setsTheParamOnTheConnection() {
-        Person.Name expectedName = new Person.Name("First", "Last");
-        client.setConnectionWideParameter("default_name", expectedName);
-        Person person = client.sqlSingle("CREATE person:global_test SET name = $default_name", Person.class).get();
+        Person.Name defaultName = new Person.Name("John", "Doe");
+        client.setConnectionWideParameter("default_name", defaultName);
+        Person person = client.sqlSingle("CREATE person:global_param_test SET name = $default_name", Person.class).get();
 
-        assertEquals(expectedName, person.getName());
+        assertEquals(defaultName, person.getName());
     }
 
     @Test
@@ -74,16 +84,15 @@ public abstract class SurrealClientTests {
 
         assertEquals(1, actual.size()); // number of queries
         assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
-        assertEquals(1, actual.get(0).getResult().size()); // number of rows returned
+        assertEquals(1, actual.get(0).getResult().size()); // number of records returned
     }
 
     @Test
     void sqlSingle_whenTheQueryWillFindARecord_returnsANonEmptyOptionalContainingTheSpecifiedRecord() {
-        Optional<Person> optionalPerson = client.sqlSingle("SELECT * FROM person ORDER BY name.first DESC LIMIT 1", Person.class);
+        Optional<Person> optionalPerson = client.sqlSingle("SELECT * FROM person ORDER BY name.first ASC LIMIT 1", Person.class);
 
         assertTrue(optionalPerson.isPresent());
-        Person person = optionalPerson.get();
-        assertEquals("Tobie", person.getName().getFirst());
+        assertEquals(jaime, optionalPerson.get());
     }
 
     @Test
@@ -125,33 +134,38 @@ public abstract class SurrealClientTests {
 
         assertEquals("person", exception.getTableName());
         assertEquals("khalid", exception.getRecordId());
+
+        assertEquals("Record 'person:khalid' already exists", exception.getMessage());
+        assertNull(exception.getCause());
     }
 
     @Test
     void retrieveAllRecordsFromTable_whenTableExists_returnsAllRecordsFromThatTable() {
         List<Person> result = client.retrieveAllRecordsFromTable(personTable);
+
         assertEquals(2, result.size());
+
+        assertEquals(result.get(0), jaime);
+        assertEquals(result.get(1), tobie);
     }
 
     @Test
     void retrieveAllRecordsFromTable_whenTableDoesNotExist_returnsEmptyList() {
-        SurrealTable<Person> table = SurrealTable.of("non_existing_table", Person.class);
-        List<Person> result = client.retrieveAllRecordsFromTable(table);
+        SurrealTable<Object> table = SurrealTable.of("non_existent_table", Object.class);
+        List<Object> result = client.retrieveAllRecordsFromTable(table);
+
         assertEquals(0, result.size());
     }
 
     @Test
-    void retrieveRecord_whenRecordWithTheGivenNameExists_returnsSpecifiedRecord() {
-        Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
-        expected.setId("person:tobie");
+    void retrieveRecord_whenRecordWithTheGivenIdExists_returnsSpecifiedRecord() {
+        Person retrieved = client.retrieveRecord(personTable, "tobie").get();
 
-        Person actual = client.retrieveRecord(personTable, "tobie").get();
-
-        assertEquals(expected, actual);
+        assertEquals(tobie, retrieved);
     }
 
     @Test
-    void retrieveRecord_whenRecordWithTheGivenNameDoesNotExist_returnsAnEmptyOptional() {
+    void retrieveRecord_whenRecordWithTheGivenIdDoesNotExist_returnsAnEmptyOptional() {
         Optional<Person> person = client.retrieveRecord(personTable, "404");
 
         assertTrue(person.isEmpty());
@@ -159,29 +173,35 @@ public abstract class SurrealClientTests {
 
     @Test
     void setRecord_whenGivenARecordIdThatExists_updatesTheRecord() {
-        Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
-        expected.setId("person:tobie");
+        Person newPerson = new Person("Engineer", "Khalid", "Alharisi", false);
 
-        Person actual = client.setRecord(personTable, "tobie", expected);
+        Person actual = client.setRecord(personTable, "tobie", newPerson);
 
-        assertEquals(expected, actual);
+        assertEquals("person:tobie", actual.getId());
+        assertEquals("Engineer", actual.getTitle());
+        assertEquals("Khalid", actual.getName().getFirst());
+        assertEquals("Alharisi", actual.getName().getLast());
+        assertFalse(actual.isMarketing());
     }
 
     @Test
     void setRecord_whenGivenARecordIdThatDoesNotExist_createsAndSetsRecordData() {
         Person person = new Person("Contributor", "Damian", "Kocher", false);
 
-        Person createdPerson = assertDoesNotThrow(() -> client.setRecord(personTable, "khalid", person));
+        Person created = assertDoesNotThrow(() -> client.setRecord(personTable, "damian", person));
+        Person retrieved = client.retrieveRecord(personTable, "damian").get();
 
-        assertEquals("person:khalid", createdPerson.getId());
-        assertEquals("Contributor", createdPerson.getTitle());
-        assertEquals("Damian", createdPerson.getName().getFirst());
-        assertEquals("Kocher", createdPerson.getName().getLast());
-        assertFalse(createdPerson.isMarketing());
+        assertEquals(created, retrieved);
+
+        assertEquals("person:damian", retrieved.getId());
+        assertEquals("Contributor", retrieved.getTitle());
+        assertEquals("Damian", retrieved.getName().getFirst());
+        assertEquals("Kocher", retrieved.getName().getLast());
+        assertFalse(retrieved.isMarketing());
     }
 
     @Test
-    public void updateAllRecordsInTable_whenProvidedData_setsAllRecordsToThatData() {
+    public void setAllRecordsInTable_whenProvidedData_setsAllRecordsToThatData() {
         Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
         List<Person> actual = client.setAllRecordsInTable(personTable, expected);
@@ -198,21 +218,36 @@ public abstract class SurrealClientTests {
     void changeRecord_whenProvidedWithPartialRecord_updatesOnlyChangesValues() {
         PartialPerson patch = new PartialPerson(false);
 
-        // TODO: Change how withType works
-        PartialPerson actual = client.changeRecord(personTable.withType(PartialPerson.class), "tobie", patch);
+        Person changedRecord = client.changeRecord(personTable, "tobie", patch);
 
-        assertEquals(patch.isMarketing(), actual.isMarketing());
+        // check that the record was updated
+        assertFalse(changedRecord.isMarketing());
+
+        // other values should remain unchanged
+        assertEquals(tobie.getId(), changedRecord.getId());
+        assertEquals(tobie.getTitle(), changedRecord.getTitle());
+        assertEquals(tobie.getName(), changedRecord.getName());
     }
 
     @Test
     void changeAllRecordsInTable_whenProvidedPartialRecord_onlyUpdatesValuesInPartialRecord() {
         PartialPerson patch = new PartialPerson(false);
 
-        SurrealTable<PartialPerson> partialPersonView = personTable.withType(PartialPerson.class);
-        List<PartialPerson> results = client.changeAllRecordsInTable(partialPersonView, patch);
+        List<Person> patchedPeople = client.changeAllRecordsInTable(personTable, patch);
 
-        assertEquals(2, results.size());
-        results.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
+        assertEquals(2, patchedPeople.size());
+
+        Person changedJaime = patchedPeople.get(0);
+        assertEquals(jaime.getId(), changedJaime.getId());
+        assertEquals(jaime.getTitle(), changedJaime.getTitle());
+        assertEquals(jaime.getName(), changedJaime.getName());
+        assertFalse(changedJaime.isMarketing());
+
+        Person changedTobie = patchedPeople.get(1);
+        assertEquals(tobie.getId(), changedTobie.getId());
+        assertEquals(tobie.getTitle(), changedTobie.getTitle());
+        assertEquals(tobie.getName(), changedTobie.getName());
+        assertFalse(changedTobie.isMarketing());
     }
 
     @Test
@@ -283,7 +318,10 @@ public abstract class SurrealClientTests {
     @Test
     void deleteAllRecordsInTable_whenProvidedWithATableContainingRecords_deletesAllRecords() {
         List<Person> deletedPeople = client.deleteAllRecordsInTable(personTable);
+
         assertEquals(2, deletedPeople.size());
+        assertEquals(jaime, deletedPeople.get(0));
+        assertEquals(tobie, deletedPeople.get(1));
 
         List<Person> people = client.retrieveAllRecordsFromTable(personTable);
         assertEquals(0, people.size());
@@ -291,14 +329,16 @@ public abstract class SurrealClientTests {
 
     @Test
     void deleteAllRecordsInTable_whenProvidedWithATableContainingNoRecords_returnsEmptyList() {
-        SurrealTable<Person> table = SurrealTable.of("non_existing_table", Person.class);
-        List<Person> deletedPeople = client.deleteAllRecordsInTable(table);
-        assertEquals(0, deletedPeople.size());
+        SurrealTable<Object> table = SurrealTable.of("non_existent_table", Object.class);
+        List<Object> deletedRecords = client.deleteAllRecordsInTable(table);
+
+        assertEquals(0, deletedRecords.size());
     }
 
     @Test
     void getNumberOfRecordsInTable_whenProvidedWithATableContainingRecords_returnsTheNumberOfRecords() {
         long count = client.getNumberOfRecordsInTable(personTable);
+
         assertEquals(2, count);
     }
 
@@ -306,6 +346,7 @@ public abstract class SurrealClientTests {
     void getNumberOfRecordsInTable_whenProvidedWithAnEmptyTable_returnsZeros() {
         SurrealTable<Object> emptyTable = SurrealTable.of("non_existent_table", Object.class);
         long count = client.getNumberOfRecordsInTable(emptyTable);
+
         assertEquals(0, count);
     }
 }

@@ -15,7 +15,7 @@ public final class SurrealRecordAlreadyExistsException extends SurrealException 
     @NotNull String recordId;
 
     public SurrealRecordAlreadyExistsException(@NotNull String tableName, @NotNull String recordId) {
-        super("Record `" + tableName + ":" + recordId + "` already exists");
+        super("Record '" + tableName + ":" + recordId + "' already exists");
 
         this.tableName = tableName;
         this.recordId = recordId;
