@@ -1,12 +1,13 @@
 package com.surrealdb.examples.models;
 
+import com.surrealdb.types.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 public class Person {
 
-    private String id; // This will be automatically assigned by SurrealDB when the object is saved
+    private Id id; // This will be automatically assigned by SurrealDB when the object is saved
     private String title;
     private Name name;
     private boolean marketing;

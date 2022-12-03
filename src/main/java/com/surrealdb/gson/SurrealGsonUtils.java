@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 public class SurrealGsonUtils {
 
     private static final @NotNull ImmutableSet<SurrealGsonAdaptor<?>> ADAPTORS = ImmutableSet.of(
+        new IdAdaptor(),
+
         new InstantAdaptor(),
 
         new GeometryPointAdaptor(),
