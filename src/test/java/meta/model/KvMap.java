@@ -1,5 +1,6 @@
 package meta.model;
 
+import com.surrealdb.types.Id;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @RequiredArgsConstructor
 public class KvMap<K, V> {
 
-    private final @NotNull String id;
+    private final @NotNull Id id;
     private final @NotNull Map<K, V> map = new LinkedHashMap<>();
 
     public void put(@NotNull K key, @NotNull V value) {
@@ -27,7 +28,7 @@ public class KvMap<K, V> {
         return map.get(key);
     }
 
-    public @NotNull String getId() {
+    public @NotNull Id getId() {
         return id;
     }
 

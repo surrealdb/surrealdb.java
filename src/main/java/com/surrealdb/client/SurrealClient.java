@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.query.QueryResult;
+import com.surrealdb.types.Id;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -712,6 +713,27 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      */
     default <T> @NotNull T deleteRecord(@NotNull SurrealTable<T> table, @NotNull String record) {
         return getResultSynchronously(deleteRecordAsync(table, record));
+    }
+
+    default <T> @NotNull CompletableFuture<T> relateAsync(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id with, @NotNull T data) {
+        // SQL query to relate two records
+        String sql = "RELATE type::thing($from)->type::table($edge_tb)->type::thing($with) CONTENT $data RETURN AFTER;";
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
+            "from", from,
+            "edge_tb", edgeTable.getName(),
+            "with", with,
+            "data", data
+        );
+        // Execute the query
+        CompletableFuture<Optional<T>> relateFuture = sqlSingleAsync(sql, edgeTable.getType(), args);
+        // Return the related record
+        ExecutorService executorService = getAsyncOperationExecutorService();
+        return relateFuture.thenApplyAsync(Optional::get, executorService);
+    }
+
+    default <T> @NotNull T relate(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id to, @NotNull T data) {
+        return getResultSynchronously(relateAsync(from, edgeTable, to, data));
     }
 
     default @NotNull CompletableFuture<Long> getNumberOfRecordsInTableAsync(@NotNull SurrealTable<?> table) {

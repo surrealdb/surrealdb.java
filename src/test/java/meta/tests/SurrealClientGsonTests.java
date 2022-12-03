@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.SurrealClientSettings;
 import com.surrealdb.client.SurrealTable;
+import com.surrealdb.types.Id;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import meta.model.KvMap;
@@ -126,14 +127,14 @@ public abstract class SurrealClientGsonTests {
 
     private static class String2StringMap extends KvMap<String, String> {
 
-        public String2StringMap(@NotNull String id) {
+        public String2StringMap(@NotNull Id id) {
             super(id);
         }
     }
 
     private static class String2InstantMap extends KvMap<String, Instant> {
 
-        public String2InstantMap(@NotNull String id) {
+        public String2InstantMap(@NotNull Id id) {
             super(id);
         }
     }

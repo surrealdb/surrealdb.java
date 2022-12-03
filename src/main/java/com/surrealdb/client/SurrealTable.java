@@ -1,5 +1,6 @@
 package com.surrealdb.client;
 
+import com.surrealdb.types.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -47,11 +48,11 @@ public final class SurrealTable<T> {
     /**
      * This will change soon.
      *
-     * @param record The record to append to the table
+     * @param recordId The record to append to the table
      * @return A string in the format of 'table_name:recordId'
      */
-    public @NotNull String makeThing(@NotNull String record) {
-        return name + ":" + record;
+    public @NotNull Id makeThing(@NotNull String recordId) {
+        return Id.of(name, recordId);
     }
 
     /**

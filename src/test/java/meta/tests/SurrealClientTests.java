@@ -10,9 +10,11 @@ import com.surrealdb.patch.AddPatch;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.patch.ReplacePatch;
 import com.surrealdb.query.QueryResult;
+import com.surrealdb.types.Id;
 import lombok.extern.slf4j.Slf4j;
 import meta.model.PartialPerson;
 import meta.model.Person;
+import meta.model.Relationship;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
@@ -35,11 +37,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class SurrealClientTests {
 
     private static final @NotNull SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
+    private static final @NotNull SurrealTable<Relationship> relationshipTable = SurrealTable.of("relationship", Relationship.class);
 
     private @UnknownNullability SurrealClient client;
-
-    private @UnknownNullability Person tobie;
-    private @UnknownNullability Person jaime;
 
     protected abstract @NotNull SurrealClient createClient(@NotNull SurrealClientSettings settings);
 
@@ -50,8 +50,8 @@ public abstract class SurrealClientTests {
         client.signIn(TestUtils.getAuthCredentials());
         client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        tobie = client.createRecord(personTable, "tobie", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        jaime = client.createRecord(personTable, "jaime", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+        client.createRecord(personTable, "tobie", Person.TOBIE);
+        client.createRecord(personTable, "jaime", Person.JAIME);
 
         log.info("Finished setup");
     }
@@ -92,7 +92,7 @@ public abstract class SurrealClientTests {
         Optional<Person> optionalPerson = client.sqlSingle("SELECT * FROM person ORDER BY name.first ASC LIMIT 1", Person.class);
 
         assertTrue(optionalPerson.isPresent());
-        assertEquals(jaime, optionalPerson.get());
+        assertEquals(Person.JAIME, optionalPerson.get());
     }
 
     @Test
@@ -120,7 +120,7 @@ public abstract class SurrealClientTests {
         assertNull(person.getId());
 
         Person createdPerson = client.createRecord(personTable, "khalid", person);
-        assertEquals("person:khalid", createdPerson.getId());
+        assertEquals(personTable.makeThing("khalid"), createdPerson.getId());
     }
 
     @Test
@@ -145,8 +145,8 @@ public abstract class SurrealClientTests {
 
         assertEquals(2, result.size());
 
-        assertEquals(result.get(0), jaime);
-        assertEquals(result.get(1), tobie);
+        assertEquals(Person.JAIME, result.get(0));
+        assertEquals(Person.TOBIE, result.get(1));
     }
 
     @Test
@@ -161,7 +161,7 @@ public abstract class SurrealClientTests {
     void retrieveRecord_whenRecordWithTheGivenIdExists_returnsSpecifiedRecord() {
         Person retrieved = client.retrieveRecord(personTable, "tobie").get();
 
-        assertEquals(tobie, retrieved);
+        assertEquals(Person.TOBIE, retrieved);
     }
 
     @Test
@@ -177,7 +177,7 @@ public abstract class SurrealClientTests {
 
         Person actual = client.setRecord(personTable, "tobie", newPerson);
 
-        assertEquals("person:tobie", actual.getId());
+        assertEquals(personTable.makeThing("tobie"), actual.getId());
         assertEquals("Engineer", actual.getTitle());
         assertEquals("Khalid", actual.getName().getFirst());
         assertEquals("Alharisi", actual.getName().getLast());
@@ -193,7 +193,7 @@ public abstract class SurrealClientTests {
 
         assertEquals(created, retrieved);
 
-        assertEquals("person:damian", retrieved.getId());
+        assertEquals(personTable.makeThing("damian"), retrieved.getId());
         assertEquals("Contributor", retrieved.getTitle());
         assertEquals("Damian", retrieved.getName().getFirst());
         assertEquals("Kocher", retrieved.getName().getLast());
@@ -224,9 +224,9 @@ public abstract class SurrealClientTests {
         assertFalse(changedRecord.isMarketing());
 
         // other values should remain unchanged
-        assertEquals(tobie.getId(), changedRecord.getId());
-        assertEquals(tobie.getTitle(), changedRecord.getTitle());
-        assertEquals(tobie.getName(), changedRecord.getName());
+        assertEquals(personTable.makeThing("tobie"), changedRecord.getId());
+        assertEquals(Person.TOBIE.getTitle(), changedRecord.getTitle());
+        assertEquals(Person.TOBIE.getName(), changedRecord.getName());
     }
 
     @Test
@@ -238,16 +238,24 @@ public abstract class SurrealClientTests {
         assertEquals(2, patchedPeople.size());
 
         Person changedJaime = patchedPeople.get(0);
-        assertEquals(jaime.getId(), changedJaime.getId());
-        assertEquals(jaime.getTitle(), changedJaime.getTitle());
-        assertEquals(jaime.getName(), changedJaime.getName());
+
+        // marketing should be changed
         assertFalse(changedJaime.isMarketing());
 
+        // other values should remain unchanged
+        assertEquals(personTable.makeThing("jaime"), changedJaime.getId());
+        assertEquals(Person.JAIME.getTitle(), changedJaime.getTitle());
+        assertEquals(Person.JAIME.getName(), changedJaime.getName());
+
         Person changedTobie = patchedPeople.get(1);
-        assertEquals(tobie.getId(), changedTobie.getId());
-        assertEquals(tobie.getTitle(), changedTobie.getTitle());
-        assertEquals(tobie.getName(), changedTobie.getName());
+
+        // marketing should be changed
         assertFalse(changedTobie.isMarketing());
+
+        // other values should remain unchanged
+        assertEquals(personTable.makeThing("tobie"), changedTobie.getId());
+        assertEquals(Person.TOBIE.getTitle(), changedTobie.getTitle());
+        assertEquals(Person.TOBIE.getName(), changedTobie.getName());
     }
 
     @Test
@@ -261,8 +269,10 @@ public abstract class SurrealClientTests {
         Person patchedPerson = client.patchRecord(personTable, "tobie", patches);
         Person actual = client.retrieveRecord(personTable, "tobie").get();
 
+        // check that the record was actually patched
         assertEquals(patchedPerson, actual);
 
+        // check that the record was patched correctly
         assertEquals("Khalid", actual.getName().getFirst());
         assertEquals("Alharisi", actual.getName().getLast());
         assertEquals("Engineer", actual.getTitle());
@@ -278,8 +288,11 @@ public abstract class SurrealClientTests {
         Person patched = client.patchRecord(personTable, "damian", patches);
         Person actual = client.retrieveRecord(personTable, "damian").get();
 
+        // check that the record was actually created
         assertEquals(patched, actual);
 
+        // check that the record was created correctly
+        assertEquals(personTable.makeThing("damian"), actual.getId());
         assertEquals("Damian", actual.getName().getFirst());
         assertEquals("Kocher", actual.getName().getLast());
         assertNull(actual.getTitle());
@@ -296,7 +309,8 @@ public abstract class SurrealClientTests {
         List<Person> patchedPeople = client.patchAllRecordsInTable(personTable, patches);
         List<Person> actual = client.retrieveAllRecordsFromTable(personTable);
 
-        assertEquals(patchedPeople, actual);
+        // check that the records were actually patched
+        assertEquals(patchedPeople, actual, "Patched records should match retrieved records");
 
         assertEquals(2, actual.size());
         actual.forEach(person -> {
@@ -309,7 +323,7 @@ public abstract class SurrealClientTests {
     @Test
     void deleteRecord_whenProvidedTheNameOfARecordThatExists_successfullyDeletesRecord() {
         Person deletedPerson = client.deleteRecord(personTable, "tobie");
-        assertEquals("person:tobie", deletedPerson.getId());
+        assertEquals(Person.TOBIE, deletedPerson);
 
         Optional<Person> tobie = client.retrieveRecord(personTable, "tobie");
         assertFalse(tobie.isPresent());
@@ -319,12 +333,12 @@ public abstract class SurrealClientTests {
     void deleteAllRecordsInTable_whenProvidedWithATableContainingRecords_deletesAllRecords() {
         List<Person> deletedPeople = client.deleteAllRecordsInTable(personTable);
 
-        assertEquals(2, deletedPeople.size());
-        assertEquals(jaime, deletedPeople.get(0));
-        assertEquals(tobie, deletedPeople.get(1));
+        assertEquals(2, deletedPeople.size(), "Two people should be deleted");
+        assertEquals(Person.JAIME, deletedPeople.get(0), "Jaime should be deleted first since 'j' comes before 't'");
+        assertEquals(Person.TOBIE, deletedPeople.get(1), "Tobie should be deleted second since 't' comes after 'j'");
 
-        List<Person> people = client.retrieveAllRecordsFromTable(personTable);
-        assertEquals(0, people.size());
+        long numberOfPeopleInTable = client.getNumberOfRecordsInTable(personTable);
+        assertEquals(0, numberOfPeopleInTable, "There should be no records in the table");
     }
 
     @Test
@@ -333,6 +347,19 @@ public abstract class SurrealClientTests {
         List<Object> deletedRecords = client.deleteAllRecordsInTable(table);
 
         assertEquals(0, deletedRecords.size());
+    }
+
+    @Test
+    void relate_whenProvidedWithTwoRecordsThatExist_successfullyCreatesRelationship() {
+        Id tobieId = personTable.makeThing("tobie");
+        Id jaimeId = personTable.makeThing("jaime");
+
+        Relationship relationship = new Relationship("business_partners");
+        client.relate(tobieId, relationshipTable, jaimeId, relationship);
+
+//        assertEquals("knows", relationship.getTags());
+//        assertEquals(jaime.getId(), relationship.getSource());
+//        assertEquals(tobie.getId(), relationship.getTarget());
     }
 
     @Test

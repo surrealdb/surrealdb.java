@@ -1,29 +1,50 @@
 package meta.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.google.common.base.Objects;
+import com.surrealdb.types.Id;
+import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Khalid Alharisi
  */
-@Data
+@Value
 public class Person {
 
-    private String id;
-    private String title;
-    private Name name;
-    private boolean marketing;
+    public static final @NotNull Person TOBIE = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
+    public static final @NotNull Person JAIME = new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true);
+
+    Id id;
+    String title;
+    Name name;
+    boolean marketing;
 
     public Person(String title, String firstName, String lastName, boolean marketing) {
+        id = null;
+
         this.title = title;
         this.name = new Name(firstName, lastName);
         this.marketing = marketing;
     }
 
-    @Data
-    @AllArgsConstructor
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return marketing == person.marketing && Objects.equal(title, person.title) && Objects.equal(name, person.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(title, name, marketing);
+    }
+
+    @Value
     public static class Name {
-        private String first;
-        private String last;
+
+        String first;
+        String last;
+
     }
 }
