@@ -295,4 +295,17 @@ public abstract class SurrealClientTests {
         List<Person> deletedPeople = client.deleteAllRecordsInTable(table);
         assertEquals(0, deletedPeople.size());
     }
+
+    @Test
+    void getNumberOfRecordsInTable_whenProvidedWithATableContainingRecords_returnsTheNumberOfRecords() {
+        long count = client.getNumberOfRecordsInTable(personTable);
+        assertEquals(2, count);
+    }
+
+    @Test
+    void getNumberOfRecordsInTable_whenProvidedWithAnEmptyTable_returnsZeros() {
+        SurrealTable<Object> emptyTable = SurrealTable.of("non_existent_table", Object.class);
+        long count = client.getNumberOfRecordsInTable(emptyTable);
+        assertEquals(0, count);
+    }
 }

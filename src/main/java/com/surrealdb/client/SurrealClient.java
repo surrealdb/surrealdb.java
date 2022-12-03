@@ -2,6 +2,8 @@ package com.surrealdb.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.query.QueryResult;
@@ -710,6 +712,31 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      */
     default <T> @NotNull T deleteRecord(@NotNull SurrealTable<T> table, @NotNull String record) {
         return getResultSynchronously(deleteRecordAsync(table, record));
+    }
+
+    default @NotNull CompletableFuture<Long> getNumberOfRecordsInTableAsync(@NotNull SurrealTable<?> table) {
+        // SQL query to count records
+        String sql = "SELECT count() AS recordCount FROM type::table($tb) GROUP BY ALL;";
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of(
+            "tb", table.getName()
+        );
+        // Execute the query
+        ExecutorService asyncOperationExecutorService = getAsyncOperationExecutorService();
+        CompletableFuture<Optional<JsonObject>> countFuture = sqlSingleAsync(sql, JsonObject.class, args);
+        return countFuture.thenApplyAsync(optional -> {
+            if (optional.isEmpty()) {
+                return 0L;
+            }
+
+            JsonObject jsonObject = optional.get();
+            JsonElement recordCount = jsonObject.get("recordCount");
+            return recordCount.getAsLong();
+        }, asyncOperationExecutorService);
+    }
+
+    default long getNumberOfRecordsInTable(@NotNull SurrealTable<?> table) {
+        return getResultSynchronously(getNumberOfRecordsInTableAsync(table));
     }
 
     /**
