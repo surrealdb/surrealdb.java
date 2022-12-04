@@ -1,5 +1,6 @@
 package com.surrealdb.patch;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -16,9 +17,17 @@ import org.jetbrains.annotations.NotNull;
 @EqualsAndHashCode
 public final class ReplacePatch<T> implements Patch {
 
-    @NotNull String op = "replace";
 
+    /**
+     * Used by Gson to serialize the patch.
+     */
+    @SerializedName("op")
+    @NotNull String operation = "replace";
+
+    @SerializedName("path")
     @NotNull String path;
+
+    @SerializedName("value")
     @NotNull T value;
 
     public static <T> @NotNull ReplacePatch<T> create(@NotNull String path, @NotNull T value) {

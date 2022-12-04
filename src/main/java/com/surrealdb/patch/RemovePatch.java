@@ -1,5 +1,6 @@
 package com.surrealdb.patch;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,8 +20,10 @@ public final class RemovePatch implements Patch {
     /**
      * Used by Gson to serialize the patch.
      */
-    @NotNull String op = "remove";
+    @SerializedName("op")
+    @NotNull String operation = "remove";
 
+    @SerializedName("path")
     @NotNull String path;
 
     public static @NotNull RemovePatch create(@NotNull String path) {

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 @ToString
-public class Id {
+public final class Id {
 
     @NotNull String table;
     @NotNull String recordId;
