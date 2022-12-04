@@ -1,13 +1,14 @@
 package com.surrealdb.examples.models;
 
-import com.surrealdb.types.Id;
+import com.surrealdb.types.SurrealRecord;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class Person {
+@EqualsAndHashCode(callSuper = false)
+public class Person extends SurrealRecord {
 
-    private Id id; // This will be automatically assigned by SurrealDB when the object is saved
     private String title;
     private Name name;
     private boolean marketing;

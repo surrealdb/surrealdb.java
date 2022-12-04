@@ -1,6 +1,5 @@
-package com.surrealdb.client;
+package com.surrealdb.types;
 
-import com.surrealdb.types.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
  */
 @EqualsAndHashCode
 @ToString
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class SurrealTable<T> {
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+public sealed class SurrealTable<T extends SurrealRecord> permits SurrealEdgeTable {
 
     @NotNull String name;
     @NotNull Class<T> type;
@@ -28,7 +27,7 @@ public final class SurrealTable<T> {
      * @param <T>  The type of the table
      * @return A new {@code SurrealTable} with the given name and type
      */
-    public static <T> @NotNull SurrealTable<T> of(@NotNull String name, @NotNull Class<T> type) {
+    public static <T extends SurrealRecord> @NotNull SurrealTable<T> of(@NotNull String name, @NotNull Class<T> type) {
         return new SurrealTable<>(name, type);
     }
 
@@ -41,7 +40,7 @@ public final class SurrealTable<T> {
      * @param <U>  The type of the table
      * @return A new {@code SurrealTable} that shares the name of this table, but has the given type
      */
-    public <U> @NotNull SurrealTable<U> withType(@NotNull Class<U> type) {
+    public <U extends SurrealRecord> @NotNull SurrealTable<U> withType(@NotNull Class<U> type) {
         return new SurrealTable<>(name, type);
     }
 

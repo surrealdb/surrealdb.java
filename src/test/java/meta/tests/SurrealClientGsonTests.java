@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.SurrealClientSettings;
-import com.surrealdb.client.SurrealTable;
-import com.surrealdb.types.Id;
+import com.surrealdb.types.SurrealTable;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import meta.model.EmptyRecord;
 import meta.model.KvMap;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +51,7 @@ public abstract class SurrealClientGsonTests {
         if (client != null) {
             log.info(" --- Starting cleanup --- ");
 
-            SurrealTable<Object> table = SurrealTable.of(TABLE_NAME, Object.class);
+            SurrealTable<EmptyRecord> table = SurrealTable.of(TABLE_NAME, EmptyRecord.class);
             client.deleteAllRecordsInTable(table);
 
             client.cleanup();
@@ -66,7 +66,7 @@ public abstract class SurrealClientGsonTests {
         SurrealTable<String2StringMap> table = SurrealTable.of(TABLE_NAME, String2StringMap.class);
         String recordId = "gson_with_pretty_printing";
 
-        String2StringMap object = new String2StringMap(table.makeThing(recordId));
+        String2StringMap object = new String2StringMap();
         object.put("testName", "Gson with pretty printing");
         object.put("testDescription", "This is a test object to verify that Gson's pretty printing does not break serialization");
 
@@ -86,7 +86,7 @@ public abstract class SurrealClientGsonTests {
         SurrealTable<String2StringMap> table = SurrealTable.of(TABLE_NAME, String2StringMap.class);
         String recordId = "dangerous_strings";
 
-        String2StringMap object = new String2StringMap(table.makeThing(recordId));
+        String2StringMap object = new String2StringMap();
         object.put("backslash", "\\");
         object.put("double_quote", "\"");
         object.put("single_quote", "'");
@@ -111,7 +111,7 @@ public abstract class SurrealClientGsonTests {
 
         String recordId = "instant_serialization";
 
-        String2InstantMap instants = new String2InstantMap(table.makeThing(recordId));
+        String2InstantMap instants = new String2InstantMap();
         instants.put("now", Instant.now());
         instants.put("epoch", Instant.EPOCH);
         instants.put("min", Instant.MIN);
@@ -126,16 +126,8 @@ public abstract class SurrealClientGsonTests {
     }
 
     private static class String2StringMap extends KvMap<String, String> {
-
-        public String2StringMap(@NotNull Id id) {
-            super(id);
-        }
     }
 
     private static class String2InstantMap extends KvMap<String, Instant> {
-
-        public String2InstantMap(@NotNull Id id) {
-            super(id);
-        }
     }
 }

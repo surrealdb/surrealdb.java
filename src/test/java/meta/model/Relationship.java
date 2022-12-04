@@ -1,27 +1,18 @@
 package meta.model;
 
-import com.google.common.collect.ImmutableList;
-import com.surrealdb.types.Id;
-import lombok.RequiredArgsConstructor;
+import com.surrealdb.types.SurrealEdgeRecord;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 @Value
-@RequiredArgsConstructor
-public class Relationship {
+@EqualsAndHashCode(callSuper = false)
+public class Relationship extends SurrealEdgeRecord {
 
-    @Nullable Id id;
     List<String> tags;
 
-    public Relationship(@Nullable Id id, String... tags) {
-        this.id = id;
-        this.tags = ImmutableList.copyOf(tags);
-    }
-
     public Relationship(String... tags) {
-        id = null;
-        this.tags = ImmutableList.copyOf(tags);
+        this.tags = List.of(tags);
     }
 }

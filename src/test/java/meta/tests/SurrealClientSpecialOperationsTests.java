@@ -3,11 +3,11 @@ package meta.tests;
 import com.surrealdb.auth.SurrealRootCredentials;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.SurrealClientSettings;
-import com.surrealdb.client.SurrealTable;
+import com.surrealdb.types.SurrealTable;
 import com.surrealdb.exception.SurrealAuthenticationException;
 import com.surrealdb.exception.SurrealNoDatabaseSelectedException;
 import lombok.extern.slf4j.Slf4j;
-import meta.model.Person;
+import meta.model.EmptyRecord;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -71,8 +71,8 @@ public abstract class SurrealClientSpecialOperationsTests {
         client.setNamespaceAndDatabase(TestUtils.getNamespace(), TestUtils.getDatabase());
         client.signOut();
 
-        SurrealTable<Object> table = SurrealTable.of("generic_table", Object.class);
-        Object record = new Object();
+        SurrealTable<EmptyRecord> table = SurrealTable.of("generic_table", EmptyRecord.class);
+        EmptyRecord record = new EmptyRecord();
 
         assertThrows(SurrealAuthenticationException.class, () -> client.createRecord(table, record));
     }
@@ -86,8 +86,8 @@ public abstract class SurrealClientSpecialOperationsTests {
     void createRecord_whenCalledBeforeSettingNamespaceAndDatabase_throwsException() {
         client.signIn(TestUtils.getAuthCredentials());
 
-        SurrealTable<Object> table = SurrealTable.of("generic_table", Object.class);
-        Object record = new Object();
+        SurrealTable<EmptyRecord> table = SurrealTable.of("generic_table", EmptyRecord.class);
+        EmptyRecord record = new EmptyRecord();
 
         assertThrows(SurrealNoDatabaseSelectedException.class, () -> client.createRecord(table, record));
     }

@@ -3,11 +3,13 @@ package meta.tests;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.SurrealClientSettings;
-import com.surrealdb.client.SurrealTable;
 import com.surrealdb.geometry.GeometryCollection;
 import com.surrealdb.geometry.LinearRing;
 import com.surrealdb.geometry.Point;
 import com.surrealdb.geometry.Polygon;
+import com.surrealdb.types.SurrealRecord;
+import com.surrealdb.types.SurrealTable;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import meta.model.City;
 import meta.utils.TestUtils;
@@ -77,7 +79,8 @@ public abstract class SurrealClientGeometryTests {
     }
 
     @Value
-    static class Example {
+    @EqualsAndHashCode(callSuper = false)
+    static class GeometryCollectionContainer extends SurrealRecord {
 
         @NotNull GeometryCollection collection;
 
@@ -88,11 +91,11 @@ public abstract class SurrealClientGeometryTests {
         GeometryCollection collection1 = GeometryCollection.from(Point.fromXY(1, 2));
         GeometryCollection collection2 = GeometryCollection.from(collection1);
 
-        Example example = new Example(collection2);
+        GeometryCollectionContainer container = new GeometryCollectionContainer(collection2);
 
-        SurrealTable<Example> table = SurrealTable.of("examples", Example.class);
-        client.createRecord(table, "example", example);
-        client.retrieveRecord(table, "example");
+        SurrealTable<GeometryCollectionContainer> table = SurrealTable.of("geometry_collection_containers", GeometryCollectionContainer.class);
+        client.createRecord(table, "test", container);
+        client.retrieveRecord(table, "test");
         client.deleteAllRecordsInTable(table);
     }
 }

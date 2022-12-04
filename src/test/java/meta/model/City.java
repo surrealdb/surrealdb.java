@@ -2,10 +2,13 @@ package meta.model;
 
 import com.google.common.collect.ImmutableList;
 import com.surrealdb.geometry.Point;
+import com.surrealdb.types.SurrealRecord;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 @Value
-public class City {
+@EqualsAndHashCode(callSuper = false)
+public class City extends SurrealRecord {
 
     public static final City TOKYO = new City(Point.fromGeoHash("xn76urx6"), "Tokyo", 37);
     public static final City DELHI = new City(Point.fromGeoHash("ttnghcy0"), "Delhi", 28);

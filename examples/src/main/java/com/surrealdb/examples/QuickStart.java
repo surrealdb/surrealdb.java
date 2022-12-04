@@ -4,7 +4,7 @@ import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.auth.SurrealRootCredentials;
 import com.surrealdb.client.SurrealBiDirectionalClient;
 import com.surrealdb.client.SurrealClientSettings;
-import com.surrealdb.client.SurrealTable;
+import com.surrealdb.types.SurrealTable;
 import com.surrealdb.client.SurrealWebSocketClient;
 import com.surrealdb.examples.models.Person;
 import com.surrealdb.exception.SurrealRecordAlreadyExistsException;

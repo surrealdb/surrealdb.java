@@ -23,6 +23,7 @@ import java.net.NoRouteToHostException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -296,10 +297,17 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
         private void handleRpcSuccess(@NotNull RequestEntry requestEntry, @NotNull RpcResponse response, String message) {
             logSuccessfulRpcResponse(requestEntry, message);
 
-            requestEntry.getResultType().ifPresentOrElse(
-                resultType -> requestEntry.getCallback().complete(gson.fromJson(response.getResult(), resultType)),
-                () -> requestEntry.getCallback().complete(null)
-            );
+            CompletableFuture<?> callback = requestEntry.getCallback();
+            Optional<Type> resultType = requestEntry.getResultType();
+
+            if (resultType.isEmpty()) {
+                // If there is no result type, complete the callback with null
+                callback.complete(null);
+                return;
+            }
+
+            // Deserialize the result
+            callback.complete(gson.fromJson(response.getResult(), resultType.get()));
         }
 
         private void logSuccessfulRpcResponse(@NotNull RequestEntry requestEntry, String message) {

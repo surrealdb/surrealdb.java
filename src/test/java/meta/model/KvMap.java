@@ -1,6 +1,6 @@
 package meta.model;
 
-import com.surrealdb.types.Id;
+import com.surrealdb.types.SurrealRecord;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -13,11 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @RequiredArgsConstructor
-public class KvMap<K, V> {
+public class KvMap<K, V> extends SurrealRecord {
 
-    private final @NotNull Id id;
     private final @NotNull Map<K, V> map = new LinkedHashMap<>();
 
     public void put(@NotNull K key, @NotNull V value) {
@@ -28,12 +27,7 @@ public class KvMap<K, V> {
         return map.get(key);
     }
 
-    public @NotNull Id getId() {
-        return id;
-    }
-
     public static void assertKvMapEquals(@NotNull KvMap<?, ?> expected, @NotNull KvMap<?, ?> actual) {
-        assertEquals(expected.getId(), actual.getId(), "Ids are not equal");
         assertEquals(expected.map.size(), actual.map.size(), "Maps have different sizes");
 
         expected.map.forEach((key, value) -> {

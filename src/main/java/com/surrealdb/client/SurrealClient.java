@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.query.QueryResult;
-import com.surrealdb.types.Id;
+import com.surrealdb.types.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -320,7 +320,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all records in the table.
      */
-    default <T> @NotNull CompletableFuture<List<T>> retrieveAllRecordsFromTableAsync(@NotNull SurrealTable<T> table) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<List<T>> retrieveAllRecordsFromTableAsync(@NotNull SurrealTable<T> table) {
         // SQL query to retrieve all records from the table
         String sql = "SELECT * FROM type::table($tb);";
         // Arguments to use in the query
@@ -338,7 +338,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a list of all records in the table.
      */
-    default <T> @NotNull List<T> retrieveAllRecordsFromTable(@NotNull SurrealTable<T> table) {
+    default <T extends SurrealRecord> @NotNull List<T> retrieveAllRecordsFromTable(@NotNull SurrealTable<T> table) {
         return getResultSynchronously(retrieveAllRecordsFromTableAsync(table));
     }
 
@@ -350,7 +350,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the record if it exists, or an empty {@link Optional} if it does not.
      */
-    default <T> @NotNull CompletableFuture<Optional<T>> retrieveRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<Optional<T>> retrieveRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId) {
         // SQL query to retrieve a record from the table
         String sql = "SELECT * FROM type::thing($what);";
         // Arguments to use in the query
@@ -369,7 +369,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return the record if it exists, or an empty {@link Optional} if it does not.
      */
-    default <T> @NotNull Optional<T> retrieveRecord(@NotNull SurrealTable<T> table, @NotNull String recordId) {
+    default <T extends SurrealRecord> @NotNull Optional<T> retrieveRecord(@NotNull SurrealTable<T> table, @NotNull String recordId) {
         return getResultSynchronously(retrieveRecordAsync(table, recordId));
     }
 
@@ -381,7 +381,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the record
      * @return a {@link CompletableFuture} that will complete with the created record.
      */
-    default <T> @NotNull CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::table($tb) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
@@ -404,7 +404,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the record
      * @return the created record.
      */
-    default <T> @NotNull T createRecord(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull T createRecord(@NotNull SurrealTable<T> table, @NotNull T data) {
         return getResultSynchronously(createRecordAsync(table, data));
     }
 
@@ -417,7 +417,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the created record.
      */
-    default <T> @NotNull CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> createRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         // SQL query to create a record
         String sql = "CREATE type::thing($what) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
@@ -441,7 +441,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return the created record.
      */
-    default <T> @NotNull T createRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull T createRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         return getResultSynchronously(createRecordAsync(table, recordId, data));
     }
 
@@ -453,7 +453,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all updated records.
      */
-    default <T> @NotNull CompletableFuture<List<T>> setAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<List<T>> setAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull T data) {
         // SQL query to update records
         String sql = "UPDATE type::table($tb) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
@@ -473,7 +473,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a list of all updated records.
      */
-    default <T> @NotNull List<T> setAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull List<T> setAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull T data) {
         return getResultSynchronously(setAllRecordsInTableAsync(table, data));
     }
 
@@ -486,7 +486,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the updated record.
      */
-    default <T> @NotNull CompletableFuture<T> setRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> setRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         // SQL query to update a record
         String sql = "UPDATE type::thing($what) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
@@ -510,7 +510,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return the updated record.
      */
-    default <T> @NotNull T setRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull T setRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull T data) {
         return getResultSynchronously(setRecordAsync(table, recordId, data));
     }
 
@@ -522,7 +522,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all changed records.
      */
-    default <T> @NotNull CompletableFuture<List<T>> changeAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull Object data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<List<T>> changeAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull Object data) {
         // SQL query to change records
         String sql = "UPDATE type::table($tb) MERGE $data RETURN AFTER;";
         // Arguments to use in the query
@@ -542,7 +542,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a list of all changed records.
      */
-    default <T> @NotNull List<T> changeAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull Object data) {
+    default <T extends SurrealRecord> @NotNull List<T> changeAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull Object data) {
         return getResultSynchronously(changeAllRecordsInTableAsync(table, data));
     }
 
@@ -555,7 +555,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the changed record.
      */
-    default <T> @NotNull CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull Object data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> changeRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull Object data) {
         // SQL query to change a record
         String sql = "UPDATE type::thing($what) MERGE $data RETURN AFTER;";
         // Arguments to use in the query
@@ -579,7 +579,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return the changed record.
      */
-    default <T> @NotNull T changeRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull Object data) {
+    default <T extends SurrealRecord> @NotNull T changeRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull Object data) {
         return getResultSynchronously(changeRecordAsync(table, recordId, data));
     }
 
@@ -591,7 +591,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>     the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all patched records.
      */
-    default <T> @NotNull CompletableFuture<List<T>> patchAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull List<Patch> patches) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<List<T>> patchAllRecordsInTableAsync(@NotNull SurrealTable<T> table, @NotNull List<Patch> patches) {
         // SQL query to patch an entire table
         String sql = "UPDATE type::table($tb) PATCH $data RETURN AFTER;";
         // Arguments to use in the query
@@ -611,7 +611,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>     the type of the records
      * @return a list of all patched records.
      */
-    default <T> @NotNull List<T> patchAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull List<Patch> patches) {
+    default <T extends SurrealRecord> @NotNull List<T> patchAllRecordsInTable(@NotNull SurrealTable<T> table, @NotNull List<Patch> patches) {
         return getResultSynchronously(patchAllRecordsInTableAsync(table, patches));
     }
 
@@ -624,7 +624,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return a {@link CompletableFuture} that will complete with the patched record.
      */
-    default <T> @NotNull CompletableFuture<T> patchRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull List<Patch> patches) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> patchRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull List<Patch> patches) {
         // SQL query to patch a record
         String sql = "UPDATE type::thing($what) PATCH $data RETURN AFTER;";
         // Arguments to use in the query
@@ -648,7 +648,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      the type of the record
      * @return the patched record.
      */
-    default <T> @NotNull T patchRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull List<Patch> patches) {
+    default <T extends SurrealRecord> @NotNull T patchRecord(@NotNull SurrealTable<T> table, @NotNull String recordId, @NotNull List<Patch> patches) {
         return getResultSynchronously(patchRecordAsync(table, recordId, patches));
     }
 
@@ -659,7 +659,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a {@link CompletableFuture} that will complete with a list of all deleted records.
      */
-    default <T> @NotNull CompletableFuture<@NotNull List<T>> deleteAllRecordsInTableAsync(@NotNull SurrealTable<T> table) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<@NotNull List<T>> deleteAllRecordsInTableAsync(@NotNull SurrealTable<T> table) {
         // SQL query to delete records
         String sql = "DELETE type::table($tb) RETURN BEFORE;";
         // Arguments to use in the query
@@ -677,7 +677,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>   the type of the records
      * @return a list of all deleted records.
      */
-    default <T> @NotNull List<T> deleteAllRecordsInTable(@NotNull SurrealTable<T> table) {
+    default <T extends SurrealRecord> @NotNull List<T> deleteAllRecordsInTable(@NotNull SurrealTable<T> table) {
         return getResultSynchronously(deleteAllRecordsInTableAsync(table));
     }
 
@@ -689,7 +689,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>      The type of the record
      * @return The deleted record
      */
-    default <T> @NotNull CompletableFuture<T> deleteRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> deleteRecordAsync(@NotNull SurrealTable<T> table, @NotNull String recordId) {
         // SQL query to delete a record
         String sql = "DELETE type::thing($what) RETURN BEFORE;";
         // Arguments to use in the query
@@ -711,11 +711,11 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
      * @param <T>    The type of the record
      * @return The deleted record
      */
-    default <T> @NotNull T deleteRecord(@NotNull SurrealTable<T> table, @NotNull String record) {
+    default <T extends SurrealRecord> @NotNull T deleteRecord(@NotNull SurrealTable<T> table, @NotNull String record) {
         return getResultSynchronously(deleteRecordAsync(table, record));
     }
 
-    default <T> @NotNull CompletableFuture<T> relateAsync(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id with, @NotNull T data) {
+    default <T extends SurrealRecord> @NotNull CompletableFuture<T> relateAsync(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id with, @NotNull T data) {
         // SQL query to relate two records
         String sql = "RELATE type::thing($from)->type::table($edge_tb)->type::thing($with) CONTENT $data RETURN AFTER;";
         // Arguments to use in the query
@@ -732,7 +732,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
         return relateFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    default <T> @NotNull T relate(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id to, @NotNull T data) {
+    default <T extends SurrealEdgeRecord> @NotNull T relate(@NotNull Id from, @NotNull SurrealEdgeTable<T> edgeTable, @NotNull Id to, @NotNull T data) {
         return getResultSynchronously(relateAsync(from, edgeTable, to, data));
     }
 
