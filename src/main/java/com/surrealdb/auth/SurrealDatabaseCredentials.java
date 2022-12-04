@@ -1,5 +1,6 @@
 package com.surrealdb.auth;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -13,8 +14,12 @@ public final class SurrealDatabaseCredentials implements SurrealAuthCredentials 
 
     @NotNull String user;
     @NotNull String pass;
-    @NotNull String NS;
-    @NotNull String DB;
+
+    @SerializedName("NS")
+    @NotNull String namespace;
+
+    @SerializedName("DB")
+    @NotNull String database;
 
     public static @NotNull SurrealDatabaseCredentials from(@NotNull String user, @NotNull String password, @NotNull String namespace, @NotNull String database) {
         return new SurrealDatabaseCredentials(user, password, namespace, database);
@@ -29,10 +34,10 @@ public final class SurrealDatabaseCredentials implements SurrealAuthCredentials 
     }
 
     public @NotNull String getNamespace() {
-        return NS;
+        return namespace;
     }
 
     public @NotNull String getDatabase() {
-        return DB;
+        return database;
     }
 }

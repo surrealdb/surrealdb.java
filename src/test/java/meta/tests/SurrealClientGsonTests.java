@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 public abstract class SurrealClientGsonTests {
 
-    private static final @NotNull String TABLE_NAME = "gson_with_pretty_printing";
+    private static final @NotNull String TABLE_NAME = "gson_serialization_tests";
 
     private @UnknownNullability SurrealClient client;
 

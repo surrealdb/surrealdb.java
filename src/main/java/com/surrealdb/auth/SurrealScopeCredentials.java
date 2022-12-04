@@ -1,5 +1,6 @@
 package com.surrealdb.auth;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -11,23 +12,28 @@ import org.jetbrains.annotations.NotNull;
 @EqualsAndHashCode
 public final class SurrealScopeCredentials implements SurrealAuthCredentials {
 
-    @NotNull String NS;
-    @NotNull String DB;
-    @NotNull String SC;
+    @SerializedName("NS")
+    @NotNull String namespace;
+
+    @SerializedName("DB")
+    @NotNull String database;
+
+    @SerializedName("SC")
+    @NotNull String scope;
 
     public static @NotNull SurrealScopeCredentials from(@NotNull String namespace, @NotNull String database, @NotNull String scope) {
         return new SurrealScopeCredentials(namespace, database, scope);
     }
 
     public @NotNull String getNamespace() {
-        return NS;
+        return namespace;
     }
 
     public @NotNull String getDatabase() {
-        return DB;
+        return database;
     }
 
     public @NotNull String getScope() {
-        return SC;
+        return scope;
     }
 }

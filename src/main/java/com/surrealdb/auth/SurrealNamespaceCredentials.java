@@ -1,5 +1,6 @@
 package com.surrealdb.auth;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -13,7 +14,9 @@ public final class SurrealNamespaceCredentials implements SurrealAuthCredentials
 
     @NotNull String user;
     @NotNull String pass;
-    @NotNull String NS;
+
+    @SerializedName("NS")
+    @NotNull String namespace;
 
     public static @NotNull SurrealNamespaceCredentials from(@NotNull String user, @NotNull String password, @NotNull String namespace) {
         return new SurrealNamespaceCredentials(user, password, namespace);
@@ -28,6 +31,6 @@ public final class SurrealNamespaceCredentials implements SurrealAuthCredentials
     }
 
     public @NotNull String getNamespace() {
-        return NS;
+        return namespace;
     }
 }
