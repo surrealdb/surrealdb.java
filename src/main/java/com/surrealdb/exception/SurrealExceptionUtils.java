@@ -40,4 +40,14 @@ public class SurrealExceptionUtils {
         // If we don't know what the error is, just return a generic exception
         return new SurrealException(message);
     }
+
+    public static @NotNull RuntimeException wrapException(@NotNull String message, @NotNull Exception exception) {
+        System.out.println(exception.getClass());
+
+        if (exception instanceof SurrealException surrealException) {
+            return surrealException;
+        }
+
+        return new SurrealException(message, exception);
+    }
 }

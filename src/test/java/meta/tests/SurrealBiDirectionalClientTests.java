@@ -1,10 +1,9 @@
 package meta.tests;
 
 import com.surrealdb.client.SurrealBiDirectionalClient;
-import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.exception.SurrealNotConnectedException;
-import lombok.val;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;

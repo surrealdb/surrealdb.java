@@ -3,7 +3,7 @@ package meta.tests;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.client.SurrealClient;
-import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.types.SurrealTable;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;

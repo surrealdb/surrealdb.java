@@ -1,5 +1,7 @@
 package com.surrealdb.client;
 
+import com.surrealdb.client.bidirectional.SurrealWebSocketClient;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import meta.tests.SurrealBiDirectionalClientTests;
 import meta.tests.SurrealClientGeometryTests;
 import meta.tests.SurrealClientGsonTests;

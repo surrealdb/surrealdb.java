@@ -1,8 +1,10 @@
 package com.surrealdb.client;
 
 import com.surrealdb.exception.SurrealException;
+import com.surrealdb.exception.SurrealExceptionUtils;
 import com.surrealdb.query.QueryResult;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -15,19 +17,14 @@ import java.util.concurrent.CompletableFuture;
  * part of the public API.
  */
 @UtilityClass
+@ApiStatus.Internal
 class InternalClientUtils {
 
     static <T> @NotNull T getResultSynchronously(@NotNull CompletableFuture<T> future) throws SurrealException {
         try {
             return future.get();
         } catch (Exception exception) {
-            Throwable cause = exception.getCause();
-
-            if (cause instanceof SurrealException surrealException) {
-                throw surrealException;
-            }
-
-            throw new RuntimeException(cause != null ? cause : exception);
+            throw SurrealExceptionUtils.wrapException(exception.getMessage(), exception);
         }
     }
 

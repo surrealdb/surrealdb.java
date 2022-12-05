@@ -1,5 +1,6 @@
 package com.surrealdb.client;
 
+import com.surrealdb.client.SurrealClient;
 import com.surrealdb.exception.SurrealConnectionTimeoutException;
 import org.jetbrains.annotations.NotNull;
 

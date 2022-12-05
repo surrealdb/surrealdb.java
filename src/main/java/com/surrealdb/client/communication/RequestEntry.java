@@ -1,28 +1,29 @@
-package com.surrealdb.client;
+package com.surrealdb.client.communication;
 
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * An internal container for a pending request data.
  * Used to store result type for deserialization, as well as a future to callback.
+ * @param <T> The type of the request payload
+ * @param <U> The type of the deserialized response
  */
 @Value
-class RequestEntry {
+public class RequestEntry<T, U> {
 
     @NotNull String id;
-    @NotNull Instant timestamp;
-    @NotNull CompletableFuture<?> callback;
     @NotNull String method;
-    @Nullable Type resultType;
 
-    @NotNull Optional<Type> getResultType() {
-        return Optional.ofNullable(resultType);
-    }
+    @NotNull Instant timestamp;
+
+    @NotNull T payload;
+
+    @NotNull CompletableFuture<U> callback;
+    @NotNull Type resultType;
+
 }

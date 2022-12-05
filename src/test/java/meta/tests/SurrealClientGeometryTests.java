@@ -2,7 +2,7 @@ package meta.tests;
 
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.client.SurrealClient;
-import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.geometry.GeometryCollection;
 import com.surrealdb.geometry.LinearRing;
 import com.surrealdb.geometry.Point;

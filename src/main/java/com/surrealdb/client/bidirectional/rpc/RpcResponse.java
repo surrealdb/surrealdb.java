@@ -1,6 +1,7 @@
-package com.surrealdb.client;
+package com.surrealdb.client.bidirectional.rpc;
 
 import com.google.gson.JsonElement;
+import com.google.gson.annotations.SerializedName;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,10 +14,15 @@ import java.util.Optional;
  * @author Khalid Alharisi
  */
 @Value
-class RpcResponse {
+public class RpcResponse {
 
+    @SerializedName("id")
     @NotNull String id;
+
+    @SerializedName("result")
     @NotNull JsonElement result;
+
+    @SerializedName("error")
     @Nullable Error error;
 
     public @NotNull Optional<Error> getError() {
@@ -27,8 +33,13 @@ class RpcResponse {
      * An internal representation of an RPC error.
      */
     @Value
-    static class Error {
+    public static class Error {
+
+        @SerializedName("code")
         int code;
+
+        @SerializedName(value="message", alternate={"description"})
         @NotNull String message;
+
     }
 }

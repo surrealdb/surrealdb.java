@@ -3,7 +3,7 @@ package meta.tests;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.surrealdb.client.SurrealClient;
-import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.exception.SurrealRecordAlreadyExistsException;
 import com.surrealdb.patch.AddPatch;
 import com.surrealdb.patch.Patch;

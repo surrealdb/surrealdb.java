@@ -2,7 +2,7 @@ package meta.tests;
 
 import com.surrealdb.auth.SurrealRootCredentials;
 import com.surrealdb.client.SurrealClient;
-import com.surrealdb.client.SurrealClientSettings;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.types.SurrealTable;
 import com.surrealdb.exception.SurrealAuthenticationException;
 import com.surrealdb.exception.SurrealNoDatabaseSelectedException;

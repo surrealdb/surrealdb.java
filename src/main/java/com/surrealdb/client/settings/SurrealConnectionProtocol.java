@@ -1,4 +1,4 @@
-package com.surrealdb.client;
+package com.surrealdb.client.settings;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,7 +1,8 @@
-package com.surrealdb.client;
+package com.surrealdb.client.settings;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.surrealdb.client.SurrealClient;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
