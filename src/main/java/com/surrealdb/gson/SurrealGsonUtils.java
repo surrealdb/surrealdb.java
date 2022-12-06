@@ -3,6 +3,8 @@ package com.surrealdb.gson;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.surrealdb.types.SurrealEdgeRecord;
+import com.surrealdb.types.SurrealRecord;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,9 +26,7 @@ public class SurrealGsonUtils {
         new GeometryCollectionAdaptor()
     );
 
-    public static @NotNull Gson makeGsonInstanceSurrealCompatible(@NotNull Gson gson) {
-        GsonBuilder gsonBuilder = gson.newBuilder();
-
+    public static @NotNull GsonBuilder makeGsonSurrealCompatible(@NotNull GsonBuilder gsonBuilder) {
         // SurrealDB doesn't need HTML escaping
         gsonBuilder.disableHtmlEscaping();
 
@@ -34,6 +34,19 @@ public class SurrealGsonUtils {
         for (SurrealGsonAdaptor<?> adaptor : ADAPTORS) {
             gsonBuilder.registerTypeAdapter(adaptor.getAdaptorClass(), adaptor);
         }
+
+        return gsonBuilder;
+    }
+
+    public static @NotNull GsonBuilder makeGsonSurrealCompatible(@NotNull Gson gson) {
+        return makeGsonSurrealCompatible(gson.newBuilder());
+    }
+
+    public static @NotNull Gson createSurrealCompatibleGsonInstance(@NotNull Gson surrealCompatibleUserGson) {
+        GsonBuilder gsonBuilder = makeGsonSurrealCompatible(new GsonBuilder());
+
+        gsonBuilder.registerTypeHierarchyAdapter(SurrealRecord.class, new SurrealRecordAdaptor(surrealCompatibleUserGson));
+        gsonBuilder.registerTypeHierarchyAdapter(SurrealEdgeRecord.class, new SurrealEdgeRecordAdaptor(surrealCompatibleUserGson));
 
         return gsonBuilder.create();
     }

@@ -1,6 +1,5 @@
 package com.surrealdb.types;
 
-import com.google.gson.annotations.SerializedName;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,16 +8,17 @@ import java.util.Optional;
 
 public abstract class SurrealEdgeRecord extends SurrealRecord {
 
-    @SerializedName("from")
     @NonFinal
-    @Nullable Id in;
+    transient @Nullable Id in;
 
-    @SerializedName("out")
     @NonFinal
-    @Nullable Id out;
+    transient @Nullable Id out;
 
-    public void setInAndOut(@NotNull Id in, @NotNull Id out) {
+    public void setIn(@Nullable Id in) {
         this.in = in;
+    }
+
+    public void setOut(@Nullable Id out) {
         this.out = out;
     }
 

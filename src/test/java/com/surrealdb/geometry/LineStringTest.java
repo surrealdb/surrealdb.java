@@ -93,9 +93,6 @@ public class LineStringTest {
         LineString line = LineString.from(Point.fromXY(1, 2), Point.fromXY(3, 4), Point.fromXY(5, 6));
         LineString flipped = line.flip();
 
-        System.out.println(line);
-        System.out.println(flipped);
-
         int pointCount = line.getPointCount();
         assertEquals(3, pointCount);
 

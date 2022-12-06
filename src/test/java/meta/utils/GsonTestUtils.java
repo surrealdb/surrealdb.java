@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @UtilityClass
 public class GsonTestUtils {
 
-    private static final Gson gsonInstance = SurrealGsonUtils.makeGsonInstanceSurrealCompatible(new Gson());
+    private static final Gson gsonInstance = SurrealGsonUtils.createSurrealCompatibleGsonInstance(new Gson());
 
     public static <T> JsonElement serialize(T object) {
         return gsonInstance.toJsonTree(object);

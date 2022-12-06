@@ -34,7 +34,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.surrealdb.gson.SurrealGsonUtils.makeGsonInstanceSurrealCompatible;
+import static com.surrealdb.gson.SurrealGsonUtils.createSurrealCompatibleGsonInstance;
+import static com.surrealdb.gson.SurrealGsonUtils.makeGsonSurrealCompatible;
 
 /**
  * A WebSocket based SurrealDB client.
@@ -51,7 +52,8 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     private SurrealWebSocketClient(@NotNull SurrealClientSettings settings) {
         this.settings = settings;
 
-        this.gson = makeGsonInstanceSurrealCompatible(settings.getGson());
+        Gson userGson = makeGsonSurrealCompatible(settings.getGson()).create();
+        this.gson = createSurrealCompatibleGsonInstance(userGson);
         this.listenerManager = new ListenerManager<>();
         this.client = new InternalWebsocketClient(settings, gson, listenerManager, this::onClose);
     }
