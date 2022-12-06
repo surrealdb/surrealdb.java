@@ -1,7 +1,6 @@
 package meta.tests;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.types.SurrealTable;
@@ -9,15 +8,18 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import meta.model.EmptyRecord;
 import meta.model.KvMap;
+import meta.model.Person;
 import meta.utils.TestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
 import java.time.Instant;
 
 import static meta.model.KvMap.assertKvMapEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -123,6 +125,43 @@ public abstract class SurrealClientGsonTests {
 
         assertKvMapEquals(instants, setObject);
         assertKvMapEquals(instants, retrievedObject);
+    }
+
+    @Test
+    void testThatTypeAdaptorDoesNotInterfereWithIdSerialization() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Person.class, new PersonAdaptor());
+        createClient(gsonBuilder.create());
+
+        SurrealTable<Person> table = SurrealTable.of(TABLE_NAME, Person.class);
+        Person localPerson = new Person("Gson Tester", "First", "Last", false);
+        Person personFromSetOperation = client.setRecord(table, "test_person", localPerson);
+
+        assertFalse(localPerson.getId().isPresent());
+        assertTrue(personFromSetOperation.getId().isPresent());
+    }
+
+    private static class PersonAdaptor implements JsonSerializer<Person>, JsonDeserializer<Person> {
+
+        @Override
+        public Person deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            String title = object.get("title").getAsString();
+            Person.Name name = context.deserialize(object.get("name"), Person.Name.class);
+            boolean marketing = object.get("marketing").getAsBoolean();
+
+            return new Person(title, name, marketing);
+        }
+
+        @Override
+        public JsonElement serialize(Person src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject object = new JsonObject();
+            object.addProperty("title", src.getTitle());
+            object.add("name", context.serialize(src.getName()));
+            object.addProperty("marketing", src.isMarketing());
+
+            return object;
+        }
     }
 
     private static class String2StringMap extends KvMap<String, String> {

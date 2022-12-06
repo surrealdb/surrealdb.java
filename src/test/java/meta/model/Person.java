@@ -20,10 +20,14 @@ public class Person extends SurrealRecord {
     boolean marketing;
 
     public Person(String title, String firstName, String lastName, boolean marketing) {
-        super();
-
         this.title = title;
         this.name = new Name(firstName, lastName);
+        this.marketing = marketing;
+    }
+
+    public Person(String title, Name name, boolean marketing) {
+        this.title = title;
+        this.name = name;
         this.marketing = marketing;
     }
 
