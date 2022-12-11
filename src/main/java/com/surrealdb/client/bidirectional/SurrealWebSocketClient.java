@@ -9,8 +9,6 @@ import com.surrealdb.client.bidirectional.rpc.RpcRequest;
 import com.surrealdb.client.bidirectional.rpc.RpcResponse;
 import com.surrealdb.client.communication.CommunicationManager;
 import com.surrealdb.client.communication.RequestEntry;
-import com.surrealdb.client.listener.ListenerManager;
-import com.surrealdb.client.listener.SurrealGenericLogListener;
 import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.client.settings.SurrealConnectionProtocol;
 import com.surrealdb.exception.SurrealConnectionTimeoutException;
@@ -19,6 +17,7 @@ import com.surrealdb.exception.SurrealExceptionUtils;
 import com.surrealdb.exception.SurrealNotConnectedException;
 import com.surrealdb.query.QueryResult;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
@@ -44,7 +43,6 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
 
     @NotNull SurrealClientSettings settings;
     @NotNull Gson gson;
-    @NotNull ListenerManager<RpcRequest> listenerManager;
 
     @NonFinal
     @NotNull InternalWebsocketClient client;
@@ -52,10 +50,9 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     private SurrealWebSocketClient(@NotNull SurrealClientSettings settings) {
         this.settings = settings;
 
-        Gson userGson = makeGsonSurrealCompatible(settings.getGson()).create();
+        Gson userGson = makeGsonSurrealCompatible(settings.getGson().newBuilder()).create();
         this.gson = createSurrealCompatibleGsonInstance(userGson);
-        this.listenerManager = new ListenerManager<>();
-        this.client = new InternalWebsocketClient(settings, gson, listenerManager, this::onClose);
+        this.client = new InternalWebsocketClient(settings, gson, this::onClose);
     }
 
     /**
@@ -82,7 +79,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     }
 
     private void onClose(boolean closedByRemote) {
-        this.client = new InternalWebsocketClient(settings, gson, listenerManager, this::onClose);
+        this.client = new InternalWebsocketClient(settings, gson, this::onClose);
     }
 
     private @NotNull <T> CompletableFuture<T> rpc(@NotNull String method, @NotNull Type resultType, @NotNull Object... params) {
@@ -180,23 +177,22 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
         return settings.getAsyncOperationExecutorService();
     }
 
+    @Slf4j
     private static class InternalWebsocketClient extends WebSocketClient {
 
         @NotNull Gson gson;
-        @NotNull ListenerManager<RpcRequest> listenerManager;
-        @NotNull CommunicationManager<RpcRequest> communicationManager;
+        @NotNull CommunicationManager communicationManager;
         @NotNull AtomicLong lastRequestId;
 
         @NotNull Consumer<Boolean> onClose;
 
         @NotNull ExecutorService executorService;
 
-        InternalWebsocketClient(@NotNull SurrealClientSettings settings, @NotNull Gson gson, @NotNull ListenerManager<RpcRequest> listenerManager, @NotNull Consumer<Boolean> onClose) {
+        InternalWebsocketClient(@NotNull SurrealClientSettings settings, @NotNull Gson gson, @NotNull Consumer<Boolean> onClose) {
             super(settings.getUri());
 
             this.gson = gson;
-            this.listenerManager = listenerManager;
-            this.communicationManager = new CommunicationManager<>(gson, listenerManager);
+            this.communicationManager = new CommunicationManager(gson);
             this.onClose = onClose;
 
             this.lastRequestId = new AtomicLong();
@@ -210,11 +206,10 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
                 RpcRequest rpcRequest = new RpcRequest(id, method, arguments);
 
                 try {
-                    RequestEntry<RpcRequest, U> requestEntry = communicationManager.createRequest(id, method, resultType, rpcRequest);
+                    RequestEntry<U> requestEntry = communicationManager.createRequest(id, method, resultType);
                     String payloadString = gson.toJson(rpcRequest);
-
+                    log.debug("Outgoing RPC [data: {}", payloadString);
                     send(payloadString);
-
                     return requestEntry.getCallback();
                 } catch (Exception exception) {
                     communicationManager.cancelRequest(id, exception);
@@ -233,6 +228,8 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
             JsonElement message = gson.fromJson(rawMessage, JsonElement.class);
             RpcResponse response = gson.fromJson(message, RpcResponse.class);
 
+            log.debug("Incoming RPC [data: {}]", rawMessage);
+
             response.getError().ifPresentOrElse(
                 error -> communicationManager.completeRequest(response.getId(), error),
                 () -> communicationManager.completeRequest(response.getId(), response.getResult())
@@ -242,12 +239,12 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
         @NotNull CompletableFuture<Void> connectAsync(long timeout, @NotNull TimeUnit timeUnit) {
             return CompletableFuture.runAsync(() -> {
                 if (isOpen()) {
-                    listenerManager.onLog(SurrealGenericLogListener.Type.ATTEMPTING_TO_CONNECT_WHILE_ALREADY_CONNECTED, "Already connected, ignoring connect request");
+                    log.debug("Already connected to Surreal server, connect request...");
                     return;
                 }
 
                 try {
-                    listenerManager.onLog(SurrealGenericLogListener.Type.CONNECTING_TO_SERVER, () -> String.format("Connecting to %s", getURI()));
+                    log.debug("Connecting to Surreal server [uri: {}, timeout: {} {}]", getURI(), timeout, timeUnit);
                     connectBlocking(timeout, timeUnit);
                 } catch (InterruptedException ignored) {
                 }
@@ -261,7 +258,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
         public @NotNull CompletableFuture<Void> disconnectAsync() {
             return CompletableFuture.runAsync(() -> {
                 try {
-                    listenerManager.onLog(SurrealGenericLogListener.Type.DISCONNECTING_FROM_SERVER, () -> String.format("Disconnecting from %s", getURI()));
+                    log.debug("Gracefully disconnecting from Surreal server");
                     closeBlocking();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -271,19 +268,20 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
 
         @Override
         public void onOpen(ServerHandshake handshakeData) {
-            listenerManager.onConnectionStateChange(true, false);
+            log.debug("Connected to Surreal server '{}'", getURI());
         }
 
         @Override
         public void onClose(int code, String reason, boolean remote) {
-            listenerManager.onConnectionStateChange(false, remote);
+            log.debug("Disconnected from Surreal server. [code: {}, reason: {}, caused by remote: {}]", code, reason, remote);
+
             communicationManager.cancelAllRequests(new SurrealNotConnectedException());
             onClose.accept(remote);
         }
 
         @Override
         public void onError(Exception exception) {
-            listenerManager.onException(exception);
+            log.error("A WebSocket error occurred", exception);
         }
     }
 }

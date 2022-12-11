@@ -38,12 +38,9 @@ public class SurrealGsonUtils {
         return gsonBuilder;
     }
 
-    public static @NotNull GsonBuilder makeGsonSurrealCompatible(@NotNull Gson gson) {
-        return makeGsonSurrealCompatible(gson.newBuilder());
-    }
-
-    public static @NotNull Gson createSurrealCompatibleGsonInstance(@NotNull Gson surrealCompatibleUserGson) {
+    public static @NotNull Gson createSurrealCompatibleGsonInstance(@NotNull Gson userGson) {
         GsonBuilder gsonBuilder = makeGsonSurrealCompatible(new GsonBuilder());
+        Gson surrealCompatibleUserGson = gsonBuilder.create();
 
         gsonBuilder.registerTypeHierarchyAdapter(SurrealRecord.class, new SurrealRecordAdaptor(surrealCompatibleUserGson));
         gsonBuilder.registerTypeHierarchyAdapter(SurrealEdgeRecord.class, new SurrealEdgeRecordAdaptor(surrealCompatibleUserGson));
