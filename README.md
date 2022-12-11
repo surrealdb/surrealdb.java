@@ -105,9 +105,9 @@ public class QuickStart {
 }
 
 @Data
-public class Person {
+@EqualsAndHashCode(callSuper = true)
+public class Person extends SurrealRecord {
 
-    private String id; // This will be automatically assigned by SurrealDB when the object is saved
     private String title;
     private Name name;
     private boolean marketing;

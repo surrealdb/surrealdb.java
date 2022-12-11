@@ -1,11 +1,15 @@
 package com.surrealdb.types;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public abstract class SurrealEdgeRecord extends SurrealRecord {
 
     @NonFinal
