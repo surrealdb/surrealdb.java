@@ -354,12 +354,14 @@ public abstract class SurrealClientTests {
     @Test
     void relate_whenProvidedWithTwoRecordsThatExist_successfullyCreatesRelationship() {
         Id tobieId = personTable.makeThing("tobie");
-        Article article = client.createRecord(articleTable, "surrealdb", new Article("SurrealDB: The next generation database"));
+
+        Article article = new Article("SurrealDB: The next generation database");
+        article = client.createRecord(articleTable, "surrealdb", article);
         Id articleId = article.getId().get();
 
         Instant contributionTime = Instant.now();
-        Contribution localContribution = new Contribution(contributionTime);
-        Contribution contribution = client.relate(tobieId, contributionTable, articleId, localContribution);
+        Contribution contribution = new Contribution(contributionTime);
+        contribution = client.relate(tobieId, contributionTable, articleId, contribution);
 
         assertEquals(contributionTime, contribution.getTime());
 
