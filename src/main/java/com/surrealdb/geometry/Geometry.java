@@ -16,16 +16,14 @@ public sealed abstract class Geometry permits
     MultiPolygon,
     GeometryCollection {
 
-    protected abstract @NotNull Iterator<Point> uniquePointsIterator();
-
     @NonFinal
     int pointCount = -1;
-
     @NonFinal
     @Nullable String wkt;
-
     @NonFinal
     @Nullable Point center;
+
+    protected abstract @NotNull Iterator<Point> uniquePointsIterator();
 
     protected abstract int calculatePointCount();
 

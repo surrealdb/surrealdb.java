@@ -7,7 +7,10 @@ import com.google.gson.JsonObject;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.query.QueryResult;
-import com.surrealdb.types.*;
+import com.surrealdb.types.Id;
+import com.surrealdb.types.SurrealEdgeRecord;
+import com.surrealdb.types.SurrealRecord;
+import com.surrealdb.types.SurrealTable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

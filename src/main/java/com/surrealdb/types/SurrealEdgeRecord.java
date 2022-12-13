@@ -33,19 +33,19 @@ public abstract class SurrealEdgeRecord extends SurrealRecord {
         this.out = null;
     }
 
-    public void setIn(@Nullable Id in) {
-        this.in = in;
-    }
-
-    public void setOut(@Nullable Id out) {
-        this.out = out;
-    }
-
     public @NotNull Optional<@NotNull Id> getIn() {
         return Optional.ofNullable(in);
     }
 
+    public void setIn(@Nullable Id in) {
+        this.in = in;
+    }
+
     public @NotNull Optional<@NotNull Id> getOut() {
         return Optional.ofNullable(out);
+    }
+
+    public void setOut(@Nullable Id out) {
+        this.out = out;
     }
 }

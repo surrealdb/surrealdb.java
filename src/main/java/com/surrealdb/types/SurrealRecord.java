@@ -25,11 +25,11 @@ public abstract class SurrealRecord {
         id = null;
     }
 
-    public void setId(@Nullable Id id) {
-        this.id = id;
-    }
-
     public @NotNull Optional<@NotNull Id> getId() {
         return Optional.ofNullable(id);
+    }
+
+    public void setId(@Nullable Id id) {
+        this.id = id;
     }
 }

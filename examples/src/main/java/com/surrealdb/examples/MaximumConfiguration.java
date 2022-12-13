@@ -3,9 +3,9 @@ package com.surrealdb.examples;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.surrealdb.client.SurrealBiDirectionalClient;
+import com.surrealdb.client.bidirectional.SurrealWebSocketClient;
 import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.client.settings.SurrealConnectionProtocol;
-import com.surrealdb.client.bidirectional.SurrealWebSocketClient;
 
 import java.net.URI;
 import java.util.concurrent.ExecutorService;

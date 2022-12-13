@@ -3,11 +3,11 @@ package com.surrealdb.examples;
 import com.surrealdb.auth.SurrealAuthCredentials;
 import com.surrealdb.auth.SurrealRootCredentials;
 import com.surrealdb.client.SurrealBiDirectionalClient;
-import com.surrealdb.client.settings.SurrealClientSettings;
-import com.surrealdb.types.SurrealTable;
 import com.surrealdb.client.bidirectional.SurrealWebSocketClient;
+import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.examples.models.Person;
 import com.surrealdb.exception.SurrealRecordAlreadyExistsException;
+import com.surrealdb.types.SurrealTable;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
