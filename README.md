@@ -6,9 +6,17 @@ The official SurrealDB library for Java.
 
 ### Features
 - Sync & Async driver implementations available.
-- Complex JSON serialization & deserialization to Java classes.
-- Simple API (very similar to the Javascript driver, [see docs](https://surrealdb.com/docs/integration/libraries/nodejs#:~:text=node%20app.js-,Library%20methods,-The%20JavaScript%20library)).
+- Complex JSON serialization & deserialization to and from Java objects.
+- Simple API for CRUD operations.
+- Fluent API for building queries. (_Coming soon_)
 
+### Supported SurrealDB features
+- [x] Authentication
+- [X] CRUD operations
+- [X] Querying via SurrealQL
+- [ ] Querying via Fluent API
+- [ ] Live queries (when SurrealDB re-enables it)
+- [X] Geometry support (GeoJSON)
 
 ### Installation
 - For now, you can grab the JAR from the releases page [here](https://github.com/surrealdb/surrealdb.java/releases).
@@ -17,7 +25,7 @@ The official SurrealDB library for Java.
 
 Gradle:
 ```groovy
-implementation files('libs/surrealdb-0.1.0.jar')
+implementation files('libs/surrealdb-0.2.0.jar')
 ```
 
 Maven:
@@ -25,81 +33,107 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>driver</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <scope>system</scope>
-    <systemPath>${basedir}/libs/surrealdb-0.1.0.jar</systemPath>
+    <systemPath>${basedir}/libs/surrealdb-0.2.0.jar</systemPath>
 </dependency>
 ```
 
 
 ### Quick Start
 ```java
-package org.example;
+public class QuickStart {
 
-import com.surrealdb.connection.SurrealConnection;
-import com.surrealdb.connection.SurrealWebSocketConnection;
-import com.surrealdb.driver.SyncSurrealDriver;
-
-import java.util.List;
-
-public class Main {
     public static void main(String[] args) {
-        SurrealConnection connection = new SurrealWebSocketConnection("127.0.0.1", 8000);
-        connection.connect(30); // timeout after 30 seconds
+        // Create a client with the minimal amount of configuration
+        SurrealBiDirectionalClient client = SurrealWebSocketClient.create(SurrealClientSettings.WEBSOCKET_LOCAL_DEFAULT);
 
-        SyncSurrealDriver driver = new SyncSurrealDriver(connection);
+        // Connect to the server. An exception will be thrown if it takes longer than 5 seconds to connect
+        client.connect(5, TimeUnit.SECONDS);
 
-        driver.signIn("root", "root"); // username & password
-        driver.use("test", "test"); // namespace & database
+        // Sign in with the user 'root' and the password 'root'
+        SurrealAuthCredentials credentials = SurrealRootCredentials.from("root", "root");
 
-        Person tobie = driver.create("person", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        // Sign in with the newly created credentials
+        client.signIn(credentials);
 
-        List<Person> people = driver.select("person", Person.class);
+        // Use the namespace 'examples' and the database 'quickstart'
+        client.setNamespaceAndDatabase("examples", "quickstart");
 
-        System.out.println();
-        System.out.println("Tobie = "+tobie);
-        System.out.println();
-        System.out.println("people = "+people);
-        System.out.println();
+        // Create a reference to the "person" table
+        // note: Creating a table reference has no effect on the database.
+        //       Table references are just wrappers around the table name
+        //       and type of object that will be stored within the table.
+        SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
 
-        connection.disconnect();
-        
-        // for more docs, see https://surrealdb.com/docs/integration/libraries/nodejs
+        // Create a new person
+        Person tobie = new Person();
+        tobie.setTitle("Founder & CEO");
+        tobie.setName("Tobie", "Morgan Hitchcock");
+        tobie.setMarketing(true);
+
+        try {
+            // Save the person to the database
+            log.info("Saving person to the database...");
+            client.createRecord(personTable, "tobie", tobie);
+        } catch (SurrealRecordAlreadyExistsException e) {
+            // This exception will be thrown if the record already exists
+            // in the database. In this case, we will just force set the
+            // existing record.
+
+            // Try running the program twice to see this behavior in action
+
+            log.info("Record already exists, setting instead...");
+            client.setRecord(personTable, "tobie", tobie);
+        }
+
+        // Retrieve the person from the database
+        // note: Retrieving a record from the DB returns an Optional. This is to
+        //       make it almost impossible to throw a null pointer exception.
+        Optional<Person> retrievedTobie = client.retrieveRecord(personTable, "tobie");
+
+        // Print the retrieved person
+        retrievedTobie.ifPresentOrElse(
+            person -> log.info("Retrieved person: {}", person),
+            () -> log.error("Failed to retrieve person")
+        );
+
+        // Disconnect from the database. This is required in order to exit since
+        // the connection is running in a separate thread.
+        client.disconnect();
     }
 }
 
-class Person {
-    String id;
-    String title;
-    String firstName;
-    String lastName;
-    boolean marketing;
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class Person extends SurrealRecord {
 
-    public Person(String title, String firstName, String lastName, boolean marketing) {
-        this.title = title;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.marketing = marketing;
+    private String title;
+    private Name name;
+    private boolean marketing;
+
+    public void setName(String firstName, String lastName) {
+        this.name = new Name(firstName, lastName);
     }
 
-    @Override
-    public String toString() {
-        return "Person{" +
-                "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", marketing=" + marketing +
-                '}';
+    @Data
+    @AllArgsConstructor
+    public static class Name {
+
+        private String firstName;
+        private String lastName;
+
     }
 }
 ```
 
 ### Planned Features
-- A complete SDK With Repository pattern.
+- A complete SDK with repository pattern.
+- Fluent API for building queries.
+- Support for all SurrealDB features.
 - Open an issue for feature requests
 
 
 ### Minimum Requirements
-- Java 8
+- Java 17
 

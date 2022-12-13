@@ -1,30 +1,36 @@
-name: Build
+name: Continuous Integration
 
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+
+  test:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Setup SurrealDB
+        run: docker run -d --rm --network host surrealdb/surrealdb:latest start --user=root --pass=root
+
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          java-version: '8'
+          java-version: '17'
           distribution: 'temurin'
+          java-package: 'jdk'
+          architecture: 'x64'
+          cache: 'gradle'
 
-      - name: Build a Fat JAR
+      - name: Run Tests
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: fatJar
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: Package
-          path: build/libs/
+          arguments: test
