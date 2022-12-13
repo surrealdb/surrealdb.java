@@ -10,6 +10,7 @@ import com.surrealdb.client.settings.SurrealClientSettings;
 import com.surrealdb.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.exception.SurrealExceptionUtils;
 import com.surrealdb.exception.SurrealNotConnectedException;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -31,6 +32,10 @@ final class InternalWebsocketClient extends WebSocketClient {
     @NotNull Gson gson;
     @NotNull Consumer<Boolean> onClose;
 
+    boolean logOutgoingMessages;
+    boolean logIncomingMessages;
+    boolean logAuthenticationCredentials;
+
     @NotNull CommunicationManager communicationManager;
     @NotNull AtomicLong lastRequestId;
 
@@ -40,6 +45,10 @@ final class InternalWebsocketClient extends WebSocketClient {
         this.executorService = settings.getAsyncOperationExecutorService();
         this.gson = gson;
         this.onClose = onClose;
+
+        logOutgoingMessages = settings.isLogOutgoingMessages();
+        logIncomingMessages = settings.isLogIncomingMessages();
+        logAuthenticationCredentials = settings.isLogAuthenticationCredentials();
 
         this.communicationManager = new CommunicationManager(gson);
         this.lastRequestId = new AtomicLong();
@@ -84,7 +93,9 @@ final class InternalWebsocketClient extends WebSocketClient {
             try {
                 RequestEntry<U> requestEntry = communicationManager.createRequest(id, method, resultType);
                 String payloadString = gson.toJson(rpcRequest);
-                log.debug("Outgoing RPC [data: {}", payloadString);
+
+                logOutgoingMessage(method, id, payloadString);
+
                 send(payloadString);
                 return requestEntry.getCallback();
             } catch (Exception exception) {
@@ -104,12 +115,32 @@ final class InternalWebsocketClient extends WebSocketClient {
         JsonElement message = gson.fromJson(rawMessage, JsonElement.class);
         RpcResponse response = gson.fromJson(message, RpcResponse.class);
 
-        log.debug("Incoming RPC [data: {}]", rawMessage);
+        logIncomingMessage(rawMessage);
 
         response.getError().ifPresentOrElse(
             error -> communicationManager.completeRequest(response.getId(), error),
             () -> communicationManager.completeRequest(response.getId(), response.getResult())
         );
+    }
+
+    private void logOutgoingMessage(@NonNull String method, @NotNull String id, @NotNull String payloadString) {
+        if (!logOutgoingMessages) {
+            return;
+        }
+
+        if (!logAuthenticationCredentials && method.equals("signin")) {
+            log.debug("Outgoing sign in request [method: {}, id: {}]", method, id);
+        } else {
+            log.debug("Outgoing RPC [method: {}, data: {}", method, payloadString);
+        }
+    }
+
+    private void logIncomingMessage(@NonNull String rawMessage) {
+        if (!logIncomingMessages) {
+            return;
+        }
+
+        log.debug("Incoming RPC [data: {}]", rawMessage);
     }
 
     @Override
