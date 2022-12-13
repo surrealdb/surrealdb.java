@@ -88,6 +88,11 @@ public final class MultiLineString extends Geometry implements Iterable<LineStri
     }
 
     @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return InternalGeometryUtils.createPointIterator(lines);
+    }
+
+    @Override
     protected int calculatePointCount() {
         int count = 0;
         for (LineString line : lines) {
@@ -109,7 +114,7 @@ public final class MultiLineString extends Geometry implements Iterable<LineStri
 
     @Override
     protected @NotNull Point calculateCenter() {
-        return InternalGeometryUtils.calculateCenterOfGeometries(lines);
+        return InternalGeometryUtils.calculateCenterOfGeometry(this);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

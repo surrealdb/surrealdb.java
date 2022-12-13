@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static meta.utils.GeometryUtils.createCirclePolygon;
-import static meta.utils.GeometryUtils.createQuadPolygon;
+import static meta.utils.GeometryUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeometryCollectionTest {
@@ -54,6 +53,24 @@ class GeometryCollectionTest {
 
         assertThrows(IndexOutOfBoundsException.class, () -> collection.getGeometry(1));
         assertThrows(IndexOutOfBoundsException.class, () -> collection.getGeometry(2));
+    }
+
+    @Test
+    void getCenter_whenCalledOnACollectionWithTwoPolygons_returnsCorrectCenter() {
+        GeometryCollection collection = GeometryCollection.builder()
+            .addGeometry(GeometryUtils.createCirclePolygon(20, 5).translate(-20, 0))
+            .addGeometry(GeometryUtils.createCirclePolygon(10, 5).translate(10, 0))
+            .build();
+
+        MultiPoint.Builder mpBuilder = MultiPoint.builder();
+        for (Geometry geometry : collection) {
+            if (geometry instanceof Polygon poly) {
+                poly.getExterior().iterator(false).forEachRemaining(mpBuilder::addPoint);
+            }
+        }
+        MultiPoint multiPoint = mpBuilder.build();
+
+        assertPointEquals(multiPoint.getCenter(), collection.getCenter());
     }
 
     @Nested

@@ -10,8 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.surrealdb.geometry.InternalGeometryUtils.calculateCenterOfPointsIterable;
-
 /**
  * MultiPoints can be used to store multiple geometry points in a single value.
  *
@@ -66,6 +64,11 @@ public final class MultiPoint extends Geometry implements Iterable<Point> {
      */
     public @NotNull Builder toBuilder() {
         return builder().addPoints(points);
+    }
+
+    @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return InternalGeometryUtils.createPointIterator(points);
     }
 
     public int calculatePointCount() {
@@ -136,7 +139,7 @@ public final class MultiPoint extends Geometry implements Iterable<Point> {
     }
 
     protected @NotNull Point calculateCenter() {
-        return calculateCenterOfPointsIterable(this);
+        return InternalGeometryUtils.calculateCenterOfGeometry(this);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

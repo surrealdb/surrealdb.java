@@ -103,6 +103,11 @@ public final class Polygon extends Geometry {
     }
 
     @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return new PolygonPointIterator(this);
+    }
+
+    @Override
     protected int calculatePointCount() {
         int count = exterior.getPointCount();
         count += InternalGeometryUtils.calculatePointCountOfGeometries(interiors);
@@ -122,11 +127,7 @@ public final class Polygon extends Geometry {
 
     @Override
     protected @NotNull Point calculateCenter() {
-        List<LinearRing> rings = new ArrayList<>(interiors.size() + 1);
-        rings.add(exterior);
-        rings.addAll(interiors);
-
-        return InternalGeometryUtils.calculateCenterOfGeometries(rings);
+        return InternalGeometryUtils.calculateCenterOfGeometry(exterior);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -181,6 +182,52 @@ public final class Polygon extends Geometry {
             }
 
             return Polygon.withInteriorPolygons(exterior, interiors);
+        }
+    }
+
+    private static class PolygonPointIterator implements Iterator<Point> {
+
+        @NotNull Polygon polygon;
+
+        @NonFinal
+        int ringIndex = 0;
+        @NonFinal
+        int pointIndex = 0;
+
+        private PolygonPointIterator(@NotNull Polygon polygon) {
+            this.polygon = polygon;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (ringIndex >= (polygon.getInteriorCount() + 1)) {
+                return false;
+            }
+
+            LinearRing ring = getRing(ringIndex);
+            return ring.getPointCount() > pointIndex;
+        }
+
+        @Override
+        public Point next() {
+            LinearRing ring = getRing(ringIndex);
+            Point point = ring.getPoint(pointIndex);
+
+            pointIndex++;
+            if (pointIndex >= ring.getPointCount() - 1) {
+                ringIndex++;
+                pointIndex = 0;
+            }
+
+            return point;
+        }
+
+        private @NotNull LinearRing getRing(int index) {
+            if (index == 0) {
+                return polygon.getExterior();
+            }
+
+            return polygon.getInterior(index - 1);
         }
     }
 }

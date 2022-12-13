@@ -109,6 +109,11 @@ public final class LinearRing extends Geometry implements Iterable<Point> {
     }
 
     @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return new LinearRingIterator(this, true);
+    }
+
+    @Override
     public int calculatePointCount() {
         return pointCount;
     }
@@ -150,7 +155,7 @@ public final class LinearRing extends Geometry implements Iterable<Point> {
     @Override
     protected @NotNull Point calculateCenter() {
         Iterator<Point> iteratorWithoutLastPoint = iterator(false);
-        return InternalGeometryUtils.calculateCenterOfPointsIterator(iteratorWithoutLastPoint);
+        return InternalGeometryUtils.calculateCenterOfPointIterator(iteratorWithoutLastPoint);
     }
 
     @Override

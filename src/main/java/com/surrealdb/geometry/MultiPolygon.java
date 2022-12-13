@@ -1,6 +1,7 @@
 package com.surrealdb.geometry;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -123,6 +124,12 @@ public final class MultiPolygon extends Geometry implements Iterable<Polygon> {
     }
 
     @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        Iterator<Iterator<Point>> iterators = polygons.stream().map(Polygon::uniquePointsIterator).iterator();
+        return Iterators.concat(iterators);
+    }
+
+    @Override
     protected int calculatePointCount() {
         return InternalGeometryUtils.calculatePointCountOfGeometries(this);
     }
@@ -144,7 +151,7 @@ public final class MultiPolygon extends Geometry implements Iterable<Polygon> {
 
     @Override
     protected @NotNull Point calculateCenter() {
-        return InternalGeometryUtils.calculateCenterOfGeometries(polygons);
+        return InternalGeometryUtils.calculateCenterOfGeometry(this);
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

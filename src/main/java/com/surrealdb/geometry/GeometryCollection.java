@@ -99,6 +99,11 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
     }
 
     @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return InternalGeometryUtils.createPointIterator(geometries);
+    }
+
+    @Override
     public int calculatePointCount() {
         return InternalGeometryUtils.calculatePointCountOfGeometries(this);
     }
@@ -116,7 +121,7 @@ public final class GeometryCollection extends Geometry implements Iterable<Geome
 
     @Override
     protected @NotNull Point calculateCenter() {
-        return InternalGeometryUtils.calculateCenterOfGeometries(geometries);
+        return InternalGeometryUtils.calculateCenterOfGeometry(this);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

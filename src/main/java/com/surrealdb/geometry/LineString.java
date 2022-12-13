@@ -9,8 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.surrealdb.geometry.InternalGeometryUtils.calculateCenterOfPointsIterable;
-
 /**
  * A GeoJSON LineString value for storing a geometric path. Paths must have at least two points,
  * but may have more.
@@ -75,6 +73,11 @@ public final class LineString extends Geometry implements Iterable<Point> {
 
     public @NotNull LinearRing toLinearRing() {
         return LinearRing.from(points);
+    }
+
+    @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return points.iterator();
     }
 
     public int calculatePointCount() {
@@ -144,7 +147,7 @@ public final class LineString extends Geometry implements Iterable<Point> {
 
     @Override
     public @NotNull Iterator<Point> iterator() {
-        return points.iterator();
+        return uniquePointsIterator();
     }
 
     @Override
@@ -154,7 +157,7 @@ public final class LineString extends Geometry implements Iterable<Point> {
 
     @Override
     protected @NotNull Point calculateCenter() {
-        return calculateCenterOfPointsIterable(this);
+        return InternalGeometryUtils.calculateCenterOfGeometry(this);
     }
 
     /**

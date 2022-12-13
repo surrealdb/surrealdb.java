@@ -1,9 +1,11 @@
 package com.surrealdb.geometry;
 
+import com.google.common.collect.Iterators;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -71,40 +73,28 @@ class InternalGeometryUtils {
         return pointCount;
     }
 
-    /**
-     * <b>CAREFUL: </b> This method could cause a recursive stack overflow if the geometries provided use
-     * this method to calculate their center.
-     *
-     * @param geometries The geometries to calculate the center of.
-     * @return The center of the geometries.
-     */
-    static @NotNull Point calculateCenterOfGeometries(@NotNull List<? extends Geometry> geometries) {
-        double x = 0;
-        double y = 0;
-        int count = 0;
+    @NotNull Iterator<Point> createPointIterator(@NotNull List<? extends Geometry> geometries) {
+        List<Iterator<Point>> iterators = new ArrayList<>(geometries.size());
 
         for (Geometry geometry : geometries) {
-            Point geometryCenter = geometry.getCenter();
-
-            x += geometryCenter.getX();
-            y += geometryCenter.getY();
-            count++;
+            iterators.add(geometry.uniquePointsIterator());
         }
 
-        return Point.fromXY(x / count, y / count);
+        return Iterators.concat(iterators.iterator());
     }
 
-    static @NotNull Point calculateCenterOfPointsIterable(@NotNull Iterable<? extends Point> iterable) {
-        return calculateCenterOfPointsIterator(iterable.iterator());
+    static @NotNull Point calculateCenterOfGeometry(@NotNull Geometry geometry) {
+        Iterator<Point> pointIterator = geometry.uniquePointsIterator();
+        return calculateCenterOfPointIterator(pointIterator);
     }
 
-    static @NotNull Point calculateCenterOfPointsIterator(@NotNull Iterator<? extends Point> iterator) {
+    static @NotNull Point calculateCenterOfPointIterator(@NotNull Iterator<Point> pointIterator) {
         double x = 0;
         double y = 0;
         int count = 0;
 
-        while (iterator.hasNext()) {
-            Point point = iterator.next();
+        while (pointIterator.hasNext()) {
+            Point point = pointIterator.next();
 
             x += point.getX();
             y += point.getY();

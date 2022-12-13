@@ -4,6 +4,8 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Iterator;
+
 public sealed abstract class Geometry permits
     Point,
     MultiPoint,
@@ -13,6 +15,8 @@ public sealed abstract class Geometry permits
     Polygon,
     MultiPolygon,
     GeometryCollection {
+
+    protected abstract @NotNull Iterator<Point> uniquePointsIterator();
 
     @NonFinal
     int pointCount = -1;

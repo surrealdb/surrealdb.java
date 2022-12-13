@@ -7,6 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.Iterator;
+
 /**
  * SurrealDB's representation of a geolocation point. This is a 2D point with a longitude and latitude.
  * <p>To create a point, use: <p>
@@ -255,6 +258,11 @@ public final class Point extends Geometry {
      */
     public double getY() {
         return y;
+    }
+
+    @Override
+    public @NotNull Iterator<Point> uniquePointsIterator() {
+        return Collections.singleton(this).iterator();
     }
 
     @Override
