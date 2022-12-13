@@ -9,11 +9,12 @@ import com.surrealdb.patch.AddPatch;
 import com.surrealdb.patch.Patch;
 import com.surrealdb.patch.ReplacePatch;
 import com.surrealdb.query.QueryResult;
-import com.surrealdb.types.*;
+import com.surrealdb.types.Id;
+import com.surrealdb.types.SurrealRecord;
+import com.surrealdb.types.SurrealTable;
 import lombok.extern.slf4j.Slf4j;
 import meta.model.*;
 import meta.utils.TestUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.junit.jupiter.api.AfterEach;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class SurrealClientTests {
 
     private static final @NotNull SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
-    private static final @NotNull SurrealEdgeTable<Contribution> contributionTable = SurrealEdgeTable.ofTemp("contribution", Contribution.class);
+    private static final @NotNull SurrealTable<Contribution> contributionTable = SurrealTable.of("contribution", Contribution.class);
     private static final @NotNull SurrealTable<Article> articleTable = SurrealTable.of("article", Article.class);
 
     private @UnknownNullability SurrealClient client;

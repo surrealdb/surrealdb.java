@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public sealed class SurrealTable<T extends SurrealRecord> permits SurrealEdgeTable {
+public final class SurrealTable<T extends SurrealRecord> {
 
     @NotNull String name;
     @NotNull Class<T> type;

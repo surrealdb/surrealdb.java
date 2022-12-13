@@ -733,7 +733,7 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
         return relateFuture.thenApplyAsync(Optional::get, executorService);
     }
 
-    default <T extends SurrealEdgeRecord> @NotNull T relate(@NotNull Id from, @NotNull SurrealEdgeTable<T> edgeTable, @NotNull Id to, @NotNull T data) {
+    default <T extends SurrealEdgeRecord> @NotNull T relate(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id to, @NotNull T data) {
         return getResultSynchronously(relateAsync(from, edgeTable, to, data));
     }
 
