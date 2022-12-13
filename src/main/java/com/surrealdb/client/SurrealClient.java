@@ -717,14 +717,15 @@ public sealed interface SurrealClient permits SurrealBiDirectionalClient, Surrea
 
     default <T extends SurrealRecord> @NotNull CompletableFuture<T> relateAsync(@NotNull Id from, @NotNull SurrealTable<T> edgeTable, @NotNull Id with, @NotNull T data) {
         // SQL query to relate two records
-        String sql = "RELATE (type::thing($from))->(type::table($edge_tb))->(type::thing($with)) CONTENT $data RETURN AFTER;";
-        // Arguments to use in the query
-        Map<String, Object> args = ImmutableMap.of(
-            "from", from,
-            "edge_tb", edgeTable.getName(),
-            "with", with,
-            "data", data
+        // I would like to use parameters, but putting the values inline seems to be the only thing that works...
+        String sql = String.format(
+            "RELATE %s->%s->%s CONTENT $data RETURN AFTER;",
+            from.toCombinedId(),
+            edgeTable.getName(),
+            with.toCombinedId()
         );
+        // Arguments to use in the query
+        Map<String, Object> args = ImmutableMap.of("data", data);
         // Execute the query
         CompletableFuture<Optional<T>> relateFuture = sqlSingleAsync(sql, edgeTable.getType(), args);
         // Return the related record

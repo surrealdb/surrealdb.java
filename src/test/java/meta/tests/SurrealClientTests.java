@@ -11,18 +11,16 @@ import com.surrealdb.patch.ReplacePatch;
 import com.surrealdb.query.QueryResult;
 import com.surrealdb.types.*;
 import lombok.extern.slf4j.Slf4j;
-import meta.model.EmptyRecord;
-import meta.model.PartialPerson;
-import meta.model.Person;
-import meta.model.Relationship;
+import meta.model.*;
 import meta.utils.TestUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +36,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class SurrealClientTests {
 
     private static final @NotNull SurrealTable<Person> personTable = SurrealTable.of("person", Person.class);
-    private static final @NotNull SurrealEdgeTable<Relationship> relationshipTable = SurrealEdgeTable.ofTemp("relationship", Relationship.class);
+    private static final @NotNull SurrealEdgeTable<Contribution> contributionTable = SurrealEdgeTable.ofTemp("contribution", Contribution.class);
+    private static final @NotNull SurrealTable<Article> articleTable = SurrealTable.of("article", Article.class);
 
     private @UnknownNullability SurrealClient client;
 
@@ -63,6 +62,8 @@ public abstract class SurrealClientTests {
 
         // Delete all records created by tests
         client.deleteAllRecordsInTable(personTable);
+        client.deleteAllRecordsInTable(contributionTable);
+        client.deleteAllRecordsInTable(articleTable);
         // Disconnect gracefully
         client.cleanup();
     }
@@ -351,17 +352,23 @@ public abstract class SurrealClientTests {
     }
 
     @Test
-    @Disabled("Disabled until relate works...")
     void relate_whenProvidedWithTwoRecordsThatExist_successfullyCreatesRelationship() {
         Id tobieId = personTable.makeThing("tobie");
-        Id jaimeId = personTable.makeThing("jaime");
+        Article article = client.createRecord(articleTable, "surrealdb", new Article("SurrealDB: The next generation database"));
+        Id articleId = article.getId().get();
 
-        Relationship relationship = new Relationship("business_partners");
-        client.relate(tobieId, relationshipTable, jaimeId, relationship);
+        Instant contributionTime = Instant.now();
+        Contribution localContribution = new Contribution(contributionTime);
+        Contribution contribution = client.relate(tobieId, contributionTable, articleId, localContribution);
 
-//        assertEquals("knows", relationship.getTags());
-//        assertEquals(jaime.getId(), relationship.getSource());
-//        assertEquals(tobie.getId(), relationship.getTarget());
+        assertEquals(contributionTime, contribution.getTime());
+
+        assertTrue(contribution.getId().isPresent());
+        assertTrue(contribution.getIn().isPresent());
+        assertTrue(contribution.getOut().isPresent());
+
+        assertEquals(tobieId, contribution.getIn().get());
+        assertEquals(articleId, contribution.getOut().get());
     }
 
     @Test

@@ -15,7 +15,7 @@ public abstract class SurrealEdgeRecord extends SurrealRecord {
 
     @NonFinal
     @SerializedName("in")
-    transient @Nullable Id in;
+    @Nullable Id in;
 
     @NonFinal
     @SerializedName("out")
