@@ -1,5 +1,6 @@
 package com.surrealdb.types;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.NonFinal;
@@ -13,10 +14,24 @@ import java.util.Optional;
 public abstract class SurrealEdgeRecord extends SurrealRecord {
 
     @NonFinal
+    @SerializedName("in")
     transient @Nullable Id in;
 
     @NonFinal
-    transient @Nullable Id out;
+    @SerializedName("out")
+    @Nullable Id out;
+
+    public SurrealEdgeRecord(@Nullable Id id, @Nullable Id in, @Nullable Id out) {
+        super(id);
+
+        this.in = in;
+        this.out = out;
+    }
+
+    public SurrealEdgeRecord() {
+        this.in = null;
+        this.out = null;
+    }
 
     public void setIn(@Nullable Id in) {
         this.in = in;

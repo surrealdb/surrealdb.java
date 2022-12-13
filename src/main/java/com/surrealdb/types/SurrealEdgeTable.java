@@ -2,7 +2,7 @@ package com.surrealdb.types;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class SurrealEdgeTable<T extends SurrealEdgeRecord> extends SurrealTable<T>{
+public final class SurrealEdgeTable<T extends SurrealEdgeRecord> extends SurrealTable<T> {
 
     private SurrealEdgeTable(@NotNull String name, @NotNull Class<T> type) {
         super(name, type);

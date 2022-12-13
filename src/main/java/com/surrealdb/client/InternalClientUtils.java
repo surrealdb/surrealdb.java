@@ -24,7 +24,7 @@ class InternalClientUtils {
         try {
             return future.get();
         } catch (Exception exception) {
-            throw SurrealExceptionUtils.wrapException(exception.getMessage(), exception);
+            throw SurrealExceptionUtils.wrapException(exception, exception.getMessage());
         }
     }
 

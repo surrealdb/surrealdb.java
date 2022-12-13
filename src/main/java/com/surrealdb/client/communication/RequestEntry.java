@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
  * An internal container for a pending request data.
  * Used to store result type for deserialization, as well as a future to callback.
  *
- * @param <RESULT_TYPE>  The type of the deserialized response
+ * @param <RESULT_TYPE> The type of the deserialized response
  */
 @Value
 public class RequestEntry<RESULT_TYPE> {

@@ -49,7 +49,7 @@ public final class CommunicationManager {
                 callback.complete(gson.fromJson(data, resultType));
             }
         } catch (Exception e) {
-            RuntimeException wrappedException = SurrealExceptionUtils.wrapException("Failed to deserialize response", e);
+            RuntimeException wrappedException = SurrealExceptionUtils.wrapException(e, "Failed to deserialize response");
             callback.completeExceptionally(wrappedException);
         }
     }

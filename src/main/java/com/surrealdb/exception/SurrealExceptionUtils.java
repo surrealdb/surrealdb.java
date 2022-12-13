@@ -41,7 +41,7 @@ public class SurrealExceptionUtils {
         return new SurrealException(message);
     }
 
-    private static @NotNull Throwable getRootCause(@NotNull Throwable exception) {
+    private static @NotNull Throwable getRootCause(@NotNull Exception exception) {
         // Initialize the root cause to the given throwable
         Throwable rootCause = exception;
 
@@ -51,11 +51,10 @@ public class SurrealExceptionUtils {
             rootCause = rootCause.getCause();
         }
 
-        // Return the root cause
         return rootCause;
     }
 
-    public static @NotNull RuntimeException wrapException(@NotNull String message, @NotNull Exception exception) {
+    public static @NotNull SurrealException wrapException(@NotNull Exception exception, @NotNull String defaultMessage) {
         // Find the root cause of the exception
         Throwable rootCause = getRootCause(exception);
 
@@ -65,6 +64,6 @@ public class SurrealExceptionUtils {
         }
 
         // Otherwise, return a new SurrealException with the given message and root cause
-        return new SurrealException(message, rootCause);
+        return new SurrealException(defaultMessage, rootCause);
     }
 }

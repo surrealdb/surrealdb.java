@@ -3,6 +3,7 @@ package meta.tests;
 import com.google.gson.*;
 import com.surrealdb.client.SurrealClient;
 import com.surrealdb.client.settings.SurrealClientSettings;
+import com.surrealdb.types.Id;
 import com.surrealdb.types.SurrealTable;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -19,7 +20,6 @@ import java.lang.reflect.Type;
 import java.time.Instant;
 
 import static meta.model.KvMap.assertKvMapEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -137,8 +137,10 @@ public abstract class SurrealClientGsonTests {
         Person localPerson = new Person("Gson Tester", "First", "Last", false);
         Person personFromSetOperation = client.setRecord(table, "test_person", localPerson);
 
-        assertFalse(localPerson.getId().isPresent());
-        assertTrue(personFromSetOperation.getId().isPresent());
+        assertTrue(localPerson.getId().isEmpty());
+
+        assertTrue(personFromSetOperation.getTitle().endsWith("_test_test2"), "serialized should work");
+        assertTrue(personFromSetOperation.getId().isPresent(), "id should be preserved");
     }
 
     private static class PersonAdaptor implements JsonSerializer<Person>, JsonDeserializer<Person> {
@@ -146,17 +148,21 @@ public abstract class SurrealClientGsonTests {
         @Override
         public Person deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
-            String title = object.get("title").getAsString();
-            Person.Name name = context.deserialize(object.get("name"), Person.Name.class);
-            boolean marketing = object.get("marketing").getAsBoolean();
 
-            return new Person(title, name, marketing);
+            Id id = context.deserialize(object.get("id"), Id.class);
+            String title = context.deserialize(object.get("title"), String.class) + "_test2";
+            Person.Name name = context.deserialize(object.get("name"), Person.Name.class);
+            boolean marketing = context.deserialize(object.get("marketing"), boolean.class);
+
+            return new Person(id, title, name, marketing);
         }
 
         @Override
         public JsonElement serialize(Person src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject object = new JsonObject();
-            object.addProperty("title", src.getTitle());
+
+            object.add("id", context.serialize(src.getId()));
+            object.addProperty("title", src.getTitle() + "_test");
             object.add("name", context.serialize(src.getName()));
             object.addProperty("marketing", src.isMarketing());
 

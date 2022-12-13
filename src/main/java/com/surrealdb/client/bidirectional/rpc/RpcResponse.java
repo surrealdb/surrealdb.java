@@ -46,6 +46,6 @@ public class RpcResponse {
 
         @SerializedName("information")
         @Nullable String information;
-        
+
     }
 }

@@ -34,7 +34,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.surrealdb.gson.SurrealGsonUtils.createSurrealCompatibleGsonInstance;
-import static com.surrealdb.gson.SurrealGsonUtils.makeGsonSurrealCompatible;
 
 /**
  * A WebSocket based SurrealDB client.
@@ -50,8 +49,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
     private SurrealWebSocketClient(@NotNull SurrealClientSettings settings) {
         this.settings = settings;
 
-        Gson userGson = makeGsonSurrealCompatible(settings.getGson().newBuilder()).create();
-        this.gson = createSurrealCompatibleGsonInstance(userGson);
+        this.gson = createSurrealCompatibleGsonInstance(settings.getGson());
         this.client = new InternalWebsocketClient(settings, gson, this::onClose);
     }
 
@@ -218,7 +216,7 @@ public class SurrealWebSocketClient implements SurrealBiDirectionalClient {
                         throw new SurrealNotConnectedException();
                     }
 
-                    throw SurrealExceptionUtils.wrapException("Failed to send RPC request", exception);
+                    throw SurrealExceptionUtils.wrapException(exception, "Failed to send RPC request");
                 }
             }, executorService).thenCompose(Function.identity());
         }

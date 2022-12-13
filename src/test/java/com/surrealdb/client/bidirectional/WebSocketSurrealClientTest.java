@@ -2,7 +2,6 @@ package com.surrealdb.client.bidirectional;
 
 import com.surrealdb.client.SurrealBiDirectionalClient;
 import com.surrealdb.client.SurrealClient;
-import com.surrealdb.client.bidirectional.SurrealWebSocketClient;
 import com.surrealdb.client.settings.SurrealClientSettings;
 import meta.tests.SurrealBiDirectionalClientTests;
 import meta.tests.SurrealClientGeometryTests;

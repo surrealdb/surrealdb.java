@@ -1,9 +1,11 @@
 package meta.model;
 
+import com.surrealdb.types.Id;
 import com.surrealdb.types.SurrealRecord;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Khalid Alharisi
@@ -18,6 +20,13 @@ public class Person extends SurrealRecord {
     String title;
     Name name;
     boolean marketing;
+
+    public Person(@Nullable Id id, String title, Name name, boolean marketing) {
+        super(id);
+        this.title = title;
+        this.name = name;
+        this.marketing = marketing;
+    }
 
     public Person(String title, String firstName, String lastName, boolean marketing) {
         this.title = title;
