@@ -110,7 +110,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                     Object result = gson.fromJson(response.getResult(), resultType);
                     callback.complete(result);
                 }else{
-                    callback.complete(null);
+					callback.complete(null);
                 }
             }else{
                 log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());

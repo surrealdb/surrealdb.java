@@ -41,6 +41,8 @@ test {
     environment('TEST_SURREAL_PASSWORD', 'root')
     environment('TEST_SURREAL_NAMESPACE', 'test')
     environment('TEST_SURREAL_DATABASE', 'test')
+	environment('TEST_SURREAL_TOKEN', '')
+	environment('TEST_SURREAL_SCOPE', 'allusers')
 }
 
 task fatJar(type: Jar) {

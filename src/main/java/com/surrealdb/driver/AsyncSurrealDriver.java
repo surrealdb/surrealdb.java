@@ -3,6 +3,7 @@ package com.surrealdb.driver;
 import com.google.gson.reflect.TypeToken;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.driver.model.SignUp;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.SignIn;
 
@@ -34,6 +35,42 @@ public class AsyncSurrealDriver {
     public CompletableFuture<?> signIn(String username, String password){
         return connection.rpc(null, "signin", new SignIn(username, password));
     }
+
+	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password) {
+		return signUp(namespace, database, scope, email, password, false, null);
+	}
+
+	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password, boolean marketing) {
+		return signUp(namespace, database, scope, email, password, marketing, null);
+	}
+
+	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password, String[] tags) {
+		return signUp(namespace, database, scope, email, password, false, tags);
+	}
+
+	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password, boolean marketing, String[] tags) {
+		Type resultType = TypeToken.getParameterized(String.class).getType();
+
+		SignUp userToBeCreated = new SignUp(
+			namespace, database, scope,
+			email, password
+		);
+		userToBeCreated.setMarketing(marketing);
+
+		if (tags != null) {
+			userToBeCreated.setTags(tags);
+		}
+
+		return connection.rpc(resultType, "signup", userToBeCreated);
+	}
+
+	public CompletableFuture<?> authenticate(String token){
+		return connection.rpc(null, "authenticate", token);
+	}
+
+	public CompletableFuture<?> invalidate(){
+		return connection.rpc(null, "invalidate");
+	}
 
     public CompletableFuture<?> use(String namespace, String database){
         return connection.rpc(null, "use", namespace, database);
