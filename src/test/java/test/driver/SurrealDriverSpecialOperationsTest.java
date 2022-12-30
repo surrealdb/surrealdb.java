@@ -95,4 +95,10 @@ public class SurrealDriverSpecialOperationsTest {
         driver.info();
     }
 
+	@Test
+	public void testInvalidate() {
+		//Execute the test at the end, or re-connect after it (the method invalidates the current session auth.)!
+		driver.invalidate();
+	}
+
 }

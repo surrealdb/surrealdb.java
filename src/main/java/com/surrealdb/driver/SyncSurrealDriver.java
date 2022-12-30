@@ -53,6 +53,10 @@ public class SyncSurrealDriver {
 		getResultSynchronously(asyncDriver.authenticate(token));
 	}
 
+	public void invalidate(){
+		getResultSynchronously(asyncDriver.invalidate());
+	}
+
     public void use(String namespace, String database){
         getResultSynchronously(asyncDriver.use(namespace, database));
     }

@@ -68,6 +68,10 @@ public class AsyncSurrealDriver {
 		return connection.rpc(null, "authenticate", token);
 	}
 
+	public CompletableFuture<?> invalidate(){
+		return connection.rpc(null, "invalidate");
+	}
+
     public CompletableFuture<?> use(String namespace, String database){
         return connection.rpc(null, "use", namespace, database);
     }

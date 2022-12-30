@@ -12,10 +12,8 @@ public class TestUtils {
 
     private static final String NAMESPACE = System.getenv("TEST_SURREAL_NAMESPACE");
     private static final String DATABASE = System.getenv("TEST_SURREAL_DATABASE");
-
-    private static final String JWT_TOKEN = System.getenv("TEST_SURREAL_TOKEN");
-
 	private static final String SCOPE = System.getenv("TEST_SURREAL_SCOPE");
+    private static final String JWT_TOKEN = System.getenv("TEST_SURREAL_TOKEN");
 
     public static String getHost(){
         return HOST;
