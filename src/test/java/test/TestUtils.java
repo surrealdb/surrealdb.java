@@ -4,8 +4,6 @@ package test;
  * @author Khalid Alharisi
  */
 public class TestUtils {
-
-
     private static final String HOST = System.getenv("TEST_SURREAL_HOST");
     private static final int PORT = Integer.parseInt(System.getenv("TEST_SURREAL_PORT"));
 
