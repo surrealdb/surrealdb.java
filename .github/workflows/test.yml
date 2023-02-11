@@ -16,7 +16,7 @@ jobs:
     steps:
 
       - name: Setup SurrealDB
-        run: docker run -d --rm --network host surrealdb/surrealdb:latest start --user=root --pass=root
+        run: docker run -d --rm -p 8000:8000 surrealdb/surrealdb:latest start --user=root --pass=root
 
       - name: Checkout
         uses: actions/checkout@v3
