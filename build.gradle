@@ -1,7 +1,7 @@
 plugins {
     id 'java'
 	id 'java-library'
-//	id 'checkstyle'
+	id 'checkstyle'
 }
 
 group 'com.surrealdb'
