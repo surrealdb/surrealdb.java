@@ -1,4 +1,4 @@
-package test.driver.model;
+package com.surrealdb.driver.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
