@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
-	private final AtomicLong lastRequestId;
+    private final AtomicLong lastRequestId;
 	private final Gson gson;
 	private final Map<String, CompletableFuture<?>> callbacks;
 	private final Map<String, Type> resultTypes;
