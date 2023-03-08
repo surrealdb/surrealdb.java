@@ -1,7 +1,6 @@
 package com.surrealdb.connection;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.surrealdb.connection.exception.*;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
@@ -15,7 +14,9 @@ import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -101,33 +102,63 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         final RpcResponse.Error error = response.getError();
         final CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
 
-        try{
-            if(error == null){
-                log.debug("Received RPC response: {}", message);
-                Type resultType = resultTypes.get(id);
+        try {
+			if (error == null) {
+				log.debug("Received RPC response: {}", message);
+				Type resultType = resultTypes.get(id);
 
-                if(resultType != null){
-                    Object result = gson.fromJson(response.getResult(), resultType);
-                    callback.complete(result);
-                }else{
-                    callback.complete(null);
-                }
-            }else{
-                log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
+				if (resultType != null) {
+					Object deserialised = null;
+					JsonElement responseElement = response.getResult();
+					// The protocol can sometimes send object instead of array when only 1 response is valid
+					if (responseElement.isJsonObject()) {
+						JsonArray jsonArray = new JsonArray(1);
+						jsonArray.add(responseElement);
+						deserialised = gson.fromJson(jsonArray, resultType);
+					} else if (responseElement.isJsonArray()) {
+						JsonArray jsonArray = responseElement.getAsJsonArray();
+						deserialised = gson.fromJson(jsonArray, resultType);
+					} else if (responseElement.isJsonPrimitive()) {
+						JsonPrimitive primitive = responseElement.getAsJsonPrimitive();
+						if (primitive.isNumber()) {
+							deserialised = primitive.getAsNumber().doubleValue();
+						} else if (primitive.isString()) {
+							deserialised = primitive.getAsString();
+						} else if (primitive.isBoolean()) {
+							deserialised = primitive.getAsBoolean();
+						}
+					} else if (responseElement.isJsonNull()) {
+						if (resultType.getTypeName().contains("List")) {
+							deserialised = List.of();
+						} else {
+							deserialised = null;
+						}
+					} else {
+						callback.completeExceptionally(new IllegalStateException("Unhandled deserialisation case"));
+					}
+					callback.complete(deserialised);
+				} else {
+					callback.complete(null);
+				}
+			} else {
+				log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
 
-                if(error.getMessage().contains("There was a problem with authentication")) {
-                    callback.completeExceptionally(new SurrealAuthenticationException());
-                }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use")){
-                    callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
-                }else{
-                    Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
-                    if(recordAlreadyExitsMatcher.matches()){
-                        callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
-                    }else{
-                        callback.completeExceptionally(new SurrealException());
-                    }
-                }
-            }
+				if (error.getMessage().contains("There was a problem with authentication")) {
+					callback.completeExceptionally(new SurrealAuthenticationException());
+				} else if (error.getMessage().contains("There was a problem with the database: Specify a namespace to use")) {
+					callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
+				} else {
+					Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
+					if (recordAlreadyExitsMatcher.matches()) {
+						callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
+					} else {
+						callback.completeExceptionally(new SurrealException());
+					}
+				}
+			}
+		}
+		catch (Throwable t){
+			callback.completeExceptionally(t);
         }finally{
             callbacks.remove(id);
             resultTypes.remove(id);
