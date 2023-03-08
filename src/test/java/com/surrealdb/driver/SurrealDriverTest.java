@@ -3,9 +3,7 @@ package com.surrealdb.driver;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
-import com.surrealdb.driver.model.PartialPerson;
-import com.surrealdb.driver.model.Person;
-import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.driver.model.*;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
 import com.surrealdb.TestUtils;
@@ -13,6 +11,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +47,8 @@ public class SurrealDriverTest {
     @AfterEach
     public void teardown(){
         driver.delete("person");
+		driver.delete("movie");
+		driver.delete("message");
     }
 
     @Test
@@ -198,4 +200,23 @@ public class SurrealDriverTest {
         assertEquals(0, actual.size());
     }
 
+	@Test
+	public void testLocalDate() {
+		Movie insert = new Movie("Everything Everywhere All at Once", 9, LocalDate.parse("2022-05-13"));
+		assertNull(insert.getId());
+
+		Movie select = driver.create("movie", insert);
+		assertNotNull(select.getRelease());
+		assertEquals("2022-05-13", select.getRelease().toString());
+	}
+
+	@Test
+	public void testLocalDateTime() {
+		Message insert = new Message("This is surreal", LocalDateTime.now());
+		assertNull(insert.getId());
+
+		Message select = driver.create("message", insert);
+		assertNotNull(select.getTimestamp());
+		assertEquals(insert.getTimestamp(), select.getTimestamp());
+	}
 }

@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import com.surrealdb.connection.adapter.LocalDateAdapter;
+import com.surrealdb.connection.adapter.LocalDateTimeAdapter;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealException;
@@ -23,6 +25,8 @@ import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +54,11 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 		super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
 		this.lastRequestId = new AtomicLong(0);
-		this.gson = new GsonBuilder().disableHtmlEscaping().create();
+		this.gson = new GsonBuilder()
+			.registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+			.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+			.disableHtmlEscaping()
+			.create();
 		this.callbacks = new HashMap<>();
 		this.resultTypes = new HashMap<>();
 	}
