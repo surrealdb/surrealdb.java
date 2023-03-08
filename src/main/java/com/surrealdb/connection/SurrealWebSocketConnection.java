@@ -1,7 +1,16 @@
 package com.surrealdb.connection;
 
-import com.google.gson.*;
-import com.surrealdb.connection.exception.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.surrealdb.connection.exception.SurrealAuthenticationException;
+import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.connection.exception.SurrealException;
+import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.connection.exception.SurrealNotConnectedException;
+import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
 import lombok.SneakyThrows;
@@ -14,7 +23,6 @@ import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,79 +38,79 @@ import java.util.regex.Pattern;
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
 	private final AtomicLong lastRequestId;
-    private final Gson gson;
-    private final Map<String, CompletableFuture<?>> callbacks;
-    private final Map<String, Type> resultTypes;
+	private final Gson gson;
+	private final Map<String, CompletableFuture<?>> callbacks;
+	private final Map<String, Type> resultTypes;
 
-    // precomputed private variables
-    private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
+	// precomputed private variables
+	private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
-    @SneakyThrows
-    public SurrealWebSocketConnection(String host, int port, boolean useTls){
-        super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
+	@SneakyThrows
+	public SurrealWebSocketConnection(String host, int port, boolean useTls) {
+		super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
-        this.lastRequestId = new AtomicLong(0);
-        this.gson = new GsonBuilder().disableHtmlEscaping().create();
-        this.callbacks = new HashMap<>();
-        this.resultTypes = new HashMap<>();
-    }
+		this.lastRequestId = new AtomicLong(0);
+		this.gson = new GsonBuilder().disableHtmlEscaping().create();
+		this.callbacks = new HashMap<>();
+		this.resultTypes = new HashMap<>();
+	}
 
-    @Override
-    public void connect(int timeoutSeconds) {
-        try {
-            log.debug("Connecting to SurrealDB server {}", uri);
-            this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new SurrealConnectionTimeoutException();
-        }
-        if(!isOpen()){
-            throw new SurrealConnectionTimeoutException();
-        }
-    }
+	@Override
+	public void connect(int timeoutSeconds) {
+		try {
+			log.debug("Connecting to SurrealDB server {}", uri);
+			this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			throw new com.surrealdb.connection.exception.SurrealConnectionTimeoutException();
+		}
+		if (!isOpen()) {
+			throw new SurrealConnectionTimeoutException();
+		}
+	}
 
-    @Override
-    public void disconnect() {
-        try {
-            this.closeBlocking();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	@Override
+	public void disconnect() {
+		try {
+			this.closeBlocking();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    @Override
-    public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
-        RpcRequest request = new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
-        CompletableFuture<T> callback = new CompletableFuture<>();
+	@Override
+	public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params) {
+		RpcRequest request = new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
+		CompletableFuture<T> callback = new CompletableFuture<>();
 
-        callbacks.put(request.getId(), callback);
-        if(resultType != null){
-            resultTypes.put(request.getId(), resultType);
-        }
+		callbacks.put(request.getId(), callback);
+		if (resultType != null) {
+			resultTypes.put(request.getId(), resultType);
+		}
 
-        try{
-            String json = gson.toJson(request);
-            log.debug("Sending RPC request {}", json);
-            send(json);
-        }catch(WebsocketNotConnectedException e){
-            throw new SurrealNotConnectedException();
-        }
+		try {
+			String json = gson.toJson(request);
+			log.debug("Sending RPC request {}", json);
+			send(json);
+		} catch (WebsocketNotConnectedException e) {
+			throw new SurrealNotConnectedException();
+		}
 
-        return callback;
-    }
+		return callback;
+	}
 
-    @Override
-    public void onOpen(ServerHandshake handshake) {
-        log.debug("Connected");
-    }
+	@Override
+	public void onOpen(ServerHandshake handshake) {
+		log.debug("Connected");
+	}
 
-    @Override
-    public void onMessage(String message) {
-        final RpcResponse response = gson.fromJson(message, RpcResponse.class);
-        final String id = response.getId();
-        final RpcResponse.Error error = response.getError();
-        final CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
+	@Override
+	public void onMessage(String message) {
+		final RpcResponse response = gson.fromJson(message, RpcResponse.class);
+		final String id = response.getId();
+		final RpcResponse.Error error = response.getError();
+		final CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
 
-        try {
+		try {
 			if (error == null) {
 				log.debug("Received RPC response: {}", message);
 				Type resultType = resultTypes.get(id);
@@ -156,27 +164,26 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 					}
 				}
 			}
-		}
-		catch (Throwable t){
+		} catch (Throwable t) {
 			callback.completeExceptionally(t);
-        }finally{
-            callbacks.remove(id);
-            resultTypes.remove(id);
-        }
-    }
+		} finally {
+			callbacks.remove(id);
+			resultTypes.remove(id);
+		}
+	}
 
-    @Override
-    public void onClose(int code, String reason, boolean remote) {
-        log.debug("onClose");
-        callbacks.clear();
-        resultTypes.clear();
-    }
+	@Override
+	public void onClose(int code, String reason, boolean remote) {
+		log.debug("onClose");
+		callbacks.clear();
+		resultTypes.clear();
+	}
 
-    @Override
-    public void onError(Exception ex) {
-        if(!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)){
-            log.error("onError", ex);
-        }
-    }
+	@Override
+	public void onError(Exception ex) {
+		if (!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)) {
+			log.error("onError", ex);
+		}
+	}
 
 }
