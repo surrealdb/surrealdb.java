@@ -1,15 +1,14 @@
-package test.driver;
+package com.surrealdb.driver;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
-import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.model.PartialPerson;
+import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import test.TestUtils;
-import test.driver.model.PartialPerson;
-import test.driver.model.Person;
+import com.surrealdb.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Khalid Alharisi

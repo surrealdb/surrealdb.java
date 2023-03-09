@@ -1,12 +1,11 @@
-package test.driver;
+package com.surrealdb.driver;
 
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
-import com.surrealdb.driver.SyncSurrealDriver;
-import test.TestUtils;
-import test.driver.model.Person;
+import com.surrealdb.driver.model.Person;
+import com.surrealdb.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
