@@ -2,7 +2,15 @@ package com.surrealdb.connection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.surrealdb.connection.exception.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.surrealdb.connection.exception.SurrealAuthenticationException;
+import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
+import com.surrealdb.connection.exception.SurrealException;
+import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.connection.exception.SurrealNotConnectedException;
+import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
 import lombok.SneakyThrows;
@@ -16,6 +24,7 @@ import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +37,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class SurrealWebSocketConnection extends WebSocketClient implements SurrealConnection {
-	private final AtomicLong lastRequestId;
+    private final AtomicLong lastRequestId;
     private final Gson gson;
     private final Map<String, CompletableFuture<?>> callbacks;
     private final Map<String, Type> resultTypes;
@@ -37,7 +46,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
 
     @SneakyThrows
-    public SurrealWebSocketConnection(String host, int port, boolean useTls){
+    public SurrealWebSocketConnection(String host, int port, boolean useTls) {
         super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
         this.lastRequestId = new AtomicLong(0);
@@ -52,9 +61,9 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             log.debug("Connecting to SurrealDB server {}", uri);
             this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            throw new SurrealConnectionTimeoutException();
+            throw new com.surrealdb.connection.exception.SurrealConnectionTimeoutException();
         }
-        if(!isOpen()){
+        if (!isOpen()) {
             throw new SurrealConnectionTimeoutException();
         }
     }
@@ -69,20 +78,20 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     }
 
     @Override
-    public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params){
+    public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params) {
         RpcRequest request = new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
         CompletableFuture<T> callback = new CompletableFuture<>();
 
         callbacks.put(request.getId(), callback);
-        if(resultType != null){
+        if (resultType != null) {
             resultTypes.put(request.getId(), resultType);
         }
 
-        try{
+        try {
             String json = gson.toJson(request);
             log.debug("Sending RPC request {}", json);
             send(json);
-        }catch(WebsocketNotConnectedException e){
+        } catch (WebsocketNotConnectedException e) {
             throw new SurrealNotConnectedException();
         }
 
@@ -101,34 +110,63 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         final RpcResponse.Error error = response.getError();
         final CompletableFuture<Object> callback = (CompletableFuture<Object>) callbacks.get(id);
 
-        try{
-            if(error == null){
+        try {
+            if (error == null) {
                 log.debug("Received RPC response: {}", message);
                 Type resultType = resultTypes.get(id);
 
-                if(resultType != null){
-                    Object result = gson.fromJson(response.getResult(), resultType);
-                    callback.complete(result);
-                }else{
+                if (resultType != null) {
+                    Object deserialised = null;
+                    JsonElement responseElement = response.getResult();
+                    // The protocol can sometimes send object instead of array when only 1 response is valid
+                    if (responseElement.isJsonObject()) {
+                        JsonArray jsonArray = new JsonArray(1);
+                        jsonArray.add(responseElement);
+                        deserialised = gson.fromJson(jsonArray, resultType);
+                    } else if (responseElement.isJsonArray()) {
+                        JsonArray jsonArray = responseElement.getAsJsonArray();
+                        deserialised = gson.fromJson(jsonArray, resultType);
+                    } else if (responseElement.isJsonPrimitive()) {
+                        JsonPrimitive primitive = responseElement.getAsJsonPrimitive();
+                        if (primitive.isNumber()) {
+                            deserialised = primitive.getAsNumber().doubleValue();
+                        } else if (primitive.isString()) {
+                            deserialised = primitive.getAsString();
+                        } else if (primitive.isBoolean()) {
+                            deserialised = primitive.getAsBoolean();
+                        }
+                    } else if (responseElement.isJsonNull()) {
+                        if (resultType.getTypeName().contains("List")) {
+                            deserialised = List.of();
+                        } else {
+                            deserialised = null;
+                        }
+                    } else {
+                        callback.completeExceptionally(new IllegalStateException("Unhandled deserialisation case"));
+                    }
+                    callback.complete(deserialised);
+                } else {
                     callback.complete(null);
                 }
-            }else{
+            } else {
                 log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
 
-                if(error.getMessage().contains("There was a problem with authentication")) {
+                if (error.getMessage().contains("There was a problem with authentication")) {
                     callback.completeExceptionally(new SurrealAuthenticationException());
-                }else if(error.getMessage().contains("There was a problem with the database: Specify a namespace to use")){
+                } else if (error.getMessage().contains("There was a problem with the database: Specify a namespace to use")) {
                     callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
-                }else{
+                } else {
                     Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
-                    if(recordAlreadyExitsMatcher.matches()){
+                    if (recordAlreadyExitsMatcher.matches()) {
                         callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
-                    }else{
+                    } else {
                         callback.completeExceptionally(new SurrealException());
                     }
                 }
             }
-        }finally{
+        } catch (Throwable t) {
+            callback.completeExceptionally(t);
+        } finally {
             callbacks.remove(id);
             resultTypes.remove(id);
         }
@@ -143,7 +181,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onError(Exception ex) {
-        if(!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)){
+        if (!(ex instanceof ConnectException) && !(ex instanceof NoRouteToHostException)) {
             log.error("onError", ex);
         }
     }

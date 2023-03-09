@@ -1,4 +1,4 @@
-package test;
+package com.surrealdb;
 
 /**
  * @author Khalid Alharisi
