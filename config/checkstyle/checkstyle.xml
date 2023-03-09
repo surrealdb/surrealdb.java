@@ -8,6 +8,6 @@
 		<module name="AvoidStarImport"/>
 		<module name="ConstantName"/>
 		<module name="EmptyBlock"/>
-<!--		<module name="Indentation"/> TODO because format is bad-->
+		<module name="Indentation"/>
 	</module>
 </module>
