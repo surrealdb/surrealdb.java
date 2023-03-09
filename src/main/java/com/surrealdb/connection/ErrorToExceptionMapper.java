@@ -30,7 +30,7 @@ public class ErrorToExceptionMapper {
         }
 
         // return the generic Exception
-        return new SurrealException();
+        return new SurrealException(error.getMessage());
     }
 
 }
