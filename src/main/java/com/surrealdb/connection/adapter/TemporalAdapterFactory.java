@@ -51,7 +51,7 @@ public class TemporalAdapterFactory implements TypeAdapterFactory {
             return (TypeAdapter<T>) new LocalDateAdapter();
         } else if (rawType.equals(LocalDateTime.class)) {
             return (TypeAdapter<T>) new LocalDateTimeAdapter();
-        } else if (rawType.equals(LocalDateTime.class)) {
+        } else if (rawType.equals(ZonedDateTime.class)) {
             return (TypeAdapter<T>) new ZonedDateTimeAdapter();
         }
 
