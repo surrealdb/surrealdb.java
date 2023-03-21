@@ -82,8 +82,8 @@ public class SurrealDriverTest {
         List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size()); // number of queries
-        assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
-        assertEquals(1, actual.get(0).getResult().size()); // number of rows returned
+        assertEquals("OK", actual.get(0).status()); // first query executed successfully
+        assertEquals(1, actual.get(0).result().size()); // number of rows returned
     }
 
     @Test
