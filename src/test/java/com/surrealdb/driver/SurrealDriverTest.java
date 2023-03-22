@@ -31,12 +31,11 @@ public class SurrealDriverTest {
     @Container
     private static final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
         .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
-    private SurrealWebSocketConnection connection;
     private SyncSurrealDriver driver;
 
     @BeforeEach
     public void setup() {
-        connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
         connection.connect(5);
 
         driver = new SyncSurrealDriver(connection);
@@ -125,9 +124,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.update("person", expected);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(expected.getTitle(), person.getTitle());
-        });
+        actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
     }
 
     @Test
@@ -147,9 +144,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.change("person", patch, Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(patch.isMarketing(), person.isMarketing());
-        });
+        actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
     }
 
     @Test

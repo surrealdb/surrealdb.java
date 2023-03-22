@@ -22,12 +22,11 @@ public class SurrealDriverSpecialOperationsTest {
     @Container
     private static final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
         .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
-    private SurrealWebSocketConnection connection;
     private SyncSurrealDriver driver;
 
     @BeforeEach
     public void setup(){
-        connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
         connection.connect(5);
         driver = new SyncSurrealDriver(connection);
     }
@@ -39,9 +38,7 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testBadCredentials() {
-        assertThrows(SurrealAuthenticationException.class, () -> {
-            driver.signIn("admin", "incorrect-password");
-        });
+        assertThrows(SurrealAuthenticationException.class, () -> driver.signIn("admin", "incorrect-password"));
     }
 
     @Test
