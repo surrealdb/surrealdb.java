@@ -1,5 +1,6 @@
 package com.surrealdb.driver;
 
+import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
@@ -8,7 +9,6 @@ import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import com.surrealdb.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

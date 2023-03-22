@@ -18,3 +18,6 @@ indent_style = space
 
 [*.{md,diff}]
 trim_trailing_whitespace = false
+
+[*.{java,kt}]
+ij_java_names_count_to_use_import_on_demand = 3
