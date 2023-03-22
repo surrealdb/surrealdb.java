@@ -6,14 +6,9 @@ on:
   pull_request:
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
-
-      - name: Setup SurrealDB
-        run: docker run -d --rm -p 8000:8000 surrealdb/surrealdb:latest start --user=root --pass=root
-
       - name: Checkout
         uses: actions/checkout@v3
 
