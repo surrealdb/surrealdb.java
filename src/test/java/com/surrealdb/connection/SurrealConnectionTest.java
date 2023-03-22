@@ -32,9 +32,7 @@ public class SurrealConnectionTest {
 
     @Test
     public void testConnectSuccessfully() {
-        assertDoesNotThrow(() -> {
-            connection.connect(3);
-        });
+        assertDoesNotThrow(() -> connection.connect(3));
     }
 
     @Test
@@ -63,9 +61,7 @@ public class SurrealConnectionTest {
 
     @Test
     public void testUserForgotToConnect() {
-        assertThrows(SurrealNotConnectedException.class, () -> {
-            connection.rpc(null, "let", "some_key", "some_val");
-        });
+        assertThrows(SurrealNotConnectedException.class, () -> connection.rpc(null, "let", "some_key", "some_val"));
     }
 
     @Test
