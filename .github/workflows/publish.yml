@@ -29,5 +29,4 @@ jobs:
           name: "Release ${{ github.ref_name }}"
           files: |
             LICENSE
-            **/*.tgz
-            **/*.exe
+            build/libs/*.jar
