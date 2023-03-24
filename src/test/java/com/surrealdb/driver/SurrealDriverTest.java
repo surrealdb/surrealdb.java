@@ -1,6 +1,6 @@
 package com.surrealdb.driver;
 
-import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.exception.UniqueIndexViolationException;
@@ -9,28 +9,31 @@ import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import com.surrealdb.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Khalid Alharisi
  */
+@Testcontainers
 public class SurrealDriverTest {
-
+    @Container
+    private static final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+        .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
     private SyncSurrealDriver driver;
 
     @BeforeEach
-    public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
+    public void setup() {
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
         connection.connect(5);
 
         driver = new SyncSurrealDriver(connection);
@@ -43,7 +46,7 @@ public class SurrealDriverTest {
     }
 
     @AfterEach
-    public void teardown(){
+    public void teardown() {
         driver.delete("person");
     }
 
@@ -131,9 +134,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.update("person", expected);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(expected.getTitle(), person.getTitle());
-        });
+        actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
     }
 
     @Test
@@ -153,17 +154,15 @@ public class SurrealDriverTest {
         List<Person> actual = driver.change("person", patch, Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(patch.isMarketing(), person.isMarketing());
-        });
+        actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
     }
 
     @Test
     public void testPatchOne() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person:1", patches);
@@ -178,9 +177,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchAll() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person", patches);

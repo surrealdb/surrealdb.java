@@ -21,6 +21,7 @@ ext {
 	logbackVersion = "1.3.1"
 	lombokVersion = "1.18.26"
 	junitVersion = "5.8.1"
+    testcontainersVersion = "1.17.6"
 }
 
 dependencies {
@@ -45,6 +46,10 @@ dependencies {
     // junit
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+
 }
 
 test {
