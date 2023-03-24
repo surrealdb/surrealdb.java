@@ -3,6 +3,7 @@ package com.surrealdb.driver;
 import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
+import com.surrealdb.connection.exception.UniqueIndexViolationException;
 import com.surrealdb.driver.model.PartialPerson;
 import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
@@ -13,10 +14,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -73,6 +71,18 @@ public class SurrealDriverTest {
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
         });
+    }
+
+    @Test
+    public void testCreateAlreadyExistsUsingUniqueIndex() {
+        assertThrows(UniqueIndexViolationException.class, () -> {
+            driver.query("DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE", Collections.emptyMap(), Object.class);
+            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+        });
+
+        // cleanup
+        driver.query("REMOVE INDEX fullNameUniqueIndex ON TABLE person", Collections.emptyMap(), Object.class);
     }
 
     @Test
