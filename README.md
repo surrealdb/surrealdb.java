@@ -97,6 +97,7 @@ class Person {
 
 ### Planned Features
 - A complete SDK With Repository pattern.
+- JDBC interface (work in progress can be found in `src/main/java/com/surrealdb/jdbc`)
 - Open an issue for feature requests
 
 
