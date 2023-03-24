@@ -1,6 +1,10 @@
 package com.surrealdb.connection;
 
-import com.surrealdb.connection.exception.*;
+import com.surrealdb.connection.exception.SurrealAuthenticationException;
+import com.surrealdb.connection.exception.SurrealException;
+import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
+import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
+import com.surrealdb.connection.exception.UniqueIndexViolationException;
 import com.surrealdb.connection.model.RpcResponse;
 
 import java.util.regex.Matcher;
