@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class SurrealConnectionTest {
 
     @Container
-    private static final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+    private final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
         .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
     private SurrealWebSocketConnection connection;
 
