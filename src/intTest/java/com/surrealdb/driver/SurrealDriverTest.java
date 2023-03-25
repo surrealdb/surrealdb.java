@@ -1,9 +1,9 @@
 package com.surrealdb.driver;
 
 import com.surrealdb.TestUtils;
-import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
+import com.surrealdb.connection.exception.UniqueIndexViolationException;
 import com.surrealdb.driver.model.PartialPerson;
 import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
@@ -12,27 +12,28 @@ import com.surrealdb.driver.model.patch.ReplacePatch;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Khalid Alharisi
  */
+@Testcontainers
 public class SurrealDriverTest {
-
+    @Container
+    private static final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+        .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
     private SyncSurrealDriver driver;
 
     @BeforeEach
-    public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
+    public void setup() {
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
         connection.connect(5);
 
         driver = new SyncSurrealDriver(connection);
@@ -45,7 +46,7 @@ public class SurrealDriverTest {
     }
 
     @AfterEach
-    public void teardown(){
+    public void teardown() {
         driver.delete("person");
     }
 
@@ -73,6 +74,18 @@ public class SurrealDriverTest {
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
         });
+    }
+
+    @Test
+    public void testCreateAlreadyExistsUsingUniqueIndex() {
+        assertThrows(UniqueIndexViolationException.class, () -> {
+            driver.query("DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE", Collections.emptyMap(), Object.class);
+            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+        });
+
+        // cleanup
+        driver.query("REMOVE INDEX fullNameUniqueIndex ON TABLE person", Collections.emptyMap(), Object.class);
     }
 
     @Test
@@ -121,9 +134,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.update("person", expected);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(expected.getTitle(), person.getTitle());
-        });
+        actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
     }
 
     @Test
@@ -143,17 +154,15 @@ public class SurrealDriverTest {
         List<Person> actual = driver.change("person", patch, Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(patch.isMarketing(), person.isMarketing());
-        });
+        actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
     }
 
     @Test
     public void testPatchOne() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person:1", patches);
@@ -168,9 +177,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchAll() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person", patches);
