@@ -2,6 +2,7 @@ plugins {
     id 'java'
 	id 'java-library'
 	id 'checkstyle'
+    id 'maven-publish'
 }
 
 group 'com.surrealdb'
@@ -90,10 +91,6 @@ tasks.register('integrationTest', Test) {
     environment('TEST_SURREAL_PASSWORD', 'root')
     environment('TEST_SURREAL_NAMESPACE', 'test')
     environment('TEST_SURREAL_DATABASE', 'test')
-
-    testLogging {
-        events "passed"
-    }
 }
 
 check.dependsOn integrationTest
@@ -107,4 +104,17 @@ task fatJar(type: Jar) {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     with jar
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/surrealdb/surrealdb.java"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }

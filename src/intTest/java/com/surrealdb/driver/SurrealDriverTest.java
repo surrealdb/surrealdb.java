@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 
 /**
  * @author Khalid Alharisi
@@ -35,13 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Testcontainers
 public class SurrealDriverTest {
     @Container
-    private final GenericContainer surrealDb = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+    private static final GenericContainer SURREAL_DB = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
         .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
     private SyncSurrealDriver driver;
 
     @BeforeEach
     public void setup() {
-        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(surrealDb.getHost(), surrealDb.getFirstMappedPort(), false);
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(SURREAL_DB.getHost(), SURREAL_DB.getFirstMappedPort(), false);
         connection.connect(5);
 
         driver = new SyncSurrealDriver(connection);
