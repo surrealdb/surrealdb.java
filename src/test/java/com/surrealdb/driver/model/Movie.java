@@ -12,14 +12,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Movie {
 
-	String id;
-	String title;
-	int rating;
-	LocalDate release;
+    private String id;
+    private String title;
+    private int rating;
+    private LocalDate release;
 
-	public Movie(String title, int rating, LocalDate release) {
-		this.title = title;
-		this.rating = rating;
-		this.release = release;
-	}
+    public Movie(String title, int rating, LocalDate release) {
+        this.title = title;
+        this.rating = rating;
+        this.release = release;
+    }
 }

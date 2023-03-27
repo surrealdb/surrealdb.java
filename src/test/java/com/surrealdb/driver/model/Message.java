@@ -3,7 +3,7 @@ package com.surrealdb.driver.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * @author akaecliptic
@@ -12,12 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Message {
 
-	private String id;
-	private String data;
-	private LocalDateTime timestamp;
+    private String id;
+    private String data;
+    private ZonedDateTime timestamp;
 
-	public Message(String data, LocalDateTime timestamp) {
-		this.data = data;
-		this.timestamp = timestamp;
-	}
+    public Message(String data, ZonedDateTime timestamp) {
+        this.data = data;
+        this.timestamp = timestamp;
+    }
 }
