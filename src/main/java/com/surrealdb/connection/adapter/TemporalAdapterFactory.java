@@ -38,8 +38,8 @@ import java.time.temporal.Temporal;
  */
 public class TemporalAdapterFactory implements TypeAdapterFactory {
 
-    private DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-    private ZoneId zone = ZoneOffset.UTC;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    private final ZoneId zone = ZoneOffset.UTC;
 
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
@@ -93,7 +93,7 @@ public class TemporalAdapterFactory implements TypeAdapterFactory {
             if (date == null) {
                 writer.nullValue();
             } else {
-                ZonedDateTime zdt = date.atZone(ZoneOffset.UTC);
+                ZonedDateTime zdt = date.atZone(zone);
                 writer.value(formatter.format(zdt));
             }
         }
