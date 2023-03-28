@@ -51,12 +51,16 @@ dependencies {
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     testRuntimeOnly "ch.qos.logback:logback-core:${logbackVersion}"
     testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+    intTestRuntimeOnly "ch.qos.logback:logback-core:${logbackVersion}"
+    intTestRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
 
     // lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    intTestCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    intTestAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     // junit
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
@@ -84,12 +88,6 @@ spotless {
 
 test {
     useJUnitPlatform()
-    environment('TEST_SURREAL_HOST', 'localhost')
-    environment('TEST_SURREAL_PORT', 8000)
-    environment('TEST_SURREAL_USERNAME', 'root')
-    environment('TEST_SURREAL_PASSWORD', 'root')
-    environment('TEST_SURREAL_NAMESPACE', 'test')
-    environment('TEST_SURREAL_DATABASE', 'test')
 }
 
 tasks.register('integrationTest', Test) {
@@ -119,7 +117,7 @@ checkstyle {
     configFile = resources.text.fromUri("https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-${toolVersion}/src/main/resources/google_checks.xml").asFile()
 }
 
-task fatJar(type: Jar) {
+tasks.register('fatJar', Jar) {
     manifest {
         attributes 'Main-Class': 'com.surrealdb.driver.SyncSurrealDriver'
     }
