@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import com.surrealdb.connection.adapter.TemporalAdapterFactory;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import com.surrealdb.connection.model.RpcRequest;
@@ -40,11 +41,14 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     public SurrealWebSocketConnection(String host, int port, boolean useTls) {
         super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
-        this.lastRequestId = new AtomicLong(0);
-        this.gson = new GsonBuilder().disableHtmlEscaping().create();
-        this.callbacks = new HashMap<>();
-        this.resultTypes = new HashMap<>();
-    }
+		this.lastRequestId = new AtomicLong(0);
+		this.gson = new GsonBuilder()
+            .registerTypeAdapterFactory(new TemporalAdapterFactory())
+			.disableHtmlEscaping()
+			.create();
+		this.callbacks = new HashMap<>();
+		this.resultTypes = new HashMap<>();
+	}
 
     @Override
     public void connect(int timeoutSeconds) {

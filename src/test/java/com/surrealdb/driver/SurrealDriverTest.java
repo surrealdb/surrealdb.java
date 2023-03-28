@@ -4,8 +4,11 @@ import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.exception.UniqueIndexViolationException;
+import com.surrealdb.driver.model.Message;
+import com.surrealdb.driver.model.Movie;
 import com.surrealdb.driver.model.PartialPerson;
 import com.surrealdb.driver.model.Person;
+import com.surrealdb.driver.model.Reminder;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
@@ -17,6 +20,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +62,9 @@ public class SurrealDriverTest {
     @AfterEach
     public void teardown() {
         driver.delete("person");
+		driver.delete("movie");
+		driver.delete("message");
+		driver.delete("reminder");
     }
 
     @Test
@@ -214,4 +224,34 @@ public class SurrealDriverTest {
         assertEquals(0, actual.size());
     }
 
+	@Test
+	public void testLocalDate() {
+        LocalDate date = LocalDate.parse("2022-05-13");
+		Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
+
+		Movie select = driver.create("movie", insert);
+		assertNotNull(select.getRelease());
+		assertEquals(date, select.getRelease());
+	}
+
+	@Test
+	public void testLocalDateTime() {
+        LocalDateTime time = LocalDateTime.now();
+        Reminder insert = new Reminder("Pass this test", time);
+
+        Reminder select = driver.create("reminder", insert);
+        assertNotNull(select.getTime());
+        assertEquals(time, select.getTime());
+	}
+
+    @Test
+    public void testZonedDateTime() {
+        ZonedDateTime time = ZonedDateTime.parse("2022-02-02T22:00:00+02:00");
+        ZonedDateTime timeAtUTC = LocalDateTime.parse("2022-02-02T20:00:00").atZone(ZoneOffset.UTC);
+        Message insert = new Message("This is surreal", time);
+
+        Message select = driver.create("message", insert);
+        assertNotNull(select.getTimestamp());
+        assertEquals(timeAtUTC, select.getTimestamp());
+    }
 }
