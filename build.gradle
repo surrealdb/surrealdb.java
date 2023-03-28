@@ -64,6 +64,11 @@ test {
     environment('TEST_SURREAL_DATABASE', 'test')
 }
 
+checkstyle {
+    toolVersion = "10.9.3"
+    configFile = resources.text.fromUri("https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-${toolVersion}/src/main/resources/google_checks.xml").asFile()
+}
+
 task fatJar(type: Jar) {
     manifest {
         attributes 'Main-Class': 'com.surrealdb.driver.SyncSurrealDriver'
