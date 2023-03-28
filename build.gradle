@@ -56,11 +56,9 @@ dependencies {
 
 spotless {
     java {
-        // Cleanthat will refactor your code, but it may break your style: apply it before your formatter
         cleanthat()
-
-        googleJavaFormat().aosp()   // has its own section below
-        formatAnnotations()  // fixes formatting of type annotations, see below
+        googleJavaFormat().aosp()
+        formatAnnotations()
         indentWithSpaces(4)
     }
 }
