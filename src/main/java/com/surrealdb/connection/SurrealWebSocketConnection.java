@@ -5,12 +5,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.surrealdb.connection.exception.SurrealAuthenticationException;
+import com.surrealdb.connection.adapter.TemporalAdapterFactory;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
-import com.surrealdb.connection.exception.SurrealException;
-import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
-import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
 import lombok.SneakyThrows;
@@ -29,8 +26,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Khalid Alharisi
@@ -42,18 +37,18 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     private final Map<String, CompletableFuture<?>> callbacks;
     private final Map<String, Type> resultTypes;
 
-    // precomputed private variables
-    private final Pattern RECORD_ALREADY_EXITS_PATTERN = Pattern.compile("There was a problem with the database: Database record `(.+):(.+)` already exists");
-
     @SneakyThrows
     public SurrealWebSocketConnection(String host, int port, boolean useTls) {
         super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
-        this.lastRequestId = new AtomicLong(0);
-        this.gson = new GsonBuilder().disableHtmlEscaping().create();
-        this.callbacks = new HashMap<>();
-        this.resultTypes = new HashMap<>();
-    }
+		this.lastRequestId = new AtomicLong(0);
+		this.gson = new GsonBuilder()
+            .registerTypeAdapterFactory(new TemporalAdapterFactory())
+			.disableHtmlEscaping()
+			.create();
+		this.callbacks = new HashMap<>();
+		this.resultTypes = new HashMap<>();
+	}
 
     @Override
     public void connect(int timeoutSeconds) {
@@ -149,21 +144,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                     callback.complete(null);
                 }
             } else {
-                log.error("Received RPC error: id={} code={} message={}", id, error.code(), error.message());
-
-                if (error.message().contains("There was a problem with authentication")) {
-                    callback.completeExceptionally(new SurrealAuthenticationException());
-                } else if (error.message().contains("There was a problem with the database: Specify a namespace to use")) {
-                    callback.completeExceptionally(new SurrealNoDatabaseSelectedException());
-                } else {
-                    Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.message());
-                    if (recordAlreadyExitsMatcher.matches()) {
-                        callback.completeExceptionally(new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2)));
-                    } else {
-                        callback.completeExceptionally(new SurrealException());
-                    }
-                }
+                log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
+                callback.completeExceptionally(ErrorToExceptionMapper.map(error));
             }
+
         } catch (Throwable t) {
             callback.completeExceptionally(t);
         } finally {
