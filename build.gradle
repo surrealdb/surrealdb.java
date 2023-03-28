@@ -3,6 +3,7 @@ plugins {
 	id 'java-library'
 	id 'checkstyle'
     id 'maven-publish'
+    id "com.diffplug.spotless" version "6.17.0"
 }
 
 group 'com.surrealdb'
@@ -52,6 +53,15 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
 
+}
+
+spotless {
+    java {
+        cleanthat()
+        googleJavaFormat().aosp()
+        formatAnnotations()
+        indentWithSpaces(4)
+    }
 }
 
 test {
