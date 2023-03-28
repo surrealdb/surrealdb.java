@@ -3,6 +3,7 @@ plugins {
 	id 'java-library'
 	id 'checkstyle'
     id 'maven-publish'
+    id "com.diffplug.spotless" version "6.17.0"
 }
 
 group 'com.surrealdb'
@@ -51,6 +52,17 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
 
+}
+
+spotless {
+    java {
+        // Cleanthat will refactor your code, but it may break your style: apply it before your formatter
+        cleanthat()
+
+        googleJavaFormat().aosp()   // has its own section below
+        formatAnnotations()  // fixes formatting of type annotations, see below
+        indentWithSpaces(4)
+    }
 }
 
 test {
