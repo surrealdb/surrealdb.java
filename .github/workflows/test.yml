@@ -19,6 +19,11 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Run Checkstyle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: :checkstyleMain :checkstyleTest
+
       - name: Run Tests
         uses: gradle/gradle-build-action@v2
         with:
