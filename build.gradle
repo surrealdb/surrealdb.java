@@ -26,6 +26,18 @@ ext {
     testcontainersVersion = "1.17.6"
 }
 
+sourceSets {
+    intTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    intTestImplementation.extendsFrom implementation
+    intTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
 
     // Java-WebSocket
@@ -38,12 +50,18 @@ dependencies {
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     testRuntimeOnly "ch.qos.logback:logback-core:${logbackVersion}"
     testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+    intTestImplementation "ch.qos.logback:logback-core:${logbackVersion}"
+    intTestImplementation "ch.qos.logback:logback-classic:${logbackVersion}"
+
 
     // lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    intTestCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    intTestAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
 
     // junit
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
@@ -51,6 +69,12 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
     testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+
+    intTestImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    intTestRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    intTestImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+    intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
 
 }
 
@@ -62,6 +86,28 @@ test {
     environment('TEST_SURREAL_PASSWORD', 'root')
     environment('TEST_SURREAL_NAMESPACE', 'test')
     environment('TEST_SURREAL_DATABASE', 'test')
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
+    shouldRunAfter test
+
+    useJUnitPlatform()
+
+    environment('TEST_SURREAL_HOST', 'localhost')
+    environment('TEST_SURREAL_PORT', 8000)
+    environment('TEST_SURREAL_USERNAME', 'root')
+    environment('TEST_SURREAL_PASSWORD', 'root')
+    environment('TEST_SURREAL_NAMESPACE', 'test')
+    environment('TEST_SURREAL_DATABASE', 'test')
+
+    testLogging {
+        events "passed"
+    }
 }
 
 task fatJar(type: Jar) {
