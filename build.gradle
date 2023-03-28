@@ -3,6 +3,7 @@ plugins {
 	id 'java-library'
 	id 'checkstyle'
     id 'maven-publish'
+    id "com.diffplug.spotless" version "6.17.0"
 }
 
 group 'com.surrealdb'
@@ -50,18 +51,12 @@ dependencies {
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     testRuntimeOnly "ch.qos.logback:logback-core:${logbackVersion}"
     testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
-    intTestImplementation "ch.qos.logback:logback-core:${logbackVersion}"
-    intTestImplementation "ch.qos.logback:logback-classic:${logbackVersion}"
-
 
     // lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    intTestCompileOnly "org.projectlombok:lombok:${lombokVersion}"
-    intTestAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
 
     // junit
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
@@ -76,6 +71,15 @@ dependencies {
     intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
 
+}
+
+spotless {
+    java {
+        cleanthat()
+        googleJavaFormat().aosp()
+        formatAnnotations()
+        indentWithSpaces(4)
+    }
 }
 
 test {
@@ -108,6 +112,11 @@ tasks.register('integrationTest', Test) {
     testLogging {
         events "passed"
     }
+}
+
+checkstyle {
+    toolVersion = "10.9.3"
+    configFile = resources.text.fromUri("https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-${toolVersion}/src/main/resources/google_checks.xml").asFile()
 }
 
 task fatJar(type: Jar) {
