@@ -18,26 +18,26 @@ public class ErrorToExceptionMapper {
     private final static Pattern UNIQE_INDEX_VIOLATION_PATTERN = Pattern.compile("There was a problem with the database: Database index `(.+)` already contains \\[.+\\], with record `(.+):(.+)`");
 
     public static SurrealException map(RpcResponse.Error error){
-        if (error.getMessage().contains("There was a problem with authentication")) {
+        if (error.message().contains("There was a problem with authentication")) {
             return new SurrealAuthenticationException();
         }
 
-        if (error.getMessage().contains("There was a problem with the database: Specify a namespace to use")) {
+        if (error.message().contains("There was a problem with the database: Specify a namespace to use")) {
             return new SurrealNoDatabaseSelectedException();
         }
 
-        Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
+        Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.message());
         if (recordAlreadyExitsMatcher.matches()) {
             return new SurrealRecordAlreadyExitsException(recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2));
         }
 
-        Matcher uniqueIndexViolationPattern = UNIQE_INDEX_VIOLATION_PATTERN.matcher(error.getMessage());
+        Matcher uniqueIndexViolationPattern = UNIQE_INDEX_VIOLATION_PATTERN.matcher(error.message());
         if (uniqueIndexViolationPattern.matches()) {
             return new UniqueIndexViolationException(uniqueIndexViolationPattern.group(2), uniqueIndexViolationPattern.group(1), uniqueIndexViolationPattern.group(3));
         }
 
         // return the generic Exception
-        return new SurrealException(error.getMessage());
+        return new SurrealException(error.message());
     }
 
 }
