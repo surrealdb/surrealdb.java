@@ -3,5 +3,4 @@ package com.surrealdb.connection.exception;
 /**
  * @author Khalid Alharisi
  */
-public class SurrealNotConnectedException extends SurrealException {
-}
+public class SurrealNotConnectedException extends SurrealException {}

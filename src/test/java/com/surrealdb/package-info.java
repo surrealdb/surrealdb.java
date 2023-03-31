@@ -1,4 +1,2 @@
-/**
- * Tests for java driver codebase. Includes some utilities.
- */
+/** Tests for java driver codebase. Includes some utilities. */
 package com.surrealdb;

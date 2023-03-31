@@ -1,9 +1,8 @@
 package com.surrealdb.driver.model;
 
+import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.time.ZonedDateTime;
 
 /**
  * @author akaecliptic

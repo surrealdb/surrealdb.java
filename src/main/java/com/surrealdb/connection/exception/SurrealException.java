@@ -5,8 +5,7 @@ package com.surrealdb.connection.exception;
  */
 public class SurrealException extends RuntimeException {
 
-    public SurrealException() {
-    }
+    public SurrealException() {}
 
     public SurrealException(String message) {
         super(message);

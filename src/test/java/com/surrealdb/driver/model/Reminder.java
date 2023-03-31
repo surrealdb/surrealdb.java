@@ -1,9 +1,8 @@
 package com.surrealdb.driver.model;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * @author akaecliptic

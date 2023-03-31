@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -20,19 +19,17 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 
 /**
- * An adapter to handle the parsing of {@link ZonedDateTime}, {@link LocalDateTime} and classes categorised as LocalDates, ie
- * {@link ChronoLocalDate}
+ * An adapter to handle the parsing of {@link ZonedDateTime}, {@link LocalDateTime} and classes
+ * categorised as LocalDates, ie {@link ChronoLocalDate}
  *
- * <p>
- * While dates in the shorthand ISO-8601 (YYYY-MM-DD) format are automatically handled by SurrealDB (see:
- * <a href="https://surrealdb.com/docs/surrealql/datamodel/datetimes">documentation</a>).
- * This class will explicitly convert the temporal classes listed above, before a query request is made.
- * The flavour of parsing is chosen as it closely matches SurrealDB's default format for datetime.
- * </p>
- * <p>
- * This will allow dates to be more consistent, even if the automatic conversion is changed later. As well as, allowing
- * for custom formatters to be used.
- * </p>
+ * <p>While dates in the shorthand ISO-8601 (YYYY-MM-DD) format are automatically handled by
+ * SurrealDB (see: <a
+ * href="https://surrealdb.com/docs/surrealql/datamodel/datetimes">documentation</a>). This class
+ * will explicitly convert the temporal classes listed above, before a query request is made. The
+ * flavour of parsing is chosen as it closely matches SurrealDB's default format for datetime.
+ *
+ * <p>This will allow dates to be more consistent, even if the automatic conversion is changed
+ * later. As well as, allowing for custom formatters to be used.
  *
  * @author akaecliptic
  */
@@ -81,7 +78,8 @@ public class TemporalAdapterFactory implements TypeAdapterFactory {
             try {
                 return ChronoLocalDate.from(formatter.parse(date));
             } catch (DateTimeParseException e) {
-                throw new RuntimeException("Could not parse date '" + date + "' as ChronoLocalDate", e);
+                throw new RuntimeException(
+                        "Could not parse date '" + date + "' as ChronoLocalDate", e);
             }
         }
     }
@@ -109,7 +107,8 @@ public class TemporalAdapterFactory implements TypeAdapterFactory {
             try {
                 return LocalDateTime.from(formatter.parse(date));
             } catch (DateTimeParseException e) {
-                throw new RuntimeException("Could not parse date '" + date + "' as LocalDateTime", e);
+                throw new RuntimeException(
+                        "Could not parse date '" + date + "' as LocalDateTime", e);
             }
         }
     }
@@ -136,7 +135,8 @@ public class TemporalAdapterFactory implements TypeAdapterFactory {
             try {
                 return ZonedDateTime.from(formatter.parse(date));
             } catch (DateTimeParseException e) {
-                throw new RuntimeException("Could not parse date '" + date + "' as ZonedDateTime", e);
+                throw new RuntimeException(
+                        "Could not parse date '" + date + "' as ZonedDateTime", e);
             }
         }
     }

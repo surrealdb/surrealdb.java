@@ -1,4 +1,2 @@
-/**
- * Contains data structures used for representing concepts from SurrealDB
- */
+/** Contains data structures used for representing concepts from SurrealDB */
 package com.surrealdb.connection.model;

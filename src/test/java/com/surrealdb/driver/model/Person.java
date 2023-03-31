@@ -28,5 +28,4 @@ public class Person {
         this.name = new Name(firstName, lastName);
         this.marketing = marketing;
     }
-
 }

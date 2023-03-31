@@ -13,5 +13,4 @@ public interface SurrealConnection {
     void disconnect();
 
     <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params);
-
 }

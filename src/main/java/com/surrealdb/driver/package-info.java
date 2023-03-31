@@ -1,4 +1,2 @@
-/**
- * Driver code
- */
+/** Driver code */
 package com.surrealdb.driver;

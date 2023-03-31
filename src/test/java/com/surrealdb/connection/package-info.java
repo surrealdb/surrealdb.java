@@ -1,5 +1,2 @@
-/**
- * Connection code tests
- */
+/** Connection code tests */
 package com.surrealdb.connection;
-
