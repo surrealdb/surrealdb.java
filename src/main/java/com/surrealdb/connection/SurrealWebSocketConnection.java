@@ -74,7 +74,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params) {
-        RpcRequest request = new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
+        RpcRequest request = new RpcRequest(Long.toString(lastRequestId.incrementAndGet()), method, params);
         CompletableFuture<T> callback = new CompletableFuture<>();
 
         callbacks.put(request.id(), callback);
