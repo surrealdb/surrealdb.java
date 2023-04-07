@@ -1,0 +1,28 @@
+name: Maven Test
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Checkstyle
+        run: mvn checkstyle:check
+
+      - name: Run Tests
+        run: mvn clean test
+
+      - name: Build
+        run: mvn clean package
