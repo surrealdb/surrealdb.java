@@ -66,12 +66,6 @@ spotless {
 
 test {
     useJUnitPlatform()
-    environment('TEST_SURREAL_HOST', 'localhost')
-    environment('TEST_SURREAL_PORT', 8000)
-    environment('TEST_SURREAL_USERNAME', 'root')
-    environment('TEST_SURREAL_PASSWORD', 'root')
-    environment('TEST_SURREAL_NAMESPACE', 'test')
-    environment('TEST_SURREAL_DATABASE', 'test')
 }
 
 checkstyle {
