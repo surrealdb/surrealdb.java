@@ -12,18 +12,18 @@ Help us keep SurrealDB open and inclusive. Please read and follow our [Code of C
 
 ## Coding standards
 
-SurrealDB.java uses [`spotless`](https://github.com/diffplug/spotless) Gradle plugin to ensure that all code is
-formatted to the same standards. It will execute as part of a `gradle check` and can be run manually with
+SurrealDB.java uses [`spotless`](https://github.com/diffplug/spotless) Maven plugin to ensure that all code is
+formatted to the same standards. It can be run with
 ```bash
-gradle spotlessJavaCheck
+mvn spotless:check
 
 // now apply the fixes
-gradle spotlessJavaApply
+mvn spotless:apply
 ```
 
 ## Getting started from source
 
-To set up a working **development environment** you'll need Java 17 and Gradle installed and fork the project git repository.
+To set up a working **development environment** you'll need Java 17 and Maven installed and fork the project git repository.
 
 > Please note that these instructions are for setting up a functional dev environment. If you just want to install SurrealDB for day-to-day usage and not as a code maintainer use this [installation guide](https://surrealdb.com/docs/install). If you want to get started integrating SurrealDB into your app, view the [integration tutorials](https://surrealdb.com/docs/integration).
 
@@ -31,7 +31,6 @@ To set up a working **development environment** you'll need Java 17 and Gradle i
 # Use the default (stable) release channel if prompted
 git clone git@github.com:[YOUR_FORK_HERE]/surrealdb.java.git
 cd surrealdb.java
-gradle clean check
 ```
 
 To run the SurrealDB database server, use the following docker command:
@@ -43,13 +42,13 @@ docker run --rm -p 8000:8000 surrealdb/surrealdb:latest start --user root --pass
 To run all tests manually, use the SurrealDB command-line from your terminal:
 
 ```bash
-gradle test
+mvn clean test
 ```
 
 To build a production-ready SurrealDB binary, execute the following command:
 
 ```bash
-gradle fatJar
+mvn clean package
 ```
 
 ## Scalability and Performance
