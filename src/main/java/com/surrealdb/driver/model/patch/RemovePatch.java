@@ -7,11 +7,10 @@ import lombok.Getter;
  */
 @Getter
 public class RemovePatch implements Patch {
-    private final String op = "remove";
-    private final String path;
+	private final String op = "remove";
+	private final String path;
 
-    public RemovePatch(String path) {
-        this.path = path;
-    }
-
+	public RemovePatch(String path) {
+		this.path = path;
+	}
 }

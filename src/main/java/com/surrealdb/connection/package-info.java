@@ -1,4 +1,2 @@
-/**
- * Connection code and interfaces
- */
+/** Connection code and interfaces */
 package com.surrealdb.connection;

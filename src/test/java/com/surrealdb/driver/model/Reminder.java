@@ -12,12 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Reminder {
 
-    private String id;
-    private String note;
-    private LocalDateTime time;
+	private String id;
+	private String note;
+	private LocalDateTime time;
 
-    public Reminder(String note, LocalDateTime time) {
-        this.note = note;
-        this.time = time;
-    }
+	public Reminder(String note, LocalDateTime time) {
+		this.note = note;
+		this.time = time;
+	}
 }

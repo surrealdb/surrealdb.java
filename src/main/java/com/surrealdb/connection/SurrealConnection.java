@@ -8,10 +8,9 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface SurrealConnection {
 
-    void connect(int timeoutSeconds);
+	void connect(int timeoutSeconds);
 
-    void disconnect();
+	void disconnect();
 
-    <T> CompletableFuture<T> rpc(Type resultType, String method, Object... params);
-
+	<T> CompletableFuture<T> rpc(Type resultType, String method, Object... params);
 }

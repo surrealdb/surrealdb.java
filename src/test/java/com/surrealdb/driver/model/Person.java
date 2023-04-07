@@ -11,22 +11,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Person {
 
-    @Data
-    @AllArgsConstructor
-    public static class Name {
-        private String first;
-        private String last;
-    }
+	@Data
+	@AllArgsConstructor
+	public static class Name {
+		private String first;
+		private String last;
+	}
 
-    private String id;
-    private String title;
-    private Name name;
-    private boolean marketing;
+	private String id;
+	private String title;
+	private Name name;
+	private boolean marketing;
 
-    public Person(String title, String firstName, String lastName, boolean marketing) {
-        this.title = title;
-        this.name = new Name(firstName, lastName);
-        this.marketing = marketing;
-    }
-
+	public Person(String title, String firstName, String lastName, boolean marketing) {
+		this.title = title;
+		this.name = new Name(firstName, lastName);
+		this.marketing = marketing;
+	}
 }

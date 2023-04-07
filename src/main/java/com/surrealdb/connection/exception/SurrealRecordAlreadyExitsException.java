@@ -9,6 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class SurrealRecordAlreadyExitsException extends SurrealException {
-    private String tableName;
-    private String recordId;
+	private String tableName;
+	private String recordId;
 }

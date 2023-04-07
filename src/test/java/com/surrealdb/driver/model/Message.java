@@ -12,12 +12,12 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 public class Message {
 
-    private String id;
-    private String data;
-    private ZonedDateTime timestamp;
+	private String id;
+	private String data;
+	private ZonedDateTime timestamp;
 
-    public Message(String data, ZonedDateTime timestamp) {
-        this.data = data;
-        this.timestamp = timestamp;
-    }
+	public Message(String data, ZonedDateTime timestamp) {
+		this.data = data;
+		this.timestamp = timestamp;
+	}
 }

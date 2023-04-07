@@ -9,6 +9,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class SignIn {
-    private String user;
-    private String pass;
+	private String user;
+	private String pass;
 }

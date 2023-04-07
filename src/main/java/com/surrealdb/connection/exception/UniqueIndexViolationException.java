@@ -9,7 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class UniqueIndexViolationException extends SurrealException {
-    private String tableName;
-    private String indexName;
-    private String recordId;
+	private String tableName;
+	private String indexName;
+	private String recordId;
 }

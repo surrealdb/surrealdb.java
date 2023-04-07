@@ -9,7 +9,7 @@ import java.util.List;
  */
 @Data
 public class QueryResult<T> {
-    private List<T> result;
-    private String status;
-    private String time;
+	private List<T> result;
+	private String status;
+	private String time;
 }
