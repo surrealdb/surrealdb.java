@@ -8,6 +8,7 @@ plugins {
 
 group 'com.surrealdb'
 version '0.1.0'
+archivesBaseName = "surrealdb"
 
 repositories {
     mavenCentral()
@@ -74,16 +75,6 @@ dependencies {
     intTestImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
     intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
-
-}
-
-spotless {
-    java {
-        cleanthat()
-        googleJavaFormat().aosp()
-        formatAnnotations()
-        indentWithSpaces(4)
-    }
 }
 
 test {
@@ -128,14 +119,28 @@ tasks.register('fatJar', Jar) {
     with jar
 }
 
+tasks.register('javadocJar', Jar) {
+    archiveClassifier = 'javadoc'
+    from javadoc
+}
+
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar, fatJar
+}
+
 publishing {
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/surrealdb/surrealdb.java"
+            name = "Sonatype-Maven-Central"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+                username = System.getenv("OSSRH_USER")
+                password = System.getenv("OSSRH_PASS")
             }
         }
     }
