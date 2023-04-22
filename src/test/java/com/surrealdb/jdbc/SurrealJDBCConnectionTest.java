@@ -1,10 +1,12 @@
 package com.surrealdb.jdbc;
-import static org.junit.jupiter.api.Assertions.*;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Statement;
+
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SurrealJDBCConnectionTest {
 
