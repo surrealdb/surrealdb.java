@@ -1,36 +1,53 @@
-package test.driver;
+package com.surrealdb.driver;
 
-import com.surrealdb.connection.SurrealConnection;
+import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
-import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.connection.exception.UniqueIndexViolationException;
+import com.surrealdb.driver.model.Message;
+import com.surrealdb.driver.model.Movie;
+import com.surrealdb.driver.model.PartialPerson;
+import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.driver.model.Reminder;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import test.TestUtils;
-import test.driver.model.PartialPerson;
-import test.driver.model.Person;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Khalid Alharisi
  */
+@Testcontainers
 public class SurrealDriverTest {
-
+    @Container
+    private static final GenericContainer SURREAL_DB = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+        .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
     private SyncSurrealDriver driver;
 
     @BeforeEach
-    public void setup(){
-        SurrealConnection connection = new SurrealWebSocketConnection(TestUtils.getHost(), TestUtils.getPort(), false);
+    public void setup() {
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(SURREAL_DB.getHost(), SURREAL_DB.getFirstMappedPort(), false);
         connection.connect(5);
 
         driver = new SyncSurrealDriver(connection);
@@ -43,8 +60,11 @@ public class SurrealDriverTest {
     }
 
     @AfterEach
-    public void teardown(){
+    public void teardown() {
         driver.delete("person");
+		driver.delete("movie");
+		driver.delete("message");
+		driver.delete("reminder");
     }
 
     @Test
@@ -71,6 +91,18 @@ public class SurrealDriverTest {
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
             driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
         });
+    }
+
+    @Test
+    public void testCreateAlreadyExistsUsingUniqueIndex() {
+        assertThrows(UniqueIndexViolationException.class, () -> {
+            driver.query("DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE", Collections.emptyMap(), Object.class);
+            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+        });
+
+        // cleanup
+        driver.query("REMOVE INDEX fullNameUniqueIndex ON TABLE person", Collections.emptyMap(), Object.class);
     }
 
     @Test
@@ -119,9 +151,7 @@ public class SurrealDriverTest {
         List<Person> actual = driver.update("person", expected);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(expected.getTitle(), person.getTitle());
-        });
+        actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
     }
 
     @Test
@@ -141,17 +171,15 @@ public class SurrealDriverTest {
         List<Person> actual = driver.change("person", patch, Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals(patch.isMarketing(), person.isMarketing());
-        });
+        actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
     }
 
     @Test
     public void testPatchOne() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person:1", patches);
@@ -166,9 +194,9 @@ public class SurrealDriverTest {
     @Test
     public void testPatchAll() {
         List<Patch> patches = Arrays.asList(
-                new ReplacePatch("/name/first", "Khalid"),
-                new ReplacePatch("/name/last", "Alharisi"),
-                new ReplacePatch("/title", "Engineer")
+            new ReplacePatch("/name/first", "Khalid"),
+            new ReplacePatch("/name/last", "Alharisi"),
+            new ReplacePatch("/title", "Engineer")
         );
 
         driver.patch("person", patches);
@@ -196,4 +224,34 @@ public class SurrealDriverTest {
         assertEquals(0, actual.size());
     }
 
+	@Test
+	public void testLocalDate() {
+        LocalDate date = LocalDate.parse("2022-05-13");
+		Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
+
+		Movie select = driver.create("movie", insert);
+		assertNotNull(select.getRelease());
+		assertEquals(date, select.getRelease());
+	}
+
+	@Test
+	public void testLocalDateTime() {
+        LocalDateTime time = LocalDateTime.now();
+        Reminder insert = new Reminder("Pass this test", time);
+
+        Reminder select = driver.create("reminder", insert);
+        assertNotNull(select.getTime());
+        assertEquals(time, select.getTime());
+	}
+
+    @Test
+    public void testZonedDateTime() {
+        ZonedDateTime time = ZonedDateTime.parse("2022-02-02T22:00:00+02:00");
+        ZonedDateTime timeAtUTC = LocalDateTime.parse("2022-02-02T20:00:00").atZone(ZoneOffset.UTC);
+        Message insert = new Message("This is surreal", time);
+
+        Message select = driver.create("message", insert);
+        assertNotNull(select.getTimestamp());
+        assertEquals(timeAtUTC, select.getTimestamp());
+    }
 }
