@@ -27,25 +27,25 @@ class SurrealJDBCDriverTest {
 
     @Test
     void getMajorVersion() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.getMajorVersion());
+        assertThrows(UnsupportedOperationException.class, driver::getMajorVersion);
 
     }
 
     @Test
     void getMinorVersion() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.getMinorVersion());
+        assertThrows(UnsupportedOperationException.class, driver::getMinorVersion);
 
     }
 
     @Test
     void jdbcCompliant() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.jdbcCompliant());
+        assertThrows(UnsupportedOperationException.class, driver::jdbcCompliant);
 
     }
 
     @Test
     void getParentLogger() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.getParentLogger());
+        assertThrows(UnsupportedOperationException.class, driver::getParentLogger);
 
     }
 }
