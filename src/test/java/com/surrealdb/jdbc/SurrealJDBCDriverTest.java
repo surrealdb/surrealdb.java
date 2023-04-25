@@ -7,7 +7,7 @@ import java.sql.Driver;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SurrealJDBCDriverTest {
-    private Driver driver = new SurrealJDBCDriver();
+    private final Driver driver = new SurrealJDBCDriver();
 
     @Test
     void connect() {

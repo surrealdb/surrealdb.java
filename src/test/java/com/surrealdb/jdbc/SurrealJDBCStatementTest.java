@@ -2,13 +2,14 @@ package com.surrealdb.jdbc;
 
 import org.junit.jupiter.api.Test;
 
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SurrealJDBCStatementTest {
 
-    private Statement statement = new SurrealJDBCStatement();
+    private final Statement statement = new SurrealJDBCStatement();
 
     @Test
     void executeQuery() {
@@ -102,7 +103,7 @@ class SurrealJDBCStatementTest {
 
     @Test
     void setFetchDirection() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.setFetchDirection(0));
+        assertThrows(UnsupportedOperationException.class, () -> statement.setFetchDirection(ResultSet.FETCH_FORWARD));
     }
 
     @Test
@@ -167,7 +168,7 @@ class SurrealJDBCStatementTest {
 
     @Test
     void testExecuteUpdate1() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.executeUpdate("", 0));
+        assertThrows(UnsupportedOperationException.class, () -> statement.executeUpdate("", Statement.RETURN_GENERATED_KEYS));
     }
 
     @Test
@@ -187,7 +188,7 @@ class SurrealJDBCStatementTest {
 
     @Test
     void testExecute2() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.execute("", 0));
+        assertThrows(UnsupportedOperationException.class, () -> statement.execute("", Statement.RETURN_GENERATED_KEYS));
     }
 
     @Test
