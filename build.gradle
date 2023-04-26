@@ -9,7 +9,6 @@ plugins {
 
 group 'com.surrealdb'
 version '0.1.0'
-archivesBaseName = "surrealdb"
 
 repositories {
     mavenCentral()
@@ -148,6 +147,10 @@ project.afterEvaluate {
 publishing {
     publications {
         surrealdb(MavenPublication) {
+            groupId 'com.surrealdb'
+            artifactId 'surrealdb-driver'
+            version "${version}"
+
             from components.java
             artifact(javadocJar)
             artifact(sourcesJar)
