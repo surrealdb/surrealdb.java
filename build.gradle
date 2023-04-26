@@ -75,6 +75,17 @@ dependencies {
     intTestImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
     intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+
+}
+
+spotless {
+    ratchetFrom 'origin/main'
+
+    java {
+        cleanthat()
+        googleJavaFormat().aosp()
+        formatAnnotations()
+    }
 }
 
 test {
@@ -97,6 +108,8 @@ tasks.register('integrationTest', Test) {
     environment('TEST_SURREAL_PASSWORD', 'root')
     environment('TEST_SURREAL_NAMESPACE', 'test')
     environment('TEST_SURREAL_DATABASE', 'test')
+    environment('TEST_SURREAL_TOKEN', '')
+    environment('TEST_SURREAL_SCOPE', 'allusers')
 
     testLogging {
         events "passed"

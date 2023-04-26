@@ -12,6 +12,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -35,6 +38,30 @@ public class SurrealDriverSpecialOperationsTest {
     public void testSignIn() {
         driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
     }
+
+	@Test
+	public void testSignUp() {
+		List<String> receivedJwt = new ArrayList<>();
+		//Plain
+		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test@testerino.surr", "lol123"));
+		//With marketing
+		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test1@testerino.surr", "lol123", true));
+		//With tags
+		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test2@testerino.surr", "lol123", new String[] { "Java", "Rust" }));
+		//With marketing and tags
+		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test3@testerino.surr", "lol123", true, new String[] { "Java" }));
+
+		//Validate that the signup worked through authentication with the received token.
+		receivedJwt.forEach(token -> driver.authenticate(token));
+	}
+
+	@Test
+	public void testAuthenticate() {
+		if (TestUtils.getToken().equals("")) {
+			return;
+		}
+		driver.authenticate(TestUtils.getToken());
+	}
 
     @Test
     public void testBadCredentials() {
@@ -70,5 +97,11 @@ public class SurrealDriverSpecialOperationsTest {
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
         driver.info();
     }
+
+	@Test
+	public void testInvalidate() {
+		//Execute the test at the end, or re-connect after it (the method invalidates the current session auth.)!
+		driver.invalidate();
+	}
 
 }
