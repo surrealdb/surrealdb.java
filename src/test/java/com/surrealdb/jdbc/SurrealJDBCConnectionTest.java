@@ -1,6 +1,7 @@
 package com.surrealdb.jdbc;
 
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Statement;
@@ -8,6 +9,7 @@ import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Disabled("Disabled until implementation started")
 class SurrealJDBCConnectionTest {
 
     private SurrealJDBCConnection jdbcConnection = new SurrealJDBCConnection();

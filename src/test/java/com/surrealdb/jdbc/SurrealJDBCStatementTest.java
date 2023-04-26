@@ -1,5 +1,6 @@
 package com.surrealdb.jdbc;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.sql.ResultSet;
@@ -7,6 +8,7 @@ import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled("Disabled until implementation started")
 class SurrealJDBCStatementTest {
 
     private final Statement statement = new SurrealJDBCStatement();

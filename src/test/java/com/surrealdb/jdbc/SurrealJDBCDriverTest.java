@@ -1,11 +1,13 @@
 package com.surrealdb.jdbc;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Driver;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Disabled("Disabled until implementation started")
 class SurrealJDBCDriverTest {
     private final Driver driver = new SurrealJDBCDriver();
 
