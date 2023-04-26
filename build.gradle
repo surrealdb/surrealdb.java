@@ -78,11 +78,12 @@ dependencies {
 }
 
 spotless {
+    ratchetFrom 'origin/main'
+
     java {
         cleanthat()
         googleJavaFormat().aosp()
         formatAnnotations()
-        indentWithSpaces(4)
     }
 }
 
