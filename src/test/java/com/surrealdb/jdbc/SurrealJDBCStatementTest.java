@@ -1,12 +1,11 @@
 package com.surrealdb.jdbc;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @Disabled("Disabled until implementation started")
 class SurrealJDBCStatementTest {
@@ -50,7 +49,8 @@ class SurrealJDBCStatementTest {
 
     @Test
     void setEscapeProcessing() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.setEscapeProcessing(false));
+        assertThrows(
+                UnsupportedOperationException.class, () -> statement.setEscapeProcessing(false));
     }
 
     @Test
@@ -105,7 +105,9 @@ class SurrealJDBCStatementTest {
 
     @Test
     void setFetchDirection() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.setFetchDirection(ResultSet.FETCH_FORWARD));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> statement.setFetchDirection(ResultSet.FETCH_FORWARD));
     }
 
     @Test
@@ -170,12 +172,16 @@ class SurrealJDBCStatementTest {
 
     @Test
     void testExecuteUpdate1() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.executeUpdate("", Statement.RETURN_GENERATED_KEYS));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> statement.executeUpdate("", Statement.RETURN_GENERATED_KEYS));
     }
 
     @Test
     void testExecuteUpdate2() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.executeUpdate("", new String[]{}));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> statement.executeUpdate("", new String[] {}));
     }
 
     @Test
@@ -190,7 +196,9 @@ class SurrealJDBCStatementTest {
 
     @Test
     void testExecute2() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.execute("", Statement.RETURN_GENERATED_KEYS));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> statement.execute("", Statement.RETURN_GENERATED_KEYS));
     }
 
     @Test
@@ -230,6 +238,7 @@ class SurrealJDBCStatementTest {
 
     @Test
     void isWrapperFor() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.isWrapperFor(String.class));
+        assertThrows(
+                UnsupportedOperationException.class, () -> statement.isWrapperFor(String.class));
     }
 }

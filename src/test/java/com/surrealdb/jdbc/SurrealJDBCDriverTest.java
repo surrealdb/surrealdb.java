@@ -1,11 +1,10 @@
 package com.surrealdb.jdbc;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.Driver;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @Disabled("Disabled until implementation started")
 class SurrealJDBCDriverTest {
@@ -24,30 +23,25 @@ class SurrealJDBCDriverTest {
     @Test
     void getPropertyInfo() {
         assertThrows(UnsupportedOperationException.class, () -> driver.getPropertyInfo("", null));
-
     }
 
     @Test
     void getMajorVersion() {
         assertThrows(UnsupportedOperationException.class, driver::getMajorVersion);
-
     }
 
     @Test
     void getMinorVersion() {
         assertThrows(UnsupportedOperationException.class, driver::getMinorVersion);
-
     }
 
     @Test
     void jdbcCompliant() {
         assertThrows(UnsupportedOperationException.class, driver::jdbcCompliant);
-
     }
 
     @Test
     void getParentLogger() {
         assertThrows(UnsupportedOperationException.class, driver::getParentLogger);
-
     }
 }

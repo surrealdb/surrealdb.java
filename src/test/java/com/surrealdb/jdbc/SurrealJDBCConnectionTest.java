@@ -1,13 +1,12 @@
 package com.surrealdb.jdbc;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.sql.Statement;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.sql.Statement;
-
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Disabled("Disabled until implementation started")
 class SurrealJDBCConnectionTest {
@@ -23,22 +22,29 @@ class SurrealJDBCConnectionTest {
     @SneakyThrows
     @Test
     void prepareStatement() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareStatement("SELECT * FROM "));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareStatement("SELECT * FROM "));
     }
 
     @Test
     void prepareCall() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareCall("SELECT * FROM "));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareCall("SELECT * FROM "));
     }
 
     @Test
     void nativeSQL() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.nativeSQL("SELECT * FROM "));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.nativeSQL("SELECT * FROM "));
     }
 
     @Test
     void setAutoCommit() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.setAutoCommit(false));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.setAutoCommit(false));
     }
 
     @Test
@@ -83,7 +89,9 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void setCatalog() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.setCatalog("a catalogue"));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.setCatalog("a catalogue"));
     }
 
     @Test
@@ -93,12 +101,16 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void setTransactionIsolation() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.setTransactionIsolation(0));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.setTransactionIsolation(0));
     }
 
     @Test
     void getTransactionIsolation() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.getTransactionIsolation());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.getTransactionIsolation());
     }
 
     @Test
@@ -113,17 +125,22 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void testCreateStatement() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.createStatement(0, 0));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.createStatement(0, 0));
     }
 
     @Test
     void testPrepareStatement() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareStatement("SELECT * FROM ", 0, 1));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareStatement("SELECT * FROM ", 0, 1));
     }
 
     @Test
     void testPrepareCall() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareCall("SELECT * FROM ", 0, 1));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareCall("SELECT * FROM ", 0, 1));
     }
 
     @Test
@@ -153,7 +170,8 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void testSetSavepoint() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.setSavepoint("save"));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.setSavepoint("save"));
     }
 
     @Test
@@ -163,39 +181,48 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void releaseSavepoint() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.releaseSavepoint(null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.releaseSavepoint(null));
     }
 
     @Test
     void testCreateStatement1() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.createStatement(0, 0, 0));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.createStatement(0, 0, 0));
     }
 
     @Test
     void testPrepareStatement1() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareStatement(null, 0, 0, 0));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareStatement(null, 0, 0, 0));
     }
 
     @Test
     void testPrepareCall1() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareCall(null, 0, 0));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.prepareCall(null, 0, 0));
     }
 
     @Test
     void testPrepareStatement2() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareStatement(null, 0));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareStatement(null, 0));
     }
 
     @Test
     void testPrepareStatement3() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareStatement(null, new int[]{10, 20, 30, 40}));
-
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareStatement(null, new int[] {10, 20, 30, 40}));
     }
 
     @Test
     void testPrepareStatement4() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.prepareStatement(null, new String[]{}));
-
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.prepareStatement(null, new String[] {}));
     }
 
     @Test
@@ -225,7 +252,8 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void setClientInfo() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.setClientInfo("", ""));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.setClientInfo("", ""));
     }
 
     @Test
@@ -245,12 +273,15 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void createArrayOf() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.createArrayOf(null, null));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.createArrayOf(null, null));
     }
 
     @Test
     void createStruct() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.createStruct(null, null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> jdbcConnection.createStruct(null, null));
     }
 
     @Test
@@ -265,14 +296,18 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void abort() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            jdbcConnection.abort(null);
-        });
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> {
+                    jdbcConnection.abort(null);
+                });
     }
 
     @Test
     void setNetworkTimeout() {
-        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.setNetworkTimeout(null, 0));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> jdbcConnection.setNetworkTimeout(null, 0));
     }
 
     @Test

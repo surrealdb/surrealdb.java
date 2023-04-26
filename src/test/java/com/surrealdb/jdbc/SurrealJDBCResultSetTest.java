@@ -9,766 +9,575 @@ import org.junit.jupiter.api.Test;
 class SurrealJDBCResultSetTest {
 
     @Test
-    void next() {
-    }
+    void next() {}
 
     @Test
-    void close() {
-    }
+    void close() {}
 
     @Test
-    void wasNull() {
-    }
+    void wasNull() {}
 
     @Test
-    void getString() {
-    }
+    void getString() {}
 
     @Test
-    void getBoolean() {
-    }
+    void getBoolean() {}
 
     @Test
-    void getByte() {
-    }
+    void getByte() {}
 
     @Test
-    void getShort() {
-    }
+    void getShort() {}
 
     @Test
-    void getInt() {
-    }
+    void getInt() {}
 
     @Test
-    void getLong() {
-    }
+    void getLong() {}
 
     @Test
-    void getFloat() {
-    }
+    void getFloat() {}
 
     @Test
-    void getDouble() {
-    }
+    void getDouble() {}
 
     @Test
-    void getBigDecimal() {
-    }
+    void getBigDecimal() {}
 
     @Test
-    void getBytes() {
-    }
+    void getBytes() {}
 
     @Test
-    void getDate() {
-    }
+    void getDate() {}
 
     @Test
-    void getTime() {
-    }
+    void getTime() {}
 
     @Test
-    void getTimestamp() {
-    }
+    void getTimestamp() {}
 
     @Test
-    void getAsciiStream() {
-    }
+    void getAsciiStream() {}
 
     @Test
-    void getUnicodeStream() {
-    }
+    void getUnicodeStream() {}
 
     @Test
-    void getBinaryStream() {
-    }
+    void getBinaryStream() {}
 
     @Test
-    void testGetString() {
-    }
+    void testGetString() {}
 
     @Test
-    void testGetBoolean() {
-    }
+    void testGetBoolean() {}
 
     @Test
-    void testGetByte() {
-    }
+    void testGetByte() {}
 
     @Test
-    void testGetShort() {
-    }
+    void testGetShort() {}
 
     @Test
-    void testGetInt() {
-    }
+    void testGetInt() {}
 
     @Test
-    void testGetLong() {
-    }
+    void testGetLong() {}
 
     @Test
-    void testGetFloat() {
-    }
+    void testGetFloat() {}
 
     @Test
-    void testGetDouble() {
-    }
+    void testGetDouble() {}
 
     @Test
-    void testGetBigDecimal() {
-    }
+    void testGetBigDecimal() {}
 
     @Test
-    void testGetBytes() {
-    }
+    void testGetBytes() {}
 
     @Test
-    void testGetDate() {
-    }
+    void testGetDate() {}
 
     @Test
-    void testGetTime() {
-    }
+    void testGetTime() {}
 
     @Test
-    void testGetTimestamp() {
-    }
+    void testGetTimestamp() {}
 
     @Test
-    void testGetAsciiStream() {
-    }
+    void testGetAsciiStream() {}
 
     @Test
-    void testGetUnicodeStream() {
-    }
+    void testGetUnicodeStream() {}
 
     @Test
-    void testGetBinaryStream() {
-    }
+    void testGetBinaryStream() {}
 
     @Test
-    void getWarnings() {
-    }
+    void getWarnings() {}
 
     @Test
-    void clearWarnings() {
-    }
+    void clearWarnings() {}
 
     @Test
-    void getCursorName() {
-    }
+    void getCursorName() {}
 
     @Test
-    void getMetaData() {
-    }
+    void getMetaData() {}
 
     @Test
-    void getObject() {
-    }
+    void getObject() {}
 
     @Test
-    void testGetObject() {
-    }
+    void testGetObject() {}
 
     @Test
-    void findColumn() {
-    }
+    void findColumn() {}
 
     @Test
-    void getCharacterStream() {
-    }
+    void getCharacterStream() {}
 
     @Test
-    void testGetCharacterStream() {
-    }
+    void testGetCharacterStream() {}
 
     @Test
-    void testGetBigDecimal1() {
-    }
+    void testGetBigDecimal1() {}
 
     @Test
-    void testGetBigDecimal2() {
-    }
+    void testGetBigDecimal2() {}
 
     @Test
-    void isBeforeFirst() {
-    }
+    void isBeforeFirst() {}
 
     @Test
-    void isAfterLast() {
-    }
+    void isAfterLast() {}
 
     @Test
-    void isFirst() {
-    }
+    void isFirst() {}
 
     @Test
-    void isLast() {
-    }
+    void isLast() {}
 
     @Test
-    void beforeFirst() {
-    }
+    void beforeFirst() {}
 
     @Test
-    void afterLast() {
-    }
+    void afterLast() {}
 
     @Test
-    void first() {
-    }
+    void first() {}
 
     @Test
-    void last() {
-    }
+    void last() {}
 
     @Test
-    void getRow() {
-    }
+    void getRow() {}
 
     @Test
-    void absolute() {
-    }
+    void absolute() {}
 
     @Test
-    void relative() {
-    }
+    void relative() {}
 
     @Test
-    void previous() {
-    }
+    void previous() {}
 
     @Test
-    void setFetchDirection() {
-    }
+    void setFetchDirection() {}
 
     @Test
-    void getFetchDirection() {
-    }
+    void getFetchDirection() {}
 
     @Test
-    void setFetchSize() {
-    }
+    void setFetchSize() {}
 
     @Test
-    void getFetchSize() {
-    }
+    void getFetchSize() {}
 
     @Test
-    void getType() {
-    }
+    void getType() {}
 
     @Test
-    void getConcurrency() {
-    }
+    void getConcurrency() {}
 
     @Test
-    void rowUpdated() {
-    }
+    void rowUpdated() {}
 
     @Test
-    void rowInserted() {
-    }
+    void rowInserted() {}
 
     @Test
-    void rowDeleted() {
-    }
+    void rowDeleted() {}
 
     @Test
-    void updateNull() {
-    }
+    void updateNull() {}
 
     @Test
-    void updateBoolean() {
-    }
+    void updateBoolean() {}
 
     @Test
-    void updateByte() {
-    }
+    void updateByte() {}
 
     @Test
-    void updateShort() {
-    }
+    void updateShort() {}
 
     @Test
-    void updateInt() {
-    }
+    void updateInt() {}
 
     @Test
-    void updateLong() {
-    }
+    void updateLong() {}
 
     @Test
-    void updateFloat() {
-    }
+    void updateFloat() {}
 
     @Test
-    void updateDouble() {
-    }
+    void updateDouble() {}
 
     @Test
-    void updateBigDecimal() {
-    }
+    void updateBigDecimal() {}
 
     @Test
-    void updateString() {
-    }
+    void updateString() {}
 
     @Test
-    void updateBytes() {
-    }
+    void updateBytes() {}
 
     @Test
-    void updateDate() {
-    }
+    void updateDate() {}
 
     @Test
-    void updateTime() {
-    }
+    void updateTime() {}
 
     @Test
-    void updateTimestamp() {
-    }
+    void updateTimestamp() {}
 
     @Test
-    void updateAsciiStream() {
-    }
+    void updateAsciiStream() {}
 
     @Test
-    void updateBinaryStream() {
-    }
+    void updateBinaryStream() {}
 
     @Test
-    void updateCharacterStream() {
-    }
+    void updateCharacterStream() {}
 
     @Test
-    void updateObject() {
-    }
+    void updateObject() {}
 
     @Test
-    void testUpdateObject() {
-    }
+    void testUpdateObject() {}
 
     @Test
-    void testUpdateNull() {
-    }
+    void testUpdateNull() {}
 
     @Test
-    void testUpdateBoolean() {
-    }
+    void testUpdateBoolean() {}
 
     @Test
-    void testUpdateByte() {
-    }
+    void testUpdateByte() {}
 
     @Test
-    void testUpdateShort() {
-    }
+    void testUpdateShort() {}
 
     @Test
-    void testUpdateInt() {
-    }
+    void testUpdateInt() {}
 
     @Test
-    void testUpdateLong() {
-    }
+    void testUpdateLong() {}
 
     @Test
-    void testUpdateFloat() {
-    }
+    void testUpdateFloat() {}
 
     @Test
-    void testUpdateDouble() {
-    }
+    void testUpdateDouble() {}
 
     @Test
-    void testUpdateBigDecimal() {
-    }
+    void testUpdateBigDecimal() {}
 
     @Test
-    void testUpdateString() {
-    }
+    void testUpdateString() {}
 
     @Test
-    void testUpdateBytes() {
-    }
+    void testUpdateBytes() {}
 
     @Test
-    void testUpdateDate() {
-    }
+    void testUpdateDate() {}
 
     @Test
-    void testUpdateTime() {
-    }
+    void testUpdateTime() {}
 
     @Test
-    void testUpdateTimestamp() {
-    }
+    void testUpdateTimestamp() {}
 
     @Test
-    void testUpdateAsciiStream() {
-    }
+    void testUpdateAsciiStream() {}
 
     @Test
-    void testUpdateBinaryStream() {
-    }
+    void testUpdateBinaryStream() {}
 
     @Test
-    void testUpdateCharacterStream() {
-    }
+    void testUpdateCharacterStream() {}
 
     @Test
-    void testUpdateObject1() {
-    }
+    void testUpdateObject1() {}
 
     @Test
-    void testUpdateObject2() {
-    }
+    void testUpdateObject2() {}
 
     @Test
-    void insertRow() {
-    }
+    void insertRow() {}
 
     @Test
-    void updateRow() {
-    }
+    void updateRow() {}
 
     @Test
-    void deleteRow() {
-    }
+    void deleteRow() {}
 
     @Test
-    void refreshRow() {
-    }
+    void refreshRow() {}
 
     @Test
-    void cancelRowUpdates() {
-    }
+    void cancelRowUpdates() {}
 
     @Test
-    void moveToInsertRow() {
-    }
+    void moveToInsertRow() {}
 
     @Test
-    void moveToCurrentRow() {
-    }
+    void moveToCurrentRow() {}
 
     @Test
-    void getStatement() {
-    }
+    void getStatement() {}
 
     @Test
-    void testGetObject1() {
-    }
+    void testGetObject1() {}
 
     @Test
-    void getRef() {
-    }
+    void getRef() {}
 
     @Test
-    void getBlob() {
-    }
+    void getBlob() {}
 
     @Test
-    void getClob() {
-    }
+    void getClob() {}
 
     @Test
-    void getArray() {
-    }
+    void getArray() {}
 
     @Test
-    void testGetObject2() {
-    }
+    void testGetObject2() {}
 
     @Test
-    void testGetRef() {
-    }
+    void testGetRef() {}
 
     @Test
-    void testGetBlob() {
-    }
+    void testGetBlob() {}
 
     @Test
-    void testGetClob() {
-    }
+    void testGetClob() {}
 
     @Test
-    void testGetArray() {
-    }
+    void testGetArray() {}
 
     @Test
-    void testGetDate1() {
-    }
+    void testGetDate1() {}
 
     @Test
-    void testGetDate2() {
-    }
+    void testGetDate2() {}
 
     @Test
-    void testGetTime1() {
-    }
+    void testGetTime1() {}
 
     @Test
-    void testGetTime2() {
-    }
+    void testGetTime2() {}
 
     @Test
-    void testGetTimestamp1() {
-    }
+    void testGetTimestamp1() {}
 
     @Test
-    void testGetTimestamp2() {
-    }
+    void testGetTimestamp2() {}
 
     @Test
-    void getURL() {
-    }
+    void getURL() {}
 
     @Test
-    void testGetURL() {
-    }
+    void testGetURL() {}
 
     @Test
-    void updateRef() {
-    }
+    void updateRef() {}
 
     @Test
-    void testUpdateRef() {
-    }
+    void testUpdateRef() {}
 
     @Test
-    void updateBlob() {
-    }
+    void updateBlob() {}
 
     @Test
-    void testUpdateBlob() {
-    }
+    void testUpdateBlob() {}
 
     @Test
-    void updateClob() {
-    }
+    void updateClob() {}
 
     @Test
-    void testUpdateClob() {
-    }
+    void testUpdateClob() {}
 
     @Test
-    void updateArray() {
-    }
+    void updateArray() {}
 
     @Test
-    void testUpdateArray() {
-    }
+    void testUpdateArray() {}
 
     @Test
-    void getRowId() {
-    }
+    void getRowId() {}
 
     @Test
-    void testGetRowId() {
-    }
+    void testGetRowId() {}
 
     @Test
-    void updateRowId() {
-    }
+    void updateRowId() {}
 
     @Test
-    void testUpdateRowId() {
-    }
+    void testUpdateRowId() {}
 
     @Test
-    void getHoldability() {
-    }
+    void getHoldability() {}
 
     @Test
-    void isClosed() {
-    }
+    void isClosed() {}
 
     @Test
-    void updateNString() {
-    }
+    void updateNString() {}
 
     @Test
-    void testUpdateNString() {
-    }
+    void testUpdateNString() {}
 
     @Test
-    void updateNClob() {
-    }
+    void updateNClob() {}
 
     @Test
-    void testUpdateNClob() {
-    }
+    void testUpdateNClob() {}
 
     @Test
-    void getNClob() {
-    }
+    void getNClob() {}
 
     @Test
-    void testGetNClob() {
-    }
+    void testGetNClob() {}
 
     @Test
-    void getSQLXML() {
-    }
+    void getSQLXML() {}
 
     @Test
-    void testGetSQLXML() {
-    }
+    void testGetSQLXML() {}
 
     @Test
-    void updateSQLXML() {
-    }
+    void updateSQLXML() {}
 
     @Test
-    void testUpdateSQLXML() {
-    }
+    void testUpdateSQLXML() {}
 
     @Test
-    void getNString() {
-    }
+    void getNString() {}
 
     @Test
-    void testGetNString() {
-    }
+    void testGetNString() {}
 
     @Test
-    void getNCharacterStream() {
-    }
+    void getNCharacterStream() {}
 
     @Test
-    void testGetNCharacterStream() {
-    }
+    void testGetNCharacterStream() {}
 
     @Test
-    void updateNCharacterStream() {
-    }
+    void updateNCharacterStream() {}
 
     @Test
-    void testUpdateNCharacterStream() {
-    }
+    void testUpdateNCharacterStream() {}
 
     @Test
-    void testUpdateAsciiStream1() {
-    }
+    void testUpdateAsciiStream1() {}
 
     @Test
-    void testUpdateBinaryStream1() {
-    }
+    void testUpdateBinaryStream1() {}
 
     @Test
-    void testUpdateCharacterStream1() {
-    }
+    void testUpdateCharacterStream1() {}
 
     @Test
-    void testUpdateAsciiStream2() {
-    }
+    void testUpdateAsciiStream2() {}
 
     @Test
-    void testUpdateBinaryStream2() {
-    }
+    void testUpdateBinaryStream2() {}
 
     @Test
-    void testUpdateCharacterStream2() {
-    }
+    void testUpdateCharacterStream2() {}
 
     @Test
-    void testUpdateBlob1() {
-    }
+    void testUpdateBlob1() {}
 
     @Test
-    void testUpdateBlob2() {
-    }
+    void testUpdateBlob2() {}
 
     @Test
-    void testUpdateClob1() {
-    }
+    void testUpdateClob1() {}
 
     @Test
-    void testUpdateClob2() {
-    }
+    void testUpdateClob2() {}
 
     @Test
-    void testUpdateNClob1() {
-    }
+    void testUpdateNClob1() {}
 
     @Test
-    void testUpdateNClob2() {
-    }
+    void testUpdateNClob2() {}
 
     @Test
-    void testUpdateNCharacterStream1() {
-    }
+    void testUpdateNCharacterStream1() {}
 
     @Test
-    void testUpdateNCharacterStream2() {
-    }
+    void testUpdateNCharacterStream2() {}
 
     @Test
-    void testUpdateAsciiStream3() {
-    }
+    void testUpdateAsciiStream3() {}
 
     @Test
-    void testUpdateBinaryStream3() {
-    }
+    void testUpdateBinaryStream3() {}
 
     @Test
-    void testUpdateCharacterStream3() {
-    }
+    void testUpdateCharacterStream3() {}
 
     @Test
-    void testUpdateAsciiStream4() {
-    }
+    void testUpdateAsciiStream4() {}
 
     @Test
-    void testUpdateBinaryStream4() {
-    }
+    void testUpdateBinaryStream4() {}
 
     @Test
-    void testUpdateCharacterStream4() {
-    }
+    void testUpdateCharacterStream4() {}
 
     @Test
-    void testUpdateBlob3() {
-    }
+    void testUpdateBlob3() {}
 
     @Test
-    void testUpdateBlob4() {
-    }
+    void testUpdateBlob4() {}
 
     @Test
-    void testUpdateClob3() {
-    }
+    void testUpdateClob3() {}
 
     @Test
-    void testUpdateClob4() {
-    }
+    void testUpdateClob4() {}
 
     @Test
-    void testUpdateNClob3() {
-    }
+    void testUpdateNClob3() {}
 
     @Test
-    void testUpdateNClob4() {
-    }
+    void testUpdateNClob4() {}
 
     @Test
-    void testGetObject3() {
-    }
+    void testGetObject3() {}
 
     @Test
-    void testGetObject4() {
-    }
+    void testGetObject4() {}
 
     @Test
-    void unwrap() {
-    }
+    void unwrap() {}
 
     @Test
-    void isWrapperFor() {
-    }
+    void isWrapperFor() {}
 }
