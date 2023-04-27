@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 @Disabled("Disabled until implementation started")
 class SurrealJDBCConnectionTest {
 
-    private SurrealJDBCConnection jdbcConnection = new SurrealJDBCConnection();
+    private SurrealJDBCConnection jdbcConnection = new SurrealJDBCConnection(TestUtils.getHost(), TestUtils.getPort(), TestUtils.getDatabase(), TestUtils.getUseTlsDriver(), TestUtils.getUseAsyncDriver());
 
     @SneakyThrows
     @Test

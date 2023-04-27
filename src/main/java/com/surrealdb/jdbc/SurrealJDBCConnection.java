@@ -1,5 +1,9 @@
 package com.surrealdb.jdbc;
 
+import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.driver.AsyncSurrealDriver;
+import com.surrealdb.driver.SyncSurrealDriver;
+
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -20,6 +24,35 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 public class SurrealJDBCConnection implements Connection {
+
+    private final String host;
+    private final String dbName;
+    private final int port;
+
+    // Maybe do these non-final to allow switching these while runtime
+    private final boolean useTls;
+    private final boolean useAsync;
+    private final SurrealWebSocketConnection webSocketConnection;
+    private SyncSurrealDriver syncDriver;
+    private AsyncSurrealDriver asyncDriver;
+
+    public SurrealJDBCConnection(String host, int port, String dbName, boolean useTls, boolean useAsync) {
+        this.host = host;
+        this.port = port;
+        this.dbName = dbName;
+        this.useTls = useTls;
+        this.useAsync = useAsync;
+
+        webSocketConnection = new SurrealWebSocketConnection(host, port, useTls);
+        webSocketConnection.connect(5);
+
+        if (useAsync) {
+            asyncDriver = new AsyncSurrealDriver(webSocketConnection);
+        } else {
+            syncDriver = new SyncSurrealDriver(webSocketConnection);
+        }
+    }
+
     @Override
     public Statement createStatement() throws SQLException {
         return new SurrealJDBCStatement();
