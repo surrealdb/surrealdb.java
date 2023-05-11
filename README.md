@@ -17,34 +17,22 @@ The official SurrealDB library for Java.
 
 Gradle:
 ```groovy
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/surrealdb/surrealdb.java")
-    }
+ext {
+	surrealdbVersion = "0.1.0"
 }
-implementation files('libs/surrealdb-0.1.0.jar')
+
+dependencies {
+    implementation "com.surrealdb:surrealdb-driver:${surrealdbVersion}"
+}
 ```
 
 Maven:
 ```xml
-<settings>
-    <repositories>
-        <repository>
-            <id>surrealdb-github</id>
-            <url>https://maven.pkg.github.com/surrealdb/surrealdb.java</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    <dependencies>
-        <dependency>
-            <groupId>com.surrealdb</groupId>
-            <artifactId>driver</artifactId>
-            <version>0.1.0</version>
-        </dependency>
-    </dependencies>
-</settings>
+<dependency>
+	<groupId>com.surrealdb</groupId>
+	<artifactId>surrealdb-driver</artifactId>
+	<version>0.1.0</version>
+</dependency>
 ```
 
 
