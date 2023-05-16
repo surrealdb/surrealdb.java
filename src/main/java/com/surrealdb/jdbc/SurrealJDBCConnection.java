@@ -3,7 +3,6 @@ package com.surrealdb.jdbc;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.driver.AsyncSurrealDriver;
 import com.surrealdb.driver.SyncSurrealDriver;
-
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -36,7 +35,45 @@ public class SurrealJDBCConnection implements Connection {
     private SyncSurrealDriver syncDriver;
     private AsyncSurrealDriver asyncDriver;
 
-    public SurrealJDBCConnection(String host, int port, String dbName, boolean useTls, boolean useAsync) {
+    public SurrealJDBCConnection(
+            String host,
+            int port,
+            String dbName,
+            String namespace,
+            String user,
+            String password,
+            boolean useTls,
+            boolean useAsync) {
+        this.host = host;
+        this.port = port;
+        this.dbName = dbName;
+        this.useTls = useTls;
+        this.useAsync = useAsync;
+
+        webSocketConnection = new SurrealWebSocketConnection(host, port, useTls);
+        webSocketConnection.connect(60);
+
+        if (useAsync) {
+            asyncDriver = new AsyncSurrealDriver(webSocketConnection);
+            asyncDriver.signIn(user, password);
+            asyncDriver.use(namespace, dbName);
+        } else {
+            syncDriver = new SyncSurrealDriver(webSocketConnection);
+            syncDriver.signIn(user, password);
+            syncDriver.use(namespace, dbName);
+        }
+
+        System.out.println("Connection established");
+    }
+
+    public SurrealJDBCConnection(
+            String host,
+            int port,
+            String dbName,
+            String namespace,
+            String token,
+            boolean useTls,
+            boolean useAsync) {
         this.host = host;
         this.port = port;
         this.dbName = dbName;
@@ -48,14 +85,21 @@ public class SurrealJDBCConnection implements Connection {
 
         if (useAsync) {
             asyncDriver = new AsyncSurrealDriver(webSocketConnection);
+            asyncDriver.authenticate(token);
+            asyncDriver.use(namespace, dbName);
         } else {
             syncDriver = new SyncSurrealDriver(webSocketConnection);
+            syncDriver.authenticate(token);
+            syncDriver.use(namespace, dbName);
         }
     }
 
     @Override
     public Statement createStatement() throws SQLException {
-        return new SurrealJDBCStatement();
+        if (useAsync) {
+            return new SurrealJDBCStatement(asyncDriver);
+        }
+        return new SurrealJDBCStatement(syncDriver);
     }
 
     @Override
@@ -95,6 +139,7 @@ public class SurrealJDBCConnection implements Connection {
 
     @Override
     public void close() throws SQLException {
+        webSocketConnection.close();
         throw new UnsupportedOperationException("connection close is currently unsupported");
     }
 
@@ -130,12 +175,14 @@ public class SurrealJDBCConnection implements Connection {
 
     @Override
     public void setTransactionIsolation(int level) throws SQLException {
-        throw new UnsupportedOperationException("connection setTransactionIsolation is unimplemented");
+        throw new UnsupportedOperationException(
+                "connection setTransactionIsolation is unimplemented");
     }
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-        throw new UnsupportedOperationException("connection getTransactionIsolation is unimplemented");
+        throw new UnsupportedOperationException(
+                "connection getTransactionIsolation is unimplemented");
     }
 
     @Override
@@ -149,17 +196,20 @@ public class SurrealJDBCConnection implements Connection {
     }
 
     @Override
-    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+    public Statement createStatement(int resultSetType, int resultSetConcurrency)
+            throws SQLException {
         throw new UnsupportedOperationException("connection createStatement is unimplemented");
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    public PreparedStatement prepareStatement(
+            String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
         throw new UnsupportedOperationException("connection prepareStatement is unimplemented");
     }
 
     @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
+            throws SQLException {
         throw new UnsupportedOperationException("connection prepareCall is unimplemneted");
     }
 
@@ -180,7 +230,7 @@ public class SurrealJDBCConnection implements Connection {
 
     @Override
     public int getHoldability() throws SQLException {
-        throw new UnsupportedOperationException();
+        return 10;
     }
 
     @Override
@@ -204,22 +254,29 @@ public class SurrealJDBCConnection implements Connection {
     }
 
     @Override
-    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    public Statement createStatement(
+            int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    public PreparedStatement prepareStatement(
+            String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    public CallableStatement prepareCall(
+            String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -229,7 +286,8 @@ public class SurrealJDBCConnection implements Connection {
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, String[] columnNames)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -295,7 +353,7 @@ public class SurrealJDBCConnection implements Connection {
 
     @Override
     public String getSchema() throws SQLException {
-        throw new UnsupportedOperationException();
+        return host;
     }
 
     @Override

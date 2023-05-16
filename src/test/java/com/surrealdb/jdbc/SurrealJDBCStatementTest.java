@@ -2,241 +2,372 @@ package com.surrealdb.jdbc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import java.net.URI;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Disabled("Disabled until implementation started")
+import com.surrealdb.connection.SurrealWebSocketConnection;
+import com.surrealdb.driver.SyncSurrealDriver;
+import com.surrealdb.driver.model.QueryResult;
+import com.surrealdb.jdbc.model.Person;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.jupiter.api.*;
+
 class SurrealJDBCStatementTest {
 
-    private final Statement statement = new SurrealJDBCStatement();
+    private Statement statement;
+
+    private final Driver driver = new SurrealJDBCDriver();
+    private SyncSurrealDriver surrealDriver;
+    private SurrealJDBCConnection jdbcConnection;
+
+    private final static String URL = "jdbc:surrealdb://"
+        + TestUtils.getHost()
+        + ":"
+        + TestUtils.getPort()
+        + "/"
+        + TestUtils.getDatabase()
+        + ";"
+        + TestUtils.getNamespace();
+
+    @BeforeEach
+    public void setup() throws ClassNotFoundException, SQLException {
+        Assert.assertTrue(TestUtils.getHost() != null);
+
+        var uri = URI.create(URL);
+
+        // Initialize the JDBC Driver
+        Class.forName("com.surrealdb.jdbc.SurrealJDBCDriver");
+        DriverManager.registerDriver(new SurrealJDBCDriver());
+        jdbcConnection = (SurrealJDBCConnection) DriverManager.getConnection(URL, TestUtils.getDriverProperties());
+
+        statement = jdbcConnection.createStatement();
+
+        // Let's create two objects for testing with the driver
+        try {
+            var created = statement.executeQuery("""
+CREATE person:1 CONTENT {
+    id: 'person:1',
+    marketing: true,
+    name: {
+        first: 'Flip',
+        last: 'Flopsen'
+    },
+    title: 'NiceDude'
+    };
+CREATE person:2 CONTENT {
+    id: 'person:2',
+    marketing: true,
+    name: {
+        first: 'Hugh',
+        last: 'G'
+    },
+    title: 'Polbrit'
+    };
+""");
+        } catch (SQLException e) {
+            System.err.println("Failed to create person!");
+        }
+    }
+
+    @AfterEach
+    public void teardown() {
+        try {
+            statement.executeQuery("DELETE person");
+        } catch (SQLException e) {
+            System.err.println("Failed to delete person!");
+        }
+    }
 
     @Test
     void executeQuery() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.executeQuery(""));
+        try {
+            var results = statement.executeQuery("select * from person");
+
+            var ctr = 0;
+            while (results.next()) {
+                var obj = results.getObject(ctr, Person.class);
+                System.out.println(obj.getName());
+                Assert.assertTrue(obj != null);
+                ctr++;
+            }
+
+            Assert.assertTrue(ctr == 2);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void executeQueryWithArgs() {
+        try {
+            var results = statement.executeQuery("select * from person where name.first = $firstName withargs [firstName, Flip]");
+
+            var ctr = 0;
+            while (results.next()) {
+                var obj = results.getObject(ctr, Person.class);
+                Assert.assertTrue(obj != null);
+                ctr++;
+            }
+
+            Assert.assertTrue(ctr == 1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     void executeUpdate() {
-        assertThrows(UnsupportedOperationException.class, () -> statement.executeUpdate(""));
+        try {
+            statement.executeUpdate("UPDATE person SET marketing = false");
+
+            var results = statement.executeQuery("select * from person");
+
+            var ctr = 0;
+            while (results.next()) {
+                var obj = results.getObject(ctr, Person.class);
+                Assert.assertFalse(obj.isMarketing());
+                ctr++;
+            }
+
+            Assert.assertTrue(ctr == 2);
+            ctr = 0;
+            statement.executeUpdate("UPDATE person:1 SET marketing = true");
+
+            results = statement.executeQuery("select * from person where marketing = false");
+
+            while (results.next()) {
+                var obj = results.getObject(ctr, Person.class);
+                Assert.assertFalse(obj.isMarketing());
+                ctr++;
+            }
+
+            Assert.assertTrue(ctr == 1);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Test
+    @Disabled
     void close() {
         assertThrows(UnsupportedOperationException.class, statement::close);
     }
 
-    @Test
+    @Disabled
     void getMaxFieldSize() {
         assertThrows(UnsupportedOperationException.class, statement::getMaxFieldSize);
     }
 
-    @Test
+    @Disabled
     void setMaxFieldSize() {
         assertThrows(UnsupportedOperationException.class, () -> statement.setMaxFieldSize(0));
     }
 
-    @Test
+    @Disabled
     void getMaxRows() {
         assertThrows(UnsupportedOperationException.class, statement::getMaxRows);
     }
 
-    @Test
+    @Disabled
     void setMaxRows() {
         assertThrows(UnsupportedOperationException.class, () -> statement.setMaxRows(0));
     }
 
-    @Test
+    @Disabled
     void setEscapeProcessing() {
         assertThrows(
                 UnsupportedOperationException.class, () -> statement.setEscapeProcessing(false));
     }
 
-    @Test
+    @Disabled
     void getQueryTimeout() {
         assertThrows(UnsupportedOperationException.class, statement::getQueryTimeout);
     }
 
-    @Test
+    @Disabled
     void setQueryTimeout() {
         assertThrows(UnsupportedOperationException.class, () -> statement.setQueryTimeout(0));
     }
 
-    @Test
+    @Disabled
     void cancel() {
         assertThrows(UnsupportedOperationException.class, statement::cancel);
     }
 
-    @Test
+    @Disabled
     void getWarnings() {
         assertThrows(UnsupportedOperationException.class, statement::getWarnings);
     }
 
-    @Test
+    @Disabled
     void clearWarnings() {
         assertThrows(UnsupportedOperationException.class, statement::clearWarnings);
     }
 
-    @Test
+    @Disabled
     void setCursorName() {
         assertThrows(UnsupportedOperationException.class, () -> statement.setCursorName(""));
     }
 
-    @Test
+    @Disabled
     void execute() {
         assertThrows(UnsupportedOperationException.class, () -> statement.execute(""));
     }
 
-    @Test
+    @Disabled
     void getResultSet() {
         assertThrows(UnsupportedOperationException.class, statement::getResultSet);
     }
 
-    @Test
+    @Disabled
     void getUpdateCount() {
         assertThrows(UnsupportedOperationException.class, statement::getUpdateCount);
     }
 
-    @Test
+    @Disabled
     void getMoreResults() {
         assertThrows(UnsupportedOperationException.class, statement::getMoreResults);
     }
 
-    @Test
+    @Disabled
     void setFetchDirection() {
         assertThrows(
                 UnsupportedOperationException.class,
                 () -> statement.setFetchDirection(ResultSet.FETCH_FORWARD));
     }
 
-    @Test
+    @Disabled
     void getFetchDirection() {
         assertThrows(UnsupportedOperationException.class, statement::getFetchDirection);
     }
 
-    @Test
+    @Disabled
     void setFetchSize() {
         assertThrows(UnsupportedOperationException.class, () -> statement.setFetchSize(0));
     }
 
-    @Test
+    @Disabled
     void getFetchSize() {
         assertThrows(UnsupportedOperationException.class, statement::getFetchSize);
     }
 
-    @Test
+    @Disabled
     void getResultSetConcurrency() {
         assertThrows(UnsupportedOperationException.class, statement::getResultSetConcurrency);
     }
 
-    @Test
+    @Disabled
     void getResultSetType() {
         assertThrows(UnsupportedOperationException.class, statement::getResultSetType);
     }
 
-    @Test
+    @Disabled
     void addBatch() {
         assertThrows(UnsupportedOperationException.class, () -> statement.addBatch(""));
     }
 
-    @Test
+    @Disabled
     void clearBatch() {
         assertThrows(UnsupportedOperationException.class, statement::clearBatch);
     }
 
-    @Test
+    @Disabled
     void executeBatch() {
         assertThrows(UnsupportedOperationException.class, statement::executeBatch);
     }
 
-    @Test
+    @Disabled
     void getConnection() {
         assertThrows(UnsupportedOperationException.class, statement::getConnection);
     }
 
-    @Test
+    @Disabled
     void testGetMoreResults() {
         assertThrows(UnsupportedOperationException.class, statement::getMoreResults);
     }
 
-    @Test
+    @Disabled
     void getGeneratedKeys() {
         assertThrows(UnsupportedOperationException.class, statement::getGeneratedKeys);
     }
 
-    @Test
+    @Disabled
     void testExecuteUpdate() {
         assertThrows(UnsupportedOperationException.class, () -> statement.executeUpdate(""));
     }
 
-    @Test
+    @Disabled
     void testExecuteUpdate1() {
         assertThrows(
                 UnsupportedOperationException.class,
                 () -> statement.executeUpdate("", Statement.RETURN_GENERATED_KEYS));
     }
 
-    @Test
+    @Disabled
     void testExecuteUpdate2() {
         assertThrows(
                 UnsupportedOperationException.class,
                 () -> statement.executeUpdate("", new String[] {}));
     }
 
-    @Test
+    @Disabled
     void testExecute() {
         assertThrows(UnsupportedOperationException.class, () -> statement.execute(""));
     }
 
-    @Test
+    @Disabled
     void testExecute1() {
         assertThrows(UnsupportedOperationException.class, () -> statement.execute("", new int[10]));
     }
 
-    @Test
+    @Disabled
     void testExecute2() {
         assertThrows(
                 UnsupportedOperationException.class,
                 () -> statement.execute("", Statement.RETURN_GENERATED_KEYS));
     }
 
-    @Test
+    @Disabled
     void getResultSetHoldability() {
         assertThrows(UnsupportedOperationException.class, statement::getResultSetHoldability);
     }
 
-    @Test
+    @Disabled
     void isClosed() {
         assertThrows(UnsupportedOperationException.class, statement::isClosed);
     }
 
-    @Test
+    @Disabled
     void setPoolable() {
         assertThrows(UnsupportedOperationException.class, () -> statement.setPoolable(false));
     }
 
-    @Test
+    @Disabled
     void isPoolable() {
         assertThrows(UnsupportedOperationException.class, statement::isPoolable);
     }
 
-    @Test
+    @Disabled
     void closeOnCompletion() {
         assertThrows(UnsupportedOperationException.class, statement::closeOnCompletion);
     }
 
-    @Test
+    @Disabled
     void isCloseOnCompletion() {
         assertThrows(UnsupportedOperationException.class, statement::isCloseOnCompletion);
     }
 
-    @Test
+    @Disabled
     void unwrap() {
         assertThrows(UnsupportedOperationException.class, () -> statement.unwrap(String.class));
     }
 
-    @Test
+    @Disabled
     void isWrapperFor() {
         assertThrows(
                 UnsupportedOperationException.class, () -> statement.isWrapperFor(String.class));

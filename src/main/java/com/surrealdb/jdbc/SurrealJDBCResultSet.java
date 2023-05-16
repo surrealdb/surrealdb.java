@@ -1,7 +1,13 @@
 package com.surrealdb.jdbc;
 
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+import com.surrealdb.driver.model.QueryResult;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
@@ -19,13 +25,26 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Map;
+import java.util.*;
 
-public class SurrealJDBCResultSet implements ResultSet {
+public class SurrealJDBCResultSet<T> implements ResultSet {
+    private List<T> data = new ArrayList<>();
+    private int rowIndex = -1;
+    private Gson gson;
+
+    public SurrealJDBCResultSet(List<QueryResult<T>> data) {
+        data.forEach(
+                entry -> {
+                    if (entry.getStatus().equals("OK")) {
+                        this.data.addAll(entry.getResult());
+                    }
+                });
+    }
+
     @Override
     public boolean next() throws SQLException {
-        throw new UnsupportedOperationException();
+        rowIndex++;
+        return rowIndex < data.size();
     }
 
     @Override
@@ -40,12 +59,12 @@ public class SurrealJDBCResultSet implements ResultSet {
 
     @Override
     public String getString(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException();
+        throw new SQLException("Value is not a string");
     }
 
     @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException();
+        throw new SQLException("Value is not a boolean");
     }
 
     @Override
@@ -215,12 +234,12 @@ public class SurrealJDBCResultSet implements ResultSet {
 
     @Override
     public ResultSetMetaData getMetaData() throws SQLException {
-        throw new UnsupportedOperationException();
+        return new SurrealJDBCResultSetMetaData<>(data);
     }
 
     @Override
     public Object getObject(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException();
+        return data.get(columnIndex);
     }
 
     @Override
@@ -524,17 +543,20 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateAsciiStream(String columnLabel, InputStream x, int length) throws SQLException {
+    public void updateAsciiStream(String columnLabel, InputStream x, int length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(String columnLabel, InputStream x, int length) throws SQLException {
+    public void updateBinaryStream(String columnLabel, InputStream x, int length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateCharacterStream(String columnLabel, Reader reader, int length) throws SQLException {
+    public void updateCharacterStream(String columnLabel, Reader reader, int length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -824,7 +846,8 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+    public void updateNCharacterStream(String columnLabel, Reader reader, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -834,7 +857,8 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
+    public void updateBinaryStream(int columnIndex, InputStream x, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -844,27 +868,32 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
+    public void updateAsciiStream(String columnLabel, InputStream x, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
+    public void updateBinaryStream(String columnLabel, InputStream x, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+    public void updateCharacterStream(String columnLabel, Reader reader, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
+    public void updateBlob(int columnIndex, InputStream inputStream, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
+    public void updateBlob(String columnLabel, InputStream inputStream, long length)
+            throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -960,12 +989,24 @@ public class SurrealJDBCResultSet implements ResultSet {
 
     @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        throw new UnsupportedOperationException();
+        if (gson == null) {
+            gson = new Gson();
+        }
+
+        if (data.get(columnIndex) instanceof LinkedTreeMap) {
+            var fieldMap = (LinkedTreeMap<String, Object>) data.get(columnIndex);
+
+            String json = gson.toJson(fieldMap);
+
+            return gson.fromJson(json, type);
+        } else {
+            return (T) data.get(columnIndex);
+        }
     }
 
     @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -977,4 +1018,5 @@ public class SurrealJDBCResultSet implements ResultSet {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new UnsupportedOperationException();
     }
+
 }
