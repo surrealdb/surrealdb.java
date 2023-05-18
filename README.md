@@ -11,9 +11,6 @@ The official SurrealDB library for Java.
 
 
 ### Installation
-- For now, you can grab the JAR from the releases page [here](https://github.com/surrealdb/surrealdb.java/releases).
-- Put it in `libs` folder.
-- Add the JAR to you project:
 
 Gradle:
 ```groovy
