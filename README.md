@@ -7,7 +7,7 @@ The official SurrealDB library for Java.
 ### Features
 - Sync & Async driver implementations available.
 - Complex JSON serialization & deserialization to Java classes.
-- Simple API (very similar to the Javascript driver, [see docs](https://surrealdb.com/docs/integration/libraries/nodejs#:~:text=node%20app.js-,Library%20methods,-The%20JavaScript%20library)).
+- Simple API (very similar to the Javascript driver, [see docs](https://surrealdb.com/docs/integration/libraries/java)).
 
 
 ### Installation
@@ -65,7 +65,7 @@ public class Main {
 
         connection.disconnect();
         
-        // for more docs, see https://surrealdb.com/docs/integration/libraries/nodejs
+        // for more docs, see https://surrealdb.com/docs/integration/libraries/java
     }
 }
 
