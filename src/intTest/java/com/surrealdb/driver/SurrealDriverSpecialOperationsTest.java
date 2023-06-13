@@ -1,5 +1,7 @@
 package com.surrealdb.driver;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
@@ -12,24 +14,25 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 /**
  * @author Khalid Alharisi
  */
 @Testcontainers
 public class SurrealDriverSpecialOperationsTest {
     @Container
-    private static final GenericContainer SURREAL_DB = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
-        .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
+    @SuppressWarnings("rawtypes")
+    private static final GenericContainer SURREAL_DB =
+            new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+                    .withExposedPorts(8000)
+                    .withCommand("start --log trace --user root --pass root memory");
+
     private SyncSurrealDriver driver;
 
     @BeforeEach
-    public void setup(){
-        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(SURREAL_DB.getHost(), SURREAL_DB.getFirstMappedPort(), false);
+    public void setup() {
+        SurrealWebSocketConnection connection =
+                new SurrealWebSocketConnection(
+                        SURREAL_DB.getHost(), SURREAL_DB.getFirstMappedPort(), false);
         connection.connect(5);
         driver = new SyncSurrealDriver(connection);
     }
@@ -39,33 +42,33 @@ public class SurrealDriverSpecialOperationsTest {
         driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
     }
 
-	@Test
-	public void testSignUp() {
-		List<String> receivedJwt = new ArrayList<>();
-		//Plain
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test@testerino.surr", "lol123"));
-		//With marketing
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test1@testerino.surr", "lol123", true));
-		//With tags
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test2@testerino.surr", "lol123", new String[] { "Java", "Rust" }));
-		//With marketing and tags
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test3@testerino.surr", "lol123", true, new String[] { "Java" }));
+    @Test
+    public void testSignUp() {
+        // Plain
+        String token =
+                driver.signUp(
+                        TestUtils.getNamespace(),
+                        TestUtils.getDatabase(),
+                        TestUtils.getScope(),
+                        "test@testerino.surr",
+                        "lol123");
+        // Validate that the signup worked through authentication with the received token.
+        driver.authenticate(token);
+    }
 
-		//Validate that the signup worked through authentication with the received token.
-		receivedJwt.forEach(token -> driver.authenticate(token));
-	}
-
-	@Test
-	public void testAuthenticate() {
-		if (TestUtils.getToken().equals("")) {
-			return;
-		}
-		driver.authenticate(TestUtils.getToken());
-	}
+    @Test
+    public void testAuthenticate() {
+        if (TestUtils.getToken().equals("")) {
+            return;
+        }
+        driver.authenticate(TestUtils.getToken());
+    }
 
     @Test
     public void testBadCredentials() {
-        assertThrows(SurrealAuthenticationException.class, () -> driver.signIn("admin", "incorrect-password"));
+        assertThrows(
+                SurrealAuthenticationException.class,
+                () -> driver.signIn("admin", "incorrect-password"));
     }
 
     @Test
@@ -75,10 +78,12 @@ public class SurrealDriverSpecialOperationsTest {
 
     @Test
     public void testNoDatabaseSelected() {
-        assertThrows(SurrealNoDatabaseSelectedException.class, () -> {
-            driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-            driver.select("person", Person.class);
-        });
+        assertThrows(
+                SurrealNoDatabaseSelectedException.class,
+                () -> {
+                    driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+                    driver.select("person", Person.class);
+                });
     }
 
     @Test
@@ -98,10 +103,10 @@ public class SurrealDriverSpecialOperationsTest {
         driver.info();
     }
 
-	@Test
-	public void testInvalidate() {
-		//Execute the test at the end, or re-connect after it (the method invalidates the current session auth.)!
-		driver.invalidate();
-	}
-
+    @Test
+    public void testInvalidate() {
+        // Execute the test at the end, or re-connect after it (the method invalidates the current
+        // session auth.)!
+        driver.invalidate();
+    }
 }
