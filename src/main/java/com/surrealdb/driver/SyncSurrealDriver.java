@@ -34,19 +34,7 @@ public class SyncSurrealDriver {
     }
 
 	public String signUp(String namespace, String database, String scope, String email, String password) {
-		return getResultSynchronously(asyncDriver.signUp(namespace, database, scope, email, password, false, null));
-	}
-
-	public String signUp(String namespace, String database, String scope, String email, String password, boolean marketing) {
-		return getResultSynchronously(asyncDriver.signUp(namespace, database, scope, email, password, marketing, null));
-	}
-
-	public String signUp(String namespace, String database, String scope, String email, String password, String[] tags) {
-		return getResultSynchronously(asyncDriver.signUp(namespace, database, scope, email, password, false, tags));
-	}
-
-	public String signUp(String namespace, String database, String scope, String email, String password, boolean marketing, String[] tags) {
-		return getResultSynchronously(asyncDriver.signUp(namespace, database, scope, email, password, marketing, tags));
+		return getResultSynchronously(asyncDriver.signUp(namespace, database, scope, email, password));
 	}
 
 	public void authenticate(String token){

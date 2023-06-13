@@ -12,9 +12,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -23,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Testcontainers
 public class SurrealDriverSpecialOperationsTest {
     @Container
+    @SuppressWarnings("rawtypes")
     private static final GenericContainer SURREAL_DB = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
         .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
     private SyncSurrealDriver driver;
@@ -41,18 +39,10 @@ public class SurrealDriverSpecialOperationsTest {
 
 	@Test
 	public void testSignUp() {
-		List<String> receivedJwt = new ArrayList<>();
 		//Plain
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test@testerino.surr", "lol123"));
-		//With marketing
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test1@testerino.surr", "lol123", true));
-		//With tags
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test2@testerino.surr", "lol123", new String[] { "Java", "Rust" }));
-		//With marketing and tags
-		receivedJwt.add(driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test3@testerino.surr", "lol123", true, new String[] { "Java" }));
-
+		String token = driver.signUp(TestUtils.getNamespace(), TestUtils.getDatabase(), TestUtils.getScope(), "test@testerino.surr", "lol123");
 		//Validate that the signup worked through authentication with the received token.
-		receivedJwt.forEach(token -> driver.authenticate(token));
+		driver.authenticate(token);
 	}
 
 	@Test

@@ -37,29 +37,12 @@ public class AsyncSurrealDriver {
     }
 
 	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password) {
-		return signUp(namespace, database, scope, email, password, false, null);
-	}
-
-	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password, boolean marketing) {
-		return signUp(namespace, database, scope, email, password, marketing, null);
-	}
-
-	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password, String[] tags) {
-		return signUp(namespace, database, scope, email, password, false, tags);
-	}
-
-	public CompletableFuture<String> signUp(String namespace, String database, String scope, String email, String password, boolean marketing, String[] tags) {
 		Type resultType = TypeToken.getParameterized(String.class).getType();
 
 		SignUp userToBeCreated = new SignUp(
 			namespace, database, scope,
 			email, password
 		);
-		userToBeCreated.setMarketing(marketing);
-
-		if (tags != null) {
-			userToBeCreated.setTags(tags);
-		}
 
 		return connection.rpc(resultType, "signup", userToBeCreated);
 	}
