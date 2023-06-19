@@ -10,12 +10,6 @@ import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
-import org.java_websocket.handshake.ServerHandshake;
-
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
@@ -26,6 +20,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.handshake.ServerHandshake;
 
 /**
  * @author Khalid Alharisi
@@ -41,14 +40,15 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     public SurrealWebSocketConnection(String host, int port, boolean useTls) {
         super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + port + "/rpc"));
 
-		this.lastRequestId = new AtomicLong(0);
-		this.gson = new GsonBuilder()
-            .registerTypeAdapterFactory(new TemporalAdapterFactory())
-			.disableHtmlEscaping()
-			.create();
-		this.callbacks = new HashMap<>();
-		this.resultTypes = new HashMap<>();
-	}
+        this.lastRequestId = new AtomicLong(0);
+        this.gson =
+                new GsonBuilder()
+                        .registerTypeAdapterFactory(new TemporalAdapterFactory())
+                        .disableHtmlEscaping()
+                        .create();
+        this.callbacks = new HashMap<>();
+        this.resultTypes = new HashMap<>();
+    }
 
     @Override
     public void connect(int timeoutSeconds) {
@@ -113,7 +113,8 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                 if (resultType != null) {
                     Object deserialised = null;
                     JsonElement responseElement = response.getResult();
-                    // The protocol can sometimes send object instead of array when only 1 response is valid
+                    // The protocol can sometimes send object instead of array when only 1 response
+                    // is valid
                     if (responseElement.isJsonObject()) {
                         JsonArray jsonArray = new JsonArray(1);
                         jsonArray.add(responseElement);
@@ -137,14 +138,19 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                             deserialised = null;
                         }
                     } else {
-                        callback.completeExceptionally(new IllegalStateException("Unhandled deserialisation case"));
+                        callback.completeExceptionally(
+                                new IllegalStateException("Unhandled deserialisation case"));
                     }
                     callback.complete(deserialised);
                 } else {
                     callback.complete(null);
                 }
             } else {
-                log.error("Received RPC error: id={} code={} message={}", id, error.getCode(), error.getMessage());
+                log.error(
+                        "Received RPC error: id={} code={} message={} rpcCause={}",
+                        id,
+                        error.getCode(),
+                        error.getMessage());
                 callback.completeExceptionally(ErrorToExceptionMapper.map(error));
             }
 
@@ -169,5 +175,4 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
             log.error("onError", ex);
         }
     }
-
 }
