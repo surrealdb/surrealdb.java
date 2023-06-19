@@ -79,7 +79,7 @@ dependencies {
 }
 
 spotless {
-    ratchetFrom 'origin/main'
+    ratchetFrom 'main'
 
     java {
         cleanthat()

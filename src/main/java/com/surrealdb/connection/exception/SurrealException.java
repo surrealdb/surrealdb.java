@@ -1,7 +1,6 @@
 package com.surrealdb.connection.exception;
 
 import com.surrealdb.connection.model.RpcResponse;
-
 import java.util.Optional;
 
 /**
@@ -24,7 +23,7 @@ public class SurrealException extends RuntimeException {
         this.response = response;
     }
 
-    public Optional<RpcResponse.Error> getResponse() {
+    Optional<RpcResponse.Error> getResponse() {
         return Optional.ofNullable(response);
     }
 }
