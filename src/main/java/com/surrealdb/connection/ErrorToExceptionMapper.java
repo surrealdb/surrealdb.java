@@ -19,11 +19,11 @@ public class ErrorToExceptionMapper {
 
     public static SurrealException map(RpcResponse.Error error){
         if (error.getMessage().contains("There was a problem with authentication")) {
-            return new SurrealAuthenticationException();
+            return new SurrealAuthenticationException(error);
         }
 
         if (error.getMessage().contains("There was a problem with the database: Specify a namespace to use")) {
-            return new SurrealNoDatabaseSelectedException();
+            return new SurrealNoDatabaseSelectedException(error);
         }
 
         Matcher recordAlreadyExitsMatcher = RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
