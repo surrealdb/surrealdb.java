@@ -1,5 +1,6 @@
 package com.surrealdb.connection;
 
+import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestEnvVars;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
@@ -23,42 +24,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 @Slf4j
 @Testcontainers
-public class SurrealConnectionTest {
-
-    private static Optional<GenericContainer> container = Optional.empty();
-    private static SurrealWebSocketConnection connection;
-
-    @BeforeAll
-    public static void setUp() {
-        // Check if both host and port have been decalred as environment variable overrides
-        Optional<String> envHost = Optional.ofNullable(System.getenv(TestEnvVars.SURREALDB_JAVA_HOST)).filter(str -> !str.isBlank());
-        Optional<Integer> envPort = Optional.ofNullable(System.getenv(TestEnvVars.SURREALDB_JAVA_PORT)).map(strPort -> {
-            try {
-                return Integer.parseInt(strPort);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        });
-        // if they have then use that address instead
-        if (envHost.isPresent() && envPort.isPresent()) {
-            connection = new SurrealWebSocketConnection(envHost.get(), envPort.get(), false);
-        } else {
-            // No env vars, start a container
-            container = Optional.of(new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
-                .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory"));
-            container.get().start();
-            connection = new SurrealWebSocketConnection(container.get().getHost(), container.get().getFirstMappedPort(), false);
-        }
-    }
-
-    @AfterAll
-    public static void teardown() {
-        container.ifPresent(GenericContainer::stop);
-    }
+public class SurrealConnectionTest extends BaseIntegrationTest {
 
     @Test
     public void testConnectSuccessfully() {
-        assertDoesNotThrow(() -> connection.connect(3));
+        assertDoesNotThrow(() -> {
+            SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
+            connection.connect(3);
+        });
     }
 
     @Test
@@ -87,12 +60,16 @@ public class SurrealConnectionTest {
 
     @Test
     public void testUserForgotToConnect() {
-        assertThrows(SurrealNotConnectedException.class, () -> connection.rpc(null, "let", "some_key", "some_val"));
+        assertThrows(SurrealNotConnectedException.class, () -> {
+            SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
+            connection.rpc(null, "let", "some_key", "some_val");
+        });
     }
 
     @Test
     public void testUserConnectsThenDisconnects() {
         assertThrows(SurrealNotConnectedException.class, () -> {
+            SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
             connection.connect(3);
             connection.disconnect();
             connection.rpc(null, "let", "some_key", "some_val");
