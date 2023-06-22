@@ -8,12 +8,16 @@ import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.driver.model.Person;
+import com.surrealdb.driver.model.QueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Khalid Alharisi
@@ -37,12 +41,24 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
 
     @Test
     public void testSignUp() {
+        // Configure db to allow signup
+        driver.signIn("root", "root"); // This needs to be configured from @BaseIntegrationTest
+        // Set namespace and database to something random so it doesnt conflict with other tests
+        // also - use driver settings instead of query
+        driver.query("""
+        USE NAMESPACE testns;
+        USE DATABASE testdb;
+        DEFINE SCOPE allusers SESSION 24h
+            SIGNUP ( CREATE user SET user = $user, pass = crypto::argon2::generate($pass))
+            SIGNIN ( SELECT * FROM user where email = $user AND crypto::argon2::compare(pass, $pass));
+        """, Map.of(), Object.class);
+
         // Plain
         String token =
                 driver.signUp(
-                        TestUtils.getNamespace(),
-                        TestUtils.getDatabase(),
-                        TestUtils.getScope(),
+                        "testns",
+                        "testdb",
+                        "allusers",
                         "test@testerino.surr",
                         "lol123");
         // Validate that the signup worked through authentication with the received token.
