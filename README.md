@@ -96,6 +96,19 @@ class Person {
 }
 ```
 
+### Developing
+You can build the project with `./gradlew build`.
+Unit tests are run with `./gradlew test`.
+Integration tests are run with `./gradlew integrationTest`.
+Integration tests depend on having docker installed.
+
+The following environment variables can be used to avoid relying on docker.
+
+| ENV | Description |
+|--|--|
+| SURREALDB_JAVA_HOST | The host address of SurrealDB |
+| SURREALDB_JAVA_PORT | The port address of SurrealDB |
+
 ### Planned Features
 - A complete SDK With Repository pattern.
 - JDBC interface (work in progress can be found in `src/main/java/com/surrealdb/jdbc`)
