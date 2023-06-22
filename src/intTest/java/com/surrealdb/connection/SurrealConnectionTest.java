@@ -1,14 +1,19 @@
 package com.surrealdb.connection;
 
+import com.surrealdb.TestEnvVars;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,14 +25,35 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Testcontainers
 public class SurrealConnectionTest {
 
-    @Container
-    private static final GenericContainer SURREAL_DB = new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
-        .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory");
-    private SurrealWebSocketConnection connection;
+    private static Optional<GenericContainer> container = Optional.empty();
+    private static SurrealWebSocketConnection connection;
 
-    @BeforeEach
-    public void setUp() {
-        connection = new SurrealWebSocketConnection(SURREAL_DB.getHost(), SURREAL_DB.getFirstMappedPort(), false);
+    @BeforeAll
+    public static void setUp() {
+        // Check if both host and port have been decalred as environment variable overrides
+        Optional<String> envHost = Optional.ofNullable(System.getenv(TestEnvVars.SURREALDB_JAVA_HOST)).filter(str -> !str.isBlank());
+        Optional<Integer> envPort = Optional.ofNullable(System.getenv(TestEnvVars.SURREALDB_JAVA_PORT)).map(strPort -> {
+            try {
+                return Integer.parseInt(strPort);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        });
+        // if they have then use that address instead
+        if (envHost.isPresent() && envPort.isPresent()) {
+            connection = new SurrealWebSocketConnection(envHost.get(), envPort.get(), false);
+        } else {
+            // No env vars, start a container
+            container = Optional.of(new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
+                .withExposedPorts(8000).withCommand("start --log trace --user root --pass root memory"));
+            container.get().start();
+            connection = new SurrealWebSocketConnection(container.get().getHost(), container.get().getFirstMappedPort(), false);
+        }
+    }
+
+    @AfterAll
+    public static void teardown() {
+        container.ifPresent(GenericContainer::stop);
     }
 
     @Test
