@@ -2,6 +2,7 @@ package com.surrealdb.driver;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
@@ -18,21 +19,13 @@ import org.testcontainers.utility.DockerImageName;
  * @author Khalid Alharisi
  */
 @Testcontainers
-public class SurrealDriverSpecialOperationsTest {
-    @Container
-    @SuppressWarnings("rawtypes")
-    private static final GenericContainer SURREAL_DB =
-            new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
-                    .withExposedPorts(8000)
-                    .withCommand("start --log trace --user root --pass root memory");
+public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
 
     private SyncSurrealDriver driver;
 
     @BeforeEach
     public void setup() {
-        SurrealWebSocketConnection connection =
-                new SurrealWebSocketConnection(
-                        SURREAL_DB.getHost(), SURREAL_DB.getFirstMappedPort(), false);
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
         driver = new SyncSurrealDriver(connection);
     }
