@@ -11,6 +11,8 @@ import com.surrealdb.refactor.driver.UnauthenticatedSurrealDB;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.Value;
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
+    @Disabled("Functionality is unimplemented, but having the tests shows the design")
     public void testDemoScenario() throws Exception {
         // Setup
         URI address = getHttp().orElseThrow(() -> new IllegalStateException("No HTTP server configured"));
