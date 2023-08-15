@@ -25,7 +25,7 @@ public class HttpConnection {
                 return new StatelessSurrealDB() {
                     @Override
                     public List<Value> query(String query, List<Param> params) {
-                        throw SurrealDBUnimplementedException.withTicket("TODO no ticket yet").withMessage("HTTP connections are not yet implemented");
+                        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/61").withMessage("HTTP connections are not yet implemented");
                     }
 
                 };

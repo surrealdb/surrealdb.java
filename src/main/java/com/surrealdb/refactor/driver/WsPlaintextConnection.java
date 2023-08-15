@@ -17,7 +17,7 @@ public class WsPlaintextConnection {
 
                     @Override
                     public List<Value> query(String query, List<Param> params) {
-                        throw SurrealDBUnimplementedException.withTicket("TODO create ticket").withMessage("Plaintext websocket connections are not supported yet");
+                        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/62").withMessage("Plaintext websocket connections are not supported yet");
                     }
                 };
             }
