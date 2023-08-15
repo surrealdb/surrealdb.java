@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 public class BaseIntegrationTest {
@@ -37,6 +39,38 @@ public class BaseIntegrationTest {
             testHost = container.get().getHost();
             testPort = container.get().getFirstMappedPort();
         }
+    }
+
+    /**
+     * If the connection is http, this will return the http URI
+     * @return the URI or empty if it isnt http
+     */
+    protected Optional<URI> getHttp() {
+        if (container.isPresent()) {
+            return Optional.of(URI.create("http://" + testHost + ":" + testPort));
+        }
+        if (testHost.startsWith("http")) {
+            try {
+                new URI(testHost + ":" + testPort);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.empty();
+    }
+
+    protected Optional<URI> getWebSocketConnection() {
+        if (container.isPresent()) {
+            return Optional.of(URI.create("ws://" + testHost + ":" + testPort));
+        }
+        if (testHost.startsWith("ws://") || testHost.startsWith("wss://")) {
+            try {
+                new URI(testHost + ":" + testPort);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.empty();
     }
 
     @AfterAll
