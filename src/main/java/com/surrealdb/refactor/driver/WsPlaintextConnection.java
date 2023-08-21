@@ -5,19 +5,16 @@ import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.Value;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +23,7 @@ public class WsPlaintextConnection {
     private static final String HANDLER_ID_SURREALDB_CLIENT = "srdb-client";
 
     private static final EventLoopGroup group = new NioEventLoopGroup();
-    private static final int MAX_CONTENT_LENGTH = 8192;
+    private static final int MAX_CONTENT_LENGTH = 65536;
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
         Channel channel;
@@ -40,7 +37,7 @@ public class WsPlaintextConnection {
         return new UnauthenticatedSurrealDB<BidirectionalSurrealDB>() {
             @Override
             public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(Credentials credentials) {
-                SurrealDBWebsocketClientHandler srdbHandler = (SurrealDBWebsocketClientHandler) channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
+                SurrealDBWebsocketClientProtocolHandler srdbHandler = (SurrealDBWebsocketClientProtocolHandler) channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
                 srdbHandler.signin(new SigninMessage(UUID.randomUUID().toString(), credentials.getUsername(), credentials.getPassword()));
                 BidirectionalSurrealDB surrealdb = new BidirectionalSurrealDB() {
 
@@ -76,8 +73,12 @@ public class WsPlaintextConnection {
                 @Override
                 protected void initChannel(Channel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast(new HttpClientCodec()).addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH))
-                        .addLast(HANDLER_ID_SURREALDB_CLIENT, new SurrealDBWebsocketClientHandler(uri));
+                    pipeline
+                        .addLast(new HttpClientCodec())
+                        .addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH))
+                        .addLast(new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(
+                            uri, WebSocketVersion.V13, null, false, null)))
+                        .addLast(HANDLER_ID_SURREALDB_CLIENT, new SurrealDBWebsocketClientProtocolHandler());
                 }
             });
     }

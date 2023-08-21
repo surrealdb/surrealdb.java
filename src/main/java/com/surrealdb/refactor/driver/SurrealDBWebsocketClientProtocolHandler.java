@@ -6,34 +6,27 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
-import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.logging.Logger;
 
-public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler<Object> {
-    private static final Logger log =Logger.getLogger(SurrealDBWebsocketClientHandler.class.toString());
-    private WebSocketClientHandshaker handshaker;
+public class SurrealDBWebsocketClientProtocolHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+    private static final Logger log =Logger.getLogger(SurrealDBWebsocketClientProtocolHandler.class.toString());
     private ChannelPromise handshakeFuture;
 
-    private final URI address;
     private Channel channel;
 
-    public SurrealDBWebsocketClientHandler(URI address) {
-        this.address = address;
+    public SurrealDBWebsocketClientProtocolHandler() {
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
-        handshaker = WebSocketClientHandshakerFactory.newHandshaker(
-            address, WebSocketVersion.V13, null, false, null);
         handshakeFuture = ctx.newPromise();
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         this.channel = ctx.channel();
-        handshaker.handshake(this.channel);
     }
 
     @Override
@@ -42,32 +35,9 @@ public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
         Channel ch = ctx.channel();
-
-        if (!handshaker.isHandshakeComplete()) {
-            handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            System.out.println("WebSocket Client connected!");
-            handshakeFuture.setSuccess();
-            return;
-        }
-
-        if (msg instanceof FullHttpResponse) {
-            FullHttpResponse response = (FullHttpResponse) msg;
-            throw new IllegalStateException("Unexpected FullHttpResponse (status=" + response.status() +
-                ", content=" + response.content().toString(CharsetUtil.UTF_8) + ")");
-        }
-
-        WebSocketFrame frame = (WebSocketFrame) msg;
-        if (frame instanceof TextWebSocketFrame) {
-            TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-            System.out.println("Received message: " + textFrame.text());
-        } else if (frame instanceof PongWebSocketFrame) {
-            System.out.println("Received Pong");
-        } else if (frame instanceof CloseWebSocketFrame) {
-            System.out.println("WebSocket Client received closing");
-            ch.close();
-        }
+        System.out.println("Received message: " + msg.text());
     }
 
     @Override
@@ -87,7 +57,7 @@ public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler
         }
         try {
             log.finest("Signing in");
-            this.channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(signinMessage)).content()).sync();
+            this.channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(signinMessage))).sync();
             System.out.println("signin flushed");
         } catch (InterruptedException e) {
             throw new UnhandledSurrealDBNettyState("We should have a better way of handling these edge cases", "failed to write and flush synchronously during signin");
