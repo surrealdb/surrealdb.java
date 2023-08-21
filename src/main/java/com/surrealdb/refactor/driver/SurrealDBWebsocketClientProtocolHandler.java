@@ -87,18 +87,51 @@ public class SurrealDBWebsocketClientProtocolHandler
     }
 
     public Future<Object> signin(String requestID, Credentials credentials) {
-        // Check if we have an established connection
-        if (channel == null || !channel.isActive()) {
-            log.finest("Channel was null or inactive during signin");
-            throw new UnhandledSurrealDBNettyState(
-                    "We should have a better error for handling this state or perhaps prevent this from happening via the API",
-                    "signin failed because channel was either null or inactive");
-        }
+        String method = "signin";
+        checkChannelAndThrow(method);
         // Construct message to be sent
         SigninMessage signinMessage =
                 new SigninMessage(requestID, credentials.getUsername(), credentials.getPassword());
         // Handle request response
+        return sendAndPromise(method, requestID, new Gson().toJson(signinMessage));
+    }
+
+    public Promise<Object> use(String namespace, String database) {
+        return use(UUID.randomUUID().toString(), namespace, database);
+    }
+
+    public Promise<Object> use(String requestID, String namespace, String database) {
+        String method = "use";
+        checkChannelAndThrow(method);
+        UseMessage useMessage = new UseMessage(requestID, namespace, database);
+        return sendAndPromise(method, requestID, new Gson().toJson(useMessage));
+    }
+
+    private void checkChannelAndThrow(String method) {
+        // Check if we have an established connection
+        if (channel == null || !channel.isActive()) {
+            log.finest(String.format("Channel was null or inactive during %s", method));
+            throw new UnhandledSurrealDBNettyState(
+                    "We should have a better error for handling this state or perhaps prevent this from happening via the API",
+                    String.format("%s failed because channel was either null or inactive", method));
+        }
+    }
+
+    private Promise<Object> sendAndPromise(
+            String method, String requestID, String textFrameContent) {
         Promise<Object> promise = channel.eventLoop().newPromise();
+        registerRequest(requestID, promise);
+        try {
+            channel.writeAndFlush(new TextWebSocketFrame(textFrameContent)).sync();
+        } catch (InterruptedException e) {
+            throw new UnhandledSurrealDBNettyState(
+                    "We should have a better way of handling these edge cases",
+                    String.format("failed to write and flush synchronously during %s", method));
+        }
+        return promise;
+    }
+
+    private void registerRequest(String requestID, Promise<Object> promise) {
         Promise<Object> popped = requestMap.putIfAbsent(requestID, promise);
         if (popped != null) {
             // Reinsert whatever we removed; This is actually quite problematic, and we should do a
@@ -111,16 +144,5 @@ public class SurrealDBWebsocketClientProtocolHandler
                             "There was an already existing request ID '%s' so unable to perform signin",
                             requestID));
         }
-        System.out.println("Signin started");
-        log.finest("Signing in");
-        try {
-            channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(signinMessage))).sync();
-            System.out.println("signin flushed");
-        } catch (InterruptedException e) {
-            throw new UnhandledSurrealDBNettyState(
-                    "We should have a better way of handling these edge cases",
-                    "failed to write and flush synchronously during signin");
-        }
-        return promise;
     }
 }

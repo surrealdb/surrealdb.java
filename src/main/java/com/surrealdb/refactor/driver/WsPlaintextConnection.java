@@ -61,23 +61,33 @@ public class WsPlaintextConnection {
                 return new UnusedSurrealDB<>() {
                     @Override
                     public BidirectionalSurrealDB use() {
-                        throw new SurrealDBUnimplementedException(
-                                "https://github.com/surrealdb/surrealdb.java/issues/66",
-                                "Use for empty arguments is unimplemented");
+                        try {
+                            Object use = srdbHandler.use(null, null).get(2, TimeUnit.SECONDS);
+                            return surrealdb;
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
                     @Override
                     public BidirectionalSurrealDB use(String namespace) {
-                        throw new SurrealDBUnimplementedException(
-                                "https://github.com/surrealdb/surrealdb.java/issues/66",
-                                "Use for namespace arguments is unimplemented");
+                        try {
+                            Object use = srdbHandler.use(namespace, null).get(2, TimeUnit.SECONDS);
+                            return surrealdb;
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
                     @Override
                     public BidirectionalSurrealDB use(String namespace, String database) {
-                        throw new SurrealDBUnimplementedException(
-                                "https://github.com/surrealdb/surrealdb.java/issues/66",
-                                "Use for namespace and database arguments is unimplemented");
+                        try {
+                            Object use =
+                                    srdbHandler.use(namespace, database).get(2, TimeUnit.SECONDS);
+                            return surrealdb;
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 };
             }
