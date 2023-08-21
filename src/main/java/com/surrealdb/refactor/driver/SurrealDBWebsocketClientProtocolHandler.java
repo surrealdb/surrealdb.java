@@ -8,9 +8,13 @@ import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.exception.UnhandledSurrealDBNettyState;
 import com.surrealdb.refactor.exception.UnknownResponseToRequest;
 import com.surrealdb.refactor.types.Credentials;
+import com.surrealdb.refactor.types.Param;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.concurrent.Promise;
+
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -82,6 +86,13 @@ public class SurrealDBWebsocketClientProtocolHandler
         ctx.close();
     }
 
+    public Future<Object> query(String requestID, String query, List<Param> params) {
+        String method = "query";
+        checkChannelAndThrow(method);
+        QueryMessage queryMessage = new QueryMessage(requestID, query, params);
+        return sendAndPromise(method, requestID, new Gson().toJson(queryMessage));
+    }
+
     public Future<Object> signin(Credentials credentials) {
         return signin(UUID.randomUUID().toString(), credentials);
     }
@@ -96,11 +107,11 @@ public class SurrealDBWebsocketClientProtocolHandler
         return sendAndPromise(method, requestID, new Gson().toJson(signinMessage));
     }
 
-    public Promise<Object> use(String namespace, String database) {
+    public Future<Object> use(String namespace, String database) {
         return use(UUID.randomUUID().toString(), namespace, database);
     }
 
-    public Promise<Object> use(String requestID, String namespace, String database) {
+    public Future<Object> use(String requestID, String namespace, String database) {
         String method = "use";
         checkChannelAndThrow(method);
         UseMessage useMessage = new UseMessage(requestID, namespace, database);
@@ -145,4 +156,5 @@ public class SurrealDBWebsocketClientProtocolHandler
                             requestID));
         }
     }
+
 }

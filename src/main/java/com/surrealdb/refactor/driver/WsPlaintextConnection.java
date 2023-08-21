@@ -14,7 +14,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -53,9 +55,14 @@ public class WsPlaintextConnection {
 
                             @Override
                             public List<Value> query(String query, List<Param> params) {
-                                throw new SurrealDBUnimplementedException(
-                                        "https://github.com/surrealdb/surrealdb.java/issues/62",
-                                        "Plaintext websocket connections are not supported yet");
+                                Object resp = null;
+                                try {
+                                    resp = srdbHandler.query(UUID.randomUUID().toString(), query, params).get(2, TimeUnit.SECONDS);
+                                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                List<Value> casted = Arrays.asList(new Value(resp.toString()));
+                                return casted;
                             }
                         };
                 return new UnusedSurrealDB<>() {

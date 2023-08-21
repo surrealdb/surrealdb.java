@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
-    @Disabled("Functionality is unimplemented, but having the tests shows the design")
+//    @Disabled("Functionality is unimplemented, but having the tests shows the design")
     public void testDemoScenario() throws Exception {
         // Setup
         URI address =
@@ -49,7 +49,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         List<Value> results = surrealDB.query(query.toString(), params);
 
         // Validate the results of the multi-statement query
-        assertEquals(results.size(), 3);
+        assertEquals(results.size(), 3, results.toString());
         assertEquals(
                 results.get(0).intoJson(),
                 asJson(
