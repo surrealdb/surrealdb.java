@@ -9,10 +9,9 @@ import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.refactor.driver.*;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
-import com.surrealdb.refactor.types.Value;
+import com.surrealdb.refactor.types.surrealdb.Value;
 import java.net.URI;
 import java.util.List;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

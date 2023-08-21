@@ -5,7 +5,7 @@ import com.surrealdb.refactor.exception.InvalidAddressExceptionCause;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
-import com.surrealdb.refactor.types.Value;
+import com.surrealdb.refactor.types.surrealdb.Value;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
