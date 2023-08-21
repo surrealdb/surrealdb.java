@@ -9,12 +9,23 @@ import org.testcontainers.utility.DockerImageName;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.logging.*;
 
 public class BaseIntegrationTest {
     private static Optional<GenericContainer> container = Optional.empty();
 
     protected static String testHost;
     protected static int testPort;
+
+    @BeforeAll
+    public static void set_log_level() {
+//        Logger srdbLog = LogManager.getLogManager();
+//        srdbLog.setLevel(Level.ALL);
+        StreamHandler handler = new StreamHandler(System.out, new SimpleFormatter());
+//        srdbLog.addHandler(handler);
+        Logger.getGlobal().setLevel(Level.ALL);
+        Logger.getGlobal().addHandler(handler);
+    }
 
     @BeforeAll
     public static void create_connection() {

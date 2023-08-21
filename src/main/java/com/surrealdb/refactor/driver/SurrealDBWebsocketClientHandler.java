@@ -1,23 +1,23 @@
 package com.surrealdb.refactor.driver;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.surrealdb.refactor.exception.UnhandledSurrealDBNettyState;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.*;
-import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
-import java.util.UUID;
+import java.util.logging.Logger;
 
 public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler<Object> {
+    private static final Logger log =Logger.getLogger(SurrealDBWebsocketClientHandler.class.toString());
     private WebSocketClientHandshaker handshaker;
     private ChannelPromise handshakeFuture;
 
     private final URI address;
+    private Channel channel;
 
     public SurrealDBWebsocketClientHandler(URI address) {
         this.address = address;
@@ -32,7 +32,8 @@ public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        handshaker.handshake(ctx.channel());
+        this.channel = ctx.channel();
+        handshaker.handshake(this.channel);
     }
 
     @Override
@@ -48,12 +49,6 @@ public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
             System.out.println("WebSocket Client connected!");
             handshakeFuture.setSuccess();
-            try {
-                String signinMessage = new Gson().toJson(new SigninMessage(UUID.randomUUID().toString(), "root", "root"));
-                ctx.channel().writeAndFlush(new TextWebSocketFrame(signinMessage).content()).sync();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
             return;
         }
 
@@ -82,5 +77,20 @@ public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler
             handshakeFuture.setFailure(cause);
         }
         ctx.close();
+    }
+
+    public void signin(SigninMessage signinMessage) {
+        System.out.println("Signin started");
+        if (this.channel==null || !channel.isActive()) {
+            log.finest("Channel was null or inactive during signin");
+            throw new UnhandledSurrealDBNettyState("We should have a better error for handling this state or perhaps prevent this from happening via the API", "signin failed because channel was either null or inactive");
+        }
+        try {
+            log.finest("Signing in");
+            this.channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(signinMessage)).content()).sync();
+            System.out.println("signin flushed");
+        } catch (InterruptedException e) {
+            throw new UnhandledSurrealDBNettyState("We should have a better way of handling these edge cases", "failed to write and flush synchronously during signin");
+        }
     }
 }

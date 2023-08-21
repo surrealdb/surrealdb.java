@@ -19,16 +19,20 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.UUID;
 
 public class WsPlaintextConnection {
+
+    private static final String HANDLER_ID_SURREALDB_CLIENT = "srdb-client";
 
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 8192;
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
+        Channel channel;
         try {
             System.out.printf("Connecting to %s\n", uri);
-            Channel conn = bootstrapProtocol(uri).connect(uri.getHost(), uri.getPort()).sync().channel();
+            channel = bootstrapProtocol(uri).connect(uri.getHost(), uri.getPort()).sync().channel();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -36,6 +40,8 @@ public class WsPlaintextConnection {
         return new UnauthenticatedSurrealDB<BidirectionalSurrealDB>() {
             @Override
             public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(Credentials credentials) {
+                SurrealDBWebsocketClientHandler srdbHandler = (SurrealDBWebsocketClientHandler) channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
+                srdbHandler.signin(new SigninMessage(UUID.randomUUID().toString(), credentials.getUsername(), credentials.getPassword()));
                 BidirectionalSurrealDB surrealdb = new BidirectionalSurrealDB() {
 
                     @Override
@@ -71,7 +77,7 @@ public class WsPlaintextConnection {
                 protected void initChannel(Channel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(new HttpClientCodec()).addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH))
-                        .addLast(new SurrealDBWebsocketClientHandler(uri));
+                        .addLast(HANDLER_ID_SURREALDB_CLIENT, new SurrealDBWebsocketClientHandler(uri));
                 }
             });
     }

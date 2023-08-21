@@ -26,7 +26,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         UnauthenticatedSurrealDB<BidirectionalSurrealDB> unauthenticated = new SurrealDBFactory().connectBidirectional(address);
 
         // Authenticate
-        UnusedSurrealDB<BidirectionalSurrealDB> unusedSurrealDB = unauthenticated.authenticate(new Credentials("admin", "admin"));
+        UnusedSurrealDB<BidirectionalSurrealDB> unusedSurrealDB = unauthenticated.authenticate(new Credentials("root", "root"));
 
         // Use namespace, database
         BidirectionalSurrealDB surrealDB = unusedSurrealDB.use("test", "test");
