@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.exception.UnhandledSurrealDBNettyState;
+import com.surrealdb.refactor.exception.UnknownResponseToRequest;
 import com.surrealdb.refactor.types.Credentials;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.*;
@@ -54,6 +55,16 @@ public class SurrealDBWebsocketClientProtocolHandler
                 throw new UnhandledSurrealDBNettyState(
                         "All requests and responses should contain a request id but that isn't enforced by the database; if there is no request id 'id' then the response will not have one either as of this writing",
                         "Received a message presumed to be a response without a request id");
+            }
+            String requestID = obj.getAsJsonPrimitive(PROPERTY_REQUEST_ID).getAsString();
+            Promise<Object> promise = requestMap.remove(requestID);
+            if (promise == null) {
+                promise.setFailure(
+                        new UnknownResponseToRequest(
+                                requestID,
+                                "Unhandled response where request ID was missing from driver's tracked requests"));
+            } else {
+                promise.setSuccess(obj);
             }
         } else {
             throw new SurrealDBUnimplementedException(

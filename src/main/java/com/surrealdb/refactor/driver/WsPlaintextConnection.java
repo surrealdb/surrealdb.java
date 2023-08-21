@@ -15,6 +15,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class WsPlaintextConnection {
 
@@ -38,7 +41,13 @@ public class WsPlaintextConnection {
                 SurrealDBWebsocketClientProtocolHandler srdbHandler =
                         (SurrealDBWebsocketClientProtocolHandler)
                                 channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
-                srdbHandler.signin(credentials);
+                Object result;
+                try {
+                    result = srdbHandler.signin(credentials).get(2, TimeUnit.SECONDS);
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.printf("Successfully signed in: %s", result);
                 BidirectionalSurrealDB surrealdb =
                         new BidirectionalSurrealDB() {
 
