@@ -1,14 +1,20 @@
 package com.surrealdb.refactor.exception;
 
+import lombok.ToString;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 
+@ToString
 public class SurrealDBUnimplementedException extends SurrealDBException {
 
     private final URL ticketLink;
+    private final String message; // Necessary for lombok toString
+
     public SurrealDBUnimplementedException(URL ticket, String message) {
         super(message);
         ticketLink = ticket;
+        this.message = message;
     }
 
     public URL getTicketLink() {

@@ -21,13 +21,30 @@ public class HttpConnection {
 
         return new UnauthenticatedSurrealDB<StatelessSurrealDB>() {
             @Override
-            public StatelessSurrealDB authenticate(Credentials credentials) {
-                return new StatelessSurrealDB() {
+            public UnusedSurrealDB<StatelessSurrealDB> authenticate(Credentials credentials) {
+                StatelessSurrealDB surrealdb = new StatelessSurrealDB() {
                     @Override
                     public List<Value> query(String query, List<Param> params) {
                         throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/61").withMessage("HTTP connections are not yet implemented");
                     }
 
+                };
+                return new UnusedSurrealDB<>() {
+
+                    @Override
+                    public StatelessSurrealDB use() {
+                        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/67").withMessage("use is not implemented for HTTP");
+                    }
+
+                    @Override
+                    public StatelessSurrealDB use(String namespace) {
+                        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/67").withMessage("use with namespace is not implemented for HTTP");
+                    }
+
+                    @Override
+                    public StatelessSurrealDB use(String namespace, String database) {
+                        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/67").withMessage("use with namespace and database is not implemented for HTTP");
+                    }
                 };
             }
         };

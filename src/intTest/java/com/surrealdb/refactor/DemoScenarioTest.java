@@ -4,10 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.surrealdb.BaseIntegrationTest;
-import com.surrealdb.refactor.driver.BidirectionalSurrealDB;
-import com.surrealdb.refactor.driver.StatelessSurrealDB;
-import com.surrealdb.refactor.driver.SurrealDBFactory;
-import com.surrealdb.refactor.driver.UnauthenticatedSurrealDB;
+import com.surrealdb.refactor.driver.*;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.Value;
@@ -22,14 +19,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
-    @Disabled("Functionality is unimplemented, but having the tests shows the design")
+//    @Disabled("Functionality is unimplemented, but having the tests shows the design")
     public void testDemoScenario() throws Exception {
         // Setup
         URI address = getHttp().orElseThrow(() -> new IllegalStateException("No HTTP server configured"));
         UnauthenticatedSurrealDB<BidirectionalSurrealDB> unauthenticated = new SurrealDBFactory().connectBidirectional(address);
 
         // Authenticate
-        BidirectionalSurrealDB surrealDB = unauthenticated.authenticate(new Credentials("admin", "admin"));
+        UnusedSurrealDB<BidirectionalSurrealDB> unusedSurrealDB = unauthenticated.authenticate(new Credentials("admin", "admin"));
+
+        // Use namespace, database
+        BidirectionalSurrealDB surrealDB = unusedSurrealDB.use("test", "test");
 
         // Create a multi-statement query
         StringBuilder query = new StringBuilder("INSERT person:lamport VALUES {'name': 'leslie'};\n");

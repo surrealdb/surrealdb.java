@@ -1,8 +1,11 @@
 package com.surrealdb.refactor.exception;
 
+import lombok.ToString;
+
 import java.net.URI;
 import java.util.Optional;
 
+@ToString
 public class InvalidAddressException extends SurrealDBException {
 
     private final URI address;
@@ -22,13 +25,4 @@ public class InvalidAddressException extends SurrealDBException {
         return causeType;
     }
 
-    @Override
-    public String toString() {
-        return "InvalidAddressException{" +
-            "address=" + address +
-            ", causeType=" + causeType +
-            ", message=" + getMessage() +
-            '}';
-    }
 }
-

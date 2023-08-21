@@ -1,5 +1,9 @@
 package com.surrealdb.refactor.driver;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.*;
@@ -7,6 +11,7 @@ import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
 import java.net.URI;
+import java.util.UUID;
 
 public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler<Object> {
     private WebSocketClientHandshaker handshaker;
@@ -43,6 +48,12 @@ public class SurrealDBWebsocketClientHandler extends SimpleChannelInboundHandler
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
             System.out.println("WebSocket Client connected!");
             handshakeFuture.setSuccess();
+            try {
+                String signinMessage = new Gson().toJson(new SigninMessage(UUID.randomUUID().toString(), "root", "root"));
+                ctx.channel().writeAndFlush(new TextWebSocketFrame(signinMessage).content()).sync();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             return;
         }
 
