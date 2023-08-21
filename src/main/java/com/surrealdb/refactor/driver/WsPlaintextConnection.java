@@ -3,7 +3,7 @@ package com.surrealdb.refactor.driver;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
-import com.surrealdb.refactor.types.Value;
+import com.surrealdb.refactor.types.surrealdb.Value;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
