@@ -12,11 +12,13 @@ import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.Value;
 import java.net.URI;
 import java.util.List;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
-    //    @Disabled("Functionality is unimplemented, but having the tests shows the design")
+    @Disabled("Functionality is unimplemented, but having the tests shows the design")
     public void testDemoScenario() throws Exception {
         // Setup
         URI address =

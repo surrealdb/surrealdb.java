@@ -101,6 +101,9 @@ public class SurrealDBWebsocketClientProtocolHandler
         Promise<Object> promise = channel.eventLoop().newPromise();
         Promise<Object> popped = requestMap.putIfAbsent(requestID, promise);
         if (popped != null) {
+            // Reinsert whatever we removed; This is actually quite problematic, and we should do a
+            // contains check before in case
+            // There will always be race conditions without locks on this
             requestMap.put(requestID, popped);
             throw new UnhandledSurrealDBNettyState(
                     "this should probably be a different error as we know what is happening",
