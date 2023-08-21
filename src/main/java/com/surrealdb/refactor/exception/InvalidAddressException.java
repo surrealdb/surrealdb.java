@@ -1,9 +1,8 @@
 package com.surrealdb.refactor.exception;
 
-import lombok.ToString;
-
 import java.net.URI;
 import java.util.Optional;
+import lombok.ToString;
 
 @ToString
 public class InvalidAddressException extends SurrealDBException {
@@ -11,7 +10,8 @@ public class InvalidAddressException extends SurrealDBException {
     private final URI address;
     private final InvalidAddressExceptionCause causeType;
 
-    public InvalidAddressException(URI address, InvalidAddressExceptionCause causeType, String message) {
+    public InvalidAddressException(
+            URI address, InvalidAddressExceptionCause causeType, String message) {
         super(message);
         this.address = address;
         this.causeType = causeType;
@@ -24,5 +24,4 @@ public class InvalidAddressException extends SurrealDBException {
     public InvalidAddressExceptionCause getCauseType() {
         return causeType;
     }
-
 }
