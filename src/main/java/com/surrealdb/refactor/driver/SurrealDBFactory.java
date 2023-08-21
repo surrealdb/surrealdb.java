@@ -39,6 +39,8 @@ public class SurrealDBFactory {
 
     static Map<String, BidirectionalProvider> getDefaultBidirectionalDrivers() {
         Map<String, BidirectionalProvider> statelessDrivers = new HashMap<>();
+        statelessDrivers.put("http", WsPlaintextConnection::connect);
+        statelessDrivers.put("https", WsPlaintextConnection::connect);
         statelessDrivers.put("ws", WsPlaintextConnection::connect);
         statelessDrivers.put("wss", WsPlaintextConnection::connect);
         return statelessDrivers;
@@ -49,7 +51,11 @@ public class SurrealDBFactory {
     }
 
     public UnauthenticatedSurrealDB<BidirectionalSurrealDB> connectBidirectional(URI uri) {
-        return bidirectionalDrivers.get(uri.getScheme().toLowerCase().trim()).apply(uri);
+        String key = uri.getScheme().toLowerCase().trim();
+        if (!bidirectionalDrivers.containsKey(key)) {
+            throw new InvalidAddressException(uri, InvalidAddressExceptionCause.INVALID_SCHEME,"Schema is unsupported for bidirectional service");
+        }
+        return bidirectionalDrivers.get(key).apply(uri);
     }
 
 }

@@ -21,5 +21,14 @@ public class InvalidAddressException extends SurrealDBException {
     public InvalidAddressExceptionCause getCauseType() {
         return causeType;
     }
+
+    @Override
+    public String toString() {
+        return "InvalidAddressException{" +
+            "address=" + address +
+            ", causeType=" + causeType +
+            ", message=" + getMessage() +
+            '}';
+    }
 }
 
