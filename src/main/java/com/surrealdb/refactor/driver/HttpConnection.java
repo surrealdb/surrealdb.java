@@ -6,9 +6,7 @@ import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.Value;
-
 import java.net.URI;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,18 +14,46 @@ public class HttpConnection {
     public static UnauthenticatedSurrealDB<StatelessSurrealDB> connect(URI uri) {
         List<String> allowed = Arrays.asList("http", "https");
         if (!allowed.contains(uri.getScheme().toLowerCase().trim())) {
-            throw new InvalidAddressException(uri, InvalidAddressExceptionCause.INVALID_SCHEME, "Only http and https are supported schemes");
+            throw new InvalidAddressException(
+                    uri,
+                    InvalidAddressExceptionCause.INVALID_SCHEME,
+                    "Only http and https are supported schemes");
         }
 
         return new UnauthenticatedSurrealDB<StatelessSurrealDB>() {
             @Override
-            public StatelessSurrealDB authenticate(Credentials credentials) {
-                return new StatelessSurrealDB() {
+            public UnusedSurrealDB<StatelessSurrealDB> authenticate(Credentials credentials) {
+                StatelessSurrealDB surrealdb =
+                        new StatelessSurrealDB() {
+                            @Override
+                            public List<Value> query(String query, List<Param> params) {
+                                throw new SurrealDBUnimplementedException(
+                                        "https://github.com/surrealdb/surrealdb.java/issues/61",
+                                        "HTTP connections are not yet implemented");
+                            }
+                        };
+                return new UnusedSurrealDB<>() {
+
                     @Override
-                    public List<Value> query(String query, List<Param> params) {
-                        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/61").withMessage("HTTP connections are not yet implemented");
+                    public StatelessSurrealDB use() {
+                        throw new SurrealDBUnimplementedException(
+                                "https://github.com/surrealdb/surrealdb.java/issues/67",
+                                "use is not implemented for HTTP");
                     }
 
+                    @Override
+                    public StatelessSurrealDB use(String namespace) {
+                        throw new SurrealDBUnimplementedException(
+                                "https://github.com/surrealdb/surrealdb.java/issues/67",
+                                "use with namespace is not implemented for HTTP");
+                    }
+
+                    @Override
+                    public StatelessSurrealDB use(String namespace, String database) {
+                        throw new SurrealDBUnimplementedException(
+                                "https://github.com/surrealdb/surrealdb.java/issues/67",
+                                "use with namespace and database is not implemented for HTTP");
+                    }
                 };
             }
         };

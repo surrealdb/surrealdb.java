@@ -11,6 +11,8 @@ public class Value implements IntoJson {
     }
 
     public static Value fromJson(JsonElement json) {
-        throw SurrealDBUnimplementedException.withTicket("https://github.com/surrealdb/surrealdb.java/issues/63").withMessage("Parsing general values from JSON is not implemented yet.");
+        throw new SurrealDBUnimplementedException(
+                "https://github.com/surrealdb/surrealdb.java/issues/63",
+                "Parsing general values from JSON is not implemented yet.");
     }
 }
