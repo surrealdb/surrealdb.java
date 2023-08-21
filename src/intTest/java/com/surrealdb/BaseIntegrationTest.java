@@ -19,18 +19,10 @@ public class BaseIntegrationTest {
     @BeforeAll
     public static void create_connection() {
         // Check if both host and port have been decalred as environment variable overrides
-        Optional<String> envHost = Optional.ofNullable(System.getenv(TestEnvVars.SURREALDB_JAVA_HOST)).filter(str -> !str.isBlank());
-        Optional<Integer> envPort = Optional.ofNullable(System.getenv(TestEnvVars.SURREALDB_JAVA_PORT)).map(strPort -> {
-            try {
-                return Integer.parseInt(strPort);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        });
         // if they have then use that address instead
-        if (envHost.isPresent() && envPort.isPresent()) {
-            testHost = envHost.get();
-            testPort = envPort.get();
+        if (Env.envHost.isPresent() && Env.envPort.isPresent()) {
+            testHost = Env.envHost.get();
+            testPort = Env.envPort.get();
         } else {
             // No env vars, start a container
             container = Optional.of(new GenericContainer(DockerImageName.parse("surrealdb/surrealdb:latest"))
@@ -46,6 +38,11 @@ public class BaseIntegrationTest {
      * @return the URI or empty if it isnt http
      */
     protected Optional<URI> getHttp() {
+        // Try env variable
+        if (Env.envHost.isPresent() && Env.envPort.isPresent()) {
+            return Optional.of(URI.create(String.format("ws://%s:%d/rpc", Env.envHost.get(), Env.envPort.get())));
+        }
+        // Fallback to container
         if (container.isPresent()) {
             return Optional.of(URI.create("http://" + testHost + ":" + testPort));
         }
