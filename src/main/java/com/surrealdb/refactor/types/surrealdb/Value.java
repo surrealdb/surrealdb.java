@@ -35,7 +35,7 @@ public class Value implements IntoJson {
     }
 
     public boolean isString() {
-        return string == null;
+        return string != null;
     }
 
     public Optional<String> asString() {
@@ -52,7 +52,16 @@ public class Value implements IntoJson {
 
     @Override
     public JsonElement intoJson() {
-        return null;
+        if (isNumber()) {
+            return new JsonPrimitive(asNumber().get().asFloat().get());
+        }
+        if (isString()) {
+            return new JsonPrimitive(asString().get());
+        }
+        System.out.printf("This is value causing failure: %s\n", this);
+        throw new SurrealDBUnimplementedException(
+                "https://github.com/surrealdb/surrealdb.java/issues/63",
+                "Parsing general values from JSON is not implemented yet.");
     }
 
     public static Value fromJson(JsonElement json) {

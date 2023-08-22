@@ -1,5 +1,7 @@
 package com.surrealdb.refactor.driver;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
@@ -28,6 +30,14 @@ public class WsPlaintextConnection {
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
 
+    private final Gson gson;
+
+    public WsPlaintextConnection() {
+        gson = new GsonBuilder()
+                .disableHtmlEscaping()
+                .create();
+    }
+
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
         Channel channel;
         try {
@@ -49,7 +59,7 @@ public class WsPlaintextConnection {
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.printf("Successfully signed in: %s", result);
+                System.out.printf("Successfully signed in: %s\n", result);
                 BidirectionalSurrealDB surrealdb =
                         new BidirectionalSurrealDB() {
 

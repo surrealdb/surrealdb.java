@@ -34,7 +34,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
 
         // Create a multi-statement query
         StringBuilder query =
-                new StringBuilder("INSERT person:lamport VALUES {'name': 'leslie'};\n");
+                new StringBuilder("INSERT person:lamport VALUES \\{'name': 'leslie'\\};\n");
         query.append("UPDATE $whichPerson SET year=$year;\n");
         query.append("DELETE person:lamport;");
 

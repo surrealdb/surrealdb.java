@@ -90,7 +90,9 @@ public class SurrealDBWebsocketClientProtocolHandler
         String method = "query";
         checkChannelAndThrow(method);
         QueryMessage queryMessage = new QueryMessage(requestID, query, params);
-        return sendAndPromise(method, requestID, new Gson().toJson(queryMessage));
+        String serialised = new Gson().toJson(queryMessage);
+        System.out.printf("Sending query: %s\n", serialised);
+        return sendAndPromise(method, requestID, serialised);
     }
 
     public Future<Object> signin(Credentials credentials) {
