@@ -1,14 +1,12 @@
 package com.surrealdb.refactor.driver;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import com.surrealdb.refactor.driver.parsing.JsonQueryResultParser;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
 import com.surrealdb.refactor.types.QueryResult;
-import com.surrealdb.refactor.types.surrealdb.Value;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -19,9 +17,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -74,8 +70,27 @@ public class WsPlaintextConnection {
                                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                                     throw new RuntimeException(e);
                                 }
-                                List<Value> casted = Arrays.asList(new Value(resp.toString()));
-                                return new QueryBlockResult(List.of(new QueryResult(casted, "change this status", "change this time")));
+                                // Process the query list
+                                if (!resp.has("result")) {
+                                    throw new SurrealDBUnimplementedException("todo create ticket", "The response for the query did not contain a result field");
+                                }
+                                JsonElement outerResultJson = resp.get("result");
+                                QueryResult[] processedOuterResults;
+                                if (outerResultJson.isJsonArray()) {
+                                    JsonArray outerResultArray = outerResultJson.getAsJsonArray();
+                                    processedOuterResults = new QueryResult[outerResultArray.size()];
+                                    for (int i=0; i<outerResultArray.size(); i++ ) {
+                                        JsonElement innerResultJson = outerResultArray.get(i);
+                                        if (innerResultJson.isJsonArray()) {
+                                            throw new SurrealDBUnimplementedException("https://todo.com", "The individual result in an array of query results was not an array");
+                                        }
+                                        QueryResult val = new JsonQueryResultParser().parse(innerResultJson);
+                                        processedOuterResults[i] = val;
+                                    }
+                                } else {
+                                    throw new SurrealDBUnimplementedException("todo create ticket", "The response contained results that were not in an array");
+                                }
+                                return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
                         };
                 return new UnusedSurrealDB<>() {

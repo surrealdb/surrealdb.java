@@ -1,11 +1,13 @@
 package com.surrealdb.refactor.types.surrealdb;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
+@EqualsAndHashCode
 public class Number {
     private final Float _float;
 

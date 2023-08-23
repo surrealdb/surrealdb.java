@@ -4,15 +4,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.IntoJson;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
+@EqualsAndHashCode
 public class Value implements IntoJson {
 
     private final String string;
     private final Number number;
+    private final ObjectValue object;
 
     /**
      * Create a Value that represents a Strand type
@@ -22,6 +25,7 @@ public class Value implements IntoJson {
     public Value(String string) {
         this.string = string;
         this.number = null;
+        this.object = null;
     }
 
     /**
@@ -32,6 +36,13 @@ public class Value implements IntoJson {
     public Value(Number number) {
         this.string = null;
         this.number = number;
+        this.object = null;
+    }
+
+    public Value(ObjectValue object) {
+        this.string = null;
+        this.number = null;
+        this.object = object;
     }
 
     public boolean isString() {
