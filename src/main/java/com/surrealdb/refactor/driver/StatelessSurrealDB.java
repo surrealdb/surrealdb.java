@@ -1,6 +1,7 @@
 package com.surrealdb.refactor.driver;
 
 import com.surrealdb.refactor.types.Param;
+import com.surrealdb.refactor.types.QueryBlockResult;
 import com.surrealdb.refactor.types.surrealdb.Value;
 import java.util.List;
 
@@ -12,5 +13,5 @@ public interface StatelessSurrealDB {
      * @param query
      * @return
      */
-    List<Value> query(String query, List<Param> params);
+    QueryBlockResult query(String query, List<Param> params);
 }

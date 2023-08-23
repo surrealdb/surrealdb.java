@@ -9,6 +9,7 @@ import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.refactor.driver.*;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
+import com.surrealdb.refactor.types.QueryBlockResult;
 import com.surrealdb.refactor.types.surrealdb.Value;
 import java.net.URI;
 import java.util.List;
@@ -46,17 +47,17 @@ public class DemoScenarioTest extends BaseIntegrationTest {
                         new Param("year", Value.fromJson(new JsonPrimitive(2013))));
 
         // Execute the query
-        List<Value> results = surrealDB.query(query.toString(), params);
+        QueryBlockResult results = surrealDB.query(query.toString(), params);
 
         // Validate the results of the multi-statement query
-        assertEquals(results.size(), 3, results.toString());
+        assertEquals(results.getResult().size(), 3, results.toString());
         assertEquals(
-                results.get(0).intoJson(),
+                results.getResult().get(0).getResult().get(0).intoJson(),
                 asJson(
                         Tuple.of("name", new JsonPrimitive("leslie")),
                         Tuple.of("id", new JsonPrimitive("person:lamport"))));
         assertEquals(
-                results.get(1).intoJson(),
+                results.getResult().get(1).getResult().get(0).intoJson(),
                 asJson(
                         Tuple.of("name", new JsonPrimitive("leslie")),
                         Tuple.of("id", new JsonPrimitive("person:lamport"))));

@@ -5,6 +5,7 @@ import com.surrealdb.refactor.exception.InvalidAddressExceptionCause;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
+import com.surrealdb.refactor.types.QueryBlockResult;
 import com.surrealdb.refactor.types.surrealdb.Value;
 import java.net.URI;
 import java.util.Arrays;
@@ -26,7 +27,7 @@ public class HttpConnection {
                 StatelessSurrealDB surrealdb =
                         new StatelessSurrealDB() {
                             @Override
-                            public List<Value> query(String query, List<Param> params) {
+                            public QueryBlockResult query(String query, List<Param> params) {
                                 throw new SurrealDBUnimplementedException(
                                         "https://github.com/surrealdb/surrealdb.java/issues/61",
                                         "HTTP connections are not yet implemented");

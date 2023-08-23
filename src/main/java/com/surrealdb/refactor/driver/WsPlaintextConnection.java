@@ -2,9 +2,12 @@ package com.surrealdb.refactor.driver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
+import com.surrealdb.refactor.types.QueryBlockResult;
+import com.surrealdb.refactor.types.QueryResult;
 import com.surrealdb.refactor.types.surrealdb.Value;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -64,15 +67,15 @@ public class WsPlaintextConnection {
                         new BidirectionalSurrealDB() {
 
                             @Override
-                            public List<Value> query(String query, List<Param> params) {
-                                Object resp = null;
+                            public QueryBlockResult query(String query, List<Param> params) {
+                                JsonObject resp = null;
                                 try {
                                     resp = srdbHandler.query(UUID.randomUUID().toString(), query, params).get(2, TimeUnit.SECONDS);
                                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                                     throw new RuntimeException(e);
                                 }
                                 List<Value> casted = Arrays.asList(new Value(resp.toString()));
-                                return casted;
+                                return new QueryBlockResult(List.of(new QueryResult(casted, "change this status", "change this time")));
                             }
                         };
                 return new UnusedSurrealDB<>() {
