@@ -4,20 +4,16 @@ import static com.surrealdb.refactor.Helpers.asMap;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.refactor.driver.*;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
-import com.surrealdb.refactor.types.surrealdb.Number;
 import com.surrealdb.refactor.types.surrealdb.ObjectValue;
 import com.surrealdb.refactor.types.surrealdb.Value;
 import java.net.URI;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
@@ -54,27 +50,29 @@ public class DemoScenarioTest extends BaseIntegrationTest {
 
         // Validate the results of the first statement in the query
         assertEquals(results.getResult().size(), 3, results.toString());
-        Value expectedFirstValue = new Value(new ObjectValue(asMap(
-                Tuple.of("name", new Value("leslie")),
-                Tuple.of("id", new Value("person:lamport"))
-        )));
+        Value expectedFirstValue =
+                new Value(
+                        new ObjectValue(
+                                asMap(
+                                        Tuple.of("name", new Value("leslie")),
+                                        Tuple.of("id", new Value("person:lamport")))));
         List<Value> actual = results.getResult().get(0).getResult();
         assertArrayEquals(new Value[] {expectedFirstValue}, actual.toArray(new Value[0]));
 
         // Validate the results of the second statement in the query
-        Value expectedSecondValue = new Value(new ObjectValue(
-                asMap(
-                        Tuple.of("name", new Value("leslie")),
-                        Tuple.of("id", new Value("person:lamport")),
-                        Tuple.of("year", new Value("2013.0"))
-                )
-        ));
+        Value expectedSecondValue =
+                new Value(
+                        new ObjectValue(
+                                asMap(
+                                        Tuple.of("name", new Value("leslie")),
+                                        Tuple.of("id", new Value("person:lamport")),
+                                        Tuple.of("year", new Value("2013.0")))));
         List<Value> actualSecondValue = results.getResult().get(1).getResult();
-        assertArrayEquals(new Value[] {expectedSecondValue}, actualSecondValue.toArray(new Value[0]));
+        assertArrayEquals(
+                new Value[] {expectedSecondValue}, actualSecondValue.toArray(new Value[0]));
 
         // Validate the results of the third statement in the query
         List<Value> actualThirdValue = results.getResult().get(2).getResult();
         assertArrayEquals(new Value[] {}, actualThirdValue.toArray(new Value[0]));
     }
-
 }

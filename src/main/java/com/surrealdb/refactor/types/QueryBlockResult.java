@@ -1,9 +1,7 @@
 package com.surrealdb.refactor.types;
 
-import lombok.Getter;
-import lombok.ToString;
-
 import java.util.List;
+import lombok.ToString;
 
 @ToString
 public class QueryBlockResult {
@@ -15,6 +13,7 @@ public class QueryBlockResult {
 
     /**
      * Get all the query results from the query
+     *
      * @return the result of each individual statement in a query block
      */
     public List<QueryResult> getResult() {

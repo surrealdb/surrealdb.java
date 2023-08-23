@@ -1,16 +1,11 @@
 package com.surrealdb.refactor.driver;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.surrealdb.refactor.types.Param;
+import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Getter
 @ToString
@@ -27,8 +22,10 @@ public class QueryMessage {
         requestParamList.add(query);
         // Second item in the list is an object of bindings
         JsonObject bindings = new JsonObject();
-        for (Param param: params) {
-            System.out.printf("Handling Param %s with id = '%s' and value = '%s'\n", param, param.getIdentifier(), param.getValue().intoJson());
+        for (Param param : params) {
+            System.out.printf(
+                    "Handling Param %s with id = '%s' and value = '%s'\n",
+                    param, param.getIdentifier(), param.getValue().intoJson());
             bindings.add(param.getIdentifier(), param.getValue().intoJson());
         }
         requestParamList.add(bindings);

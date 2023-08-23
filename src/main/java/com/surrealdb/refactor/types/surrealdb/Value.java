@@ -4,10 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.IntoJson;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.util.Optional;
 
 @ToString
 @EqualsAndHashCode

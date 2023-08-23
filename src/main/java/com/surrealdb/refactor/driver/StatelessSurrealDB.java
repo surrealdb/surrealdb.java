@@ -2,7 +2,6 @@ package com.surrealdb.refactor.driver;
 
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
-import com.surrealdb.refactor.types.surrealdb.Value;
 import java.util.List;
 
 /** StatelessSurrealDB is the baseline interface available for all SurrealDB instances. */

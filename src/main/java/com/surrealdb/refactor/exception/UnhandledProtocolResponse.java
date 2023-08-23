@@ -5,8 +5,9 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class UnhandledProtocolResponse extends SurrealDBException{
+public class UnhandledProtocolResponse extends SurrealDBException {
     private final String message;
+
     public UnhandledProtocolResponse(String message) {
         super(message);
         this.message = message;

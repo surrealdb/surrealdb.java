@@ -2,7 +2,6 @@ package com.surrealdb.refactor.driver;
 
 import com.google.gson.*;
 import com.surrealdb.refactor.driver.parsing.JsonQueryResultParser;
-import com.surrealdb.refactor.exception.SurrealDBException;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.Credentials;
@@ -34,9 +33,7 @@ public class WsPlaintextConnection {
     private final Gson gson;
 
     public WsPlaintextConnection() {
-        gson = new GsonBuilder()
-                .disableHtmlEscaping()
-                .create();
+        gson = new GsonBuilder().disableHtmlEscaping().create();
     }
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
@@ -68,29 +65,43 @@ public class WsPlaintextConnection {
                             public QueryBlockResult query(String query, List<Param> params) {
                                 JsonObject resp = null;
                                 try {
-                                    resp = srdbHandler.query(UUID.randomUUID().toString(), query, params).get(2, TimeUnit.SECONDS);
-                                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                    resp =
+                                            srdbHandler
+                                                    .query(
+                                                            UUID.randomUUID().toString(),
+                                                            query,
+                                                            params)
+                                                    .get(2, TimeUnit.SECONDS);
+                                } catch (InterruptedException
+                                        | ExecutionException
+                                        | TimeoutException e) {
                                     throw new RuntimeException(e);
                                 }
                                 // Process the query list
                                 if (!resp.has("result")) {
-                                    throw new UnhandledProtocolResponse("Expected the response to contain a result");
+                                    throw new UnhandledProtocolResponse(
+                                            "Expected the response to contain a result");
                                 }
                                 JsonElement outerResultJson = resp.get("result");
                                 QueryResult[] processedOuterResults;
                                 if (outerResultJson.isJsonArray()) {
                                     JsonArray outerResultArray = outerResultJson.getAsJsonArray();
-                                    processedOuterResults = new QueryResult[outerResultArray.size()];
-                                    for (int i=0; i<outerResultArray.size(); i++ ) {
+                                    processedOuterResults =
+                                            new QueryResult[outerResultArray.size()];
+                                    for (int i = 0; i < outerResultArray.size(); i++) {
                                         JsonElement innerResultJson = outerResultArray.get(i);
                                         if (!innerResultJson.isJsonObject()) {
-                                            throw new UnhandledProtocolResponse("Expected the result to be an object");
+                                            throw new UnhandledProtocolResponse(
+                                                    "Expected the result to be an object");
                                         }
-                                        QueryResult val = new JsonQueryResultParser().parse(innerResultJson);
+                                        QueryResult val =
+                                                new JsonQueryResultParser().parse(innerResultJson);
                                         processedOuterResults[i] = val;
                                     }
                                 } else {
-                                    throw new SurrealDBUnimplementedException("https://github.com/surrealdb/surrealdb.java/issues/75", "The response contained results that were not in an array");
+                                    throw new SurrealDBUnimplementedException(
+                                            "https://github.com/surrealdb/surrealdb.java/issues/75",
+                                            "The response contained results that were not in an array");
                                 }
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }

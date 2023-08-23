@@ -1,10 +1,8 @@
 package com.surrealdb.refactor.types.surrealdb;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-
 import java.util.Optional;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
@@ -16,11 +14,10 @@ public class Number {
     }
 
     public boolean isFloat() {
-        return _float!=null;
+        return _float != null;
     }
 
     public Optional<Float> asFloat() {
         return Optional.ofNullable(_float);
     }
-
 }

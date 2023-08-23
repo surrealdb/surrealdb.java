@@ -9,13 +9,10 @@ import com.surrealdb.refactor.exception.UnhandledSurrealDBNettyState;
 import com.surrealdb.refactor.exception.UnknownResponseToRequest;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
-import com.surrealdb.refactor.types.QueryBlockResult;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.concurrent.Promise;
-
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -159,5 +156,4 @@ public class SurrealDBWebsocketClientProtocolHandler
                             requestID));
         }
     }
-
 }
