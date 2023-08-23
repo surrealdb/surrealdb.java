@@ -5,11 +5,16 @@ import com.google.gson.JsonPrimitive;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.IntoJson;
 import java.util.Optional;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+@ToString
+@EqualsAndHashCode
 public class Value implements IntoJson {
 
     private final String string;
     private final Number number;
+    private final ObjectValue object;
 
     /**
      * Create a Value that represents a Strand type
@@ -19,6 +24,7 @@ public class Value implements IntoJson {
     public Value(String string) {
         this.string = string;
         this.number = null;
+        this.object = null;
     }
 
     /**
@@ -29,10 +35,17 @@ public class Value implements IntoJson {
     public Value(Number number) {
         this.string = null;
         this.number = number;
+        this.object = null;
+    }
+
+    public Value(ObjectValue object) {
+        this.string = null;
+        this.number = null;
+        this.object = object;
     }
 
     public boolean isString() {
-        return string == null;
+        return string != null;
     }
 
     public Optional<String> asString() {
@@ -49,7 +62,16 @@ public class Value implements IntoJson {
 
     @Override
     public JsonElement intoJson() {
-        return null;
+        if (isNumber()) {
+            return new JsonPrimitive(asNumber().get().asFloat().get());
+        }
+        if (isString()) {
+            return new JsonPrimitive(asString().get());
+        }
+        System.out.printf("This is value causing failure: %s\n", this);
+        throw new SurrealDBUnimplementedException(
+                "https://github.com/surrealdb/surrealdb.java/issues/63",
+                "Parsing general values from JSON is not implemented yet.");
     }
 
     public static Value fromJson(JsonElement json) {

@@ -1,9 +1,13 @@
 package com.surrealdb.refactor.driver;
 
+import com.google.gson.*;
+import com.surrealdb.refactor.driver.parsing.JsonQueryResultParser;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
+import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
-import com.surrealdb.refactor.types.surrealdb.Value;
+import com.surrealdb.refactor.types.QueryBlockResult;
+import com.surrealdb.refactor.types.QueryResult;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,7 +18,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import java.net.URI;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -26,10 +30,12 @@ public class WsPlaintextConnection {
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
 
+    public WsPlaintextConnection() {}
+
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
         Channel channel;
+        System.out.printf("Connecting to %s\n", uri);
         try {
-            System.out.printf("Connecting to %s\n", uri);
             channel = bootstrapProtocol(uri).connect(uri.getHost(), uri.getPort()).sync().channel();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -47,15 +53,53 @@ public class WsPlaintextConnection {
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.printf("Successfully signed in: %s", result);
+                System.out.printf("Successfully signed in: %s\n", result);
                 BidirectionalSurrealDB surrealdb =
                         new BidirectionalSurrealDB() {
 
                             @Override
-                            public List<Value> query(String query, List<Param> params) {
-                                throw new SurrealDBUnimplementedException(
-                                        "https://github.com/surrealdb/surrealdb.java/issues/62",
-                                        "Plaintext websocket connections are not supported yet");
+                            public QueryBlockResult query(String query, List<Param> params) {
+                                JsonObject resp = null;
+                                try {
+                                    resp =
+                                            srdbHandler
+                                                    .query(
+                                                            UUID.randomUUID().toString(),
+                                                            query,
+                                                            params)
+                                                    .get(2, TimeUnit.SECONDS);
+                                } catch (InterruptedException
+                                        | ExecutionException
+                                        | TimeoutException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                // Process the query list
+                                if (!resp.has("result")) {
+                                    throw new UnhandledProtocolResponse(
+                                            "Expected the response to contain a result");
+                                }
+                                JsonElement outerResultJson = resp.get("result");
+                                QueryResult[] processedOuterResults;
+                                if (outerResultJson.isJsonArray()) {
+                                    JsonArray outerResultArray = outerResultJson.getAsJsonArray();
+                                    processedOuterResults =
+                                            new QueryResult[outerResultArray.size()];
+                                    for (int i = 0; i < outerResultArray.size(); i++) {
+                                        JsonElement innerResultJson = outerResultArray.get(i);
+                                        if (!innerResultJson.isJsonObject()) {
+                                            throw new UnhandledProtocolResponse(
+                                                    "Expected the result to be an object");
+                                        }
+                                        QueryResult val =
+                                                new JsonQueryResultParser().parse(innerResultJson);
+                                        processedOuterResults[i] = val;
+                                    }
+                                } else {
+                                    throw new SurrealDBUnimplementedException(
+                                            "https://github.com/surrealdb/surrealdb.java/issues/75",
+                                            "The response contained results that were not in an array");
+                                }
+                                return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
                         };
                 return new UnusedSurrealDB<>() {

@@ -116,7 +116,9 @@ tasks.register('integrationTest', Test) {
     environment('TEST_SURREAL_SCOPE', 'allusers')
 
     testLogging {
-        events "passed"
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = true
+        exceptionFormat = 'short'
     }
 }
 
