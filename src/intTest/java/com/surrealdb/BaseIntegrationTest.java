@@ -34,14 +34,13 @@ public class BaseIntegrationTest {
             container.get().start();
             testHost = container.get().getHost();
             testPort = container.get().getFirstMappedPort();
+            // We need to wait for it to start 🥲
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            System.err.println(
-            container.get().getLogs()
-            );
+            System.err.println(container.get().getLogs());
         }
     }
 
