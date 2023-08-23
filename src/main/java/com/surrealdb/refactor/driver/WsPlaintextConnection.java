@@ -30,16 +30,12 @@ public class WsPlaintextConnection {
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
 
-    private final Gson gson;
-
-    public WsPlaintextConnection() {
-        gson = new GsonBuilder().disableHtmlEscaping().create();
-    }
+    public WsPlaintextConnection() {}
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
         Channel channel;
+        System.out.printf("Connecting to %s\n", uri);
         try {
-            System.out.printf("Connecting to %s\n", uri);
             channel = bootstrapProtocol(uri).connect(uri.getHost(), uri.getPort()).sync().channel();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

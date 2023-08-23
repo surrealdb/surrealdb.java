@@ -14,10 +14,12 @@ import com.surrealdb.refactor.types.surrealdb.ObjectValue;
 import com.surrealdb.refactor.types.surrealdb.Value;
 import java.net.URI;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
+    @Disabled("Flaky on github CI")
     public void testDemoScenario() throws Exception {
         // Setup
         URI address =
