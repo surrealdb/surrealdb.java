@@ -16,16 +16,6 @@ public class BaseIntegrationTest {
     protected static int testPort;
 
     @BeforeAll
-    public static void set_log_level() {
-        //        Logger srdbLog = LogManager.getLogManager();
-        //        srdbLog.setLevel(Level.ALL);
-        StreamHandler handler = new StreamHandler(System.out, new SimpleFormatter());
-        //        srdbLog.addHandler(handler);
-        Logger.getGlobal().setLevel(Level.ALL);
-        Logger.getGlobal().addHandler(handler);
-    }
-
-    @BeforeAll
     public static void create_connection() {
         // Check if both host and port have been decalred as environment variable overrides
         // if they have then use that address instead
@@ -44,6 +34,14 @@ public class BaseIntegrationTest {
             container.get().start();
             testHost = container.get().getHost();
             testPort = container.get().getFirstMappedPort();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.err.println(
+            container.get().getLogs()
+            );
         }
     }
 

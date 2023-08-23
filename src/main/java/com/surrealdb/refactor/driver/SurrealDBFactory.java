@@ -4,6 +4,7 @@ import com.surrealdb.refactor.exception.InvalidAddressException;
 import com.surrealdb.refactor.exception.InvalidAddressExceptionCause;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,13 @@ public class SurrealDBFactory {
         String key = uri.getScheme().toLowerCase().trim();
         if (!bidirectionalDrivers.containsKey(key)) {
             throw new InvalidAddressException(uri, InvalidAddressExceptionCause.INVALID_SCHEME,"Schema is unsupported for bidirectional service");
+        }
+        if (uri.getPath() == "") {
+            try {
+                uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath()+"/rpc", uri.getQuery(), uri.getFragment());
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
         return bidirectionalDrivers.get(key).apply(uri);
     }
