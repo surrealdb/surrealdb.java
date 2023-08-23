@@ -59,7 +59,7 @@ public class SurrealDBFactory {
                     InvalidAddressExceptionCause.INVALID_SCHEME,
                     "Schema is unsupported for bidirectional service");
         }
-        if (uri.getPath() == "") {
+        if (uri.getPath().isEmpty()) {
             try {
                 uri =
                         new URI(
