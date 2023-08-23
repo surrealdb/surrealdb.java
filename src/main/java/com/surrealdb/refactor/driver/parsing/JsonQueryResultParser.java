@@ -3,6 +3,7 @@ package com.surrealdb.refactor.driver.parsing;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.surrealdb.refactor.exception.SurrealDBException;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.QueryResult;
@@ -74,6 +75,6 @@ public class JsonQueryResultParser {
         } else if (jsonElement.isJsonPrimitive()) {
             return PRIMTIVE;
         }
-        throw new SurrealDBUnimplementedException("todo create ticket", "really we should be doing more in depth handling of types to also give Value types");
+        throw new SurrealDBException("There is an unknown JsonElement type");
     }
 }

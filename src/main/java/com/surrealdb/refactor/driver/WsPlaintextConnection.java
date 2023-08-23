@@ -2,7 +2,9 @@ package com.surrealdb.refactor.driver;
 
 import com.google.gson.*;
 import com.surrealdb.refactor.driver.parsing.JsonQueryResultParser;
+import com.surrealdb.refactor.exception.SurrealDBException;
 import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
+import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
@@ -72,7 +74,7 @@ public class WsPlaintextConnection {
                                 }
                                 // Process the query list
                                 if (!resp.has("result")) {
-                                    throw new SurrealDBUnimplementedException("todo create ticket", "The response for the query did not contain a result field");
+                                    throw new UnhandledProtocolResponse("Expected the response to contain a result");
                                 }
                                 JsonElement outerResultJson = resp.get("result");
                                 QueryResult[] processedOuterResults;
@@ -81,14 +83,14 @@ public class WsPlaintextConnection {
                                     processedOuterResults = new QueryResult[outerResultArray.size()];
                                     for (int i=0; i<outerResultArray.size(); i++ ) {
                                         JsonElement innerResultJson = outerResultArray.get(i);
-                                        if (innerResultJson.isJsonArray()) {
-                                            throw new SurrealDBUnimplementedException("https://todo.com", "The individual result in an array of query results was not an array");
+                                        if (!innerResultJson.isJsonObject()) {
+                                            throw new UnhandledProtocolResponse("Expected the result to be an object");
                                         }
                                         QueryResult val = new JsonQueryResultParser().parse(innerResultJson);
                                         processedOuterResults[i] = val;
                                     }
                                 } else {
-                                    throw new SurrealDBUnimplementedException("todo create ticket", "The response contained results that were not in an array");
+                                    throw new SurrealDBUnimplementedException("https://github.com/surrealdb/surrealdb.java/issues/75", "The response contained results that were not in an array");
                                 }
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
