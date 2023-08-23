@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
-//    @Disabled("Functionality is unimplemented, but having the tests shows the design")
     public void testDemoScenario() throws Exception {
         // Setup
         URI address =
@@ -72,16 +71,10 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         ));
         List<Value> actualSecondValue = results.getResult().get(1).getResult();
         assertArrayEquals(new Value[] {expectedSecondValue}, actualSecondValue.toArray(new Value[0]));
+
+        // Validate the results of the third statement in the query
+        List<Value> actualThirdValue = results.getResult().get(2).getResult();
+        assertArrayEquals(new Value[] {}, actualThirdValue.toArray(new Value[0]));
     }
 
-    // ----------------------------------------------------------------
-    // Helpers below this point
-
-    private static JsonObject asJson(Tuple<String, JsonElement>... data) {
-        JsonObject obj = new JsonObject();
-        for (Tuple<String, JsonElement> entry : data) {
-            obj.add(entry.key, entry.value);
-        }
-        return obj;
-    }
 }
