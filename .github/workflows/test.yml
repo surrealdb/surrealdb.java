@@ -33,3 +33,10 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: fatJar
+
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-output
+          path: /home/runner/work/surrealdb.java/surrealdb.java/build
