@@ -80,8 +80,21 @@ public class WsPlaintextConnection {
                                 }
                                 JsonElement outerResultJson = resp.get("result");
                                 QueryResult[] processedOuterResults;
-                                if (outerResultJson.isJsonArray()) {
-                                    JsonArray outerResultArray = outerResultJson.getAsJsonArray();
+
+                                // checks to see if result is a JSON element, if not throw exception
+                                if (outerResultJson.isJsonObject()) {
+                                    JsonArray outerResultArray;
+
+                                    if (!outerResultJson.isJsonArray()) {
+
+                                        // add element to an array if it is not an array
+                                        outerResultArray = new JsonArray();
+                                        outerResultArray.add(outerResultJson);
+                                    } else {
+
+                                        outerResultArray = outerResultJson.getAsJsonArray();
+                                    }
+
                                     processedOuterResults =
                                             new QueryResult[outerResultArray.size()];
                                     for (int i = 0; i < outerResultArray.size(); i++) {
@@ -95,9 +108,12 @@ public class WsPlaintextConnection {
                                         processedOuterResults[i] = val;
                                     }
                                 } else {
+                                    // exception is now thrown if results are not a Json Element
+                                    // instead of Json Array
+
                                     throw new SurrealDBUnimplementedException(
                                             "https://github.com/surrealdb/surrealdb.java/issues/75",
-                                            "The response contained results that were not in an array");
+                                            "The response contained results that were not a Json Element");
                                 }
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
