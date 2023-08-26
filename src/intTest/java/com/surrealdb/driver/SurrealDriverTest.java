@@ -1,5 +1,8 @@
 package com.surrealdb.driver;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
@@ -13,6 +16,9 @@ import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.Reminder;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
+import com.surrealdb.refactor.ConvertJavatoJson;
+import com.surrealdb.refactor.driver.parsing.JsonElementParser;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -242,6 +248,20 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertEquals(time, select.getTime());
 	}
 
+	@Test 
+	public void testSingleQuery() {
+		int expectedSize = 1;
+		
+		Person singlePerson = driver.create("person", new Person("Developer", "David", "Hunter", false));
+		JsonElement jsonPerson = ConvertJavatoJson.convertObject(singlePerson);
+		com.surrealdb.refactor.types.QueryResult[] processedOuterResults;
+		 
+		processedOuterResults = JsonElementParser.parseJsonElement(jsonPerson);
+		int size = processedOuterResults.length;
+		
+		assertEquals(expectedSize, size);
+	}
+	
     @Test
     public void testZonedDateTime() {
         ZonedDateTime time = ZonedDateTime.parse("2022-02-02T22:00:00+02:00");
