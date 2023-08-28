@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.google.gson.JsonElement;
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
@@ -19,9 +18,6 @@ import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.Reminder;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import com.surrealdb.refactor.ConvertJavatoJson;
-import com.surrealdb.refactor.driver.parsing.JsonElementParser;
-import java.net.ProtocolException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -254,25 +250,6 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         Reminder select = driver.create("reminder", insert);
         assertNotNull(select.getTime());
         assertEquals(time, select.getTime());
-    }
-
-    @Test
-    public void testSingleQueryResult() {
-        int expectedSize = 1;
-
-        Person singlePerson =
-                driver.create("person", new Person("Developer", "David", "Hunter", false));
-        JsonElement jsonPerson = ConvertJavatoJson.convertObject(singlePerson);
-        com.surrealdb.refactor.types.QueryResult[] processedOuterResults;
-
-        try {
-            processedOuterResults = JsonElementParser.parseJsonElement(jsonPerson);
-        } catch (ProtocolException e) {
-            throw new RuntimeException(e);
-        }
-        int size = processedOuterResults.length;
-
-        assertEquals(expectedSize, size);
     }
 
     @Test

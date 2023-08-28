@@ -1,7 +1,7 @@
 package com.surrealdb.refactor.driver;
 
 import com.google.gson.*;
-import com.surrealdb.refactor.driver.parsing.JsonElementParser;
+import com.surrealdb.refactor.driver.parsing.ResultParser;
 import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
@@ -16,8 +16,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
-
-import java.net.ProtocolException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -81,15 +79,13 @@ public class WsPlaintextConnection {
                                 }
                                 JsonElement outerResultJson = resp.get("result");
                                 QueryResult[] processedOuterResults;
-								
-                                
+                                ResultParser resultParser = new ResultParser();
+
                                 // parses the Json Element if it is an object or an array
-                                try {
-									processedOuterResults = JsonElementParser.parseJsonElement(outerResultJson);
-								} catch (ProtocolException e) {
-									throw new RuntimeException(e);
-								}
-                               
+
+                                processedOuterResults =
+                                        resultParser.parseResultMessage(outerResultJson);
+
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
                         };
