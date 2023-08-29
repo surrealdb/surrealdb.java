@@ -16,7 +16,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class SurrealRefractorTest extends BaseIntegrationTest {
+
     private SyncSurrealDriver driver;
+    private ResultParser resultParser;
 
     public SurrealRefractorTest() {
         // TODO Auto-generated constructor stub
@@ -32,16 +34,18 @@ public class SurrealRefractorTest extends BaseIntegrationTest {
         driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+            driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock",
+         true));
+             driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock",
+         true));
     }
 
     @AfterEach
     public void teardown() {
         driver.delete("person");
-        driver.delete("movie");
-        driver.delete("message");
-        driver.delete("reminder");
+           driver.delete("movie");
+           driver.delete("message");
+           driver.delete("reminder");
     }
 
     @Test
@@ -49,7 +53,7 @@ public class SurrealRefractorTest extends BaseIntegrationTest {
         // declarations
         com.surrealdb.refactor.types.QueryResult[] processedOuterResults;
         Gson gson = new Gson();
-        ResultParser resultParser = new ResultParser();
+        this.resultParser = new ResultParser();
 
         // given
         Person singlePerson =
@@ -59,6 +63,8 @@ public class SurrealRefractorTest extends BaseIntegrationTest {
         String resultString = gson.toJson(singlePerson);
         JsonElement results = JsonParser.parseString(resultString);
         processedOuterResults = resultParser.parseResultMessage(results);
+
+        driver.delete("person");
 
         // then
         assertEquals(1, processedOuterResults.length);
