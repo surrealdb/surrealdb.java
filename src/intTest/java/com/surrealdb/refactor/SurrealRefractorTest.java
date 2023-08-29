@@ -34,18 +34,16 @@ public class SurrealRefractorTest extends BaseIntegrationTest {
         driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
         driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-            driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock",
-         true));
-             driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock",
-         true));
+        driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
     }
 
     @AfterEach
     public void teardown() {
         driver.delete("person");
-           driver.delete("movie");
-           driver.delete("message");
-           driver.delete("reminder");
+        driver.delete("movie");
+        driver.delete("message");
+        driver.delete("reminder");
     }
 
     @Test
