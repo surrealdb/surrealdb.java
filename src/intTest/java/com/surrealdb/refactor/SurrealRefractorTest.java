@@ -10,7 +10,11 @@ import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.model.Person;
+import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.refactor.driver.parsing.ResultParser;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,8 +58,13 @@ public class SurrealRefractorTest extends BaseIntegrationTest {
         this.resultParser = new ResultParser();
 
         // given
-        Person singlePerson =
-                driver.create("person", new Person("Developer", "David", "Hunter", false));
+        StringBuilder query = new StringBuilder("Create person SET title = 'Founder & CEO', ");
+        query.append("name.first = 'Tobie', name.last = 'Morgan Hitchcock', marketing = 'true' \n");
+        // surrealDB.query
+        Map<String, String> args = new HashMap<>();
+        List<QueryResult<Person>> response = driver.query(query.toString(), args, Person.class);
+        Person singlePerson = response.get(0).getResult().get(0);
+
 
         // when
         String resultString = gson.toJson(singlePerson);
