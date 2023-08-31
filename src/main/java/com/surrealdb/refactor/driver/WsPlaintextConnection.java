@@ -28,7 +28,6 @@ public class WsPlaintextConnection {
 
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
-
     public WsPlaintextConnection() {}
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
@@ -56,7 +55,9 @@ public class WsPlaintextConnection {
                 BidirectionalSurrealDB surrealdb =
                         new BidirectionalSurrealDB() {
 
-                            @Override
+                            private ResultParser resultParser;
+
+							@Override
                             public QueryBlockResult query(String query, List<Param> params) {
                                 JsonObject resp = null;
                                 try {
@@ -79,7 +80,7 @@ public class WsPlaintextConnection {
                                 }
                                 JsonElement outerResultJson = resp.get("result");
                                 QueryResult[] processedOuterResults;
-                                ResultParser resultParser = new ResultParser();
+                                this.resultParser = new ResultParser();
 
                                 // parses the Json Element if it is an object or an array
 
