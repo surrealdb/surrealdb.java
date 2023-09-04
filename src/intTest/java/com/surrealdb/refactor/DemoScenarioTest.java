@@ -81,6 +81,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
 
         // then
         assertEquals(1, processedOuterResults.length);
+        assertEquals("ok", processedOuterResults[0].getStatus());
     }
 
     @Test
