@@ -59,7 +59,6 @@ public class ResultParser {
             if (!innerResultJson.isJsonObject()) {
                 throw new UnhandledProtocolResponse("Expected the result to be an object");
             }
-
             QueryResult val = new JsonQueryResultParser().parse(innerResultJson);
             processedOuterResults[i] = val;
         }
