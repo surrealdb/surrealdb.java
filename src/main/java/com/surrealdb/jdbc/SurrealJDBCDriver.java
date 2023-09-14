@@ -10,17 +10,17 @@ import java.util.logging.Logger;
 
 public class SurrealJDBCDriver implements Driver {
     @Override
-    public Connection connect(String url, Properties info) throws SQLException {
+    public Connection connect(final String url, final Properties info) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean acceptsURL(String url) throws SQLException {
+    public boolean acceptsURL(final String url) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+    public DriverPropertyInfo[] getPropertyInfo(final String url, final Properties info) {
         throw new UnsupportedOperationException();
     }
 
@@ -40,7 +40,7 @@ public class SurrealJDBCDriver implements Driver {
     }
 
     @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+    public Logger getParentLogger() {
         throw new UnsupportedOperationException();
     }
 }

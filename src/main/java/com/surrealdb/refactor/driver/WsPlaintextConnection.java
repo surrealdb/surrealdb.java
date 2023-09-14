@@ -139,7 +139,7 @@ public class WsPlaintextConnection {
                 .handler(
                         new ChannelInitializer<>() {
                             @Override
-                            protected void initChannel(final Channel ch) throws Exception {
+                            protected void initChannel(final Channel ch) {
                                 final ChannelPipeline pipeline = ch.pipeline();
                                 pipeline.addLast(new HttpClientCodec())
                                         .addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH))

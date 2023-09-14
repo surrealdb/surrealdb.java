@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test
     @Disabled("Flaky on github CI")
-    public void testDemoScenario() throws Exception {
+    public void testDemoScenario() {
         // Setup
         final URI address =
                 this.getHttp()
