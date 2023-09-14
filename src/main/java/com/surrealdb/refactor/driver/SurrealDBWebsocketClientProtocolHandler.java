@@ -27,7 +27,7 @@ public class SurrealDBWebsocketClientProtocolHandler
     private static final Logger log =
             Logger.getLogger(SurrealDBWebsocketClientProtocolHandler.class.toString());
     private static final String PROPERTY_REQUEST_ID = "id";
-    private final ConcurrentMap<String, Promise<JsonObject>> requestMap = new ConcurrentHashMap();
+    private final ConcurrentMap<String, Promise<JsonObject>> requestMap = new ConcurrentHashMap<>();
     private ChannelPromise handshakeFuture;
     private Channel channel;
 
