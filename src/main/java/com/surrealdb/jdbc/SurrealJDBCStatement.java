@@ -8,12 +8,12 @@ import java.sql.Statement;
 
 public class SurrealJDBCStatement implements Statement {
     @Override
-    public ResultSet executeQuery(final String sql) throws SQLException {
+    public ResultSet executeQuery(final String sql) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int executeUpdate(final String sql) throws SQLException {
+    public int executeUpdate(final String sql) {
         throw new UnsupportedOperationException();
     }
 
