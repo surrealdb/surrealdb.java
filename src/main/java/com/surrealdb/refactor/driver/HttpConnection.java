@@ -27,7 +27,8 @@ public class HttpConnection {
                 final StatelessSurrealDB surrealdb =
                         new StatelessSurrealDB() {
                             @Override
-                            public QueryBlockResult query(final String query, final List<Param> params) {
+                            public QueryBlockResult query(
+                                    final String query, final List<Param> params) {
                                 throw new SurrealDBUnimplementedException(
                                         "https://github.com/surrealdb/surrealdb.java/issues/61",
                                         "HTTP connections are not yet implemented");

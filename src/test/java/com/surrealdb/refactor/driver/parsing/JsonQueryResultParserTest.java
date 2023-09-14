@@ -31,7 +31,7 @@ public class JsonQueryResultParserTest {
                 """;
 
         final JsonElement jsonElement = JsonParser.parseString(rawJson);
-        final QueryResult res         = new JsonQueryResultParser().parse(jsonElement);
+        final QueryResult res = new JsonQueryResultParser().parse(jsonElement);
 
         assertEquals("OK", res.getStatus());
         assertEquals("438.583µs", res.getTime());

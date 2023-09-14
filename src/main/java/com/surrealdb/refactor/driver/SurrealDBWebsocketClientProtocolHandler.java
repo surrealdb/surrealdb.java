@@ -61,8 +61,8 @@ public class SurrealDBWebsocketClientProtocolHandler
                         "All requests and responses should contain a request id but that isn't enforced by the database; if there is no request id 'id' then the response will not have one either as of this writing",
                         "Received a message presumed to be a response without a request id");
             }
-            final String              requestID = obj.getAsJsonPrimitive(PROPERTY_REQUEST_ID).getAsString();
-            final Promise<JsonObject> promise   = this.requestMap.remove(requestID);
+            final String requestID = obj.getAsJsonPrimitive(PROPERTY_REQUEST_ID).getAsString();
+            final Promise<JsonObject> promise = this.requestMap.remove(requestID);
             if (promise == null) {
                 promise.setFailure(
                         new UnknownResponseToRequest(
@@ -87,11 +87,12 @@ public class SurrealDBWebsocketClientProtocolHandler
         ctx.close();
     }
 
-    public Future<JsonObject> query(final String requestID, final String query, final List<Param> params) {
+    public Future<JsonObject> query(
+            final String requestID, final String query, final List<Param> params) {
         final String method = "query";
         this.checkChannelAndThrow(method);
         final QueryMessage queryMessage = new QueryMessage(requestID, query, params);
-        final String       serialised   = new Gson().toJson(queryMessage);
+        final String serialised = new Gson().toJson(queryMessage);
         System.out.printf("Sending query: %s\n", serialised);
         return this.sendAndPromise(method, requestID, serialised);
     }
@@ -114,7 +115,8 @@ public class SurrealDBWebsocketClientProtocolHandler
         return this.use(UUID.randomUUID().toString(), namespace, database);
     }
 
-    public Future<JsonObject> use(final String requestID, final String namespace, final String database) {
+    public Future<JsonObject> use(
+            final String requestID, final String namespace, final String database) {
         final String method = "use";
         this.checkChannelAndThrow(method);
         final UseMessage useMessage = new UseMessage(requestID, namespace, database);

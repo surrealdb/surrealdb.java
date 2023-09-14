@@ -51,7 +51,8 @@ public class WsPlaintextConnection {
 
         return new UnauthenticatedSurrealDB<BidirectionalSurrealDB>() {
             @Override
-            public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(final Credentials credentials) {
+            public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(
+                    final Credentials credentials) {
                 final SurrealDBWebsocketClientProtocolHandler srdbHandler =
                         (SurrealDBWebsocketClientProtocolHandler)
                                 channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
@@ -66,7 +67,8 @@ public class WsPlaintextConnection {
                         new BidirectionalSurrealDB() {
 
                             @Override
-                            public QueryBlockResult query(final String query, final List<Param> params) {
+                            public QueryBlockResult query(
+                                    final String query, final List<Param> params) {
                                 JsonObject resp = null;
                                 try {
                                     resp =
@@ -77,8 +79,8 @@ public class WsPlaintextConnection {
                                                             params)
                                                     .get(2, TimeUnit.SECONDS);
                                 } catch (final InterruptedException
-                                               | ExecutionException
-                                               | TimeoutException e) {
+                                        | ExecutionException
+                                        | TimeoutException e) {
                                     throw new RuntimeException(e);
                                 }
                                 // Process the query list
@@ -86,10 +88,11 @@ public class WsPlaintextConnection {
                                     throw new UnhandledProtocolResponse(
                                             "Expected the response to contain a result");
                                 }
-                                final JsonElement   outerResultJson = resp.get("result");
+                                final JsonElement outerResultJson = resp.get("result");
                                 final QueryResult[] processedOuterResults;
                                 if (outerResultJson.isJsonArray()) {
-                                    final JsonArray outerResultArray = outerResultJson.getAsJsonArray();
+                                    final JsonArray outerResultArray =
+                                            outerResultJson.getAsJsonArray();
                                     processedOuterResults =
                                             new QueryResult[outerResultArray.size()];
                                     for (int i = 0; i < outerResultArray.size(); i++) {
@@ -116,7 +119,9 @@ public class WsPlaintextConnection {
                         try {
                             final Object use = srdbHandler.use(null, null).get(2, TimeUnit.SECONDS);
                             return surrealdb;
-                        } catch (final InterruptedException | ExecutionException | TimeoutException e) {
+                        } catch (final InterruptedException
+                                | ExecutionException
+                                | TimeoutException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -124,20 +129,26 @@ public class WsPlaintextConnection {
                     @Override
                     public BidirectionalSurrealDB use(final String namespace) {
                         try {
-                            final Object use = srdbHandler.use(namespace, null).get(2, TimeUnit.SECONDS);
+                            final Object use =
+                                    srdbHandler.use(namespace, null).get(2, TimeUnit.SECONDS);
                             return surrealdb;
-                        } catch (final InterruptedException | ExecutionException | TimeoutException e) {
+                        } catch (final InterruptedException
+                                | ExecutionException
+                                | TimeoutException e) {
                             throw new RuntimeException(e);
                         }
                     }
 
                     @Override
-                    public BidirectionalSurrealDB use(final String namespace, final String database) {
+                    public BidirectionalSurrealDB use(
+                            final String namespace, final String database) {
                         try {
                             final Object use =
                                     srdbHandler.use(namespace, database).get(2, TimeUnit.SECONDS);
                             return surrealdb;
-                        } catch (final InterruptedException | ExecutionException | TimeoutException e) {
+                        } catch (final InterruptedException
+                                | ExecutionException
+                                | TimeoutException e) {
                             throw new RuntimeException(e);
                         }
                     }

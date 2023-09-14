@@ -26,7 +26,9 @@ public class DemoScenarioTest extends BaseIntegrationTest {
     @Disabled("Flaky on github CI")
     public void testDemoScenario() throws Exception {
         // Setup
-        final URI address = this.getHttp().orElseThrow(() -> new IllegalStateException("No HTTP server configured"));
+        final URI address =
+                this.getHttp()
+                        .orElseThrow(() -> new IllegalStateException("No HTTP server configured"));
         final UnauthenticatedSurrealDB<BidirectionalSurrealDB> unauthenticated =
                 new SurrealDBFactory().connectBidirectional(address);
 

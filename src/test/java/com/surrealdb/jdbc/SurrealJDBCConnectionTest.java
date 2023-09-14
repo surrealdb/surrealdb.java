@@ -45,12 +45,14 @@ class SurrealJDBCConnectionTest {
     @Test
     void setAutoCommit() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setAutoCommit(false));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.setAutoCommit(false));
     }
 
     @Test
     void getAutoCommit() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getAutoCommit());
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.getAutoCommit());
     }
 
     @Test
@@ -80,7 +82,8 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void setReadOnly() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.setReadOnly(false));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.setReadOnly(false));
     }
 
     @Test
@@ -127,7 +130,8 @@ class SurrealJDBCConnectionTest {
     @Test
     void testCreateStatement() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.createStatement(0, 0));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.createStatement(0, 0));
     }
 
     @Test
@@ -151,17 +155,20 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void setTypeMap() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.setTypeMap(null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.setTypeMap(null));
     }
 
     @Test
     void setHoldability() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.setHoldability(0));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.setHoldability(0));
     }
 
     @Test
     void getHoldability() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getHoldability());
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.getHoldability());
     }
 
     @Test
@@ -172,7 +179,8 @@ class SurrealJDBCConnectionTest {
     @Test
     void testSetSavepoint() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setSavepoint("save"));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.setSavepoint("save"));
     }
 
     @Test
@@ -183,13 +191,15 @@ class SurrealJDBCConnectionTest {
     @Test
     void releaseSavepoint() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.releaseSavepoint(null));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.releaseSavepoint(null));
     }
 
     @Test
     void testCreateStatement1() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.createStatement(0, 0, 0));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.createStatement(0, 0, 0));
     }
 
     @Test
@@ -202,7 +212,8 @@ class SurrealJDBCConnectionTest {
     @Test
     void testPrepareCall1() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.prepareCall(null, 0, 0));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.prepareCall(null, 0, 0));
     }
 
     @Test
@@ -254,22 +265,26 @@ class SurrealJDBCConnectionTest {
     @Test
     void setClientInfo() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setClientInfo("", ""));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.setClientInfo("", ""));
     }
 
     @Test
     void testSetClientInfo() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.setClientInfo(null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.setClientInfo(null));
     }
 
     @Test
     void getClientInfo() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getClientInfo());
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.getClientInfo());
     }
 
     @Test
     void testGetClientInfo() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getClientInfo(""));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.getClientInfo(""));
     }
 
     @Test
@@ -282,12 +297,14 @@ class SurrealJDBCConnectionTest {
     @Test
     void createStruct() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.createStruct(null, null));
+                UnsupportedOperationException.class,
+                () -> this.jdbcConnection.createStruct(null, null));
     }
 
     @Test
     void setSchema() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.setSchema(null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.setSchema(null));
     }
 
     @Test
@@ -313,7 +330,8 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getNetworkTimeout() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getNetworkTimeout());
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.getNetworkTimeout());
     }
 
     @Test
@@ -323,6 +341,7 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void isWrapperFor() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.isWrapperFor(null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.jdbcConnection.isWrapperFor(null));
     }
 }

@@ -23,7 +23,8 @@ class SurrealJDBCDriverTest {
 
     @Test
     void getPropertyInfo() {
-        assertThrows(UnsupportedOperationException.class, () -> this.driver.getPropertyInfo("", null));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.driver.getPropertyInfo("", null));
     }
 
     @Test

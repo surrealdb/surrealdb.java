@@ -32,7 +32,8 @@ class SurrealWebSocketConnectionTest {
     @MethodSource("urlProvider")
     public void canCreateAConnectionWithAppropriateUrl(
             final String host, final int port, final boolean useTls, final String expectedUrl) {
-        final SurrealWebSocketConnection connection = new SurrealWebSocketConnection(host, port, useTls);
+        final SurrealWebSocketConnection connection =
+                new SurrealWebSocketConnection(host, port, useTls);
         assertEquals(expectedUrl, connection.getURI().toASCIIString());
     }
 

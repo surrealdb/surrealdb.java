@@ -18,6 +18,7 @@ public class SurrealDBFactory {
     public SurrealDBFactory() {
         this(getDefaultStatelessDrivers(), getDefaultBidirectionalDrivers());
     }
+
     public SurrealDBFactory(
             final Map<String, StatelessProvider> statelessDrivers,
             final Map<String, BidirectionalProvider> bidirectionalDrivers) {
