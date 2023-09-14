@@ -1,14 +1,14 @@
 package com.surrealdb.connection;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Khalid Alharisi

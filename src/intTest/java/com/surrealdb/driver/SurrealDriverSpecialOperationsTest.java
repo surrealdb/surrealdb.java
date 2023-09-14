@@ -1,18 +1,17 @@
 package com.surrealdb.driver;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.driver.model.Person;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Khalid Alharisi

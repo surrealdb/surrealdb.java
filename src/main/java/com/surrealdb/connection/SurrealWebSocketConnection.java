@@ -10,12 +10,6 @@ import com.surrealdb.connection.exception.SurrealConnectionTimeoutException;
 import com.surrealdb.connection.exception.SurrealNotConnectedException;
 import com.surrealdb.connection.model.RpcRequest;
 import com.surrealdb.connection.model.RpcResponse;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
-import org.java_websocket.handshake.ServerHandshake;
-
 import java.lang.reflect.Type;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
@@ -26,6 +20,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.handshake.ServerHandshake;
 
 /**
  * @author Khalid Alharisi

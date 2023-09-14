@@ -6,7 +6,6 @@ import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.exception.UniqueIndexViolationException;
 import com.surrealdb.connection.model.RpcResponse;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

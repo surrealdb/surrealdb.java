@@ -6,7 +6,6 @@ import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;

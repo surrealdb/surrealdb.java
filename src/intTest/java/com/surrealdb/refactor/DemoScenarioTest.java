@@ -1,5 +1,9 @@
 package com.surrealdb.refactor;
 
+import static com.surrealdb.refactor.Helpers.asMap;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.gson.JsonPrimitive;
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.refactor.driver.BidirectionalSurrealDB;
@@ -11,15 +15,10 @@ import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
 import com.surrealdb.refactor.types.surrealdb.ObjectValue;
 import com.surrealdb.refactor.types.surrealdb.Value;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.net.URI;
 import java.util.List;
-
-import static com.surrealdb.refactor.Helpers.asMap;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class DemoScenarioTest extends BaseIntegrationTest {
     @Test

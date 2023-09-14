@@ -1,10 +1,9 @@
 package com.surrealdb.refactor.types;
 
 import com.surrealdb.refactor.types.surrealdb.Value;
+import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.List;
 
 @Getter
 @ToString

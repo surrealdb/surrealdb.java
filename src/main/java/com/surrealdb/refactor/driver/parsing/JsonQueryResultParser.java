@@ -8,7 +8,6 @@ import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.QueryResult;
 import com.surrealdb.refactor.types.surrealdb.ObjectValue;
 import com.surrealdb.refactor.types.surrealdb.Value;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

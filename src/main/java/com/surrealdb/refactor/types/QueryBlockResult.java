@@ -1,8 +1,7 @@
 package com.surrealdb.refactor.types;
 
-import lombok.ToString;
-
 import java.util.List;
+import lombok.ToString;
 
 @ToString
 public class QueryBlockResult {

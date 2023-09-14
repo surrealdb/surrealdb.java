@@ -1,9 +1,8 @@
 package com.surrealdb.refactor.exception;
 
-import lombok.ToString;
-
 import java.net.URI;
 import java.util.Optional;
+import lombok.ToString;
 
 @ToString
 public class InvalidAddressException extends SurrealDBException {

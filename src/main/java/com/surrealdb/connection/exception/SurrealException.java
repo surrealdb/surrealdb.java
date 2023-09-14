@@ -1,7 +1,6 @@
 package com.surrealdb.connection.exception;
 
 import com.surrealdb.connection.model.RpcResponse;
-
 import java.util.Optional;
 
 /**
