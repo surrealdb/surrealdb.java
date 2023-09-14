@@ -150,7 +150,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                 }
             } else {
                 log.error(
-                        "Received RPC error: id={} code={} message={} rpcCause={}",
+                        "Received RPC error: id={} code={} message={}",
                         id,
                         error.getCode(),
                         error.getMessage());
