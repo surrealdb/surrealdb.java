@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 public class JsonQueryResultParserTest {
 
+    @SafeVarargs
     private static Map<String, Value> asMap(final Tuple<String, Value>... data) {
         final Map<String, Value> obj = new HashMap<>();
         for (final Tuple<String, Value> entry : data) {

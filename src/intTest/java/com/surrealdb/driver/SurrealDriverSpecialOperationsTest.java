@@ -60,7 +60,7 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
 
     @Test
     public void testAuthenticate() {
-        if (TestUtils.getToken().equals("")) {
+        if (TestUtils.getToken().isEmpty()) {
             return;
         }
         this.driver.authenticate(TestUtils.getToken());

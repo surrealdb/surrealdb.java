@@ -105,7 +105,7 @@ public class SurrealDBWebsocketClientProtocolHandler
         this.checkChannelAndThrow(method);
         // Construct message to be sent
         final SigninMessage signinMessage =
-                new SigninMessage(requestID, credentials.getUsername(), credentials.getPassword());
+                new SigninMessage(requestID, credentials.username(), credentials.password());
         // Handle request response
         return this.sendAndPromise(method, requestID, new Gson().toJson(signinMessage));
     }

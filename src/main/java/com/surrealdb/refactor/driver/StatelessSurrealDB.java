@@ -9,8 +9,8 @@ public interface StatelessSurrealDB {
     /**
      * Perform a general purpose query against the database.
      *
-     * @param query
-     * @return
+     * @param query the query to run
+     * @return a QueryBlockResult
      */
     QueryBlockResult query(String query, List<Param> params);
 }

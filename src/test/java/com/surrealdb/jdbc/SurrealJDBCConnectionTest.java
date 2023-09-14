@@ -50,33 +50,32 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getAutoCommit() {
-        assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.getAutoCommit());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getAutoCommit);
     }
 
     @Test
     void commit() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.commit());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::commit);
     }
 
     @Test
     void rollback() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.rollback());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::rollback);
     }
 
     @Test
     void close() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.close());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::close);
     }
 
     @Test
     void isClosed() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.isClosed());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::isClosed);
     }
 
     @Test
     void getMetaData() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getMetaData());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getMetaData);
     }
 
     @Test
@@ -87,7 +86,7 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void isReadOnly() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.isReadOnly());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::isReadOnly);
     }
 
     @Test
@@ -99,7 +98,7 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getCatalog() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getCatalog());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getCatalog);
     }
 
     @Test
@@ -112,18 +111,17 @@ class SurrealJDBCConnectionTest {
     @Test
     void getTransactionIsolation() {
         assertThrows(
-                UnsupportedOperationException.class,
-                () -> this.jdbcConnection.getTransactionIsolation());
+                UnsupportedOperationException.class, this.jdbcConnection::getTransactionIsolation);
     }
 
     @Test
     void getWarnings() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getWarnings());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getWarnings);
     }
 
     @Test
     void clearWarnings() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.close());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::close);
     }
 
     @Test
@@ -149,7 +147,7 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getTypeMap() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getTypeMap());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getTypeMap);
     }
 
     @Test
@@ -166,13 +164,12 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getHoldability() {
-        assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.getHoldability());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getHoldability);
     }
 
     @Test
     void setSavepoint() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.setSavepoint());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::setSavepoint);
     }
 
     @Test
@@ -238,22 +235,22 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void createClob() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.createClob());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createClob);
     }
 
     @Test
     void createBlob() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.createBlob());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createBlob);
     }
 
     @Test
     void createNClob() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.createNClob());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createNClob);
     }
 
     @Test
     void createSQLXML() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.createSQLXML());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createSQLXML);
     }
 
     @Test
@@ -276,8 +273,7 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getClientInfo() {
-        assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.getClientInfo());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getClientInfo);
     }
 
     @Test
@@ -308,16 +304,12 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getSchema() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.getSchema());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getSchema);
     }
 
     @Test
     void abort() {
-        assertThrows(
-                UnsupportedOperationException.class,
-                () -> {
-                    this.jdbcConnection.abort(null);
-                });
+        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.abort(null));
     }
 
     @Test
@@ -329,8 +321,7 @@ class SurrealJDBCConnectionTest {
 
     @Test
     void getNetworkTimeout() {
-        assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.getNetworkTimeout());
+        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getNetworkTimeout);
     }
 
     @Test
