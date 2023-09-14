@@ -6,13 +6,14 @@ import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
+
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
 public class HttpConnection {
-    public static UnauthenticatedSurrealDB<StatelessSurrealDB> connect(URI uri) {
-        List<String> allowed = Arrays.asList("http", "https");
+    public static UnauthenticatedSurrealDB<StatelessSurrealDB> connect(final URI uri) {
+        final List<String> allowed = Arrays.asList("http", "https");
         if (!allowed.contains(uri.getScheme().toLowerCase().trim())) {
             throw new InvalidAddressException(
                     uri,
@@ -22,11 +23,11 @@ public class HttpConnection {
 
         return new UnauthenticatedSurrealDB<StatelessSurrealDB>() {
             @Override
-            public UnusedSurrealDB<StatelessSurrealDB> authenticate(Credentials credentials) {
-                StatelessSurrealDB surrealdb =
+            public UnusedSurrealDB<StatelessSurrealDB> authenticate(final Credentials credentials) {
+                final StatelessSurrealDB surrealdb =
                         new StatelessSurrealDB() {
                             @Override
-                            public QueryBlockResult query(String query, List<Param> params) {
+                            public QueryBlockResult query(final String query, final List<Param> params) {
                                 throw new SurrealDBUnimplementedException(
                                         "https://github.com/surrealdb/surrealdb.java/issues/61",
                                         "HTTP connections are not yet implemented");
@@ -42,14 +43,14 @@ public class HttpConnection {
                     }
 
                     @Override
-                    public StatelessSurrealDB use(String namespace) {
+                    public StatelessSurrealDB use(final String namespace) {
                         throw new SurrealDBUnimplementedException(
                                 "https://github.com/surrealdb/surrealdb.java/issues/67",
                                 "use with namespace is not implemented for HTTP");
                     }
 
                     @Override
-                    public StatelessSurrealDB use(String namespace, String database) {
+                    public StatelessSurrealDB use(final String namespace, final String database) {
                         throw new SurrealDBUnimplementedException(
                                 "https://github.com/surrealdb/surrealdb.java/issues/67",
                                 "use with namespace and database is not implemented for HTTP");

@@ -1,19 +1,18 @@
 package com.surrealdb;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
-import java.util.logging.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class BaseIntegrationTest {
-    private static Optional<GenericContainer> container = Optional.empty();
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
+public class BaseIntegrationTest {
     protected static String testHost;
     protected static int testPort;
+    private static Optional<GenericContainer> container = Optional.empty();
 
     @BeforeAll
     public static void create_connection() {
@@ -37,11 +36,16 @@ public class BaseIntegrationTest {
             // We need to wait for it to start 🥲
             try {
                 Thread.sleep(3000);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 throw new RuntimeException(e);
             }
             System.err.println(container.get().getLogs());
         }
+    }
+
+    @AfterAll
+    public static void teardown_connection() {
+        container.ifPresent(GenericContainer::stop);
     }
 
     /**
@@ -63,7 +67,7 @@ public class BaseIntegrationTest {
         if (testHost.startsWith("http")) {
             try {
                 new URI(testHost + ":" + testPort);
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -77,15 +81,10 @@ public class BaseIntegrationTest {
         if (testHost.startsWith("ws://") || testHost.startsWith("wss://")) {
             try {
                 new URI(testHost + ":" + testPort);
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new RuntimeException(e);
             }
         }
         return Optional.empty();
-    }
-
-    @AfterAll
-    public static void teardown_connection() {
-        container.ifPresent(GenericContainer::stop);
     }
 }

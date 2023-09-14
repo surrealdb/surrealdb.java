@@ -1,23 +1,24 @@
 package com.surrealdb.refactor.types.surrealdb;
 
-import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.Optional;
 
 @ToString
 @EqualsAndHashCode
 public class Number {
     private final Float _float;
 
-    public Number(float v) {
-        _float = v;
+    public Number(final float v) {
+        this._float = v;
     }
 
     public boolean isFloat() {
-        return _float != null;
+        return this._float != null;
     }
 
     public Optional<Float> asFloat() {
-        return Optional.ofNullable(_float);
+        return Optional.ofNullable(this._float);
     }
 }

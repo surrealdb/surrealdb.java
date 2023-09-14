@@ -2,8 +2,6 @@ package com.surrealdb.connection.model;
 
 import lombok.Getter;
 
-import java.util.UUID;
-
 /**
  * @author Khalid Alharisi
  */
@@ -13,7 +11,7 @@ public class RpcRequest {
     private final String method;
     private final Object[] params;
 
-    public RpcRequest(String id, String method, Object... params) {
+    public RpcRequest(final String id, final String method, final Object... params) {
         this.id = id;
         this.method = method;
         this.params = params;

@@ -4,6 +4,7 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealException;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -16,79 +17,78 @@ public class SyncSurrealDriver {
 
     private final AsyncSurrealDriver asyncDriver;
 
-    public SyncSurrealDriver(SurrealConnection connection) {
+    public SyncSurrealDriver(final SurrealConnection connection) {
         this.asyncDriver = new AsyncSurrealDriver(connection);
     }
 
     public void ping() {
-        getResultSynchronously(asyncDriver.ping());
+        this.getResultSynchronously(this.asyncDriver.ping());
     }
 
     public Map<String, String> info() {
-        return getResultSynchronously(asyncDriver.info());
+        return this.getResultSynchronously(this.asyncDriver.info());
     }
 
-    public void signIn(String username, String password) {
-        getResultSynchronously(asyncDriver.signIn(username, password));
+    public void signIn(final String username, final String password) {
+        this.getResultSynchronously(this.asyncDriver.signIn(username, password));
     }
 
     public String signUp(
-            String namespace, String database, String scope, String email, String password) {
-        return getResultSynchronously(
-                asyncDriver.signUp(namespace, database, scope, email, password));
+            final String namespace, final String database, final String scope, final String email, final String password) {
+        return this.getResultSynchronously(this.asyncDriver.signUp(namespace, database, scope, email, password));
     }
 
-    public void authenticate(String token) {
-        getResultSynchronously(asyncDriver.authenticate(token));
+    public void authenticate(final String token) {
+        this.getResultSynchronously(this.asyncDriver.authenticate(token));
     }
 
     public void invalidate() {
-        getResultSynchronously(asyncDriver.invalidate());
+        this.getResultSynchronously(this.asyncDriver.invalidate());
     }
 
-    public void use(String namespace, String database) {
-        getResultSynchronously(asyncDriver.use(namespace, database));
+    public void use(final String namespace, final String database) {
+        this.getResultSynchronously(this.asyncDriver.use(namespace, database));
     }
 
-    public void let(String key, String value) {
-        getResultSynchronously(asyncDriver.let(key, value));
+    public void let(final String key, final String value) {
+        this.getResultSynchronously(this.asyncDriver.let(key, value));
     }
 
     public <T> List<QueryResult<T>> query(
-            String query, Map<String, String> args, Class<? extends T> rowType) {
-        return getResultSynchronously(asyncDriver.query(query, args, rowType));
+            final String query, final Map<String, String> args, final Class<? extends T> rowType) {
+        return this.getResultSynchronously(this.asyncDriver.query(query, args, rowType));
     }
 
-    public <T> List<T> select(String thing, Class<? extends T> rowType) {
-        return getResultSynchronously(asyncDriver.select(thing, rowType));
+    public <T> List<T> select(final String thing, final Class<? extends T> rowType) {
+        return this.getResultSynchronously(this.asyncDriver.select(thing, rowType));
     }
 
-    public <T> T create(String thing, T data) {
-        return getResultSynchronously(asyncDriver.create(thing, data));
+    public <T> T create(final String thing, final T data) {
+        return this.getResultSynchronously(this.asyncDriver.create(thing, data));
     }
 
-    public <T> List<T> update(String thing, T data) {
-        return getResultSynchronously(asyncDriver.update(thing, data));
+    public <T> List<T> update(final String thing, final T data) {
+        return this.getResultSynchronously(this.asyncDriver.update(thing, data));
     }
 
-    public <T, P> List<T> change(String thing, P data, Class<T> rowType) {
-        return getResultSynchronously(asyncDriver.change(thing, data, rowType));
+    public <T, P> List<T> change(final String thing, final P data, final Class<T> rowType) {
+        return this.getResultSynchronously(this.asyncDriver.change(thing, data, rowType));
     }
 
-    public void patch(String thing, List<Patch> patches) {
-        getResultSynchronously(asyncDriver.patch(thing, patches));
+    public void patch(final String thing, final List<Patch> patches) {
+        this.getResultSynchronously(this.asyncDriver.patch(thing, patches));
     }
 
-    public void delete(String thing) {
-        getResultSynchronously(asyncDriver.delete(thing));
+    public void delete(final String thing) {
+        this.getResultSynchronously(this.asyncDriver.delete(thing));
     }
 
-    private <T> T getResultSynchronously(CompletableFuture<T> completableFuture) {
+    private <T> T getResultSynchronously(final CompletableFuture<T> completableFuture) {
         try {
             return completableFuture.get();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (final ExecutionException e) {
             if (e.getCause() instanceof SurrealException) {
                 throw (SurrealException) e.getCause();
             } else {
