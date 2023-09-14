@@ -1,10 +1,11 @@
 package com.surrealdb.jdbc;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.sql.Driver;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.sql.Driver;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Disabled("Disabled until implementation started")
 class SurrealJDBCDriverTest {
@@ -12,36 +13,36 @@ class SurrealJDBCDriverTest {
 
     @Test
     void connect() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.connect("", null));
+        assertThrows(UnsupportedOperationException.class, () -> this.driver.connect("", null));
     }
 
     @Test
     void acceptsURL() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.acceptsURL(""));
+        assertThrows(UnsupportedOperationException.class, () -> this.driver.acceptsURL(""));
     }
 
     @Test
     void getPropertyInfo() {
-        assertThrows(UnsupportedOperationException.class, () -> driver.getPropertyInfo("", null));
+        assertThrows(UnsupportedOperationException.class, () -> this.driver.getPropertyInfo("", null));
     }
 
     @Test
     void getMajorVersion() {
-        assertThrows(UnsupportedOperationException.class, driver::getMajorVersion);
+        assertThrows(UnsupportedOperationException.class, this.driver::getMajorVersion);
     }
 
     @Test
     void getMinorVersion() {
-        assertThrows(UnsupportedOperationException.class, driver::getMinorVersion);
+        assertThrows(UnsupportedOperationException.class, this.driver::getMinorVersion);
     }
 
     @Test
     void jdbcCompliant() {
-        assertThrows(UnsupportedOperationException.class, driver::jdbcCompliant);
+        assertThrows(UnsupportedOperationException.class, this.driver::jdbcCompliant);
     }
 
     @Test
     void getParentLogger() {
-        assertThrows(UnsupportedOperationException.class, driver::getParentLogger);
+        assertThrows(UnsupportedOperationException.class, this.driver::getParentLogger);
     }
 }

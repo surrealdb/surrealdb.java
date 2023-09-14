@@ -1,8 +1,9 @@
 package com.surrealdb.refactor.driver;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.List;
-import lombok.Getter;
 
 @Getter
 public class SigninMessage {
@@ -11,7 +12,7 @@ public class SigninMessage {
 
     private final List<SigninParam> params;
 
-    public SigninMessage(String requestID, String username, String password) {
+    public SigninMessage(final String requestID, final String username, final String password) {
         this.id = requestID;
         this.params = Arrays.asList(new SigninParam(username, password));
     }

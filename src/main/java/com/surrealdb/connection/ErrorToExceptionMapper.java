@@ -6,6 +6,7 @@ import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.connection.exception.SurrealRecordAlreadyExitsException;
 import com.surrealdb.connection.exception.UniqueIndexViolationException;
 import com.surrealdb.connection.model.RpcResponse;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +21,7 @@ public class ErrorToExceptionMapper {
             Pattern.compile(
                     "There was a problem with the database: Database index `(.+)` already contains \\[.+\\], with record `(.+):(.+)`");
 
-    public static SurrealException map(RpcResponse.Error error) {
+    public static SurrealException map(final RpcResponse.Error error) {
         if (error.getMessage().contains("There was a problem with authentication")) {
             return new SurrealAuthenticationException(error);
         }
@@ -30,14 +31,14 @@ public class ErrorToExceptionMapper {
             return new SurrealNoDatabaseSelectedException(error);
         }
 
-        Matcher recordAlreadyExitsMatcher =
+        final Matcher recordAlreadyExitsMatcher =
                 RECORD_ALREADY_EXITS_PATTERN.matcher(error.getMessage());
         if (recordAlreadyExitsMatcher.matches()) {
             return new SurrealRecordAlreadyExitsException(
                     recordAlreadyExitsMatcher.group(1), recordAlreadyExitsMatcher.group(2));
         }
 
-        Matcher uniqueIndexViolationPattern =
+        final Matcher uniqueIndexViolationPattern =
                 UNIQE_INDEX_VIOLATION_PATTERN.matcher(error.getMessage());
         if (uniqueIndexViolationPattern.matches()) {
             return new UniqueIndexViolationException(

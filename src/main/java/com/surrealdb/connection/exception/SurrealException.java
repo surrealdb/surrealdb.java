@@ -1,6 +1,7 @@
 package com.surrealdb.connection.exception;
 
 import com.surrealdb.connection.model.RpcResponse;
+
 import java.util.Optional;
 
 /**
@@ -14,16 +15,16 @@ public class SurrealException extends RuntimeException {
         this(null, null);
     }
 
-    public SurrealException(String message) {
+    public SurrealException(final String message) {
         this(null, message);
     }
 
-    public SurrealException(RpcResponse.Error response, String message) {
+    public SurrealException(final RpcResponse.Error response, final String message) {
         super(message);
         this.response = response;
     }
 
     Optional<RpcResponse.Error> getResponse() {
-        return Optional.ofNullable(response);
+        return Optional.ofNullable(this.response);
     }
 }

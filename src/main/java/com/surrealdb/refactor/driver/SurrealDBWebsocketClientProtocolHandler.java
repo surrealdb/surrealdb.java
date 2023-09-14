@@ -9,9 +9,13 @@ import com.surrealdb.refactor.exception.UnhandledSurrealDBNettyState;
 import com.surrealdb.refactor.exception.UnknownResponseToRequest;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
-import io.netty.channel.*;
-import io.netty.handler.codec.http.websocketx.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.Promise;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,42 +28,41 @@ public class SurrealDBWebsocketClientProtocolHandler
     private static final Logger log =
             Logger.getLogger(SurrealDBWebsocketClientProtocolHandler.class.toString());
     private static final String PROPERTY_REQUEST_ID = "id";
-    private ChannelPromise handshakeFuture;
     private final ConcurrentMap<String, Promise<JsonObject>> requestMap = new ConcurrentHashMap();
-
+    private ChannelPromise handshakeFuture;
     private Channel channel;
 
     public SurrealDBWebsocketClientProtocolHandler() {}
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) {
-        handshakeFuture = ctx.newPromise();
+    public void handlerAdded(final ChannelHandlerContext ctx) {
+        this.handshakeFuture = ctx.newPromise();
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
+    public void channelActive(final ChannelHandlerContext ctx) {
         this.channel = ctx.channel();
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
+    public void channelInactive(final ChannelHandlerContext ctx) {
         System.out.println("WebSocket Client disconnected!");
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
-        Channel ch = ctx.channel();
+    protected void channelRead0(final ChannelHandlerContext ctx, final TextWebSocketFrame msg) {
+        final Channel ch = ctx.channel();
         System.out.println("Received message: " + msg.text());
-        JsonElement parsed = JsonParser.parseString(msg.text());
+        final JsonElement parsed = JsonParser.parseString(msg.text());
         if (parsed.isJsonObject()) {
-            JsonObject obj = parsed.getAsJsonObject();
+            final JsonObject obj = parsed.getAsJsonObject();
             if (!obj.has(PROPERTY_REQUEST_ID)) {
                 throw new UnhandledSurrealDBNettyState(
                         "All requests and responses should contain a request id but that isn't enforced by the database; if there is no request id 'id' then the response will not have one either as of this writing",
                         "Received a message presumed to be a response without a request id");
             }
-            String requestID = obj.getAsJsonPrimitive(PROPERTY_REQUEST_ID).getAsString();
-            Promise<JsonObject> promise = requestMap.remove(requestID);
+            final String              requestID = obj.getAsJsonPrimitive(PROPERTY_REQUEST_ID).getAsString();
+            final Promise<JsonObject> promise   = this.requestMap.remove(requestID);
             if (promise == null) {
                 promise.setFailure(
                         new UnknownResponseToRequest(
@@ -76,51 +79,51 @@ public class SurrealDBWebsocketClientProtocolHandler
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         cause.printStackTrace();
-        if (!handshakeFuture.isDone()) {
-            handshakeFuture.setFailure(cause);
+        if (!this.handshakeFuture.isDone()) {
+            this.handshakeFuture.setFailure(cause);
         }
         ctx.close();
     }
 
-    public Future<JsonObject> query(String requestID, String query, List<Param> params) {
-        String method = "query";
-        checkChannelAndThrow(method);
-        QueryMessage queryMessage = new QueryMessage(requestID, query, params);
-        String serialised = new Gson().toJson(queryMessage);
+    public Future<JsonObject> query(final String requestID, final String query, final List<Param> params) {
+        final String method = "query";
+        this.checkChannelAndThrow(method);
+        final QueryMessage queryMessage = new QueryMessage(requestID, query, params);
+        final String       serialised   = new Gson().toJson(queryMessage);
         System.out.printf("Sending query: %s\n", serialised);
-        return sendAndPromise(method, requestID, serialised);
+        return this.sendAndPromise(method, requestID, serialised);
     }
 
-    public Future<JsonObject> signin(Credentials credentials) {
-        return signin(UUID.randomUUID().toString(), credentials);
+    public Future<JsonObject> signin(final Credentials credentials) {
+        return this.signin(UUID.randomUUID().toString(), credentials);
     }
 
-    public Future<JsonObject> signin(String requestID, Credentials credentials) {
-        String method = "signin";
-        checkChannelAndThrow(method);
+    public Future<JsonObject> signin(final String requestID, final Credentials credentials) {
+        final String method = "signin";
+        this.checkChannelAndThrow(method);
         // Construct message to be sent
-        SigninMessage signinMessage =
+        final SigninMessage signinMessage =
                 new SigninMessage(requestID, credentials.getUsername(), credentials.getPassword());
         // Handle request response
-        return sendAndPromise(method, requestID, new Gson().toJson(signinMessage));
+        return this.sendAndPromise(method, requestID, new Gson().toJson(signinMessage));
     }
 
-    public Future<JsonObject> use(String namespace, String database) {
-        return use(UUID.randomUUID().toString(), namespace, database);
+    public Future<JsonObject> use(final String namespace, final String database) {
+        return this.use(UUID.randomUUID().toString(), namespace, database);
     }
 
-    public Future<JsonObject> use(String requestID, String namespace, String database) {
-        String method = "use";
-        checkChannelAndThrow(method);
-        UseMessage useMessage = new UseMessage(requestID, namespace, database);
-        return sendAndPromise(method, requestID, new Gson().toJson(useMessage));
+    public Future<JsonObject> use(final String requestID, final String namespace, final String database) {
+        final String method = "use";
+        this.checkChannelAndThrow(method);
+        final UseMessage useMessage = new UseMessage(requestID, namespace, database);
+        return this.sendAndPromise(method, requestID, new Gson().toJson(useMessage));
     }
 
-    private void checkChannelAndThrow(String method) {
+    private void checkChannelAndThrow(final String method) {
         // Check if we have an established connection
-        if (channel == null || !channel.isActive()) {
+        if (this.channel == null || !this.channel.isActive()) {
             log.finest(String.format("Channel was null or inactive during %s", method));
             throw new UnhandledSurrealDBNettyState(
                     "We should have a better error for handling this state or perhaps prevent this from happening via the API",
@@ -129,12 +132,12 @@ public class SurrealDBWebsocketClientProtocolHandler
     }
 
     private Promise<JsonObject> sendAndPromise(
-            String method, String requestID, String textFrameContent) {
-        Promise<JsonObject> promise = channel.eventLoop().newPromise();
-        registerRequest(requestID, promise);
+            final String method, final String requestID, final String textFrameContent) {
+        final Promise<JsonObject> promise = this.channel.eventLoop().newPromise();
+        this.registerRequest(requestID, promise);
         try {
-            channel.writeAndFlush(new TextWebSocketFrame(textFrameContent)).sync();
-        } catch (InterruptedException e) {
+            this.channel.writeAndFlush(new TextWebSocketFrame(textFrameContent)).sync();
+        } catch (final InterruptedException e) {
             throw new UnhandledSurrealDBNettyState(
                     "We should have a better way of handling these edge cases",
                     String.format("failed to write and flush synchronously during %s", method));
@@ -142,13 +145,13 @@ public class SurrealDBWebsocketClientProtocolHandler
         return promise;
     }
 
-    private void registerRequest(String requestID, Promise<JsonObject> promise) {
-        Promise<JsonObject> popped = requestMap.putIfAbsent(requestID, promise);
+    private void registerRequest(final String requestID, final Promise<JsonObject> promise) {
+        final Promise<JsonObject> popped = this.requestMap.putIfAbsent(requestID, promise);
         if (popped != null) {
             // Reinsert whatever we removed; This is actually quite problematic, and we should do a
             // contains check before in case
             // There will always be race conditions without locks on this
-            requestMap.put(requestID, popped);
+            this.requestMap.put(requestID, popped);
             throw new UnhandledSurrealDBNettyState(
                     "this should probably be a different error as we know what is happening",
                     String.format(

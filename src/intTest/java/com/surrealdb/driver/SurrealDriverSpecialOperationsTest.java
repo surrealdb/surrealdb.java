@@ -1,23 +1,18 @@
 package com.surrealdb.driver;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.connection.exception.SurrealAuthenticationException;
 import com.surrealdb.connection.exception.SurrealNoDatabaseSelectedException;
 import com.surrealdb.driver.model.Person;
-import com.surrealdb.driver.model.QueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
-import java.util.List;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Khalid Alharisi
@@ -29,23 +24,23 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
+        final SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
-        driver = new SyncSurrealDriver(connection);
+        this.driver = new SyncSurrealDriver(connection);
     }
 
     @Test
     public void testSignIn() {
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
     }
 
     @Test
     public void testSignUp() {
         // Configure db to allow signup
-        driver.signIn("root", "root"); // This needs to be configured from @BaseIntegrationTest
+        this.driver.signIn("root", "root"); // This needs to be configured from @BaseIntegrationTest
         // Set namespace and database to something random so it doesnt conflict with other tests
         // also - use driver settings instead of query
-        driver.query("""
+        this.driver.query("""
         USE NAMESPACE testns;
         USE DATABASE testdb;
         DEFINE SCOPE allusers SESSION 24h
@@ -54,15 +49,14 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
         """, Map.of(), Object.class);
 
         // Plain
-        String token =
-                driver.signUp(
+        final String token = this.driver.signUp(
                         "testns",
                         "testdb",
                         "allusers",
                         "test@testerino.surr",
                         "lol123");
         // Validate that the signup worked through authentication with the received token.
-        driver.authenticate(token);
+        this.driver.authenticate(token);
     }
 
     @Test
@@ -70,19 +64,19 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
         if (TestUtils.getToken().equals("")) {
             return;
         }
-        driver.authenticate(TestUtils.getToken());
+        this.driver.authenticate(TestUtils.getToken());
     }
 
     @Test
     public void testBadCredentials() {
         assertThrows(
                 SurrealAuthenticationException.class,
-                () -> driver.signIn("admin", "incorrect-password"));
+                () -> this.driver.signIn("admin", "incorrect-password"));
     }
 
     @Test
     public void testUse() {
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        this.driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
     }
 
     @Test
@@ -90,32 +84,32 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
         assertThrows(
                 SurrealNoDatabaseSelectedException.class,
                 () -> {
-                    driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-                    driver.select("person", Person.class);
+                    this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+                    this.driver.select("person", Person.class);
                 });
     }
 
     @Test
     public void testLet() {
-        driver.let("someKey", "someValue");
+        this.driver.let("someKey", "someValue");
     }
 
     @Test
     public void testPing() {
-        driver.ping();
+        this.driver.ping();
     }
 
     @Test
     public void testInfo() {
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
-        driver.info();
+        this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        this.driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        this.driver.info();
     }
 
     @Test
     public void testInvalidate() {
         // Execute the test at the end, or re-connect after it (the method invalidates the current
         // session auth.)!
-        driver.invalidate();
+        this.driver.invalidate();
     }
 }

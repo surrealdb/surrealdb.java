@@ -1,13 +1,14 @@
 package com.surrealdb.refactor.types;
 
-import java.util.List;
 import lombok.ToString;
+
+import java.util.List;
 
 @ToString
 public class QueryBlockResult {
     private final List<QueryResult> result;
 
-    public QueryBlockResult(List<QueryResult> result) {
+    public QueryBlockResult(final List<QueryResult> result) {
         this.result = result;
     }
 
@@ -17,6 +18,6 @@ public class QueryBlockResult {
      * @return the result of each individual statement in a query block
      */
     public List<QueryResult> getResult() {
-        return result;
+        return this.result;
     }
 }
