@@ -14,7 +14,6 @@ trim_trailing_whitespace = true
 
 [*.{yml,json}]
 indent_size = 2
-indent_style = space
 
 [*.{md,diff}]
 trim_trailing_whitespace = false
