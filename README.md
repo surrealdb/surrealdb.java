@@ -104,8 +104,8 @@ Integration tests depend on having docker installed.
 
 The following environment variables can be used to avoid relying on docker.
 
-| ENV | Description |
-|--|--|
+| ENV                 | Description                   |
+|---------------------|-------------------------------|
 | SURREALDB_JAVA_HOST | The host address of SurrealDB |
 | SURREALDB_JAVA_PORT | The port address of SurrealDB |
 

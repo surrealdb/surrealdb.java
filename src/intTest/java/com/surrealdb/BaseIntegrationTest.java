@@ -50,7 +50,7 @@ public class BaseIntegrationTest {
     /**
      * If the connection is http, this will return the http URI
      *
-     * @return the URI or empty if it isnt http
+     * @return the URI or empty if it isn't http
      */
     protected Optional<URI> getHttp() {
         // Try env variable

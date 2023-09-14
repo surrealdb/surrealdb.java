@@ -38,7 +38,7 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
     public void testSignUp() {
         // Configure db to allow signup
         this.driver.signIn("root", "root"); // This needs to be configured from @BaseIntegrationTest
-        // Set namespace and database to something random so it doesnt conflict with other tests
+        // Set namespace and database to something random, so it doesn't conflict with other tests
         // also - use driver settings instead of query
         this.driver.query(
                 """

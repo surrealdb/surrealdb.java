@@ -1,6 +1,6 @@
 <h1><img height="25" src="/img/contributing.svg">&nbsp;&nbsp;Contributing</h1>
 
-We would &nbsp;<img width="15" src="/img/love.svg">&nbsp; for you to contribute to SurrealDB.java and help make it better! We want contributing to SurrealDB to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including features, bugfixes, and documentation changes, as well as updates and tweaks, blog posts, workshops, and everything else.
+We would &nbsp;<img width="15" src="/img/love.svg">&nbsp; for you to contribute to SurrealDB.java and help make it better! We want to contribute to SurrealDB to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including features, bugfixes, and documentation changes, as well as updates and tweaks, blog posts, workshops, and everything else.
 
 ## How to start
 
@@ -111,41 +111,41 @@ For the initial start, fork the project and use git clone command to download th
 git clone https://github.com/surrealdb/surrealdb.java
 ```
 
-1. Pull all changes from the upstream `main` branch, before creating a new branch - to ensure that your `main` branch is up-to-date with the latest changes:
+2. Pull all changes from the upstream `main` branch, before creating a new branch - to ensure that your `main` branch is up-to-date with the latest changes:
 ```bash
 git pull
 ```
 
-2. Create new branch from `main` like: `bugfix-548-ensure-queries-execute-sequentially`:
+3. Create new branch from `main` like: `bugfix-548-ensure-queries-execute-sequentially`:
 ```bash
 git checkout -b "[the name of your branch]"
 ```
 
-3. Make changes to the code, and ensure all code changes are formatted correctly:
+4. Make changes to the code, and ensure all code changes are formatted correctly:
 ```bash
 gradle spotlessJavaApply
 ```
 
-4. Commit your changes when finished:
+5. Commit your changes when finished:
 ```bash
 git add -A
 git commit -m "[your commit message]"
 ```
 
-5. Push changes to GitHub:
+6. Push changes to GitHub:
 ```bash
 git push origin "[the name of your branch]"
 ```
 
-6. Submit your changes for review, by going to your repository on GitHub and clicking the `Compare & pull request` button.
+7. Submit your changes for review, by going to your repository on GitHub and clicking the `Compare & pull request` button.
 
-7. Ensure that you have entered a commit message which details about the changes, and what the pull request is for.
+8. Ensure that you have entered a commit message which details about the changes, and what the pull request is for.
 
-8. Now submit the pull request by clicking the `Create pull request` button.
+9. Now submit the pull request by clicking the `Create pull request` button.
 
-9. Wait for code review and approval.
+10. Wait for code review and approval.
 
-10. After approval, merge your pull request.
+11. After approval, merge your pull request.
 
 ## Other Ways to Help
 
@@ -153,7 +153,7 @@ Pull requests are great, but there are many other areas where you can help.
 
 ### Blogging and speaking
 
-Blogging, speaking about, or creating tutorials about one of SurrealDB's many features. Mention [@surrealdb](https://twitter.com/surrealdb) on Twitter, and email team@surrealdb.com so we can give pointers and tips and help you spread the word by promoting your content on the different SurrealDB communication channels. Please add your blog posts and videos of talks to our [showcase](https://github.com/surrealdb/showcase) repo on GitHub.
+Blogging, speaking about, or creating tutorials about one of SurrealDB's many features. Mention [@surrealdb](https://twitter.com/surrealdb) on Twitter, and email team@surrealdb.com, so we can give pointers and tips and help you spread the word by promoting your content on the different SurrealDB communication channels. Please add your blog posts and videos of talks to our [showcase](https://github.com/surrealdb/showcase) repo on GitHub.
 
 ### Presenting at meetups
 
