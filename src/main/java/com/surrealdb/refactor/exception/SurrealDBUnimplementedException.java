@@ -1,10 +1,9 @@
 package com.surrealdb.refactor.exception;
 
-import lombok.Getter;
-import lombok.ToString;
-
 import java.net.MalformedURLException;
 import java.net.URL;
+import lombok.Getter;
+import lombok.ToString;
 
 @ToString
 @Getter

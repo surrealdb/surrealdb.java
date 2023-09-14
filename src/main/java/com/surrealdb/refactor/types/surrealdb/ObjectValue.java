@@ -1,10 +1,9 @@
 package com.surrealdb.refactor.types.surrealdb;
 
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.Map;
 
 @Getter
 @ToString

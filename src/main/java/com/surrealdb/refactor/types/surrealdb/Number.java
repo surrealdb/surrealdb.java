@@ -1,9 +1,8 @@
 package com.surrealdb.refactor.types.surrealdb;
 
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.util.Optional;
 
 @ToString
 @EqualsAndHashCode

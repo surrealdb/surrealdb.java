@@ -2,7 +2,6 @@ package com.surrealdb.refactor.driver;
 
 import com.surrealdb.refactor.exception.InvalidAddressException;
 import com.surrealdb.refactor.exception.InvalidAddressExceptionCause;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;

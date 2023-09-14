@@ -6,7 +6,6 @@ import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.SignIn;
 import com.surrealdb.driver.model.SignUp;
 import com.surrealdb.driver.model.patch.Patch;
-
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;

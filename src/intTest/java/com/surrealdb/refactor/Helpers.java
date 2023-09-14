@@ -1,7 +1,6 @@
 package com.surrealdb.refactor;
 
 import com.surrealdb.refactor.types.surrealdb.Value;
-
 import java.util.HashMap;
 import java.util.Map;
 

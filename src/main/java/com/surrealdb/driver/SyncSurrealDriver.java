@@ -4,7 +4,6 @@ import com.surrealdb.connection.SurrealConnection;
 import com.surrealdb.connection.exception.SurrealException;
 import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.patch.Patch;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

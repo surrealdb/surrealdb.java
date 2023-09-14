@@ -3,10 +3,9 @@ package com.surrealdb.refactor.driver;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.surrealdb.refactor.types.Param;
+import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.List;
 
 @Getter
 @ToString

@@ -1,6 +1,11 @@
 package com.surrealdb.connection;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.surrealdb.driver.SyncSurrealDriver;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -8,12 +13,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 class SurrealWebSocketConnectionTest {

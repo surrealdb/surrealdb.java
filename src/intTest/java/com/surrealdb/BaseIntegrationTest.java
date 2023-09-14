@@ -1,13 +1,12 @@
 package com.surrealdb;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
 
 public class BaseIntegrationTest {
     protected static String testHost;
