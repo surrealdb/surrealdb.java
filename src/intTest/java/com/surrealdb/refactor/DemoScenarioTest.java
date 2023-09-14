@@ -55,14 +55,14 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         final QueryBlockResult results = surrealDB.query(query.toString(), params);
 
         // Validate the results of the first statement in the query
-        assertEquals(results.getResult().size(), 3, results.toString());
+        assertEquals(results.result().size(), 3, results.toString());
         final Value expectedFirstValue =
                 new Value(
                         new ObjectValue(
                                 asMap(
                                         Tuple.of("name", new Value("leslie")),
                                         Tuple.of("id", new Value("person:lamport")))));
-        final List<Value> actual = results.getResult().get(0).getResult();
+        final List<Value> actual = results.result().get(0).result();
         assertArrayEquals(new Value[] {expectedFirstValue}, actual.toArray(new Value[0]));
 
         // Validate the results of the second statement in the query
@@ -73,12 +73,12 @@ public class DemoScenarioTest extends BaseIntegrationTest {
                                         Tuple.of("name", new Value("leslie")),
                                         Tuple.of("id", new Value("person:lamport")),
                                         Tuple.of("year", new Value("2013.0")))));
-        final List<Value> actualSecondValue = results.getResult().get(1).getResult();
+        final List<Value> actualSecondValue = results.result().get(1).result();
         assertArrayEquals(
                 new Value[] {expectedSecondValue}, actualSecondValue.toArray(new Value[0]));
 
         // Validate the results of the third statement in the query
-        final List<Value> actualThirdValue = results.getResult().get(2).getResult();
+        final List<Value> actualThirdValue = results.result().get(2).result();
         assertArrayEquals(new Value[] {}, actualThirdValue.toArray(new Value[0]));
     }
 }

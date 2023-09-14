@@ -79,9 +79,9 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                 new RpcRequest(this.lastRequestId.incrementAndGet() + "", method, params);
         final CompletableFuture<T> callback = new CompletableFuture<>();
 
-        this.callbacks.put(request.getId(), callback);
+        this.callbacks.put(request.id(), callback);
         if (resultType != null) {
-            this.resultTypes.put(request.getId(), resultType);
+            this.resultTypes.put(request.id(), resultType);
         }
 
         try {
@@ -103,8 +103,8 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @Override
     public void onMessage(final String message) {
         final RpcResponse response = this.gson.fromJson(message, RpcResponse.class);
-        final String id = response.getId();
-        final RpcResponse.Error error = response.getError();
+        final String id = response.id();
+        final RpcResponse.Error error = response.error();
         final CompletableFuture<Object> callback =
                 (CompletableFuture<Object>) this.callbacks.get(id);
 
@@ -115,7 +115,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
                 if (resultType != null) {
                     Object deserialised = null;
-                    final JsonElement responseElement = response.getResult();
+                    final JsonElement responseElement = response.result();
                     // The protocol can sometimes send object instead of array when only 1 response
                     // is valid
                     if (responseElement.isJsonObject()) {

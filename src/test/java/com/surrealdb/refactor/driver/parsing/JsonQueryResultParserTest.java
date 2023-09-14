@@ -33,14 +33,14 @@ public class JsonQueryResultParserTest {
         final JsonElement jsonElement = JsonParser.parseString(rawJson);
         final QueryResult res = new JsonQueryResultParser().parse(jsonElement);
 
-        assertEquals("OK", res.getStatus());
-        assertEquals("438.583µs", res.getTime());
+        assertEquals("OK", res.status());
+        assertEquals("438.583µs", res.time());
         final Value expectedValue =
                 new Value(
                         new ObjectValue(
                                 asMap(
                                         Tuple.of("id", new Value("person:lamport")),
                                         Tuple.of("name", new Value("leslie")))));
-        assertArrayEquals(new Value[] {expectedValue}, res.getResult().toArray(new Value[0]));
+        assertArrayEquals(new Value[] {expectedValue}, res.result().toArray(new Value[0]));
     }
 }

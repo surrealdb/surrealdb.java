@@ -25,8 +25,8 @@ public class QueryMessage {
         for (final Param param : params) {
             System.out.printf(
                     "Handling Param %s with id = '%s' and value = '%s'\n",
-                    param, param.getIdentifier(), param.getValue().intoJson());
-            bindings.add(param.getIdentifier(), param.getValue().intoJson());
+                    param, param.identifier(), param.value().intoJson());
+            bindings.add(param.identifier(), param.value().intoJson());
         }
         requestParamList.add(bindings);
         this.params = requestParamList;
