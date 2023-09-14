@@ -34,8 +34,13 @@ public class SyncSurrealDriver {
     }
 
     public String signUp(
-            final String namespace, final String database, final String scope, final String email, final String password) {
-        return this.getResultSynchronously(this.asyncDriver.signUp(namespace, database, scope, email, password));
+            final String namespace,
+            final String database,
+            final String scope,
+            final String email,
+            final String password) {
+        return this.getResultSynchronously(
+                this.asyncDriver.signUp(namespace, database, scope, email, password));
     }
 
     public void authenticate(final String token) {

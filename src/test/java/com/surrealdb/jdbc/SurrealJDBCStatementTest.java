@@ -51,7 +51,8 @@ class SurrealJDBCStatementTest {
     @Test
     void setEscapeProcessing() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.statement.setEscapeProcessing(false));
+                UnsupportedOperationException.class,
+                () -> this.statement.setEscapeProcessing(false));
     }
 
     @Test
@@ -192,7 +193,8 @@ class SurrealJDBCStatementTest {
 
     @Test
     void testExecute1() {
-        assertThrows(UnsupportedOperationException.class, () -> this.statement.execute("", new int[10]));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.statement.execute("", new int[10]));
     }
 
     @Test
@@ -234,12 +236,14 @@ class SurrealJDBCStatementTest {
 
     @Test
     void unwrap() {
-        assertThrows(UnsupportedOperationException.class, () -> this.statement.unwrap(String.class));
+        assertThrows(
+                UnsupportedOperationException.class, () -> this.statement.unwrap(String.class));
     }
 
     @Test
     void isWrapperFor() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.statement.isWrapperFor(String.class));
+                UnsupportedOperationException.class,
+                () -> this.statement.isWrapperFor(String.class));
     }
 }

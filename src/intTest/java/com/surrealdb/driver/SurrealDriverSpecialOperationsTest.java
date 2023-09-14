@@ -24,7 +24,8 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        final SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
+        final SurrealWebSocketConnection connection =
+                new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
         this.driver = new SyncSurrealDriver(connection);
     }
@@ -40,21 +41,20 @@ public class SurrealDriverSpecialOperationsTest extends BaseIntegrationTest {
         this.driver.signIn("root", "root"); // This needs to be configured from @BaseIntegrationTest
         // Set namespace and database to something random so it doesnt conflict with other tests
         // also - use driver settings instead of query
-        this.driver.query("""
+        this.driver.query(
+                """
         USE NAMESPACE testns;
         USE DATABASE testdb;
         DEFINE SCOPE allusers SESSION 24h
             SIGNUP ( CREATE user SET user = $user, pass = crypto::argon2::generate($pass))
             SIGNIN ( SELECT * FROM user where email = $user AND crypto::argon2::compare(pass, $pass));
-        """, Map.of(), Object.class);
+        """,
+                Map.of(),
+                Object.class);
 
         // Plain
-        final String token = this.driver.signUp(
-                        "testns",
-                        "testdb",
-                        "allusers",
-                        "test@testerino.surr",
-                        "lol123");
+        final String token =
+                this.driver.signUp("testns", "testdb", "allusers", "test@testerino.surr", "lol123");
         // Validate that the signup worked through authentication with the received token.
         this.driver.authenticate(token);
     }

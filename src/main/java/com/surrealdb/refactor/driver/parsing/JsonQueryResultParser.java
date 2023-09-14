@@ -40,18 +40,21 @@ public class JsonQueryResultParser {
                     String.format("Expected json object, but was %s", type(jsonElement)));
         }
         final JsonObject jsonObject = jsonElement.getAsJsonObject();
-        final String status = this.forceGet(
+        final String status =
+                this.forceGet(
                                 jsonObject,
                                 "status",
                                 new UnhandledProtocolResponse(
                                         "Expected the object to have a status"))
-                                  .getAsString();
-        final String time = this.forceGet(
+                        .getAsString();
+        final String time =
+                this.forceGet(
                                 jsonObject,
                                 "time",
                                 new UnhandledProtocolResponse("Expected the object to have a time"))
-                                .getAsString();
-        final JsonElement result = this.forceGet(
+                        .getAsString();
+        final JsonElement result =
+                this.forceGet(
                         jsonObject,
                         "result",
                         new UnhandledProtocolResponse("Expected the object to contain a result"));
@@ -80,7 +83,7 @@ public class JsonQueryResultParser {
                             "Expected the result type to be object but was %s", type(jsonElement)));
         }
         final Map<String, Value> objectProperties = new HashMap<>();
-        final JsonObject         jsonObject       = jsonElement.getAsJsonObject();
+        final JsonObject jsonObject = jsonElement.getAsJsonObject();
         for (final Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
             final String value = entry.getValue().getAsString();
             objectProperties.put(entry.getKey(), new Value(value));
@@ -89,7 +92,9 @@ public class JsonQueryResultParser {
     }
 
     private JsonElement forceGet(
-            final JsonObject jsonObject, final String property, final UnhandledProtocolResponse cause) {
+            final JsonObject jsonObject,
+            final String property,
+            final UnhandledProtocolResponse cause) {
         if (!jsonObject.has(property)) {
             throw cause;
         }

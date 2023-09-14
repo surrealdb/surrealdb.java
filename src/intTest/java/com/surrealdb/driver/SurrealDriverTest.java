@@ -38,20 +38,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 @Testcontainers
 public class SurrealDriverTest extends BaseIntegrationTest {
-    private final boolean           connected = false;
-    private       SyncSurrealDriver driver;
+    private final boolean connected = false;
+    private SyncSurrealDriver driver;
 
     @BeforeEach
     public void setup() {
-        final SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
+        final SurrealWebSocketConnection connection =
+                new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
         this.driver = new SyncSurrealDriver(connection);
 
         this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
         this.driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        this.driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        this.driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+        this.driver.create(
+                "person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        this.driver.create(
+                "person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
     }
 
     @AfterEach
@@ -82,29 +85,43 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testCreateAlreadyExistsId() {
-        assertThrows(SurrealRecordAlreadyExitsException.class, () -> {
-            this.driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-            this.driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-        });
+        assertThrows(
+                SurrealRecordAlreadyExitsException.class,
+                () -> {
+                    this.driver.create(
+                            "person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+                    this.driver.create(
+                            "person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+                });
     }
 
     @Test
     public void testCreateAlreadyExistsUsingUniqueIndex() {
-        assertThrows(UniqueIndexViolationException.class, () -> {
-            this.driver.query("DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE", Collections.emptyMap(), Object.class);
-            this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
-            this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
-        });
+        assertThrows(
+                UniqueIndexViolationException.class,
+                () -> {
+                    this.driver.query(
+                            "DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE",
+                            Collections.emptyMap(),
+                            Object.class);
+                    this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                    this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                });
 
         // cleanup
-        this.driver.query("REMOVE INDEX fullNameUniqueIndex ON TABLE person", Collections.emptyMap(), Object.class);
+        this.driver.query(
+                "REMOVE INDEX fullNameUniqueIndex ON TABLE person",
+                Collections.emptyMap(),
+                Object.class);
     }
 
     @Test
     public void testQuery() {
         final Map<String, String> args = new HashMap<>();
         args.put("firstName", "Tobie");
-        final List<QueryResult<Person>> actual = this.driver.query("select * from person where name.first = $firstName", args, Person.class);
+        final List<QueryResult<Person>> actual =
+                this.driver.query(
+                        "select * from person where name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size()); // number of queries
         assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
@@ -171,11 +188,11 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testPatchOne() {
-        final List<Patch> patches = Arrays.asList(
-            new ReplacePatch("/name/first", "Khalid"),
-            new ReplacePatch("/name/last", "Alharisi"),
-            new ReplacePatch("/title", "Engineer")
-        );
+        final List<Patch> patches =
+                Arrays.asList(
+                        new ReplacePatch("/name/first", "Khalid"),
+                        new ReplacePatch("/name/last", "Alharisi"),
+                        new ReplacePatch("/title", "Engineer"));
 
         this.driver.patch("person:1", patches);
         final List<Person> actual = this.driver.select("person:1", Person.class);
@@ -188,21 +205,22 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testPatchAll() {
-        final List<Patch> patches = Arrays.asList(
-            new ReplacePatch("/name/first", "Khalid"),
-            new ReplacePatch("/name/last", "Alharisi"),
-            new ReplacePatch("/title", "Engineer")
-        );
+        final List<Patch> patches =
+                Arrays.asList(
+                        new ReplacePatch("/name/first", "Khalid"),
+                        new ReplacePatch("/name/last", "Alharisi"),
+                        new ReplacePatch("/title", "Engineer"));
 
         this.driver.patch("person", patches);
         final List<Person> actual = this.driver.select("person", Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals("Khalid", person.getName().getFirst());
-            assertEquals("Alharisi", person.getName().getLast());
-            assertEquals("Engineer", person.getTitle());
-        });
+        actual.forEach(
+                person -> {
+                    assertEquals("Khalid", person.getName().getFirst());
+                    assertEquals("Alharisi", person.getName().getLast());
+                    assertEquals("Engineer", person.getTitle());
+                });
     }
 
     @Test
@@ -219,31 +237,32 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertEquals(0, actual.size());
     }
 
-	@Test
-	public void testLocalDate() {
-        final LocalDate date   = LocalDate.parse("2022-05-13");
-		final Movie     insert = new Movie("Everything Everywhere All at Once", 9, date);
+    @Test
+    public void testLocalDate() {
+        final LocalDate date = LocalDate.parse("2022-05-13");
+        final Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
 
-		final Movie select = this.driver.create("movie", insert);
-		assertNotNull(select.getRelease());
-		assertEquals(date, select.getRelease());
-	}
+        final Movie select = this.driver.create("movie", insert);
+        assertNotNull(select.getRelease());
+        assertEquals(date, select.getRelease());
+    }
 
-	@Test
-	public void testLocalDateTime() {
-        final LocalDateTime time   = LocalDateTime.now();
-        final Reminder      insert = new Reminder("Pass this test", time);
+    @Test
+    public void testLocalDateTime() {
+        final LocalDateTime time = LocalDateTime.now();
+        final Reminder insert = new Reminder("Pass this test", time);
 
         final Reminder select = this.driver.create("reminder", insert);
         assertNotNull(select.getTime());
         assertEquals(time, select.getTime());
-	}
+    }
 
     @Test
     public void testZonedDateTime() {
-        final ZonedDateTime time      = ZonedDateTime.parse("2022-02-02T22:00:00+02:00");
-        final ZonedDateTime timeAtUTC = LocalDateTime.parse("2022-02-02T20:00:00").atZone(ZoneOffset.UTC);
-        final Message       insert    = new Message("This is surreal", time);
+        final ZonedDateTime time = ZonedDateTime.parse("2022-02-02T22:00:00+02:00");
+        final ZonedDateTime timeAtUTC =
+                LocalDateTime.parse("2022-02-02T20:00:00").atZone(ZoneOffset.UTC);
+        final Message insert = new Message("This is surreal", time);
 
         final Message select = this.driver.create("message", insert);
         assertNotNull(select.getTimestamp());

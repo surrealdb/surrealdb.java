@@ -38,7 +38,11 @@ public class AsyncSurrealDriver {
     }
 
     public CompletableFuture<String> signUp(
-            final String namespace, final String database, final String scope, final String email, final String password) {
+            final String namespace,
+            final String database,
+            final String scope,
+            final String email,
+            final String password) {
         final Type resultType = TypeToken.getParameterized(String.class).getType();
 
         final SignUp userToBeCreated = new SignUp(namespace, database, scope, email, password);
@@ -64,21 +68,24 @@ public class AsyncSurrealDriver {
 
     public <T> CompletableFuture<List<QueryResult<T>>> query(
             final String query, final Map<String, String> args, final Class<? extends T> rowType) {
-        final Type queryResultType = TypeToken.getParameterized(QueryResult.class, rowType).getType();
-        final Type resultType      = TypeToken.getParameterized(List.class, queryResultType).getType();
+        final Type queryResultType =
+                TypeToken.getParameterized(QueryResult.class, rowType).getType();
+        final Type resultType = TypeToken.getParameterized(List.class, queryResultType).getType();
         return this.connection.rpc(resultType, "query", query, args);
     }
 
-    public <T> CompletableFuture<List<T>> select(final String thing, final Class<? extends T> rowType) {
+    public <T> CompletableFuture<List<T>> select(
+            final String thing, final Class<? extends T> rowType) {
         final Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
         return this.connection.rpc(resultType, "select", thing);
     }
 
     public <T> CompletableFuture<T> create(final String thing, final T data) {
-        final Type                 resultType  = TypeToken.getParameterized(List.class, data.getClass()).getType();
+        final Type resultType = TypeToken.getParameterized(List.class, data.getClass()).getType();
         final CompletableFuture<T> finalFuture = new CompletableFuture<>();
 
-        final CompletableFuture<List<T>> createFuture = this.connection.rpc(resultType, "create", thing, data);
+        final CompletableFuture<List<T>> createFuture =
+                this.connection.rpc(resultType, "create", thing, data);
         createFuture.whenComplete(
                 (list, throwable) -> {
                     if (throwable != null) {
@@ -96,7 +103,8 @@ public class AsyncSurrealDriver {
         return this.connection.rpc(resultType, "update", thing, data);
     }
 
-    public <T, P> CompletableFuture<List<T>> change(final String thing, final P data, final Class<T> rowType) {
+    public <T, P> CompletableFuture<List<T>> change(
+            final String thing, final P data, final Class<T> rowType) {
         final Type resultType = TypeToken.getParameterized(List.class, rowType).getType();
         return this.connection.rpc(resultType, "change", thing, data);
     }
