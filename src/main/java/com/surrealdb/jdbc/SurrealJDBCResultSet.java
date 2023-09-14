@@ -415,26 +415,22 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateAsciiStream(final int columnIndex, final InputStream x, final int length)
-            {
+    public void updateAsciiStream(final int columnIndex, final InputStream x, final int length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(final int columnIndex, final InputStream x, final int length)
-            {
+    public void updateBinaryStream(final int columnIndex, final InputStream x, final int length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateCharacterStream(final int columnIndex, final Reader x, final int length)
-            {
+    public void updateCharacterStream(final int columnIndex, final Reader x, final int length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateObject(final int columnIndex, final Object x, final int scaleOrLength)
-            {
+    public void updateObject(final int columnIndex, final Object x, final int scaleOrLength) {
         throw new UnsupportedOperationException();
     }
 
@@ -514,14 +510,13 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateAsciiStream(final String columnLabel, final InputStream x, final int length)
-            {
+    public void updateAsciiStream(final String columnLabel, final InputStream x, final int length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(final String columnLabel, final InputStream x, final int length)
-            {
+    public void updateBinaryStream(
+            final String columnLabel, final InputStream x, final int length) {
         throw new UnsupportedOperationException();
     }
 
@@ -532,8 +527,7 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateObject(final String columnLabel, final Object x, final int scaleOrLength)
-            {
+    public void updateObject(final String columnLabel, final Object x, final int scaleOrLength) {
         throw new UnsupportedOperationException();
     }
 
@@ -583,8 +577,7 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public Object getObject(final int columnIndex, final Map<String, Class<?>> map)
-            {
+    public Object getObject(final int columnIndex, final Map<String, Class<?>> map) {
         throw new UnsupportedOperationException();
     }
 
@@ -609,8 +602,7 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public Object getObject(final String columnLabel, final Map<String, Class<?>> map)
-            {
+    public Object getObject(final String columnLabel, final Map<String, Class<?>> map) {
         throw new UnsupportedOperationException();
     }
 
@@ -660,8 +652,7 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public Timestamp getTimestamp(final String columnLabel, final Calendar cal)
-            {
+    public Timestamp getTimestamp(final String columnLabel, final Calendar cal) {
         throw new UnsupportedOperationException();
     }
 
@@ -816,8 +807,7 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateNCharacterStream(final int columnIndex, final Reader x, final long length)
-            {
+    public void updateNCharacterStream(final int columnIndex, final Reader x, final long length) {
         throw new UnsupportedOperationException();
     }
 
@@ -828,32 +818,29 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateAsciiStream(final int columnIndex, final InputStream x, final long length)
-            {
+    public void updateAsciiStream(final int columnIndex, final InputStream x, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(final int columnIndex, final InputStream x, final long length)
-            {
+    public void updateBinaryStream(final int columnIndex, final InputStream x, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateCharacterStream(final int columnIndex, final Reader x, final long length)
-            {
+    public void updateCharacterStream(final int columnIndex, final Reader x, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateAsciiStream(final String columnLabel, final InputStream x, final long length)
-            {
+    public void updateAsciiStream(
+            final String columnLabel, final InputStream x, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(final String columnLabel, final InputStream x, final long length)
-            {
+    public void updateBinaryStream(
+            final String columnLabel, final InputStream x, final long length) {
         throw new UnsupportedOperationException();
     }
 
@@ -864,39 +851,34 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateBlob(final int columnIndex, final InputStream inputStream, final long length)
-            {
+    public void updateBlob(
+            final int columnIndex, final InputStream inputStream, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void updateBlob(
-            final String columnLabel, final InputStream inputStream, final long length)
-            {
+            final String columnLabel, final InputStream inputStream, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateClob(final int columnIndex, final Reader reader, final long length)
-            {
+    public void updateClob(final int columnIndex, final Reader reader, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateClob(final String columnLabel, final Reader reader, final long length)
-            {
+    public void updateClob(final String columnLabel, final Reader reader, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateNClob(final int columnIndex, final Reader reader, final long length)
-            {
+    public void updateNClob(final int columnIndex, final Reader reader, final long length) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateNClob(final String columnLabel, final Reader reader, final long length)
-            {
+    public void updateNClob(final String columnLabel, final Reader reader, final long length) {
         throw new UnsupportedOperationException();
     }
 
@@ -906,8 +888,7 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateNCharacterStream(final String columnLabel, final Reader reader)
-            {
+    public void updateNCharacterStream(final String columnLabel, final Reader reader) {
         throw new UnsupportedOperationException();
     }
 
@@ -927,32 +908,27 @@ public class SurrealJDBCResultSet implements ResultSet {
     }
 
     @Override
-    public void updateAsciiStream(final String columnLabel, final InputStream x)
-            {
+    public void updateAsciiStream(final String columnLabel, final InputStream x) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBinaryStream(final String columnLabel, final InputStream x)
-            {
+    public void updateBinaryStream(final String columnLabel, final InputStream x) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateCharacterStream(final String columnLabel, final Reader reader)
-            {
+    public void updateCharacterStream(final String columnLabel, final Reader reader) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBlob(final int columnIndex, final InputStream inputStream)
-            {
+    public void updateBlob(final int columnIndex, final InputStream inputStream) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateBlob(final String columnLabel, final InputStream inputStream)
-            {
+    public void updateBlob(final String columnLabel, final InputStream inputStream) {
         throw new UnsupportedOperationException();
     }
 
