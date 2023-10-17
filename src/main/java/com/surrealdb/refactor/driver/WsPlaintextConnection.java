@@ -1,8 +1,7 @@
 package com.surrealdb.refactor.driver;
 
 import com.google.gson.*;
-import com.surrealdb.refactor.driver.parsing.JsonQueryResultParser;
-import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
+import com.surrealdb.refactor.driver.parsing.ResultParser;
 import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
@@ -29,7 +28,6 @@ public class WsPlaintextConnection {
 
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
-
     public WsPlaintextConnection() {}
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(URI uri) {
@@ -57,7 +55,9 @@ public class WsPlaintextConnection {
                 BidirectionalSurrealDB surrealdb =
                         new BidirectionalSurrealDB() {
 
-                            @Override
+                            private ResultParser resultParser;
+
+							@Override
                             public QueryBlockResult query(String query, List<Param> params) {
                                 JsonObject resp = null;
                                 try {
@@ -80,25 +80,13 @@ public class WsPlaintextConnection {
                                 }
                                 JsonElement outerResultJson = resp.get("result");
                                 QueryResult[] processedOuterResults;
-                                if (outerResultJson.isJsonArray()) {
-                                    JsonArray outerResultArray = outerResultJson.getAsJsonArray();
-                                    processedOuterResults =
-                                            new QueryResult[outerResultArray.size()];
-                                    for (int i = 0; i < outerResultArray.size(); i++) {
-                                        JsonElement innerResultJson = outerResultArray.get(i);
-                                        if (!innerResultJson.isJsonObject()) {
-                                            throw new UnhandledProtocolResponse(
-                                                    "Expected the result to be an object");
-                                        }
-                                        QueryResult val =
-                                                new JsonQueryResultParser().parse(innerResultJson);
-                                        processedOuterResults[i] = val;
-                                    }
-                                } else {
-                                    throw new SurrealDBUnimplementedException(
-                                            "https://github.com/surrealdb/surrealdb.java/issues/75",
-                                            "The response contained results that were not in an array");
-                                }
+                                this.resultParser = new ResultParser();
+
+                                // parses the Json Element if it is an object or an array
+
+                                processedOuterResults =
+                                        resultParser.parseResultMessage(outerResultJson);
+
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
                         };

@@ -1,5 +1,10 @@
 package com.surrealdb.driver;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.surrealdb.BaseIntegrationTest;
 import com.surrealdb.TestUtils;
 import com.surrealdb.connection.SurrealWebSocketConnection;
@@ -13,14 +18,6 @@ import com.surrealdb.driver.model.QueryResult;
 import com.surrealdb.driver.model.Reminder;
 import com.surrealdb.driver.model.patch.Patch;
 import com.surrealdb.driver.model.patch.ReplacePatch;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -30,11 +27,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * @author Khalid Alharisi
@@ -46,7 +42,8 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(testHost, testPort, false);
+        SurrealWebSocketConnection connection =
+                new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
         driver = new SyncSurrealDriver(connection);
 
@@ -60,9 +57,9 @@ public class SurrealDriverTest extends BaseIntegrationTest {
     @AfterEach
     public void teardown() {
         driver.delete("person");
-		driver.delete("movie");
-		driver.delete("message");
-		driver.delete("reminder");
+        driver.delete("movie");
+        driver.delete("message");
+        driver.delete("reminder");
     }
 
     @Test
@@ -85,29 +82,41 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testCreateAlreadyExistsId() {
-        assertThrows(SurrealRecordAlreadyExitsException.class, () -> {
-            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-            driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-        });
+        assertThrows(
+                SurrealRecordAlreadyExitsException.class,
+                () -> {
+                    driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+                    driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+                });
     }
 
     @Test
     public void testCreateAlreadyExistsUsingUniqueIndex() {
-        assertThrows(UniqueIndexViolationException.class, () -> {
-            driver.query("DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE", Collections.emptyMap(), Object.class);
-            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
-            driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
-        });
+        assertThrows(
+                UniqueIndexViolationException.class,
+                () -> {
+                    driver.query(
+                            "DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE",
+                            Collections.emptyMap(),
+                            Object.class);
+                    driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                    driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                });
 
         // cleanup
-        driver.query("REMOVE INDEX fullNameUniqueIndex ON TABLE person", Collections.emptyMap(), Object.class);
+        driver.query(
+                "REMOVE INDEX fullNameUniqueIndex ON TABLE person",
+                Collections.emptyMap(),
+                Object.class);
     }
 
     @Test
     public void testQuery() {
         Map<String, String> args = new HashMap<>();
         args.put("firstName", "Tobie");
-        List<QueryResult<Person>> actual = driver.query("select * from person where name.first = $firstName", args, Person.class);
+        List<QueryResult<Person>> actual =
+                driver.query(
+                        "select * from person where name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size()); // number of queries
         assertEquals("OK", actual.get(0).getStatus()); // first query executed successfully
@@ -174,11 +183,11 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testPatchOne() {
-        List<Patch> patches = Arrays.asList(
-            new ReplacePatch("/name/first", "Khalid"),
-            new ReplacePatch("/name/last", "Alharisi"),
-            new ReplacePatch("/title", "Engineer")
-        );
+        List<Patch> patches =
+                Arrays.asList(
+                        new ReplacePatch("/name/first", "Khalid"),
+                        new ReplacePatch("/name/last", "Alharisi"),
+                        new ReplacePatch("/title", "Engineer"));
 
         driver.patch("person:1", patches);
         List<Person> actual = driver.select("person:1", Person.class);
@@ -191,21 +200,22 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testPatchAll() {
-        List<Patch> patches = Arrays.asList(
-            new ReplacePatch("/name/first", "Khalid"),
-            new ReplacePatch("/name/last", "Alharisi"),
-            new ReplacePatch("/title", "Engineer")
-        );
+        List<Patch> patches =
+                Arrays.asList(
+                        new ReplacePatch("/name/first", "Khalid"),
+                        new ReplacePatch("/name/last", "Alharisi"),
+                        new ReplacePatch("/title", "Engineer"));
 
         driver.patch("person", patches);
         List<Person> actual = driver.select("person", Person.class);
 
         assertEquals(2, actual.size());
-        actual.forEach(person -> {
-            assertEquals("Khalid", person.getName().getFirst());
-            assertEquals("Alharisi", person.getName().getLast());
-            assertEquals("Engineer", person.getTitle());
-        });
+        actual.forEach(
+                person -> {
+                    assertEquals("Khalid", person.getName().getFirst());
+                    assertEquals("Alharisi", person.getName().getLast());
+                    assertEquals("Engineer", person.getTitle());
+                });
     }
 
     @Test
@@ -222,25 +232,25 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertEquals(0, actual.size());
     }
 
-	@Test
-	public void testLocalDate() {
+    @Test
+    public void testLocalDate() {
         LocalDate date = LocalDate.parse("2022-05-13");
-		Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
+        Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
 
-		Movie select = driver.create("movie", insert);
-		assertNotNull(select.getRelease());
-		assertEquals(date, select.getRelease());
-	}
+        Movie select = driver.create("movie", insert);
+        assertNotNull(select.getRelease());
+        assertEquals(date, select.getRelease());
+    }
 
-	@Test
-	public void testLocalDateTime() {
+    @Test
+    public void testLocalDateTime() {
         LocalDateTime time = LocalDateTime.now();
         Reminder insert = new Reminder("Pass this test", time);
 
         Reminder select = driver.create("reminder", insert);
         assertNotNull(select.getTime());
         assertEquals(time, select.getTime());
-	}
+    }
 
     @Test
     public void testZonedDateTime() {
