@@ -116,9 +116,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                     // The protocol can sometimes send object instead of array when only 1 response
                     // is valid
                     if (responseElement.isJsonObject()) {
-                        JsonArray jsonArray = new JsonArray(1);
-                        jsonArray.add(responseElement);
-                        deserialised = gson.fromJson(jsonArray, resultType);
+                        deserialised = gson.fromJson(responseElement, resultType);
                     } else if (responseElement.isJsonArray()) {
                         JsonArray jsonArray = responseElement.getAsJsonArray();
                         deserialised = gson.fromJson(jsonArray, resultType);
