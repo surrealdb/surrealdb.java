@@ -1,5 +1,7 @@
 package com.surrealdb.refactor.driver;
 
+import com.google.gson.*;
+import com.surrealdb.refactor.driver.parsing.ResultParser;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,7 +35,6 @@ public class WsPlaintextConnection {
 
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
-
     public WsPlaintextConnection() {}
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(final URI uri) {
@@ -45,67 +46,67 @@ public class WsPlaintextConnection {
             throw new RuntimeException(e);
         }
 
-        return credentials -> {
-            final SurrealDBWebsocketClientProtocolHandler srdbHandler =
-                    (SurrealDBWebsocketClientProtocolHandler)
-                            channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
-            final Object result;
-            try {
-                result = srdbHandler.signin(credentials).get(2, TimeUnit.SECONDS);
-            } catch (final InterruptedException | ExecutionException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.printf("Successfully signed in: %s\n", result);
-            final BidirectionalSurrealDB surrealdb =
-                    (query, params) -> {
-                        JsonObject resp = null;
+        return new UnauthenticatedSurrealDB<BidirectionalSurrealDB>() {
+            @Override
+            public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(Credentials credentials) {
+                SurrealDBWebsocketClientProtocolHandler srdbHandler =
+                        (SurrealDBWebsocketClientProtocolHandler)
+                                channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
+                Object result;
+                try {
+                    result = srdbHandler.signin(credentials).get(2, TimeUnit.SECONDS);
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.printf("Successfully signed in: %s\n", result);
+                BidirectionalSurrealDB surrealdb =
+                        new BidirectionalSurrealDB() {
+
+                            private ResultParser resultParser;
+
+							@Override
+                            public QueryBlockResult query(String query, List<Param> params) {
+                                JsonObject resp = null;
+                                try {
+                                    resp =
+                                            srdbHandler
+                                                    .query(
+                                                            UUID.randomUUID().toString(),
+                                                            query,
+                                                            params)
+                                                    .get(2, TimeUnit.SECONDS);
+                                } catch (InterruptedException
+                                        | ExecutionException
+                                        | TimeoutException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                // Process the query list
+                                if (!resp.has("result")) {
+                                    throw new UnhandledProtocolResponse(
+                                            "Expected the response to contain a result");
+                                }
+                                JsonElement outerResultJson = resp.get("result");
+                                QueryResult[] processedOuterResults;
+                                this.resultParser = new ResultParser();
+
+                                // parses the Json Element if it is an object or an array
+
+                                processedOuterResults =
+                                        resultParser.parseResultMessage(outerResultJson);
+
+                                return new QueryBlockResult(Arrays.asList(processedOuterResults));
+                            }
+                        };
+                return new UnusedSurrealDB<>() {
+                    @Override
+                    public BidirectionalSurrealDB use() {
                         try {
-                            resp =
-                                    srdbHandler
-                                            .query(UUID.randomUUID().toString(), query, params)
-                                            .get(2, TimeUnit.SECONDS);
-                        } catch (final InterruptedException
-                                | ExecutionException
-                                | TimeoutException e) {
+                            Object use = srdbHandler.use(null, null).get(2, TimeUnit.SECONDS);
+                            return surrealdb;
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
                             throw new RuntimeException(e);
                         }
-                        // Process the query list
-                        if (!resp.has("result")) {
-                            throw new UnhandledProtocolResponse(
-                                    "Expected the response to contain a result");
-                        }
-                        final JsonElement outerResultJson = resp.get("result");
-                        final QueryResult[] processedOuterResults;
-                        if (outerResultJson.isJsonArray()) {
-                            final JsonArray outerResultArray = outerResultJson.getAsJsonArray();
-                            processedOuterResults = new QueryResult[outerResultArray.size()];
-                            for (int i = 0; i < outerResultArray.size(); i++) {
-                                final JsonElement innerResultJson = outerResultArray.get(i);
-                                if (!innerResultJson.isJsonObject()) {
-                                    throw new UnhandledProtocolResponse(
-                                            "Expected the result to be an object");
-                                }
-                                final QueryResult val =
-                                        new JsonQueryResultParser().parse(innerResultJson);
-                                processedOuterResults[i] = val;
-                            }
-                        } else {
-                            throw new SurrealDBUnimplementedException(
-                                    "https://github.com/surrealdb/surrealdb.java/issues/75",
-                                    "The response contained results that were not in an array");
-                        }
-                        return new QueryBlockResult(Arrays.asList(processedOuterResults));
-                    };
-            return new UnusedSurrealDB<>() {
-                @Override
-                public BidirectionalSurrealDB use() {
-                    try {
-                        final Object use = srdbHandler.use(null, null).get(2, TimeUnit.SECONDS);
-                        return surrealdb;
-                    } catch (final InterruptedException | ExecutionException | TimeoutException e) {
-                        throw new RuntimeException(e);
                     }
-                }
 
                 @Override
                 public BidirectionalSurrealDB use(final String namespace) {
