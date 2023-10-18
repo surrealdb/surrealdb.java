@@ -42,7 +42,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        SurrealWebSocketConnection connection =
+        final SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
         this.driver = new SyncSurrealDriver(connection);
@@ -58,10 +58,10 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @AfterEach
     public void teardown() {
-        driver.delete("person");
-        driver.delete("movie");
-        driver.delete("message");
-        driver.delete("reminder");
+        this.driver.delete("person");
+        this.driver.delete("movie");
+        this.driver.delete("message");
+        this.driver.delete("reminder");
     }
 
     @Test
@@ -87,8 +87,10 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertThrows(
                 SurrealRecordAlreadyExitsException.class,
                 () -> {
-                    driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-                    driver.create("person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+                    this.driver.create(
+                            "person:3", new Person("Engineer", "Khalid", "Alharisi", false));
+                    this.driver.create(
+                            "person:3", new Person("Engineer", "Khalid", "Alharisi", false));
                 });
     }
 
@@ -97,16 +99,16 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertThrows(
                 UniqueIndexViolationException.class,
                 () -> {
-                    driver.query(
+                    this.driver.query(
                             "DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE",
                             Collections.emptyMap(),
                             Object.class);
-                    driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
-                    driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                    this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                    this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
                 });
 
         // cleanup
-        driver.query(
+        this.driver.query(
                 "REMOVE INDEX fullNameUniqueIndex ON TABLE person",
                 Collections.emptyMap(),
                 Object.class);
@@ -116,8 +118,8 @@ public class SurrealDriverTest extends BaseIntegrationTest {
     public void testQuery() {
         final Map<String, String> args = new HashMap<>();
         args.put("firstName", "Tobie");
-        List<QueryResult<Person>> actual =
-                driver.query(
+        final List<QueryResult<Person>> actual =
+                this.driver.query(
                         "select * from person where name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size()); // number of queries
@@ -185,7 +187,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testPatchOne() {
-        List<Patch> patches =
+        final List<Patch> patches =
                 Arrays.asList(
                         new ReplacePatch("/name/first", "Khalid"),
                         new ReplacePatch("/name/last", "Alharisi"),
@@ -202,7 +204,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testPatchAll() {
-        List<Patch> patches =
+        final List<Patch> patches =
                 Arrays.asList(
                         new ReplacePatch("/name/first", "Khalid"),
                         new ReplacePatch("/name/last", "Alharisi"),
@@ -236,18 +238,18 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testLocalDate() {
-        LocalDate date = LocalDate.parse("2022-05-13");
-        Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
+        final LocalDate date = LocalDate.parse("2022-05-13");
+        final Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
 
-        Movie select = driver.create("movie", insert);
+        final Movie select = this.driver.create("movie", insert);
         assertNotNull(select.getRelease());
         assertEquals(date, select.getRelease());
     }
 
     @Test
     public void testLocalDateTime() {
-        LocalDateTime time = LocalDateTime.now();
-        Reminder insert = new Reminder("Pass this test", time);
+        final LocalDateTime time = LocalDateTime.now();
+        final Reminder insert = new Reminder("Pass this test", time);
 
         final Reminder select = this.driver.create("reminder", insert);
         assertNotNull(select.getTime());

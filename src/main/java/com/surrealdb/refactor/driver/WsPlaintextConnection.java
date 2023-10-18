@@ -1,13 +1,11 @@
 package com.surrealdb.refactor.driver;
 
-import com.google.gson.*;
-import com.surrealdb.refactor.driver.parsing.ResultParser;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.surrealdb.refactor.driver.parsing.JsonQueryResultParser;
-import com.surrealdb.refactor.exception.SurrealDBUnimplementedException;
+import com.surrealdb.refactor.driver.parsing.ResultParser;
 import com.surrealdb.refactor.exception.UnhandledProtocolResponse;
+import com.surrealdb.refactor.types.Credentials;
+import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
 import com.surrealdb.refactor.types.QueryResult;
 import io.netty.bootstrap.Bootstrap;
@@ -24,6 +22,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +34,7 @@ public class WsPlaintextConnection {
 
     private static final EventLoopGroup group = new NioEventLoopGroup();
     private static final int MAX_CONTENT_LENGTH = 65536;
+
     public WsPlaintextConnection() {}
 
     public static UnauthenticatedSurrealDB<BidirectionalSurrealDB> connect(final URI uri) {
@@ -46,27 +46,29 @@ public class WsPlaintextConnection {
             throw new RuntimeException(e);
         }
 
-        return new UnauthenticatedSurrealDB<BidirectionalSurrealDB>() {
+        return new UnauthenticatedSurrealDB<>() {
             @Override
-            public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(Credentials credentials) {
-                SurrealDBWebsocketClientProtocolHandler srdbHandler =
+            public UnusedSurrealDB<BidirectionalSurrealDB> authenticate(
+                    final Credentials credentials) {
+                final SurrealDBWebsocketClientProtocolHandler srdbHandler =
                         (SurrealDBWebsocketClientProtocolHandler)
                                 channel.pipeline().get(HANDLER_ID_SURREALDB_CLIENT);
-                Object result;
+                final Object result;
                 try {
                     result = srdbHandler.signin(credentials).get(2, TimeUnit.SECONDS);
-                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                } catch (final InterruptedException | ExecutionException | TimeoutException e) {
                     throw new RuntimeException(e);
                 }
                 System.out.printf("Successfully signed in: %s\n", result);
-                BidirectionalSurrealDB surrealdb =
+                final BidirectionalSurrealDB surrealdb =
                         new BidirectionalSurrealDB() {
 
                             private ResultParser resultParser;
 
-							@Override
-                            public QueryBlockResult query(String query, List<Param> params) {
-                                JsonObject resp = null;
+                            @Override
+                            public QueryBlockResult query(
+                                    final String query, final List<Param> params) {
+                                final JsonObject resp;
                                 try {
                                     resp =
                                             srdbHandler
@@ -75,7 +77,7 @@ public class WsPlaintextConnection {
                                                             query,
                                                             params)
                                                     .get(2, TimeUnit.SECONDS);
-                                } catch (InterruptedException
+                                } catch (final InterruptedException
                                         | ExecutionException
                                         | TimeoutException e) {
                                     throw new RuntimeException(e);
@@ -85,14 +87,13 @@ public class WsPlaintextConnection {
                                     throw new UnhandledProtocolResponse(
                                             "Expected the response to contain a result");
                                 }
-                                JsonElement outerResultJson = resp.get("result");
-                                QueryResult[] processedOuterResults;
+                                final JsonElement outerResultJson = resp.get("result");
+                                final QueryResult[] processedOuterResults;
                                 this.resultParser = new ResultParser();
 
                                 // parses the Json Element if it is an object or an array
-
                                 processedOuterResults =
-                                        resultParser.parseResultMessage(outerResultJson);
+                                        this.resultParser.parseResultMessage(outerResultJson);
 
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }
@@ -101,35 +102,43 @@ public class WsPlaintextConnection {
                     @Override
                     public BidirectionalSurrealDB use() {
                         try {
-                            Object use = srdbHandler.use(null, null).get(2, TimeUnit.SECONDS);
+                            final Object use = srdbHandler.use(null, null).get(2, TimeUnit.SECONDS);
                             return surrealdb;
-                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        } catch (final InterruptedException
+                                | ExecutionException
+                                | TimeoutException e) {
                             throw new RuntimeException(e);
                         }
                     }
 
-                @Override
-                public BidirectionalSurrealDB use(final String namespace) {
-                    try {
-                        final Object use =
-                                srdbHandler.use(namespace, null).get(2, TimeUnit.SECONDS);
-                        return surrealdb;
-                    } catch (final InterruptedException | ExecutionException | TimeoutException e) {
-                        throw new RuntimeException(e);
+                    @Override
+                    public BidirectionalSurrealDB use(final String namespace) {
+                        try {
+                            final Object use =
+                                    srdbHandler.use(namespace, null).get(2, TimeUnit.SECONDS);
+                            return surrealdb;
+                        } catch (final InterruptedException
+                                | ExecutionException
+                                | TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
 
-                @Override
-                public BidirectionalSurrealDB use(final String namespace, final String database) {
-                    try {
-                        final Object use =
-                                srdbHandler.use(namespace, database).get(2, TimeUnit.SECONDS);
-                        return surrealdb;
-                    } catch (final InterruptedException | ExecutionException | TimeoutException e) {
-                        throw new RuntimeException(e);
+                    @Override
+                    public BidirectionalSurrealDB use(
+                            final String namespace, final String database) {
+                        try {
+                            final Object use =
+                                    srdbHandler.use(namespace, database).get(2, TimeUnit.SECONDS);
+                            return surrealdb;
+                        } catch (final InterruptedException
+                                | ExecutionException
+                                | TimeoutException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
-            };
+                };
+            }
         };
     }
 

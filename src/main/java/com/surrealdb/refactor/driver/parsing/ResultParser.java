@@ -14,9 +14,9 @@ public class ResultParser {
 
     public ResultParser() {}
 
-    public QueryResult[] parseResultMessage(JsonElement resultMessage) {
+    public QueryResult[] parseResultMessage(final JsonElement resultMessage) {
         //  QueryResult[] processedOuterResults;
-        JsonArray outerResultArray;
+        final JsonArray outerResultArray;
 
         if (resultMessage.isJsonObject()) {
             outerResultArray = this.parseResultMessageObject(resultMessage.getAsJsonObject());
@@ -29,52 +29,53 @@ public class ResultParser {
         return this.parseProcessedOuterResults(outerResultArray);
     }
 
-    public JsonArray parseResultMessageObject(JsonObject resultMessage) {
-        JsonArray innerResultArray = new JsonArray();
-        JsonObject jsonPrimitives = new JsonObject();
-        JsonObject resultObject =
-                getJsonPrimitives(resultMessage.getAsJsonObject(), jsonPrimitives);
+    public JsonArray parseResultMessageObject(final JsonObject resultMessage) {
+        final JsonArray innerResultArray = new JsonArray();
+        final JsonObject jsonPrimitives = new JsonObject();
+        final JsonObject resultObject =
+                this.getJsonPrimitives(resultMessage.getAsJsonObject(), jsonPrimitives);
 
         innerResultArray.add(resultObject);
 
         // add the status time and result properties to the result message
-        JsonObject preparedJsonObject = new JsonObject();
+        final JsonObject preparedJsonObject = new JsonObject();
 
         preparedJsonObject.addProperty("status", "ok");
         preparedJsonObject.addProperty("time", System.currentTimeMillis());
         preparedJsonObject.add("result", innerResultArray);
 
         // add prepared object to an array
-        JsonArray outerResultArray = new JsonArray();
+        final JsonArray outerResultArray = new JsonArray();
         outerResultArray.add(preparedJsonObject);
 
         return outerResultArray;
     }
 
-    public QueryResult[] parseProcessedOuterResults(JsonArray outerResultArray) {
-        QueryResult[] processedOuterResults = new QueryResult[outerResultArray.size()];
+    public QueryResult[] parseProcessedOuterResults(final JsonArray outerResultArray) {
+        final QueryResult[] processedOuterResults = new QueryResult[outerResultArray.size()];
 
         for (int i = 0; i < outerResultArray.size(); i++) {
-            JsonElement innerResultJson = outerResultArray.get(i);
+            final JsonElement innerResultJson = outerResultArray.get(i);
             if (!innerResultJson.isJsonObject()) {
                 throw new UnhandledProtocolResponse("Expected the result to be an object");
             }
-            QueryResult val = new JsonQueryResultParser().parse(innerResultJson);
+            final QueryResult val = new JsonQueryResultParser().parse(innerResultJson);
             processedOuterResults[i] = val;
         }
 
         return processedOuterResults;
     }
 
-    public JsonObject getJsonPrimitives(JsonObject oldJsonObject, JsonObject jsonPrimitives) {
+    public JsonObject getJsonPrimitives(
+            final JsonObject oldJsonObject, final JsonObject jsonPrimitives) {
 
-        Set<Entry<String, JsonElement>> iterableResult = oldJsonObject.entrySet();
-        for (Entry<String, JsonElement> property : iterableResult) {
+        final Set<Entry<String, JsonElement>> iterableResult = oldJsonObject.entrySet();
+        for (final Entry<String, JsonElement> property : iterableResult) {
 
             if (property.getValue().isJsonPrimitive()) {
                 jsonPrimitives.add(property.getKey(), property.getValue());
             } else {
-                getJsonPrimitives(property.getValue().getAsJsonObject(), jsonPrimitives);
+                this.getJsonPrimitives(property.getValue().getAsJsonObject(), jsonPrimitives);
             }
         }
 

@@ -13,26 +13,26 @@ public class QueryResult<T> {
     private String time;
 
     public List<T> getResult() {
-        return result;
+        return this.result;
     }
 
-    public void setResult(List<T> result) {
+    public void setResult(final List<T> result) {
         this.result = result;
     }
 
     public String getStatus() {
-        return status;
+        return this.status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(final String status) {
         this.status = status;
     }
 
     public String getTime() {
-        return time;
+        return this.time;
     }
 
-    public void setTime(String time) {
+    public void setTime(final String time) {
         this.time = time;
     }
 }

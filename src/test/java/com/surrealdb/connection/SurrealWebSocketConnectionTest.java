@@ -6,7 +6,6 @@ import com.surrealdb.driver.SyncSurrealDriver;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +13,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@Slf4j
 class SurrealWebSocketConnectionTest {
 
     private static final String localAddr = "ws://localhost";
@@ -29,7 +27,7 @@ class SurrealWebSocketConnectionTest {
     @DisplayName("Can create a Connection")
     @ParameterizedTest(name = "Can create a Connection for {3}")
     @MethodSource("urlProvider")
-    public void canCreateAConnectionWithAppropriateUrl(
+    void canCreateAConnectionWithAppropriateUrl(
             final String host, final int port, final boolean useTls, final String expectedUrl) {
         final SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(host, port, useTls);
@@ -37,7 +35,7 @@ class SurrealWebSocketConnectionTest {
     }
 
     @Test
-    public void canHandleSingleObjectResult() {
+    void canHandleSingleObjectResult() {
         final SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(localAddr, localPort, false);
         connection.connect(1);

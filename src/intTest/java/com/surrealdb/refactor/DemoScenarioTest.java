@@ -14,12 +14,11 @@ import com.surrealdb.connection.SurrealWebSocketConnection;
 import com.surrealdb.driver.SyncSurrealDriver;
 import com.surrealdb.driver.model.Person;
 import com.surrealdb.driver.model.QueryResult;
-import com.surrealdb.refactor.driver.*;
-import com.surrealdb.refactor.driver.parsing.ResultParser;
 import com.surrealdb.refactor.driver.BidirectionalSurrealDB;
 import com.surrealdb.refactor.driver.SurrealDBFactory;
 import com.surrealdb.refactor.driver.UnauthenticatedSurrealDB;
 import com.surrealdb.refactor.driver.UnusedSurrealDB;
+import com.surrealdb.refactor.driver.parsing.ResultParser;
 import com.surrealdb.refactor.types.Credentials;
 import com.surrealdb.refactor.types.Param;
 import com.surrealdb.refactor.types.QueryBlockResult;
@@ -41,47 +40,51 @@ public class DemoScenarioTest extends BaseIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        SurrealWebSocketConnection connection =
+        final SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
-        driver = new SyncSurrealDriver(connection);
+        this.driver = new SyncSurrealDriver(connection);
 
-        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        this.driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        driver.create("person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        driver.create("person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
+        this.driver.create(
+                "person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+        this.driver.create(
+                "person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
     }
 
     @AfterEach
     public void teardown() {
-        driver.delete("person");
-        driver.delete("movie");
-        driver.delete("message");
-        driver.delete("reminder");
+        this.driver.delete("person");
+        this.driver.delete("movie");
+        this.driver.delete("message");
+        this.driver.delete("reminder");
     }
 
     @Test
     public void testSingleQueryResult() {
         // declarations
-        com.surrealdb.refactor.types.QueryResult[] processedOuterResults;
-        Gson gson = new Gson();
+        final com.surrealdb.refactor.types.QueryResult[] processedOuterResults;
+        final Gson gson = new Gson();
         this.resultParser = new ResultParser();
 
         // given
-        StringBuilder query = new StringBuilder("Create person SET title = 'Founder & CEO', ");
+        final StringBuilder query =
+                new StringBuilder("Create person SET title = 'Founder & CEO', ");
         query.append("name.first = 'Tobie', name.last = 'Morgan Hitchcock', marketing = 'true' \n");
         // surrealDB.query
-        Map<String, String> args = new HashMap<>();
-        List<QueryResult<Person>> response = driver.query(query.toString(), args, Person.class);
-        Person singlePerson = response.get(0).getResult().get(0);
+        final Map<String, String> args = new HashMap<>();
+        final List<QueryResult<Person>> response =
+                this.driver.query(query.toString(), args, Person.class);
+        final Person singlePerson = response.get(0).getResult().get(0);
 
         // when
-        String resultString = gson.toJson(singlePerson);
-        JsonElement results = JsonParser.parseString(resultString);
-        processedOuterResults = resultParser.parseResultMessage(results);
+        final String resultString = gson.toJson(singlePerson);
+        final JsonElement results = JsonParser.parseString(resultString);
+        processedOuterResults = this.resultParser.parseResultMessage(results);
 
-        driver.delete("person");
+        this.driver.delete("person");
 
         // then
         assertEquals(1, processedOuterResults.length);
