@@ -18,10 +18,10 @@ public class InvalidAddressException extends SurrealDBException {
     }
 
     public Optional<URI> getAddress() {
-        return Optional.ofNullable(this.address);
+        return Optional.ofNullable(address);
     }
 
     public InvalidAddressExceptionCause getCauseType() {
-        return this.causeType;
+        return causeType;
     }
 }

@@ -24,6 +24,6 @@ public class SurrealException extends RuntimeException {
     }
 
     Optional<RpcResponse.Error> getResponse() {
-        return Optional.ofNullable(this.response);
+        return Optional.ofNullable(response);
     }
 }

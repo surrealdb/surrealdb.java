@@ -45,23 +45,23 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         final SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
-        this.driver = new SyncSurrealDriver(connection);
+        driver = new SyncSurrealDriver(connection);
 
-        this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        this.driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        this.driver.create(
+        driver.create(
                 "person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        this.driver.create(
+        driver.create(
                 "person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
     }
 
     @AfterEach
     public void teardown() {
-        this.driver.delete("person");
-        this.driver.delete("movie");
-        this.driver.delete("message");
-        this.driver.delete("reminder");
+        driver.delete("person");
+        driver.delete("movie");
+        driver.delete("message");
+        driver.delete("reminder");
     }
 
     @Test
@@ -69,7 +69,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
 
-        person = this.driver.create("person", person);
+        person = driver.create("person", person);
         assertNotNull(person.getId());
     }
 
@@ -78,7 +78,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         Person person = new Person("Engineer", "Khalid", "Alharisi", false);
         assertNull(person.getId());
 
-        person = this.driver.create("person:3", person);
+        person = driver.create("person:3", person);
         assertEquals("person:3", person.getId());
     }
 
@@ -87,9 +87,9 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertThrows(
                 SurrealRecordAlreadyExitsException.class,
                 () -> {
-                    this.driver.create(
+                    driver.create(
                             "person:3", new Person("Engineer", "Khalid", "Alharisi", false));
-                    this.driver.create(
+                    driver.create(
                             "person:3", new Person("Engineer", "Khalid", "Alharisi", false));
                 });
     }
@@ -99,16 +99,16 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         assertThrows(
                 UniqueIndexViolationException.class,
                 () -> {
-                    this.driver.query(
+                    driver.query(
                             "DEFINE INDEX fullNameUniqueIndex ON TABLE person COLUMNS name.first, name.last UNIQUE",
                             Collections.emptyMap(),
                             Object.class);
-                    this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
-                    this.driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                    driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
+                    driver.create("person", new Person("Artist", "Mia", "Mcgee", false));
                 });
 
         // cleanup
-        this.driver.query(
+        driver.query(
                 "REMOVE INDEX fullNameUniqueIndex ON TABLE person",
                 Collections.emptyMap(),
                 Object.class);
@@ -119,7 +119,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         final Map<String, String> args = new HashMap<>();
         args.put("firstName", "Tobie");
         final List<QueryResult<Person>> actual =
-                this.driver.query(
+                driver.query(
                         "select * from person where name.first = $firstName", args, Person.class);
 
         assertEquals(1, actual.size()); // number of queries
@@ -132,7 +132,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         final Person expected = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
         expected.setId("person:1");
 
-        final List<Person> actual = this.driver.select("person:1", Person.class);
+        final List<Person> actual = driver.select("person:1", Person.class);
 
         assertEquals(1, actual.size());
         assertEquals(expected, actual.get(0));
@@ -140,7 +140,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testSelectDoesNotExist() {
-        final List<Person> actual = this.driver.select("person:500", Person.class);
+        final List<Person> actual = driver.select("person:500", Person.class);
         assertEquals(0, actual.size());
     }
 
@@ -149,7 +149,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         final Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
         expected.setId("person:1");
 
-        final List<Person> actual = this.driver.update("person:1", expected);
+        final List<Person> actual = driver.update("person:1", expected);
 
         assertEquals(1, actual.size());
         assertEquals(expected, actual.get(0));
@@ -159,7 +159,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
     public void testUpdateAll() {
         final Person expected = new Person("Engineer", "Khalid", "Alharisi", false);
 
-        final List<Person> actual = this.driver.update("person", expected);
+        final List<Person> actual = driver.update("person", expected);
 
         assertEquals(2, actual.size());
         actual.forEach(person -> assertEquals(expected.getTitle(), person.getTitle()));
@@ -169,7 +169,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
     public void testChangeOne() {
         final PartialPerson patch = new PartialPerson(false);
 
-        final List<Person> actual = this.driver.change("person:2", patch, Person.class);
+        final List<Person> actual = driver.change("person:2", patch, Person.class);
 
         assertEquals(1, actual.size());
         assertEquals(patch.isMarketing(), actual.get(0).isMarketing());
@@ -179,7 +179,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
     public void testChangeAll() {
         final PartialPerson patch = new PartialPerson(false);
 
-        final List<Person> actual = this.driver.change("person", patch, Person.class);
+        final List<Person> actual = driver.change("person", patch, Person.class);
 
         assertEquals(2, actual.size());
         actual.forEach(person -> assertEquals(patch.isMarketing(), person.isMarketing()));
@@ -193,8 +193,8 @@ public class SurrealDriverTest extends BaseIntegrationTest {
                         new ReplacePatch("/name/last", "Alharisi"),
                         new ReplacePatch("/title", "Engineer"));
 
-        this.driver.patch("person:1", patches);
-        final List<Person> actual = this.driver.select("person:1", Person.class);
+        driver.patch("person:1", patches);
+        final List<Person> actual = driver.select("person:1", Person.class);
 
         assertEquals(1, actual.size());
         assertEquals("Khalid", actual.get(0).getName().getFirst());
@@ -210,8 +210,8 @@ public class SurrealDriverTest extends BaseIntegrationTest {
                         new ReplacePatch("/name/last", "Alharisi"),
                         new ReplacePatch("/title", "Engineer"));
 
-        this.driver.patch("person", patches);
-        final List<Person> actual = this.driver.select("person", Person.class);
+        driver.patch("person", patches);
+        final List<Person> actual = driver.select("person", Person.class);
 
         assertEquals(2, actual.size());
         actual.forEach(
@@ -224,15 +224,15 @@ public class SurrealDriverTest extends BaseIntegrationTest {
 
     @Test
     public void testDeleteOne() {
-        this.driver.delete("person:1");
-        final List<Person> actual = this.driver.select("person:1", Person.class);
+        driver.delete("person:1");
+        final List<Person> actual = driver.select("person:1", Person.class);
         assertEquals(0, actual.size());
     }
 
     @Test
     public void testDeleteAll() {
-        this.driver.delete("person");
-        final List<Person> actual = this.driver.select("person", Person.class);
+        driver.delete("person");
+        final List<Person> actual = driver.select("person", Person.class);
         assertEquals(0, actual.size());
     }
 
@@ -241,7 +241,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         final LocalDate date = LocalDate.parse("2022-05-13");
         final Movie insert = new Movie("Everything Everywhere All at Once", 9, date);
 
-        final Movie select = this.driver.create("movie", insert);
+        final Movie select = driver.create("movie", insert);
         assertNotNull(select.getRelease());
         assertEquals(date, select.getRelease());
     }
@@ -251,7 +251,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
         final LocalDateTime time = LocalDateTime.now();
         final Reminder insert = new Reminder("Pass this test", time);
 
-        final Reminder select = this.driver.create("reminder", insert);
+        final Reminder select = driver.create("reminder", insert);
         assertNotNull(select.getTime());
         assertEquals(time, select.getTime());
     }
@@ -263,7 +263,7 @@ public class SurrealDriverTest extends BaseIntegrationTest {
                 LocalDateTime.parse("2022-02-02T20:00:00").atZone(ZoneOffset.UTC);
         final Message insert = new Message("This is surreal", time);
 
-        final Message select = this.driver.create("message", insert);
+        final Message select = driver.create("message", insert);
         assertNotNull(select.getTimestamp());
         assertEquals(timeAtUTC, select.getTimestamp());
     }

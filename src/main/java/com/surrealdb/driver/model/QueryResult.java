@@ -13,7 +13,7 @@ public class QueryResult<T> {
     private String time;
 
     public List<T> getResult() {
-        return this.result;
+        return result;
     }
 
     public void setResult(final List<T> result) {
@@ -21,7 +21,7 @@ public class QueryResult<T> {
     }
 
     public String getStatus() {
-        return this.status;
+        return status;
     }
 
     public void setStatus(final String status) {
@@ -29,7 +29,7 @@ public class QueryResult<T> {
     }
 
     public String getTime() {
-        return this.time;
+        return time;
     }
 
     public void setTime(final String time) {

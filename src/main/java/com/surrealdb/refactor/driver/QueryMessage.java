@@ -16,7 +16,7 @@ public class QueryMessage {
     private final JsonArray params;
 
     public QueryMessage(final String requestID, final String query, final List<Param> params) {
-        this.id = requestID;
+        id = requestID;
         final JsonArray requestParamList = new JsonArray();
         // First item in list is string of the query
         requestParamList.add(query);

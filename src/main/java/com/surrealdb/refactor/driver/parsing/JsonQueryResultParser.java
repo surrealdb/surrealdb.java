@@ -40,31 +40,31 @@ public class JsonQueryResultParser {
         }
         final JsonObject jsonObject = jsonElement.getAsJsonObject();
         final String status =
-                this.forceGet(
+                forceGet(
                                 jsonObject,
                                 "status",
                                 new UnhandledProtocolResponse(
                                         "Expected the object to have a status"))
                         .getAsString();
         final String time =
-                this.forceGet(
+                forceGet(
                                 jsonObject,
                                 "time",
                                 new UnhandledProtocolResponse("Expected the object to have a time"))
                         .getAsString();
         final JsonElement result =
-                this.forceGet(
+                forceGet(
                         jsonObject,
                         "result",
                         new UnhandledProtocolResponse("Expected the object to contain a result"));
         final List<Value> valueList = new ArrayList<>();
         if (result.isJsonObject()) {
             final JsonObject object = result.getAsJsonObject();
-            valueList.add(this.parseValue(object));
+            valueList.add(parseValue(object));
         } else if (result.isJsonArray()) {
             final JsonArray array = result.getAsJsonArray();
             for (final JsonElement arrayElement : array) {
-                valueList.add(this.parseValue(arrayElement));
+                valueList.add(parseValue(arrayElement));
             }
         } else {
             throw new UnhandledProtocolResponse(

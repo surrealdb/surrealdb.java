@@ -15,7 +15,7 @@ public class SurrealDBUnimplementedException extends SurrealDBException {
     public SurrealDBUnimplementedException(final String ticket, final String message) {
         super(message);
         try {
-            this.ticketLink = new URL(ticket);
+            ticketLink = new URL(ticket);
         } catch (final MalformedURLException e) {
             throw new RuntimeException(e);
         }

@@ -16,7 +16,7 @@ class SurrealJDBCConnectionTest {
     @SneakyThrows
     @Test
     void createStatement() {
-        assertInstanceOf(Statement.class, this.jdbcConnection.createStatement());
+        assertInstanceOf(Statement.class, jdbcConnection.createStatement());
     }
 
     @SneakyThrows
@@ -24,314 +24,314 @@ class SurrealJDBCConnectionTest {
     void prepareStatement() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareStatement("SELECT * FROM "));
+                () -> jdbcConnection.prepareStatement("SELECT * FROM "));
     }
 
     @Test
     void prepareCall() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareCall("SELECT * FROM "));
+                () -> jdbcConnection.prepareCall("SELECT * FROM "));
     }
 
     @Test
     void nativeSQL() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.nativeSQL("SELECT * FROM "));
+                () -> jdbcConnection.nativeSQL("SELECT * FROM "));
     }
 
     @Test
     void setAutoCommit() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.setAutoCommit(false));
+                () -> jdbcConnection.setAutoCommit(false));
     }
 
     @Test
     void getAutoCommit() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getAutoCommit);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getAutoCommit);
     }
 
     @Test
     void commit() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::commit);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::commit);
     }
 
     @Test
     void rollback() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::rollback);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::rollback);
     }
 
     @Test
     void close() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::close);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::close);
     }
 
     @Test
     void isClosed() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::isClosed);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::isClosed);
     }
 
     @Test
     void getMetaData() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getMetaData);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getMetaData);
     }
 
     @Test
     void setReadOnly() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setReadOnly(false));
+                UnsupportedOperationException.class, () -> jdbcConnection.setReadOnly(false));
     }
 
     @Test
     void isReadOnly() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::isReadOnly);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::isReadOnly);
     }
 
     @Test
     void setCatalog() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.setCatalog("a catalogue"));
+                () -> jdbcConnection.setCatalog("a catalogue"));
     }
 
     @Test
     void getCatalog() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getCatalog);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getCatalog);
     }
 
     @Test
     void setTransactionIsolation() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.setTransactionIsolation(0));
+                () -> jdbcConnection.setTransactionIsolation(0));
     }
 
     @Test
     void getTransactionIsolation() {
         assertThrows(
-                UnsupportedOperationException.class, this.jdbcConnection::getTransactionIsolation);
+                UnsupportedOperationException.class, jdbcConnection::getTransactionIsolation);
     }
 
     @Test
     void getWarnings() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getWarnings);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getWarnings);
     }
 
     @Test
     void clearWarnings() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::close);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::close);
     }
 
     @Test
     void testCreateStatement() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.createStatement(0, 0));
+                () -> jdbcConnection.createStatement(0, 0));
     }
 
     @Test
     void testPrepareStatement() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareStatement("SELECT * FROM ", 0, 1));
+                () -> jdbcConnection.prepareStatement("SELECT * FROM ", 0, 1));
     }
 
     @Test
     void testPrepareCall() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareCall("SELECT * FROM ", 0, 1));
+                () -> jdbcConnection.prepareCall("SELECT * FROM ", 0, 1));
     }
 
     @Test
     void getTypeMap() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getTypeMap);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getTypeMap);
     }
 
     @Test
     void setTypeMap() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setTypeMap(null));
+                UnsupportedOperationException.class, () -> jdbcConnection.setTypeMap(null));
     }
 
     @Test
     void setHoldability() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setHoldability(0));
+                UnsupportedOperationException.class, () -> jdbcConnection.setHoldability(0));
     }
 
     @Test
     void getHoldability() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getHoldability);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getHoldability);
     }
 
     @Test
     void setSavepoint() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::setSavepoint);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::setSavepoint);
     }
 
     @Test
     void testSetSavepoint() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.setSavepoint("save"));
+                () -> jdbcConnection.setSavepoint("save"));
     }
 
     @Test
     void testRollback() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.rollback(null));
+        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.rollback(null));
     }
 
     @Test
     void releaseSavepoint() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.releaseSavepoint(null));
+                () -> jdbcConnection.releaseSavepoint(null));
     }
 
     @Test
     void testCreateStatement1() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.createStatement(0, 0, 0));
+                () -> jdbcConnection.createStatement(0, 0, 0));
     }
 
     @Test
     void testPrepareStatement1() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareStatement(null, 0, 0, 0));
+                () -> jdbcConnection.prepareStatement(null, 0, 0, 0));
     }
 
     @Test
     void testPrepareCall1() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareCall(null, 0, 0));
+                () -> jdbcConnection.prepareCall(null, 0, 0));
     }
 
     @Test
     void testPrepareStatement2() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareStatement(null, 0));
+                () -> jdbcConnection.prepareStatement(null, 0));
     }
 
     @Test
     void testPrepareStatement3() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareStatement(null, new int[] {10, 20, 30, 40}));
+                () -> jdbcConnection.prepareStatement(null, new int[] {10, 20, 30, 40}));
     }
 
     @Test
     void testPrepareStatement4() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.prepareStatement(null, new String[] {}));
+                () -> jdbcConnection.prepareStatement(null, new String[] {}));
     }
 
     @Test
     void createClob() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createClob);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::createClob);
     }
 
     @Test
     void createBlob() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createBlob);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::createBlob);
     }
 
     @Test
     void createNClob() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createNClob);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::createNClob);
     }
 
     @Test
     void createSQLXML() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::createSQLXML);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::createSQLXML);
     }
 
     @Test
     void isValid() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.isValid(0));
+        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.isValid(0));
     }
 
     @Test
     void setClientInfo() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.setClientInfo("", ""));
+                () -> jdbcConnection.setClientInfo("", ""));
     }
 
     @Test
     void testSetClientInfo() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setClientInfo(null));
+                UnsupportedOperationException.class, () -> jdbcConnection.setClientInfo(null));
     }
 
     @Test
     void getClientInfo() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getClientInfo);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getClientInfo);
     }
 
     @Test
     void testGetClientInfo() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.getClientInfo(""));
+                UnsupportedOperationException.class, () -> jdbcConnection.getClientInfo(""));
     }
 
     @Test
     void createArrayOf() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.createArrayOf(null, null));
+                () -> jdbcConnection.createArrayOf(null, null));
     }
 
     @Test
     void createStruct() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.createStruct(null, null));
+                () -> jdbcConnection.createStruct(null, null));
     }
 
     @Test
     void setSchema() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.setSchema(null));
+                UnsupportedOperationException.class, () -> jdbcConnection.setSchema(null));
     }
 
     @Test
     void getSchema() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getSchema);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getSchema);
     }
 
     @Test
     void abort() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.abort(null));
+        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.abort(null));
     }
 
     @Test
     void setNetworkTimeout() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> this.jdbcConnection.setNetworkTimeout(null, 0));
+                () -> jdbcConnection.setNetworkTimeout(null, 0));
     }
 
     @Test
     void getNetworkTimeout() {
-        assertThrows(UnsupportedOperationException.class, this.jdbcConnection::getNetworkTimeout);
+        assertThrows(UnsupportedOperationException.class, jdbcConnection::getNetworkTimeout);
     }
 
     @Test
     void unwrap() {
-        assertThrows(UnsupportedOperationException.class, () -> this.jdbcConnection.unwrap(null));
+        assertThrows(UnsupportedOperationException.class, () -> jdbcConnection.unwrap(null));
     }
 
     @Test
     void isWrapperFor() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.jdbcConnection.isWrapperFor(null));
+                UnsupportedOperationException.class, () -> jdbcConnection.isWrapperFor(null));
     }
 }

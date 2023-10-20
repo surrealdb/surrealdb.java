@@ -10,14 +10,14 @@ public class Number {
     private final Float _float;
 
     public Number(final float v) {
-        this._float = v;
+        _float = v;
     }
 
     public boolean isFloat() {
-        return this._float != null;
+        return _float != null;
     }
 
     public Optional<Float> asFloat() {
-        return Optional.ofNullable(this._float);
+        return Optional.ofNullable(_float);
     }
 }

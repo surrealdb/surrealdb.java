@@ -93,7 +93,7 @@ public class WsPlaintextConnection {
 
                                 // parses the Json Element if it is an object or an array
                                 processedOuterResults =
-                                        this.resultParser.parseResultMessage(outerResultJson);
+                                        resultParser.parseResultMessage(outerResultJson);
 
                                 return new QueryBlockResult(Arrays.asList(processedOuterResults));
                             }

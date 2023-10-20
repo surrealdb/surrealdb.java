@@ -12,37 +12,37 @@ class SurrealJDBCDriverTest {
 
     @Test
     void connect() {
-        assertThrows(UnsupportedOperationException.class, () -> this.driver.connect("", null));
+        assertThrows(UnsupportedOperationException.class, () -> driver.connect("", null));
     }
 
     @Test
     void acceptsURL() {
-        assertThrows(UnsupportedOperationException.class, () -> this.driver.acceptsURL(""));
+        assertThrows(UnsupportedOperationException.class, () -> driver.acceptsURL(""));
     }
 
     @Test
     void getPropertyInfo() {
         assertThrows(
-                UnsupportedOperationException.class, () -> this.driver.getPropertyInfo("", null));
+                UnsupportedOperationException.class, () -> driver.getPropertyInfo("", null));
     }
 
     @Test
     void getMajorVersion() {
-        assertThrows(UnsupportedOperationException.class, this.driver::getMajorVersion);
+        assertThrows(UnsupportedOperationException.class, driver::getMajorVersion);
     }
 
     @Test
     void getMinorVersion() {
-        assertThrows(UnsupportedOperationException.class, this.driver::getMinorVersion);
+        assertThrows(UnsupportedOperationException.class, driver::getMinorVersion);
     }
 
     @Test
     void jdbcCompliant() {
-        assertThrows(UnsupportedOperationException.class, this.driver::jdbcCompliant);
+        assertThrows(UnsupportedOperationException.class, driver::jdbcCompliant);
     }
 
     @Test
     void getParentLogger() {
-        assertThrows(UnsupportedOperationException.class, this.driver::getParentLogger);
+        assertThrows(UnsupportedOperationException.class, driver::getParentLogger);
     }
 }

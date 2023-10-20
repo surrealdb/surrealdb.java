@@ -43,23 +43,23 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         final SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(testHost, testPort, false);
         connection.connect(5);
-        this.driver = new SyncSurrealDriver(connection);
+        driver = new SyncSurrealDriver(connection);
 
-        this.driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
-        this.driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
+        driver.signIn(TestUtils.getUsername(), TestUtils.getPassword());
+        driver.use(TestUtils.getNamespace(), TestUtils.getDatabase());
 
-        this.driver.create(
+        driver.create(
                 "person:1", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
-        this.driver.create(
+        driver.create(
                 "person:2", new Person("Founder & COO", "Jaime", "Morgan Hitchcock", true));
     }
 
     @AfterEach
     public void teardown() {
-        this.driver.delete("person");
-        this.driver.delete("movie");
-        this.driver.delete("message");
-        this.driver.delete("reminder");
+        driver.delete("person");
+        driver.delete("movie");
+        driver.delete("message");
+        driver.delete("reminder");
     }
 
     @Test
@@ -76,7 +76,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         // surrealDB.query
         final Map<String, String> args = new HashMap<>();
         final List<QueryResult<Person>> response =
-                this.driver.query(query.toString(), args, Person.class);
+                driver.query(query.toString(), args, Person.class);
         final Person singlePerson = response.get(0).getResult().get(0);
 
         // when
@@ -84,7 +84,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         final JsonElement results = JsonParser.parseString(resultString);
         processedOuterResults = this.resultParser.parseResultMessage(results);
 
-        this.driver.delete("person");
+        driver.delete("person");
 
         // then
         assertEquals(1, processedOuterResults.length);

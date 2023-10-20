@@ -42,12 +42,12 @@ public class SurrealDBFactory {
     }
 
     public UnauthenticatedSurrealDB<StatelessSurrealDB> connectStateless(final URI uri) {
-        return this.statelessDrivers.get(uri.getScheme().toLowerCase().trim()).apply(uri);
+        return statelessDrivers.get(uri.getScheme().toLowerCase().trim()).apply(uri);
     }
 
     public UnauthenticatedSurrealDB<BidirectionalSurrealDB> connectBidirectional(URI uri) {
         final String key = uri.getScheme().toLowerCase().trim();
-        if (!this.bidirectionalDrivers.containsKey(key)) {
+        if (!bidirectionalDrivers.containsKey(key)) {
             throw new InvalidAddressException(
                     uri,
                     InvalidAddressExceptionCause.INVALID_SCHEME,
@@ -68,7 +68,7 @@ public class SurrealDBFactory {
                 throw new RuntimeException(e);
             }
         }
-        return this.bidirectionalDrivers.get(key).apply(uri);
+        return bidirectionalDrivers.get(key).apply(uri);
     }
 
     interface StatelessProvider

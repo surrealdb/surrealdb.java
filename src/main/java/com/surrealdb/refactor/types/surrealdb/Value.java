@@ -60,28 +60,28 @@ public class Value implements IntoJson {
     }
 
     public boolean isString() {
-        return this.string != null;
+        return string != null;
     }
 
     public Optional<String> asString() {
-        return Optional.ofNullable(this.string);
+        return Optional.ofNullable(string);
     }
 
     public boolean isNumber() {
-        return this.number != null;
+        return number != null;
     }
 
     public Optional<Number> asNumber() {
-        return Optional.ofNullable(this.number);
+        return Optional.ofNullable(number);
     }
 
     @Override
     public JsonElement intoJson() {
-        if (this.isNumber()) {
-            return new JsonPrimitive(this.asNumber().get().asFloat().get());
+        if (isNumber()) {
+            return new JsonPrimitive(asNumber().get().asFloat().get());
         }
-        if (this.isString()) {
-            return new JsonPrimitive(this.asString().get());
+        if (isString()) {
+            return new JsonPrimitive(asString().get());
         }
         System.out.printf("This is value causing failure: %s\n", this);
         throw new SurrealDBUnimplementedException(

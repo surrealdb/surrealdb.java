@@ -33,7 +33,7 @@ public class ResultParser {
         final JsonArray innerResultArray = new JsonArray();
         final JsonObject jsonPrimitives = new JsonObject();
         final JsonObject resultObject =
-                this.getJsonPrimitives(resultMessage.getAsJsonObject(), jsonPrimitives);
+                getJsonPrimitives(resultMessage.getAsJsonObject(), jsonPrimitives);
 
         innerResultArray.add(resultObject);
 
@@ -75,7 +75,7 @@ public class ResultParser {
             if (property.getValue().isJsonPrimitive()) {
                 jsonPrimitives.add(property.getKey(), property.getValue());
             } else {
-                this.getJsonPrimitives(property.getValue().getAsJsonObject(), jsonPrimitives);
+                getJsonPrimitives(property.getValue().getAsJsonObject(), jsonPrimitives);
             }
         }
 
