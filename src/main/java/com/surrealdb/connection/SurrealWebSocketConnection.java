@@ -53,12 +53,12 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     @Override
     public void connect(final int timeoutSeconds) {
         try {
-            log.debug("Connecting to SurrealDB server {}", this.uri);
+            log.debug("Connecting to SurrealDB server {}", uri);
             this.connectBlocking(timeoutSeconds, TimeUnit.SECONDS);
         } catch (final InterruptedException e) {
             throw new com.surrealdb.connection.exception.SurrealConnectionTimeoutException();
         }
-        if (!this.isOpen()) {
+        if (!isOpen()) {
             throw new SurrealConnectionTimeoutException();
         }
     }
@@ -76,18 +76,18 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
     public <T> CompletableFuture<T> rpc(
             final Type resultType, final String method, final Object... params) {
         final RpcRequest request =
-                new RpcRequest(this.lastRequestId.incrementAndGet() + "", method, params);
+                new RpcRequest(lastRequestId.incrementAndGet() + "", method, params);
         final CompletableFuture<T> callback = new CompletableFuture<>();
 
-        this.callbacks.put(request.id(), callback);
+        callbacks.put(request.id(), callback);
         if (resultType != null) {
-            this.resultTypes.put(request.id(), resultType);
+            resultTypes.put(request.id(), resultType);
         }
 
         try {
-            final String json = this.gson.toJson(request);
+            final String json = gson.toJson(request);
             log.debug("Sending RPC request {}", json);
-            this.send(json);
+            send(json);
         } catch (final WebsocketNotConnectedException e) {
             throw new SurrealNotConnectedException();
         }
@@ -102,16 +102,16 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @Override
     public void onMessage(final String message) {
-        final RpcResponse response = this.gson.fromJson(message, RpcResponse.class);
+        final RpcResponse response = gson.fromJson(message, RpcResponse.class);
         final String id = response.id();
         final RpcResponse.Error error = response.error();
         final CompletableFuture<Object> callback =
-                (CompletableFuture<Object>) this.callbacks.get(id);
+                (CompletableFuture<Object>) callbacks.get(id);
 
         try {
             if (error == null) {
                 log.debug("Received RPC response: {}", message);
-                final Type resultType = this.resultTypes.get(id);
+                final Type resultType = resultTypes.get(id);
 
                 if (resultType != null) {
                     Object deserialised = null;
@@ -119,10 +119,10 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
                     // The protocol can sometimes send object instead of array when only 1 response
                     // is valid
                     if (responseElement.isJsonObject()) {
-                        deserialised = this.gson.fromJson(responseElement, resultType);
+                        deserialised = gson.fromJson(responseElement, resultType);
                     } else if (responseElement.isJsonArray()) {
                         final JsonArray jsonArray = responseElement.getAsJsonArray();
-                        deserialised = this.gson.fromJson(jsonArray, resultType);
+                        deserialised = gson.fromJson(jsonArray, resultType);
                     } else if (responseElement.isJsonPrimitive()) {
                         final JsonPrimitive primitive = responseElement.getAsJsonPrimitive();
                         if (primitive.isNumber()) {
@@ -158,16 +158,16 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         } catch (final Throwable t) {
             callback.completeExceptionally(t);
         } finally {
-            this.callbacks.remove(id);
-            this.resultTypes.remove(id);
+            callbacks.remove(id);
+            resultTypes.remove(id);
         }
     }
 
     @Override
     public void onClose(final int code, final String reason, final boolean remote) {
         log.debug("onClose");
-        this.callbacks.clear();
-        this.resultTypes.clear();
+        callbacks.clear();
+        resultTypes.clear();
     }
 
     @Override

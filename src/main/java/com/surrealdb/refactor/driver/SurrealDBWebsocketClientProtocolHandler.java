@@ -89,7 +89,7 @@ public class SurrealDBWebsocketClientProtocolHandler
     public Future<JsonObject> query(
             final String requestID, final String query, final List<Param> params) {
         final String method = "query";
-        this.checkChannelAndThrow(method);
+        checkChannelAndThrow(method);
         final QueryMessage queryMessage = new QueryMessage(requestID, query, params);
         final String serialised = new Gson().toJson(queryMessage);
         System.out.printf("Sending query: %s\n", serialised);
@@ -117,9 +117,9 @@ public class SurrealDBWebsocketClientProtocolHandler
     public Future<JsonObject> use(
             final String requestID, final String namespace, final String database) {
         final String method = "use";
-        this.checkChannelAndThrow(method);
+        checkChannelAndThrow(method);
         final UseMessage useMessage = new UseMessage(requestID, namespace, database);
-        return this.sendAndPromise(method, requestID, new Gson().toJson(useMessage));
+        return sendAndPromise(method, requestID, new Gson().toJson(useMessage));
     }
 
     private void checkChannelAndThrow(final String method) {
