@@ -17,15 +17,15 @@ public class SyncSurrealDriver {
     private final AsyncSurrealDriver asyncDriver;
 
     public SyncSurrealDriver(final SurrealConnection connection) {
-        asyncDriver = new AsyncSurrealDriver(connection);
+        this.asyncDriver = new AsyncSurrealDriver(connection);
     }
 
     public void ping() {
-        this.getResultSynchronously(asyncDriver.ping());
+        getResultSynchronously(asyncDriver.ping());
     }
 
     public Map<String, String> info() {
-        return this.getResultSynchronously(asyncDriver.info());
+        return getResultSynchronously(asyncDriver.info());
     }
 
     public void signIn(final String username, final String password) {

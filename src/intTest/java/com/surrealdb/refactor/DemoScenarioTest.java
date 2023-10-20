@@ -82,7 +82,7 @@ public class DemoScenarioTest extends BaseIntegrationTest {
         // when
         final String resultString = gson.toJson(singlePerson);
         final JsonElement results = JsonParser.parseString(resultString);
-        processedOuterResults = this.resultParser.parseResultMessage(results);
+        processedOuterResults = resultParser.parseResultMessage(results);
 
         driver.delete("person");
 
