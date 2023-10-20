@@ -1,6 +1,6 @@
 <h1><img height="25" src="/img/contributing.svg">&nbsp;&nbsp;Contributing</h1>
 
-We would &nbsp;<img width="15" src="/img/love.svg">&nbsp; for you to contribute to SurrealDB.java and help make it better! We want to contribute to SurrealDB to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including features, bugfixes, and documentation changes, as well as updates and tweaks, blog posts, workshops, and everything else.
+We would &nbsp;<img width="15" src="/img/love.svg">&nbsp; for you to contribute to SurrealDB.java and help make it better! We want contributing to SurrealDB to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including features, bugfixes, and documentation changes, as well as updates and tweaks, blog posts, workshops, and everything else.
 
 ## How to start
 
