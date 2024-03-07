@@ -43,8 +43,8 @@ class SurrealWebSocketConnectionTest {
 
     static Stream<Arguments> urlProviderWithoutPort() {
         return Stream.of(
-            Arguments.of("1",false, "ws://1/rpc"),
-            Arguments.of("10", true, "wss://10/rpc"));
+            Arguments.of("1",false, "ws://1:80/rpc"),
+            Arguments.of("10", true, "wss://10:443/rpc"));
     }
 
     private static final String localAddr = "ws://localhost";

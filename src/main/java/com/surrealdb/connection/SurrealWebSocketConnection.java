@@ -52,7 +52,7 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
 
     @SneakyThrows
     public SurrealWebSocketConnection(String host, boolean useTls) {
-        super(URI.create((useTls ? "wss://" : "ws://") + host + "/rpc"));
+        super(URI.create((useTls ? "wss://" : "ws://") + host + ":" + (useTls ? "443" : "80")+ "/rpc"));
 
         this.lastRequestId = new AtomicLong(0);
         this.gson =
