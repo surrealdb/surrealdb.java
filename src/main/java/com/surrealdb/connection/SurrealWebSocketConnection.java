@@ -50,6 +50,20 @@ public class SurrealWebSocketConnection extends WebSocketClient implements Surre
         this.resultTypes = new HashMap<>();
     }
 
+    @SneakyThrows
+    public SurrealWebSocketConnection(String host, boolean useTls) {
+        super(URI.create((useTls ? "wss://" : "ws://") + host + "/rpc"));
+
+        this.lastRequestId = new AtomicLong(0);
+        this.gson =
+            new GsonBuilder()
+                .registerTypeAdapterFactory(new TemporalAdapterFactory())
+                .disableHtmlEscaping()
+                .create();
+        this.callbacks = new HashMap<>();
+        this.resultTypes = new HashMap<>();
+    }
+
     @Override
     public void connect(int timeoutSeconds) {
         try {

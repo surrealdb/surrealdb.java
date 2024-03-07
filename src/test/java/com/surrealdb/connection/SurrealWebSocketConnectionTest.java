@@ -32,6 +32,21 @@ class SurrealWebSocketConnectionTest {
                 Arguments.of("10", 20, true, "wss://10:20/rpc"));
     }
 
+    @DisplayName("Can create a Connection")
+    @ParameterizedTest(name = "Can create a Connection for {3}")
+    @MethodSource("urlProviderWithoutPort")
+    public void canCreateAConnectionWithUrlWithoutPort(
+        String host, boolean useTls, String expectedUrl) {
+        SurrealWebSocketConnection connection = new SurrealWebSocketConnection(host, useTls);
+        assertEquals(expectedUrl, connection.getURI().toASCIIString());
+    }
+
+    static Stream<Arguments> urlProviderWithoutPort() {
+        return Stream.of(
+            Arguments.of("1",false, "ws://1/rpc"),
+            Arguments.of("10", true, "wss://10/rpc"));
+    }
+
     private static final String localAddr = "ws://localhost";
     private static final int localPort = 8000;
 
