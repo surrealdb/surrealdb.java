@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup cache
+        uses: Swatinem/rust-cache@v2
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
