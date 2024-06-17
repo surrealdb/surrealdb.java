@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicI32, Ordering};
 
+use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::{jint, jobject, jvalue};
-use jni::JNIEnv;
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use surrealdb::engine::any::Any;
@@ -86,9 +86,12 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
 }
 
 fn check_exception(mut env: JNIEnv<'_>, class: &str, msg: &str) {
+    if env.exception_check().unwrap() {}
     if let Ok(b) = env.exception_check() {
-        if !b {
-            let _ = env.throw_new(class, msg);
+        if b {
+            let _ = env.exception_describe();
+            let _ = env.exception_clear();
         }
+        let _ = env.throw_new(class, msg);
     }
 }
