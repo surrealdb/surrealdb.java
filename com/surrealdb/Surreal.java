@@ -1,17 +1,20 @@
 package com.surrealdb;
 
-import java.util.*;
-
  class Surreal {
 
     final int id;
 
-    static native Surreal new_instance();
+    private static native Surreal new_instance();
 
-    static native void connect(String connect);
+    private static native Surreal connect(int id, String connect);
+
 
     private Surreal(int id) {
         this.id = id;
+    }
+
+    void connect(String connect) {
+        Surreal.connect(id, connect);
     }
 
     static {
@@ -19,7 +22,14 @@ import java.util.*;
     }
 
     public static void main(String[] args) {
-        Surreal surreal = Surreal.new_instance();
-        surreal.connect("ws://localhost:8000");
+        try {
+            Surreal surreal = Surreal.new_instance();
+            surreal.connect("ws://localhost:8000");
+            System.out.println("SUCCESS!");
+        } catch (Exception e) {
+            if (!e.getMessage().equals("There was an error processing a remote WS request: IO error: Connection refused (os error 61)")) {
+                throw e;
+            }
+        }
 	}
 }

@@ -5,8 +5,7 @@ use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
 
 use jni::objects::{JClass, JObject, JString};
-use jni::signature::{Primitive, ReturnType};
-use jni::sys::jvalue;
+use jni::sys::{jint, jvalue};
 use jni::JNIEnv;
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
@@ -20,7 +19,7 @@ static TOKIO_RUNTIME: Lazy<Runtime> =
 static INSTANCES: Lazy<RwLock<HashMap<i32, Arc<Surreal<Any>>>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
 
-static ID_SEQUENCE: Lazy<AtomicI32> = Lazy::new(|| AtomicI32::new(0));
+static ID_SEQUENCE: Lazy<AtomicI32> = Lazy::new(|| AtomicI32::new(1));
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
@@ -45,23 +44,33 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     mut env: JNIEnv<'local>,
-    class: JClass<'local>,
+    _class: JClass<'local>,
+    id: jint,
     input: JString<'local>,
 ) {
     // Extract the connection string
-    let input: String = log_err(env.get_string(&input)).into();
-    // Get the Surreal instance ID
-    let id = log_err(env.get_field_id(&class, "id", "I"));
-    let id = log_err(env.get_field_unchecked(&class, id, ReturnType::Primitive(Primitive::Int)));
-    let id = log_err(id.i()) as i32;
+    let input: String = match env.get_string(&input) {
+        Ok(i) => i.into(),
+        Err(_) => {
+            let _ = env.throw_new("java/lang/IllegalArgumentException", "Invalid string input");
+            return;
+        }
+    };
     // Retrieve the Surreal instance
-    let surreal = INSTANCES
+    let surreal = match INSTANCES
         .read()
         .get(&id)
-        .cloned()
-        .expect("Surreal instance not found");
+        .cloned() {
+        None => {
+            let _  = env.throw_new("java/lang/IllegalArgumentException", "Invalid Surreal ID");
+            return;
+        }
+        Some(s) => s,
+    };
     // Connect
-    log_err(TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }));
+    if let Err(err) =  TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
+        let _  = env.throw_new("java/lang/Exception", format!("{err}"));
+    }
 }
 
 fn log_err<R, E>(r: Result<R, E>) -> R
