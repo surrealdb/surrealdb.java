@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y openjdk-8-jdk
+
+      - name: Make
+        run: make
