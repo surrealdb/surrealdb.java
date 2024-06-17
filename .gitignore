@@ -17,3 +17,6 @@ Cargo.lock
 
 # Ignore generated class files
 **/*.class
+
+hs_err_*.log
+**/com_surrealdb_*.h
