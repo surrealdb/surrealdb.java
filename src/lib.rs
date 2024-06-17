@@ -59,20 +59,36 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     let input: String = match env.get_string(&input) {
         Ok(i) => i.into(),
         Err(_) => {
-            let _ = env.throw_new("java/lang/IllegalArgumentException", "Invalid string input");
+            check_exception(
+                env,
+                "java/lang/IllegalArgumentException",
+                "Invalid string input",
+            );
             return;
         }
     };
     // Retrieve the Surreal instance
     let surreal = match INSTANCES.read().get(&id).cloned() {
         None => {
-            let _ = env.throw_new("java/lang/IllegalArgumentException", "Invalid Surreal ID");
+            check_exception(
+                env,
+                "java/lang/IllegalArgumentException",
+                "Invalid Surreal ID",
+            );
             return;
         }
         Some(s) => s,
     };
     // Connect
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
-        let _ = env.throw_new("java/lang/RuntimeException", format!("{err}"));
+        check_exception(env, "java/lang/RuntimeException", &format!("{err}"));
+    }
+}
+
+fn check_exception(mut env: JNIEnv<'_>, class: &str, msg: &str) {
+    if let Ok(b) = env.exception_check() {
+        if !b {
+            let _ = env.throw_new(class, msg);
+        }
     }
 }
