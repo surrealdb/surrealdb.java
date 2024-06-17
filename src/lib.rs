@@ -27,22 +27,23 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
     // Load the Surreal class
     let class = match env.find_class("com/surrealdb/Surreal") {
         Ok(c) => c,
-        Err(_) =>  return std::ptr::null_mut()
+        Err(_) => return std::ptr::null_mut(),
     };
     // Find the constructor
     let constructor = match env.get_method_id(&class, "<init>", "(I)V") {
         Ok(c) => c,
-        Err(_) => return std::ptr::null_mut()
+        Err(_) => return std::ptr::null_mut(),
     };
     // Attribute a new ID to each new instance
     let id = ID_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     // Store the instance
     INSTANCES.write().insert(id, Arc::new(Surreal::init()));
     // Build the new instance
-    let  instance = match unsafe { env.new_object_unchecked(&class, constructor, &[jvalue { i: id }]) } {
-        Ok(i) => i.into_raw(),
-        Err(_) => return std::ptr::null_mut()
-    };
+    let instance =
+        match unsafe { env.new_object_unchecked(&class, constructor, &[jvalue { i: id }]) } {
+            Ok(i) => i.into_raw(),
+            Err(_) => return std::ptr::null_mut(),
+        };
     // Return the instance
     instance
 }
@@ -63,18 +64,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         }
     };
     // Retrieve the Surreal instance
-    let surreal = match INSTANCES
-        .read()
-        .get(&id)
-        .cloned() {
+    let surreal = match INSTANCES.read().get(&id).cloned() {
         None => {
-            let _  = env.throw_new("java/lang/IllegalArgumentException", "Invalid Surreal ID");
+            let _ = env.throw_new("java/lang/IllegalArgumentException", "Invalid Surreal ID");
             return;
         }
         Some(s) => s,
     };
     // Connect
-    if let Err(err) =  TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
-        let _  = env.throw_new("java/lang/Exception", format!("{err}"));
+    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
+        let _ = env.throw_new("java/lang/RuntimeException", format!("{err}"));
     }
 }

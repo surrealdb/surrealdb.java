@@ -20,14 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup cache
-        uses: Swatinem/rust-cache@v2
-
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
 
       - name: Install dependencies
         run: sudo apt-get update
