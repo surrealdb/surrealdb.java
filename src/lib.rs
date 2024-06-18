@@ -2,8 +2,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicI32, Ordering};
 
+use jni::errors::Error;
 use jni::JNIEnv;
-use jni::objects::{JClass, JString};
+use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jint, jobject};
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
@@ -47,11 +48,22 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    id: jint,
+    object: JObject<'local>,
     input: JString<'local>,
 ) -> jobject {
     println!("CONNECT");
+    // Retrieve the Surreal instance ID
+    let id = match get_surrealdb_id(&mut env, &object) {
+        Ok(i) => i,
+        Err(e) => {
+            check_exception(
+                &mut env,
+                Some(("java/lang/RuntimeException", &format!("{e}"))),
+            );
+            return std::ptr::null_mut();
+        }
+    };
+
     // Extract the connection string
     let input: String = match env.get_string(&input) {
         Ok(i) => i.into(),
@@ -83,6 +95,39 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
             Some(("java/lang/RuntimeException", &format!("{err}"))),
         );
     }
+    return std::ptr::null_mut();
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_close<'local>(
+    mut env: JNIEnv<'local>,
+    object: JObject<'local>,
+) -> jobject {
+    println!("CLOSE");
+    // Retrieve the Surreal instance ID
+    let id = match get_surrealdb_id(&mut env, &object) {
+        Ok(i) => i,
+        Err(e) => {
+            check_exception(
+                &mut env,
+                Some(("java/lang/RuntimeException", &format!("{e}"))),
+            );
+            return std::ptr::null_mut();
+        }
+    };
+
+    // Remove the Surreal instance
+    INSTANCES.write().remove(&id);
+    return std::ptr::null_mut();
+}
+
+fn get_surrealdb_id<'local>(env: &mut JNIEnv, object: &JObject<'local>) -> Result<i32, Error> {
+    let id = env.get_field(object, "id", "I")?;
+    Ok(id.i()? as i32)
+}
+
+fn return_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) -> jobject {
+    check_exception(env, t);
     return std::ptr::null_mut();
 }
 
