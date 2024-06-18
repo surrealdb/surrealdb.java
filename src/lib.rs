@@ -37,7 +37,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
             return std::ptr::null_mut();
         }
     };
-    check_exception(&mut env, None);
+    if check_exception(&mut env, None) {
+        return std::ptr::null_mut();
+    }
     println!("INSTANCE CREATED");
     instance
 }
@@ -48,7 +50,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     _class: JClass<'local>,
     id: jint,
     input: JString<'local>,
-) {
+) -> jobject {
     println!("CONNECT");
     // Extract the connection string
     let input: String = match env.get_string(&input) {
@@ -58,7 +60,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
                 &mut env,
                 Some(("java/lang/IllegalArgumentException", "Invalid string input")),
             );
-            return;
+            return std::ptr::null_mut();
         }
     };
     println!("INPUT {input}");
@@ -69,7 +71,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
                 &mut env,
                 Some(("java/lang/IllegalArgumentException", "Invalid Surreal ID")),
             );
-            return;
+            return std::ptr::null_mut();
         }
         Some(s) => s,
     };
@@ -81,14 +83,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
             Some(("java/lang/RuntimeException", &format!("{err}"))),
         );
     }
+    return std::ptr::null_mut();
 }
 
-fn check_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) {
+fn check_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) -> bool {
     if let Ok(b) = env.exception_check() {
-        if !b {
-            if let Some(t) = t {
-                let _ = env.throw(t);
-            }
+        if b { // There is already an exception
+            return true;
+        }
+        if let Some(t) = t {
+            let _ = env.throw(t);
+            return true;
         }
     }
+    false
 }
