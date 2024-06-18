@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build-linux-windows:
+  build-cross:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -90,10 +90,10 @@ jobs:
           name: aarch64-apple-darwin-build
           path: target/aarch64-apple-darwin/release/
 
-  collect-artifacts:
+  build-aggregated-jar:
     runs-on: ubuntu-latest
     needs:
-      - build-linux-windows
+      - build-cross
       - build-macos-intel
       - build-macos-arm64
     steps:
@@ -122,31 +122,31 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: x86_64-unknown-linux-gnu-build
-          path: src/main/resources/natives/linux
+          path: src/main/resources/natives/linux_64
 
       - name: Download AArch64 Linux artifacts
         uses: actions/download-artifact@v4
         with:
           name: aarch64-unknown-linux-gnu-build
-          path: src/main/resources/natives/linux
+          path: src/main/resources/natives/linux_64
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
           name: x86_64-pc-windows-gnu-build
-          path: src/main/resources/natives/windows
+          path: src/main/resources/natives/windows_64
 
       - name: Download macOS Intel artifacts
         uses: actions/download-artifact@v4
         with:
           name: x86_64-apple-darwin-build
-          path: src/main/resources/natives/macos
+          path: src/main/resources/natives/osx_64
 
       - name: Download macOS ARM64 artifacts
         uses: actions/download-artifact@v4
         with:
           name: aarch64-apple-darwin-build
-          path: src/main/resources/natives/macos
+          path: src/main/resources/natives/osx_arm64
 
       - name: Build JAR
         run: ./gradlew jar
@@ -155,4 +155,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb-jni
-          path: build/libs/surrealdb-jni.jar
+          path: build/libs/surrealdb-jni-0.2-SNAPSHOT.jar
