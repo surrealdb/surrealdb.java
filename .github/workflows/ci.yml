@@ -1,4 +1,4 @@
-name: Build
+name: Ci
 
 on:
   push:
@@ -11,11 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        java: [ '8', '11', '17', '21', '22' ]
 
     steps:
       - name: Install Rust
@@ -32,13 +27,19 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update
 
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Set up JDK 22
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.java }}
+          java-version: 22
 
-      - name: Test
+      - name: createCombinedReport
         run: |
           chmod +x gradlew
           ./gradlew -i test jacocoTestReport
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/reports

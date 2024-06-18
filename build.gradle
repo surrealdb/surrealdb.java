@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
 }
 
 group 'com.surrealdb'
@@ -22,8 +23,56 @@ tasks.register('buildCargo', Exec) {
     commandLine 'cargo', 'build'
 }
 
+jacoco {
+    toolVersion = "0.8.12"
+}
+
 test {
     dependsOn buildCargo
     useJUnitPlatform()
     systemProperty 'java.library.path', file('target/debug').absolutePath
+}
+
+jacocoTestReport {
+    dependsOn test
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.9
+            }
+        }
+    }
+}
+
+javadoc {
+    destinationDir = file("build/reports/javadoc")
+}
+
+task createCombinedReport {
+    dependsOn jacocoTestCoverageVerification
+    dependsOn javadoc
+
+    doLast {
+        def indexFile = file("build/reports/index.html")
+        indexFile.text = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Combined Test, Coverage, and Javadoc Report</title>
+            </head>
+            <body>
+                <h1>Combined Test, Coverage, and Javadoc Report</h1>
+                <ul>
+                    <li><a href="./tests/test/index.html">Test Report</a></li>
+                    <li><a href="./jacoco/test/html/index.html">JaCoCo Coverage Report</a></li>
+                    <li><a href="./javadoc/index.html">Javadoc</a></li>
+                </ul>
+            </body>
+            </html>
+        """
+    }
 }
