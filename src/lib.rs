@@ -27,12 +27,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
     // Load the Surreal class
     let class = match env.find_class("com/surrealdb/Surreal") {
         Ok(c) => c,
-        Err(_) => return std::ptr::null_mut(),
+        Err(_) => {
+            check_exception(env, None);
+            return std::ptr::null_mut();
+        }
     };
     // Find the constructor
     let constructor = match env.get_method_id(&class, "<init>", "(I)V") {
         Ok(c) => c,
-        Err(_) => return std::ptr::null_mut(),
+        Err(_) => {
+            check_exception(env, None);
+            return std::ptr::null_mut();
+        }
     };
     // Attribute a new ID to each new instance
     let id = ID_SEQUENCE.fetch_add(1, Ordering::Relaxed);
@@ -45,6 +51,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
             Err(_) => return std::ptr::null_mut(),
         };
     // Return the instance
+    check_exception(env, None);
     instance
 }
 
@@ -60,9 +67,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         Ok(i) => i.into(),
         Err(_) => {
             check_exception(
-                env,
-                "java/lang/IllegalArgumentException",
-                "Invalid string input",
+                env, Some((
+                    "java/lang/IllegalArgumentException",
+                    "Invalid string input")),
             );
             return;
         }
@@ -72,8 +79,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         None => {
             check_exception(
                 env,
-                "java/lang/IllegalArgumentException",
-                "Invalid Surreal ID",
+                Some(("java/lang/IllegalArgumentException",
+                      "Invalid Surreal ID")),
             );
             return;
         }
@@ -81,17 +88,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     };
     // Connect
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
-        check_exception(env, "java/lang/RuntimeException", &format!("{err}"));
+        check_exception(env, Some(("java/lang/RuntimeException", &format!("{err}"))));
     }
 }
 
-fn check_exception(mut env: JNIEnv<'_>, class: &str, msg: &str) {
-    if env.exception_check().unwrap() {}
+fn check_exception(mut env: JNIEnv<'_>, t: Option<(&str, &str)>) {
     if let Ok(b) = env.exception_check() {
         if b {
             let _ = env.exception_describe();
             let _ = env.exception_clear();
         }
-        let _ = env.throw_new(class, msg);
+        if let Some(t) = t {
+            let _ = env.throw(t);
+        }
     }
 }
