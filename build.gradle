@@ -35,10 +35,10 @@ test {
 
 jacocoTestReport {
     dependsOn test
+    finalizedBy jacocoTestCoverageVerification
 }
 
 jacocoTestCoverageVerification {
-    dependsOn jacocoTestReport
     violationRules {
         rule {
             limit {
@@ -52,8 +52,8 @@ javadoc {
     destinationDir = file("build/reports/javadoc")
 }
 
-task createCombinedReport {
-    dependsOn jacocoTestCoverageVerification
+tasks.register('createCombinedReport') {
+    dependsOn jacocoTestReport
     dependsOn javadoc
 
     doLast {

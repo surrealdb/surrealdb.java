@@ -33,12 +33,22 @@ jobs:
           distribution: 'temurin'
           java-version: 22
 
-      - name: createCombinedReport
-        run: |
-          chmod +x gradlew
-          ./gradlew -i test jacocoTestReport
+      - name: Gradle
+        run: chmod +x gradlew
 
-      - name: Deploy to GitHub Pages
+      - name: Clean
+        run: ./gradlew -i clean
+
+      - name: Test & Coverage
+        run: ./gradlew -i test jacocoTestReport
+
+      - name: Javadoc
+        run: ./gradlew -i javadoc
+
+      - name: Report
+        run: ./gradlew -i clean createCombinedReport
+
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
