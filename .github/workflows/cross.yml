@@ -36,13 +36,13 @@ jobs:
         run: docker pull rustembedded/cross:${{ matrix.target }}
 
       - name: Cross compile
-        run: cross build --target ${{ matrix.target }}
+        run: cross build --target ${{ matrix.target }} --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/debug/
+          path: target/${{ matrix.target }}/release/
 
   build-macos-intel:
     runs-on: macos-12
@@ -59,13 +59,13 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build
-        run: cargo build --target x86_64-apple-darwin
+        run: cargo build --target x86_64-apple-darwin --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: x86_64-apple-darwin-build
-          path: target/x86_64-apple-darwin/debug/
+          path: target/x86_64-apple-darwin/release/
 
   build-macos-arm64:
     runs-on: macos-latest
@@ -82,13 +82,13 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build
-        run: cargo build --target aarch64-apple-darwin
+        run: cargo build --target aarch64-apple-darwin --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: aarch64-apple-darwin-build
-          path: target/aarch64-apple-darwin/debug/
+          path: target/aarch64-apple-darwin/release/
 
   collect-artifacts:
     runs-on: ubuntu-latest
@@ -97,6 +97,21 @@ jobs:
       - build-macos-intel
       - build-macos-arm64
     steps:
+      - name: Install dependencies
+        run: sudo apt-get update
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+
+      - name: Gradle
+        run: chmod +x gradlew
+
       - name: Create directories for artifacts
         run: |
           mkdir -p src/main/resources/natives/linux
@@ -132,12 +147,6 @@ jobs:
         with:
           name: aarch64-apple-darwin-build
           path: src/main/resources/natives/macos
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
 
       - name: Build JAR
         run: ./gradlew jar
