@@ -85,12 +85,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
 
 fn check_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) {
     if let Ok(b) = env.exception_check() {
-        if b {
-            let _ = env.exception_describe();
-            let _ = env.exception_clear();
-        }
-        if let Some(t) = t {
-            let _ = env.throw(t);
+        if !b {
+            if let Some(t) = t {
+                let _ = env.throw(t);
+            }
         }
     }
 }

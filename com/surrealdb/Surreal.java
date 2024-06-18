@@ -29,6 +29,7 @@ package com.surrealdb;
             if (!e.getMessage().startsWith("There was an error processing a remote WS request: IO error: Connection refused ")) {
                 throw e;
             }
+            System.out.println("EXPECTED ERROR: " + e);
         }
         System.out.println("SUCCESS!");
 	}
