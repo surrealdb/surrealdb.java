@@ -30,6 +30,9 @@ jobs:
       - name: Install cross
         run: cargo install cross
 
+      - name: Pull cross Docker image
+        run: docker pull rustembedded/cross:${{ matrix.target }}
+
       - name: Cross compile
         run: cross build --target ${{ matrix.target }}
 
