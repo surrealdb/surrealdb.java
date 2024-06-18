@@ -33,14 +33,12 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
     let instance = match env.new_object(class, "(I)V", &[id.into()]) {
         Ok(i) => i.into_raw(),
         Err(e) => {
-            check_exception(
-                &mut env,
-                Some(("java/lang/RuntimeException", &format!("{e}"))),
-            );
+            eprintln!("{e}");
             return std::ptr::null_mut();
         }
     };
     check_exception(&mut env, None);
+    println!("INSTANCE CREATED");
     instance
 }
 
@@ -51,6 +49,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     id: jint,
     input: JString<'local>,
 ) {
+    println!("CONNECT");
     // Extract the connection string
     let input: String = match env.get_string(&input) {
         Ok(i) => i.into(),
@@ -62,6 +61,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
             return;
         }
     };
+    println!("INPUT {input}");
     // Retrieve the Surreal instance
     let surreal = match INSTANCES.read().get(&id).cloned() {
         None => {
@@ -73,6 +73,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         }
         Some(s) => s,
     };
+    println!("CONNECTING...");
     // Connect
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
         check_exception(
