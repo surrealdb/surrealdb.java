@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id 'java-library'
 }
 
 group 'com.surrealdb'
@@ -74,5 +75,28 @@ tasks.register('createCombinedReport') {
             </body>
             </html>
         """
+    }
+}
+
+tasks.register('copyNativeLibs', Copy) {
+    from('src/native/linux') {
+        include '*.so'
+        into 'linux'
+    }
+    from('src/native/windows') {
+        include '*.dll'
+        into 'windows'
+    }
+    from('src/native/macos') {
+        include '*.dylib'
+        into 'macos'
+    }
+    into "$buildDir/native-libs"
+}
+
+jar {
+    dependsOn copyNativeLibs
+    from("$buildDir/native-libs") {
+        into 'natives'
     }
 }

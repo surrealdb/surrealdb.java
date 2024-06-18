@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build-linux:
+  build-linux-windows:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,6 +28,9 @@ jobs:
 
       - name: Install cross
         run: cargo install cross
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
 
       - name: Pull cross Docker image
         run: docker pull rustembedded/cross:${{ matrix.target }}
@@ -52,6 +55,9 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
       - name: Build
         run: cargo build --target x86_64-apple-darwin
 
@@ -72,6 +78,9 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
       - name: Build
         run: cargo build --target aarch64-apple-darwin
 
@@ -80,3 +89,61 @@ jobs:
         with:
           name: aarch64-apple-darwin-build
           path: target/aarch64-apple-darwin/debug/
+
+  collect-artifacts:
+    runs-on: ubuntu-latest
+    needs:
+      - build-linux-windows
+      - build-macos-intel
+      - build-macos-arm64
+    steps:
+      - name: Create directories for artifacts
+        run: |
+          mkdir -p src/main/resources/natives/linux
+          mkdir -p src/main/resources/natives/windows
+          mkdir -p src/main/resources/natives/macos
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-unknown-linux-gnu-build
+          path: src/main/resources/natives/linux
+
+      - name: Download AArch64 Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: aarch64-unknown-linux-gnu-build
+          path: src/main/resources/natives/linux
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-pc-windows-gnu-build
+          path: src/main/resources/natives/windows
+
+      - name: Download macOS Intel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-apple-darwin-build
+          path: src/main/resources/natives/macos
+
+      - name: Download macOS ARM64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: aarch64-apple-darwin-build
+          path: src/main/resources/natives/macos
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build JAR
+        run: ./gradlew jar
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: surrealdb-jni
+          path: build/libs/surrealdb-jni.jar
