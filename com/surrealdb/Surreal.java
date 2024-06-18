@@ -25,11 +25,11 @@ package com.surrealdb;
         try {
             Surreal surreal = Surreal.new_instance();
             surreal.connect("ws://localhost:8000");
-            System.out.println("SUCCESS!");
         } catch (Exception e) {
             if (!e.getMessage().startsWith("There was an error processing a remote WS request: IO error: Connection refused ")) {
                 throw e;
             }
         }
+        System.out.println("SUCCESS!");
 	}
 }

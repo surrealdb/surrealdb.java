@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicI32, Ordering};
 
 use jni::JNIEnv;
 use jni::objects::{JClass, JString};
-use jni::sys::{jint, jobject, jvalue};
+use jni::sys::{jint, jobject};
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use surrealdb::engine::any::Any;
@@ -22,36 +22,25 @@ static ID_SEQUENCE: Lazy<AtomicI32> = Lazy::new(|| AtomicI32::new(1));
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
     mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
+    class: JClass<'local>,
 ) -> jobject {
-    // Load the Surreal class
-    let class = match env.find_class("com/surrealdb/Surreal") {
-        Ok(c) => c,
-        Err(_) => {
-            check_exception(env, None);
-            return std::ptr::null_mut();
-        }
-    };
-    // Find the constructor
-    let constructor = match env.get_method_id(&class, "<init>", "(I)V") {
-        Ok(c) => c,
-        Err(_) => {
-            check_exception(env, None);
-            return std::ptr::null_mut();
-        }
-    };
     // Attribute a new ID to each new instance
     let id = ID_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     // Store the instance
     INSTANCES.write().insert(id, Arc::new(Surreal::init()));
+    let id = id as jint;
     // Build the new instance
-    let instance =
-        match unsafe { env.new_object_unchecked(&class, constructor, &[jvalue { i: id }]) } {
-            Ok(i) => i.into_raw(),
-            Err(_) => return std::ptr::null_mut(),
-        };
-    // Return the instance
-    check_exception(env, None);
+    let instance = match env.new_object(class, "(I)V", &[id.into()]) {
+        Ok(i) => i.into_raw(),
+        Err(e) => {
+            check_exception(
+                &mut env,
+                Some(("java/lang/RuntimeException", &format!("{e}"))),
+            );
+            return std::ptr::null_mut();
+        }
+    };
+    check_exception(&mut env, None);
     instance
 }
 
@@ -67,9 +56,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         Ok(i) => i.into(),
         Err(_) => {
             check_exception(
-                env, Some((
-                    "java/lang/IllegalArgumentException",
-                    "Invalid string input")),
+                &mut env,
+                Some(("java/lang/IllegalArgumentException", "Invalid string input")),
             );
             return;
         }
@@ -78,9 +66,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     let surreal = match INSTANCES.read().get(&id).cloned() {
         None => {
             check_exception(
-                env,
-                Some(("java/lang/IllegalArgumentException",
-                      "Invalid Surreal ID")),
+                &mut env,
+                Some(("java/lang/IllegalArgumentException", "Invalid Surreal ID")),
             );
             return;
         }
@@ -88,11 +75,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     };
     // Connect
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
-        check_exception(env, Some(("java/lang/RuntimeException", &format!("{err}"))));
+        check_exception(
+            &mut env,
+            Some(("java/lang/RuntimeException", &format!("{err}"))),
+        );
     }
 }
 
-fn check_exception(mut env: JNIEnv<'_>, t: Option<(&str, &str)>) {
+fn check_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) {
     if let Ok(b) = env.exception_check() {
         if b {
             let _ = env.exception_describe();
