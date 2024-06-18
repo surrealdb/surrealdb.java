@@ -20,3 +20,19 @@ Cargo.lock
 
 hs_err_*.log
 **/com_surrealdb_*.h
+
+# Ignore MAC
+**/.DS_Store
+
+# Ignore Gradle build directory
+/build/
+/out/
+
+# Ignore specific Gradle caches and logs
+.gradle/
+
+# Ignore Gradle Wrapper JAR file
+/gradle/wrapper/gradle-wrapper.jar
+
+# Ignore Gradle Wrapper properties
+gradle/wrapper/gradle-wrapper.properties

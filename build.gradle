@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'com.surrealdb'
+version '0.2-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+}
+
+tasks.register('buildCargo', Exec) {
+    commandLine 'cargo', 'build'
+}
+
+test {
+    dependsOn buildCargo
+    useJUnitPlatform()
+    systemProperty 'java.library.path', file('target/debug').absolutePath
+}

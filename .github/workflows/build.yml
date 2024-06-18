@@ -18,13 +18,13 @@ jobs:
         java: [ '8', '11', '17', '21', '22' ]
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
+          components: clippy,rustfmt
+
+      - uses: actions/checkout@v4
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -38,5 +38,7 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
 
-      - name: Make
-        run: make
+      - name: Test
+        run: |
+          chmod +x gradlew
+          ./gradlew test

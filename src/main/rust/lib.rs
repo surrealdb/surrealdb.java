@@ -1,11 +1,11 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::Arc;
 
 use jni::errors::Error;
-use jni::JNIEnv;
 use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jint, jobject};
+use jni::JNIEnv;
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use surrealdb::engine::any::Any;
@@ -33,14 +33,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
     // Build the new instance
     let instance = match env.new_object(class, "(I)V", &[id.into()]) {
         Ok(i) => i.into_raw(),
-        Err(e) => {
-            eprintln!("{e}");
-            return std::ptr::null_mut();
-        }
+        Err(e) => return exception(&mut env, Some(e), None),
     };
-    if check_exception(&mut env, None) {
-        return std::ptr::null_mut();
-    }
     println!("INSTANCE CREATED");
     instance
 }
@@ -55,47 +49,35 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     // Retrieve the Surreal instance ID
     let id = match get_surrealdb_id(&mut env, &object) {
         Ok(i) => i,
-        Err(e) => {
-            check_exception(
-                &mut env,
-                Some(("java/lang/RuntimeException", &format!("{e}"))),
-            );
-            return std::ptr::null_mut();
-        }
+        Err(e) => return exception(&mut env, Some(e), None),
     };
-
     // Extract the connection string
     let input: String = match env.get_string(&input) {
         Ok(i) => i.into(),
-        Err(_) => {
-            check_exception(
-                &mut env,
-                Some(("java/lang/IllegalArgumentException", "Invalid string input")),
-            );
-            return std::ptr::null_mut();
-        }
+        Err(e) => return exception(&mut env, Some(e), None),
     };
     println!("INPUT {input}");
     // Retrieve the Surreal instance
     let surreal = match INSTANCES.read().get(&id).cloned() {
-        None => {
-            check_exception(
-                &mut env,
-                Some(("java/lang/IllegalArgumentException", "Invalid Surreal ID")),
-            );
-            return std::ptr::null_mut();
-        }
         Some(s) => s,
+        None => {
+            return exception(
+                &mut env,
+                None,
+                Some(("java/lang/IllegalArgumentException", "Invalid Surreal ID")),
+            )
+        }
     };
     println!("CONNECTING...");
     // Connect
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(input).await }) {
-        check_exception(
+        return exception(
             &mut env,
+            None,
             Some(("java/lang/RuntimeException", &format!("{err}"))),
         );
     }
-    return std::ptr::null_mut();
+    std::ptr::null_mut()
 }
 
 #[no_mangle]
@@ -107,39 +89,29 @@ pub extern "system" fn Java_com_surrealdb_Surreal_close<'local>(
     // Retrieve the Surreal instance ID
     let id = match get_surrealdb_id(&mut env, &object) {
         Ok(i) => i,
-        Err(e) => {
-            check_exception(
-                &mut env,
-                Some(("java/lang/RuntimeException", &format!("{e}"))),
-            );
-            return std::ptr::null_mut();
-        }
+        Err(e) => return exception(&mut env, Some(e), None),
     };
-
     // Remove the Surreal instance
     INSTANCES.write().remove(&id);
-    return std::ptr::null_mut();
+    std::ptr::null_mut()
 }
 
 fn get_surrealdb_id<'local>(env: &mut JNIEnv, object: &JObject<'local>) -> Result<i32, Error> {
     let id = env.get_field(object, "id", "I")?;
-    Ok(id.i()? as i32)
+    Ok(id.i()?)
 }
 
-fn return_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) -> jobject {
-    check_exception(env, t);
-    return std::ptr::null_mut();
-}
-
-fn check_exception(env: &mut JNIEnv, t: Option<(&str, &str)>) -> bool {
+fn exception(env: &mut JNIEnv, e: Option<Error>, t: Option<(&str, &str)>) -> jobject {
     if let Ok(b) = env.exception_check() {
-        if b { // There is already an exception
-            return true;
-        }
-        if let Some(t) = t {
-            let _ = env.throw(t);
-            return true;
+        if !b {
+            // There is not already an exception
+            if let Some(e) = e {
+                let _ = env.throw(format!("{e}"));
+            }
+            if let Some(t) = t {
+                let _ = env.throw(t);
+            }
         }
     }
-    false
+    std::ptr::null_mut()
 }
