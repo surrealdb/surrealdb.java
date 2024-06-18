@@ -1,7 +1,17 @@
 # surrealdb-jni
 
+### Reports
+
+[Test report, Code coverage, Javadoc](https://emmanuel-keller.github.io/surrealdb-jni/)
+
+### Unix
 
 ```shell
-brew install openjdk@11
-make
+./gradlew -i test
+```
+
+### Windows
+
+```shell
+./gradlew.bat -i test
 ```
