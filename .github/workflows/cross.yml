@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/
+          path: target/${{ matrix.target }}/release/*.so,target/${{ matrix.target }}/release/*.dll
 
   build-macos-intel:
     runs-on: macos-12
@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: x86_64-apple-darwin-build
-          path: target/x86_64-apple-darwin/release/
+          path: target/x86_64-apple-darwin/release/*.dylib
 
   build-macos-arm64:
     runs-on: macos-latest
@@ -88,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aarch64-apple-darwin-build
-          path: target/aarch64-apple-darwin/release/
+          path: target/aarch64-apple-darwin/release/*.dylib
 
   build-aggregated-jar:
     runs-on: ubuntu-latest

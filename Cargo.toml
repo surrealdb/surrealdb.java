@@ -8,6 +8,9 @@ edition = "2021"
 crate-type = ["cdylib"]
 path = "src/main/rust/lib.rs"
 
+[profile.release]
+opt-level = 3
+
 [dependencies]
 jni = "0.21.1"
 surrealdb = { version = "1.5.3", features = ["kv-mem"] }
