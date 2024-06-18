@@ -30,9 +30,3 @@ hs_err_*.log
 
 # Ignore specific Gradle caches and logs
 .gradle/
-
-# Ignore Gradle Wrapper JAR file
-/gradle/wrapper/gradle-wrapper.jar
-
-# Ignore Gradle Wrapper properties
-gradle/wrapper/gradle-wrapper.properties
