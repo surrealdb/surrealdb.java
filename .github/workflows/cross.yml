@@ -16,44 +16,46 @@ jobs:
         target:
           - x86_64-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
+          - x86_64-linux-android
+          - aarch64-linux-android
           - x86_64-pc-windows-gnu
-    steps:
-      - name: Install dependencies
-        run: sudo apt-get update
+        steps:
+          - name: Install dependencies
+            run: sudo apt-get update
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          - name: Checkout repository
+            uses: actions/checkout@v4
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
+          - name: Set up Rust
+            uses: dtolnay/rust-toolchain@stable
+            with:
+              toolchain: stable
 
-      - name: Install cross
-        run: cargo install cross
+          - name: Install cross
+            run: cargo install cross
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+          - name: Cache Rust
+            uses: Swatinem/rust-cache@v2
 
-      - name: Pull cross Docker image
-        run: docker pull rustembedded/cross:${{ matrix.target }}
+          - name: Pull cross Docker image
+            run: docker pull rustembedded/cross:${{ matrix.target }}
 
-      - name: Cross compile
-        run: cross build --target ${{ matrix.target }} --release
+          - name: Cross compile
+            run: cross build --target ${{ matrix.target }} --release
 
-      - name: Upload so lib
-        if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/*.so
+          - name: Upload so lib
+            if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'
+            uses: actions/upload-artifact@v4
+            with:
+              name: ${{ matrix.target }}-build
+              path: target/${{ matrix.target }}/release/*.so
 
-      - name: Upload dll lib
-        if: matrix.target == 'x86_64-pc-windows-gnu'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/*.dll
+          - name: Upload dll lib
+            if: matrix.target == 'x86_64-pc-windows-gnu'
+            uses: actions/upload-artifact@v4
+            with:
+              name: ${{ matrix.target }}-build
+              path: target/${{ matrix.target }}/release/*.dll
 
   build-macos-intel:
     runs-on: macos-12
@@ -125,12 +127,25 @@ jobs:
 
       - name: Create directories for artifacts
         run: |
+          mkdir -p src/main/resources/natives/android_64
+          mkdir -p src/main/resources/natives/android_arm64
           mkdir -p src/main/resources/natives/linux_64
           mkdir -p src/main/resources/natives/linux_arm64
-          mkdir -p src/main/resources/natives/windows_64
           mkdir -p src/main/resources/natives/osx_64
           mkdir -p src/main/resources/natives/osx_arm64
+          mkdir -p src/main/resources/natives/windows_64
 
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-linux-android-build
+          path: src/main/resources/natives/android_64
+
+      - name: Download AArch64 Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: aarch64-linux-android-build
+          path: src/main/resources/natives/android_arm64
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
@@ -142,12 +157,6 @@ jobs:
         with:
           name: aarch64-unknown-linux-gnu-build
           path: src/main/resources/natives/linux_arm64
-
-      - name: Download Windows artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: x86_64-pc-windows-gnu-build
-          path: src/main/resources/natives/windows_64
 
       - name: Download macOS Intel artifacts
         uses: actions/download-artifact@v4
@@ -161,6 +170,12 @@ jobs:
           name: aarch64-apple-darwin-build
           path: src/main/resources/natives/osx_arm64
 
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-pc-windows-gnu-build
+          path: src/main/resources/natives/windows_64
+          
       - name: Build JAR
         run: ./gradlew jar
 

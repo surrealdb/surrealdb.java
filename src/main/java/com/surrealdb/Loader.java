@@ -27,14 +27,21 @@ class Loader {
     }
 
     private static String get_path() {
+        final String vendor = System.getProperty("java.vendor").toLowerCase(Locale.ENGLISH);
         final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
         final String name = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
-        final boolean intel = arch.contains("x86_64") || arch.contains("amd64");
-        final boolean arm = arch.contains("aarch64");
-        final boolean linux = name.contains("nix") || name.contains("nux");
+        final boolean android = vendor.contains("android");
+        final boolean linux = name.contains("linux");
         final boolean windows = name.contains("win");
         final boolean osx = name.contains("mac");
-        if (linux) {
+        final boolean intel = arch.contains("x86_64") || arch.contains("amd64");
+        final boolean arm = arch.contains("aarch64") || arch.contains("arm64");
+        if (android) {
+            if (arm)
+                return "android_arm64";
+            else if (intel)
+                return "android_64";
+        } else if (linux) {
             if (arm)
                 return "linux_arm64";
             else if (intel)
