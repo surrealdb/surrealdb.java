@@ -10,7 +10,6 @@ on:
 
 jobs:
   build-cross:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         target:
@@ -21,15 +20,21 @@ jobs:
           - x86_64-pc-windows-gnu
         include:
           - target: x86_64-unknown-linux-gnu
+            runs-on: ubuntu-latest
             optional: false
           - target: aarch64-unknown-linux-gnu
+            runs-on: ubuntu-latest
             optional: false
           - target: x86_64-linux-android
+            runs-on: ubuntu-24.04
             optional: true
           - target: aarch64-linux-android
+            runs-on: ubuntu-24.04
             optional: true
           - target: x86_64-pc-windows-gnu
+            runs-on: ubuntu-latest
             optional: false
+    runs-on: ${{ matrix.runs-on }}
     continue-on-error: ${{ matrix.optional }}
     steps:
       - name: Install dependencies
@@ -147,17 +152,18 @@ jobs:
           mkdir -p src/main/resources/natives/osx_arm64
           mkdir -p src/main/resources/natives/windows_64
 
-      - name: Download Linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: x86_64-linux-android-build
-          path: src/main/resources/natives/android_64
-
-      - name: Download AArch64 Linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: aarch64-linux-android-build
-          path: src/main/resources/natives/android_arm64
+      #      - name: Download Android artifacts
+      #        uses: actions/download-artifact@v4
+      #        with:
+      #          name: x86_64-linux-android-build
+      #          path: src/main/resources/natives/android_64
+      #
+      #      - name: Download Arm Android artifacts
+      #        uses: actions/download-artifact@v4
+      #        with:
+      #          name: aarch64-linux-android-build
+      #          path: src/main/resources/natives/android_arm64
+      
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
