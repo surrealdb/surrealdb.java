@@ -158,11 +158,11 @@ jobs:
       - name: Build JAR
         run: ./gradlew jar
 
-      - name: Integration Test
-        run: ./gradlew integrationTest
-
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb-jni
           path: build/libs/surrealdb-jni-0.2-SNAPSHOT.jar
+
+      - name: Integration Test
+        run: ./gradlew integrationTest
