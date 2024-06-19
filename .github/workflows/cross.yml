@@ -9,45 +9,15 @@ on:
       - main
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        target:
-          - x86_64-pc-windows-msvc
-          - aarch64-pc-windows-msvc
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-
-      - name: Install Target
-        if: matrix.target == 'aarch64-pc-windows-msvc'
-        run: rustup target add aarch64-pc-windows-msvc
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
-
-      - name: Build
-        run: cargo build --target ${{ matrix.target }} --release
-
-      - name: Upload dll lib
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/*.dll
-
-  build-linux:
+  build-cross:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         target:
           - x86_64-unknown-linux-gnu
           - aarch64-unknown-linux-gnu
+          - x86_64-pc-windows-gnu
+          - aarch64-pc-windows-gnu
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,27 +27,29 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Install Target
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: rustup target add aarch64-unknown-linux-gnu
-
-      - name: Install Dependencies
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Install cross
+        run: cargo install cross
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
 
-      - name: Build
-        run: cargo build --target ${{ matrix.target }} --release
+      - name: Pull cross Docker image
+        run: docker pull rustembedded/cross:${{ matrix.target }}
 
-      - name: Upload artifact
+      - name: Cross compile
+        run: cross build --target ${{ matrix.target }} --release
+
+      - name: Upload so lib
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-build
           path: target/${{ matrix.target }}/release/*.so
+
+      - name: Upload dll lib
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-build
+          path: target/${{ matrix.target }}/release/*.dll
 
   build-macos-intel:
     runs-on: macos-12
@@ -128,8 +100,7 @@ jobs:
   build-aggregated-jar:
     runs-on: ubuntu-latest
     needs:
-      - build-windows
-      - build-linux
+      - build-cross
       - build-macos-intel
       - build-macos-arm64
     steps:
@@ -156,7 +127,6 @@ jobs:
           mkdir -p src/main/resources/natives/windows_arm64
           mkdir -p src/main/resources/natives/osx_64
           mkdir -p src/main/resources/natives/osx_arm64
-
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
@@ -172,13 +142,13 @@ jobs:
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          name: x86_64-pc-windows-msvc-build
+          name: x86_64-pc-windows-gnu-build
           path: src/main/resources/natives/windows_64
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          name: aarch64-pc-windows-msvc-build
+          name: aarch64-pc-windows-gnu-build
           path: src/main/resources/natives/windows_arm64
 
       - name: Download macOS Intel artifacts
