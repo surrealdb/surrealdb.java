@@ -16,8 +16,23 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+sourceSets {
+    integrationTest {
+        java
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
 dependencies {
+    implementation 'org.scijava:native-lib-loader:2.5.0'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    integrationTestImplementation files('build/libs/surrealdb-jni-0.2-SNAPSHOT.jar')
 }
 
 tasks.register('buildCargo', Exec) {
@@ -32,6 +47,10 @@ test {
     dependsOn buildCargo
     useJUnitPlatform()
     systemProperty 'java.library.path', file('target/debug').absolutePath
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
+    testLogging {
+        events "passed"
+    }
 }
 
 jacocoTestReport {
@@ -75,5 +94,15 @@ tasks.register('createCombinedReport') {
             </body>
             </html>
         """
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
+    testLogging {
+        events "passed"
     }
 }

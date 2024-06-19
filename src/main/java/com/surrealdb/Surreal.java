@@ -1,9 +1,19 @@
 package com.surrealdb;
 
+import org.scijava.nativelib.NativeLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Surreal implements AutoCloseable {
 
+    private static final Logger logger = LoggerFactory.getLogger(Surreal.class);
+
     static {
-        System.loadLibrary("surrealdb");
+        try {
+            NativeLoader.loadLibrary("surrealdb");  // Base name of your library
+        } catch (Exception e) {
+            logger.warn("Unable to load SurrealDB's library", e);
+        }
     }
 
     final int id;
@@ -18,5 +28,4 @@ public class Surreal implements AutoCloseable {
 
     @Override
     public native void close() throws Exception;
-
 }

@@ -158,6 +158,9 @@ jobs:
       - name: Build JAR
         run: ./gradlew jar
 
+      - name: Integration Test
+        run: ./gradlew integrationTest
+
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
