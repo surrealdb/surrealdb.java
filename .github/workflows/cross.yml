@@ -73,7 +73,7 @@ jobs:
           name: x86_64-apple-darwin-build
           path: target/x86_64-apple-darwin/release/*.dylib
 
-  build-macos-arm64:
+  build-macos-arm:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
@@ -125,6 +125,7 @@ jobs:
           mkdir -p src/main/resources/natives/windows_64
           mkdir -p src/main/resources/natives/osx_64
           mkdir -p src/main/resources/natives/osx_arm64
+
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
@@ -164,5 +165,83 @@ jobs:
           name: surrealdb-jni
           path: build/libs/surrealdb-jni-0.2-SNAPSHOT.jar
 
-      - name: Integration Test
+      - name: Linux Integration Test
+        run: ./gradlew integrationTest
+
+  integration-tests:
+    runs-on: windows-latest
+    needs:
+      - build-aggregated-jar
+    steps:
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+
+      - name: Gradle
+        run: chmod +x gradlew
+
+      - name: Create directory build/libs
+        run: mkdir -p build/libs
+
+      - name: Download lib
+        uses: actions/download-artifact@v4
+        with:
+          name: surrealdb-jni
+          path: build/libs
+
+      - name: Windows Integration Test
+        run: ./gradlew integrationTest
+
+  mac-intel-integration-test:
+    runs-on: macos-12
+    needs:
+      - build-aggregated-jar
+    steps:
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+
+      - name: Gradle
+        run: chmod +x gradlew
+
+      - name: Create directory build/libs
+        run: mkdir -p build/libs
+
+      - name: Download lib
+        uses: actions/download-artifact@v4
+        with:
+          name: surrealdb-jni
+          path: build/libs
+
+      - name: Mac Integration Test
+        run: ./gradlew integrationTest
+
+  mac-arm-integration-test:
+    runs-on: macos-latest
+    needs:
+      - build-aggregated-jar
+    steps:
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+
+      - name: Gradle
+        run: chmod +x gradlew
+
+      - name: Create directory build/libs
+        run: mkdir -p build/libs
+
+      - name: Download lib
+        uses: actions/download-artifact@v4
+        with:
+          name: surrealdb-jni
+          path: build/libs
+
+      - name: Mac Integration Test
         run: ./gradlew integrationTest
