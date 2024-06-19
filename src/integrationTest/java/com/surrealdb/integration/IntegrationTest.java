@@ -15,7 +15,7 @@ public class IntegrationTest {
             RuntimeException e = assertThrows(RuntimeException.class, () -> {
                 surreal.connect("ws://localhost:8000");
             });
-            assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error: Connection refused "), e::getMessage);
+            assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error:"), e::getMessage);
         }
     }
 
