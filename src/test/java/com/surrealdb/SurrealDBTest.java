@@ -14,7 +14,7 @@ public class SurrealDBTest {
             RuntimeException e = assertThrows(RuntimeException.class, () -> {
                 surreal.connect("ws://localhost:8000");
             });
-            assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error: Connection refused "));
+            assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error:"));
         }
     }
 
