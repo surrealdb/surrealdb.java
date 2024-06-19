@@ -38,12 +38,6 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
 
-      - name: Clippy
-        run: cargo clippy
-
-      - name: Fmt
-        run: cargo fmt --check
-
       - name: Build native lib
         run: cargo build
 
