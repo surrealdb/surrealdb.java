@@ -5,14 +5,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 class Loader {
 
     static String SURREALDB = "surrealdb";
     static String SURREALDB_LIBNAME = System.mapLibraryName(SURREALDB);
 
-    static void load() throws RuntimeException {
+    static void load_native() throws RuntimeException {
         try {
             System.loadLibrary(SURREALDB);
         } catch (final UnsatisfiedLinkError e) {
@@ -56,12 +58,22 @@ class Loader {
     }
 
     private static File extract(String path) throws IOException {
-        final String resourcePath = "/natives/" + path + "/" + SURREALDB_LIBNAME;
+        final String resourcePath = "natives/" + path + "/" + SURREALDB_LIBNAME;
         final URL resource = Surreal.class.getClassLoader().getResource(resourcePath);
         if (resource == null) {
             throw new RuntimeException("Couldn't find resource: " + resourcePath);
         }
         final Path tempDir = Files.createTempDirectory("surrealdb-jni");
+
+        // Add a hook to delete the temporary files on shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                deleteDirectory(tempDir);
+            } catch (IOException e) {
+                // Safe to ignore
+            }
+        }));
+
         final URLConnection connection = resource.openConnection();
         connection.setUseCaches(false);
         try (InputStream in = new BufferedInputStream(connection.getInputStream())) {
@@ -70,6 +82,21 @@ class Loader {
                 copy(in, out);
             }
             return outfile;
+        }
+    }
+
+    private static void deleteDirectory(Path path) throws IOException {
+        if (Files.isDirectory(path)) {
+            try (Stream<Path> walker = Files.walk(path)) {
+                walker.sorted(Comparator.reverseOrder())
+                        .forEach(p -> {
+                            try {
+                                Files.delete(p);
+                            } catch (IOException e) {
+                                // Safe to ignore
+                            }
+                        });
+            }
         }
     }
 

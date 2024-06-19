@@ -28,7 +28,6 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.scijava:native-lib-loader:2.5.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     integrationTestImplementation files('build/libs/surrealdb-jni-0.2-SNAPSHOT.jar')
 }
