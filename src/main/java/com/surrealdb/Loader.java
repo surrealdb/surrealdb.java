@@ -56,9 +56,10 @@ class Loader {
     }
 
     private static File extract(String path) throws IOException {
-        final URL resource = Surreal.class.getClassLoader().getResource("/natives/" + path + SURREALDB_LIBNAME);
+        final String resourcePath = "/natives/" + path + "/" + SURREALDB_LIBNAME;
+        final URL resource = Surreal.class.getClassLoader().getResource(resourcePath);
         if (resource == null) {
-            throw new RuntimeException("Couldn't find resource: " + path);
+            throw new RuntimeException("Couldn't find resource: " + resourcePath);
         }
         final Path tempDir = Files.createTempDirectory("surrealdb-jni");
         final URLConnection connection = resource.openConnection();
