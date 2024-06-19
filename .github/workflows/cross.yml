@@ -18,6 +18,9 @@ jobs:
           - aarch64-unknown-linux-gnu
           - x86_64-pc-windows-gnu
     steps:
+      - name: Install dependencies
+        run: sudo apt-get update
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -170,14 +173,11 @@ jobs:
       - name: Linux Integration Test
         run: ./gradlew -i integrationTest
 
-  windows-integration-tests:
+  windows-integration-test:
     runs-on: windows-latest
     needs:
       - build-aggregated-jar
     steps:
-      - name: Install dependencies
-        run: sudo apt-get update
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -207,9 +207,6 @@ jobs:
     needs:
       - build-aggregated-jar
     steps:
-      - name: Install dependencies
-        run: sudo apt-get update
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -239,12 +236,9 @@ jobs:
     needs:
       - build-aggregated-jar
     steps:
-      - name: Install dependencies
-        run: sudo apt-get update
-
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Set up JDK 22
         uses: actions/setup-java@v4
         with:
