@@ -10,56 +10,44 @@ import java.util.Locale;
 class Loader {
 
     static String SURREALDB = "surrealdb";
+    static String SURREALDB_LIBNAME = System.mapLibraryName(SURREALDB);
 
     static void load() throws RuntimeException {
         try {
             System.loadLibrary(SURREALDB);
         } catch (final UnsatisfiedLinkError e) {
             try {
-                System.load(get_path().load().getAbsolutePath());
+                System.load(extract(get_path()).getAbsolutePath());
             } catch (Exception e2) {
                 throw new RuntimeException("Couldn't load " + SURREALDB, e2);
             }
         }
     }
 
-    private static Lib get_path() {
+    private static String get_path() {
         final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
         final String name = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         if (name.contains("nix") || name.contains("nux")) {
-            final String libName = "lib" + SURREALDB + ".so";
             if (arch.contains("aarch64")) {
-                return new Lib("natives/linux_arm64", libName);
+                return "linux_arm64";
             } else if (arch.contains("x86_64")) {
-                return new Lib("natives/linux_64", libName);
+                return "linux_64";
             }
         } else if (name.contains("win")) {
             if (arch.contains("x86_64")) {
-                return new Lib("natives/windows_64", SURREALDB + ".dll");
+                return "windows_64";
             }
         } else if (name.contains("mac")) {
-            final String libName = "lib" + SURREALDB + ".dylib";
             if (arch.contains("aarch64")) {
-                return new Lib("natives/osx_arm64", libName);
+                return "osx_arm64";
             } else if (arch.contains("x86_64")) {
-                return new Lib("natives/osx_64", libName);
+                return "osx_64";
             }
         }
         throw new RuntimeException("Unsupported architecture: " + arch + " - name: " + name);
     }
 
-}
-
-class Lib {
-    String path;
-    String name;
-
-    Lib(String path, String name) {
-        this.path = path;
-        this.name = System.mapLibraryName(name);
-    }
-
-    public static void copy(InputStream input, OutputStream output) throws IOException {
+    private static void copy(InputStream input, OutputStream output) throws IOException {
         byte[] buffer = new byte[8192];
         int bytesRead;
         while ((bytesRead = input.read(buffer)) != -1) {
@@ -67,8 +55,8 @@ class Lib {
         }
     }
 
-    File load() throws IOException {
-        final URL resource = Surreal.class.getClassLoader().getResource(path);
+    private static File extract(String path) throws IOException {
+        final URL resource = Surreal.class.getClassLoader().getResource("/natives/" + path + SURREALDB_LIBNAME);
         if (resource == null) {
             throw new RuntimeException("Couldn't find resource: " + path);
         }
@@ -76,7 +64,7 @@ class Lib {
         final URLConnection connection = resource.openConnection();
         connection.setUseCaches(false);
         try (InputStream in = new BufferedInputStream(connection.getInputStream())) {
-            final File outfile = new File(tempDir.toFile(), this.name);
+            final File outfile = new File(tempDir.toFile(), SURREALDB_LIBNAME);
             try (FileOutputStream out = new FileOutputStream(outfile)) {
                 copy(in, out);
             }

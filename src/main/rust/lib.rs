@@ -1,11 +1,11 @@
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicI32, Ordering};
 
 use jni::errors::Error;
+use jni::JNIEnv;
 use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jint, jobject};
-use jni::JNIEnv;
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use surrealdb::engine::any::Any;
@@ -96,9 +96,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_close<'local>(
     std::ptr::null_mut()
 }
 
-fn get_surrealdb_id<'local>(env: &mut JNIEnv, object: &JObject<'local>) -> Result<i32, Error> {
-    let id = env.get_field(object, "id", "I")?;
-    Ok(id.i()?)
+fn get_surrealdb_id(env: &mut JNIEnv, object: &JObject) -> Result<i32, Error> {
+    env.get_field(object, "id", "I")?.i()
 }
 
 fn exception(env: &mut JNIEnv, e: Option<Error>, t: Option<(&str, &str)>) -> jobject {

@@ -7,11 +7,13 @@
 ### Unix
 
 ```shell
+cargo build
 ./gradlew -i test
 ```
 
 ### Windows
 
 ```shell
+cargo build
 ./gradlew.bat -i test
 ```
