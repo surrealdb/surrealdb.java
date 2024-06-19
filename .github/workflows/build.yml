@@ -33,7 +33,13 @@ jobs:
           distribution: 'temurin'
           java-version: 22
 
-      - name: Gradle
+      - name: Clippy
+        run: cargo clippy
+
+      - name: Fmt
+        run: cargo fmt --check
+
+      - name: Setup Gradle
         run: chmod +x gradlew
 
       - name: Clean

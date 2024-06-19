@@ -135,7 +135,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: aarch64-unknown-linux-gnu-build
-          path: src/main/resources/natives/linux_64
+          path: src/main/resources/natives/linux_arm64
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
