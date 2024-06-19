@@ -32,7 +32,7 @@ class Loader {
         if (name.contains("nix") || name.contains("nux")) {
             if (arch.contains("aarch64")) {
                 return "linux_arm64";
-            } else if (arch.contains("x86_64")) {
+            } else if (arch.contains("x86_64") || arch.contains("amd64")) {
                 return "linux_64";
             }
         } else if (name.contains("win")) {
