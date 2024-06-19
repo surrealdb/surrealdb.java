@@ -1,11 +1,9 @@
 package com.surrealdb;
 
-import static com.surrealdb.Loader.load_native;
-
 public class Surreal implements AutoCloseable {
 
     static {
-        load_native();
+        Loader.load_native();
     }
 
     final int id;

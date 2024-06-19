@@ -92,8 +92,11 @@ tasks.register('integrationTest', Test) {
     useJUnitPlatform()
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
-    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'debug'
     testLogging {
         showStandardStreams = true
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat = 'full'
+        showCauses = true
+        showStackTraces = true
     }
 }

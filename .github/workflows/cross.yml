@@ -39,12 +39,14 @@ jobs:
         run: cross build --target ${{ matrix.target }} --release
 
       - name: Upload so lib
+        if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-build
           path: target/${{ matrix.target }}/release/*.so
 
       - name: Upload dll lib
+        if: matrix.target == 'x86_64-pc-windows-gnu'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-build
@@ -166,7 +168,7 @@ jobs:
           path: build/libs/surrealdb-jni-0.2-SNAPSHOT.jar
 
       - name: Linux Integration Test
-        run: ./gradlew integrationTest
+        run: ./gradlew -i integrationTest
 
   integration-tests:
     runs-on: windows-latest
@@ -192,7 +194,7 @@ jobs:
           path: build/libs
 
       - name: Windows Integration Test
-        run: ./gradlew integrationTest
+        run: ./gradlew -i integrationTest
 
   mac-intel-integration-test:
     runs-on: macos-12
@@ -218,7 +220,7 @@ jobs:
           path: build/libs
 
       - name: Mac Integration Test
-        run: ./gradlew integrationTest
+        run: ./gradlew -i integrationTest
 
   mac-arm-integration-test:
     runs-on: macos-latest
@@ -244,4 +246,4 @@ jobs:
           path: build/libs
 
       - name: Mac Integration Test
-        run: ./gradlew integrationTest
+        run: ./gradlew -i integrationTest
