@@ -101,7 +101,7 @@ jobs:
     needs:
       - build-cross
       - build-macos-intel
-      - build-macos-arm64
+      - build-macos-arm
     steps:
       - name: Install dependencies
         run: sudo apt-get update
