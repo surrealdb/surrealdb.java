@@ -14,7 +14,7 @@ public class Surreal implements AutoCloseable {
 
     public static native Surreal new_instance();
 
-    public native Surreal connect(String connect);
+    public native Surreal connect(String connect) throws SurrealDBException;
 
     @Override
     public native void close() throws Exception;

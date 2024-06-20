@@ -11,7 +11,7 @@ public class SurrealDBTest {
     void surrealdb_websocket() throws Exception {
         try (Surreal surreal = Surreal.new_instance()) {
             // We expected an exception as there is no running server
-            RuntimeException e = assertThrows(RuntimeException.class, () -> {
+            RuntimeException e = assertThrows(SurrealDBException.class, () -> {
                 surreal.connect("ws://localhost:8000");
             });
             assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error:"));
