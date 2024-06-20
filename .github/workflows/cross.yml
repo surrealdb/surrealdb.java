@@ -27,9 +27,11 @@ jobs:
             optional: false
           - target: x86_64-linux-android
             runs-on: ubuntu-24.04
+            cross: --git https://github.com/cross-rs/cross
             optional: true
           - target: aarch64-linux-android
             runs-on: ubuntu-24.04
+            cross: --git https://github.com/cross-rs/cross
             optional: true
           - target: x86_64-pc-windows-gnu
             runs-on: ubuntu-latest
@@ -49,7 +51,7 @@ jobs:
           toolchain: stable
 
       - name: Install cross
-        run: cargo install cross
+        run: cargo install cross ${{ matrix.cross }}
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -163,7 +165,7 @@ jobs:
       #        with:
       #          name: aarch64-linux-android-build
       #          path: src/main/resources/natives/android_arm64
-      
+
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
