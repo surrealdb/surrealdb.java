@@ -13,7 +13,7 @@ public class Surreal implements AutoCloseable {
     }
 
     // Unique internal ID used by the native library to locate the SurrealDB instance
-    private final long id;
+    private long id;
 
     public Surreal() {
         id = Surreal.newInstance();
@@ -33,7 +33,7 @@ public class Surreal implements AutoCloseable {
 
     private static native long query(long id, String sql);
 
-    private static native long queryBind(long id, String sql, Map<String, Object> params);
+    private static native long queryBind(long id, String sql, Map<String, ?> params);
 
     public Surreal connect(String connect) {
         connect(id, connect);
@@ -62,14 +62,24 @@ public class Surreal implements AutoCloseable {
         return new Response(query(id, sql));
     }
 
-    public Response queryBind(String sql, Map<String, Object> params) {
+    public Response queryBind(String sql, Map<String, ?> params) {
         return new Response(queryBind(id, sql, params));
     }
 
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
     }
 
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
 
 }

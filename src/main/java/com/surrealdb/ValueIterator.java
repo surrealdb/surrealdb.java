@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 public class ValueIterator implements Iterator<Value>, AutoCloseable {
 
-    private final long id;
+    private long id;
 
     ValueIterator(long id) {
         this.id = id;
@@ -19,6 +19,17 @@ public class ValueIterator implements Iterator<Value>, AutoCloseable {
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
+    }
+
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
     }
 
     @Override

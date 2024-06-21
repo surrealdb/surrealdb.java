@@ -2,7 +2,7 @@ package com.surrealdb;
 
 public class Response implements AutoCloseable {
 
-    private final long id;
+    private long id;
 
     Response(long id) {
         this.id = id;
@@ -12,12 +12,23 @@ public class Response implements AutoCloseable {
 
     private native long take(long id, int num);
 
-    public Result take(int num) {
-        return new Result(take(id, num));
+    public Value take(int num) {
+        return new Value(take(id, num));
     }
 
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
+    }
+
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
     }
 }

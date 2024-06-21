@@ -3090,6 +3090,7 @@ version = "0.2.0"
 dependencies = [
  "jni",
  "once_cell",
+ "parking_lot",
  "surrealdb 1.5.3",
  "tokio",
 ]

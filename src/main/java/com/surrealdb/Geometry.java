@@ -2,7 +2,7 @@ package com.surrealdb;
 
 public class Geometry implements AutoCloseable {
 
-    private final long id;
+    private long id;
 
     Geometry(long id) {
         this.id = id;
@@ -13,7 +13,17 @@ public class Geometry implements AutoCloseable {
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
     }
 
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
 }
 

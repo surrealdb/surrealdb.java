@@ -2,7 +2,7 @@ package com.surrealdb;
 
 public class Thing implements AutoCloseable {
 
-    private final long id;
+    private long id;
 
     Thing(long id) {
         this.id = id;
@@ -13,7 +13,17 @@ public class Thing implements AutoCloseable {
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
     }
 
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
 }
 

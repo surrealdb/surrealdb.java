@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Value implements AutoCloseable {
 
-    private final long id;
+    private long id;
 
     Value(long id) {
         this.id = id;
@@ -13,13 +13,21 @@ public class Value implements AutoCloseable {
 
     private static native boolean deleteInstance(long id);
 
+    private static native String toString(long id);
+
+    private static native String toPrettyString(long id);
+
     private static native boolean isNone(long id);
 
     private static native boolean isNull(long id);
 
+    private static native boolean isBoolean(long id);
+
+    private static native boolean getBoolean(long id);
+
     private static native boolean isDouble(long id);
 
-    private static native float getDouble(long id);
+    private static native double getDouble(long id);
 
     private static native boolean isLong(long id);
 
@@ -57,6 +65,14 @@ public class Value implements AutoCloseable {
 
     private static native long getThing(long id);
 
+    public String toString() {
+        return toString(id);
+    }
+
+    public String toPrettyString() {
+        return toPrettyString(id);
+    }
+
     public boolean isArray() {
         return isArray(id);
     }
@@ -71,6 +87,14 @@ public class Value implements AutoCloseable {
 
     public Object getObject() {
         return new Object(getObject(id));
+    }
+
+    public boolean isBoolean() {
+        return isBoolean(id);
+    }
+
+    public boolean getBoolean() {
+        return getBoolean(id);
     }
 
     public boolean isDouble() {
@@ -148,8 +172,17 @@ public class Value implements AutoCloseable {
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
     }
 
-
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
 }
 

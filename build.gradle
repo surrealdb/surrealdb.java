@@ -29,7 +29,7 @@ configurations {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    integrationTestImplementation files('build/libs/surrealdb-jni-0.2-SNAPSHOT.jar')
+    integrationTestImplementation files("${layout.buildDirectory}/libs/surrealdb-jni-0.2-SNAPSHOT.jar")
 }
 
 jacoco {
@@ -60,7 +60,7 @@ jacocoTestReport {
 //}
 
 javadoc {
-    destinationDir = file("build/reports/javadoc")
+    destinationDir = file("${layout.buildDirectory}/reports/javadoc")
 }
 
 tasks.register('createCombinedReport') {
@@ -68,7 +68,7 @@ tasks.register('createCombinedReport') {
     dependsOn javadoc
 
     doLast {
-        def indexFile = file("build/reports/index.html")
+        def indexFile = file("${layout.buildDirectory}/reports/index.html")
         indexFile.text = """
             <!DOCTYPE html>
             <html>

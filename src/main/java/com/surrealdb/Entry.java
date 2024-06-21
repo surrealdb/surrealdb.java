@@ -2,7 +2,7 @@ package com.surrealdb;
 
 public class Entry implements AutoCloseable {
 
-    private final long id;
+    private long id;
 
     Entry(long id) {
         this.id = id;
@@ -25,6 +25,17 @@ public class Entry implements AutoCloseable {
     @Override
     public void close() {
         deleteInstance(id);
+        id = 0;
+    }
+
+    @Override
+    @Deprecated
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } finally {
+            super.finalize();
+        }
     }
 
 }
