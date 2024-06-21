@@ -1,6 +1,6 @@
 # surrealdb-jni
 
-A native JAVA client for SurrealDB.
+A thread-safe native JAVA client for SurrealDB.
 
 - Supported JAVA version: JAVA 8, 11, 17, 21, 22.
 - Supported architectures:
@@ -16,7 +16,7 @@ A native JAVA client for SurrealDB.
 
 [Test report, Code coverage, Javadoc](https://emmanuel-keller.github.io/surrealdb-jni/)
 
-### Unix
+### Linux/Mac
 
 ```shell
 cargo build
@@ -29,3 +29,13 @@ cargo build
 cargo build
 ./gradlew.bat -i test
 ```
+
+### TODOs
+
+- [x] Get a working build (java 8, cicd, releases)
+- [ ] Get an API that resembles the JS/Rust drivers including type support: 50%
+- [x] Include native rust binary for x86_64
+- [x] Integrate native rust binary
+- [x] Add additional architecture native binaries (including Android as a stretch goal)
+- [ ] Unit and integration testing of streams, auth, params, and each query exposed via API: 50%
+- [x] Error mapping

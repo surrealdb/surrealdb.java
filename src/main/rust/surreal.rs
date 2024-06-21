@@ -11,7 +11,7 @@ use crate::{create_arc_instance, get_rust_string, get_surreal_instance, release_
 use crate::error::DriverError;
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) -> jlong {
@@ -19,7 +19,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_new_1instance<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_delete_1instance<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     id: jlong,

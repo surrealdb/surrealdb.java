@@ -1,7 +1,5 @@
 package com.surrealdb;
 
-import java.util.List;
-
 public class Response implements AutoCloseable {
 
     private final long id;
@@ -10,16 +8,16 @@ public class Response implements AutoCloseable {
         this.id = id;
     }
 
-    private static native void delete_instance(long id);
+    private static native void deleteInstance(long id);
 
-    private native <T> List<T> take(long id, int num, Class<T> recordType) throws SurrealDBException;
+    private native long take(long id, int num);
 
-    public <T> List<T> take(int num, Class<T> recordType) throws SurrealDBException {
-        throw new RuntimeException("Not implemented yet");
+    public Result take(int num) {
+        return new Result(take(id, num));
     }
 
     @Override
     public void close() {
-        delete_instance(id);
+        deleteInstance(id);
     }
 }

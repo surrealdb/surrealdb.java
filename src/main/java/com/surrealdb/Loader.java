@@ -14,19 +14,19 @@ class Loader {
     static String SURREALDB = "surrealdb";
     static String SURREALDB_LIBNAME = System.mapLibraryName(SURREALDB);
 
-    static void load_native() throws RuntimeException {
+    static void loadNative() throws RuntimeException {
         try {
             System.loadLibrary(SURREALDB);
         } catch (final UnsatisfiedLinkError e) {
             try {
-                System.load(extract(get_path()).getAbsolutePath());
+                System.load(extract(getPath()).getAbsolutePath());
             } catch (Exception e2) {
                 throw new RuntimeException("Couldn't load " + SURREALDB, e2);
             }
         }
     }
 
-    private static String get_path() {
+    private static String getPath() {
         final String vendor = System.getProperty("java.vendor").toLowerCase(Locale.ENGLISH);
         final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
         final String name = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);

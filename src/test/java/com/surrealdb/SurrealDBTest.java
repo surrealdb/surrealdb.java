@@ -22,6 +22,12 @@ public class SurrealDBTest {
     void surreal_db_memory() throws SurrealDBException {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            try (Response response = surreal.query("INFO FOR ROOT;")) {
+                Result result = response.take(0);
+                assertTrue(result.hasNext());
+                Value value = result.next();
+                assertTrue(value.isArray());
+            }
         }
     }
 }
