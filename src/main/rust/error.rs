@@ -1,37 +1,35 @@
 use jni::errors::{Error, Exception, ToException};
 use jni::JNIEnv;
-use jni::sys::jobject;
 
 pub(super) enum DriverError {
     Error(Error),
-    InstanceNotFound(i32),
+    InstanceNotFound(&'static str),
     SurrealDB(surrealdb::Error),
 }
 
 const EXCEPTION: &str = "java/lang/exception";
-const ILLEGAL_ARGUMENT_EXCEPTION: &str = "java/lang/IllegalArgumentException";
+const NULL_POINTER_EXCEPTION: &str = "java/lang/NullPointerException";
 const SURREALDB_EXCEPTION: &str = "com/surrealdb/SurrealDBException";
 
 impl ToException for DriverError {
     fn to_exception(&self) -> Exception {
         match self {
             Self::Error(e) => Exception { class: EXCEPTION.to_string(), msg: format!("{e}") },
-            Self::InstanceNotFound(id) => Exception { class: ILLEGAL_ARGUMENT_EXCEPTION.to_string(), msg: format!("Surreal instance not found ({id})") },
+            Self::InstanceNotFound(s) => Exception { class: NULL_POINTER_EXCEPTION.to_string(), msg: format!("{s} instance not found") },
             Self::SurrealDB(e) => Exception { class: SURREALDB_EXCEPTION.to_string(), msg: format!("{e}") }
         }
     }
 }
 
 impl DriverError {
-    pub(super) fn exception(self, env: &mut JNIEnv) -> jobject {
+    pub(super) fn exception<T, F: FnOnce() -> T>(self, env: &mut JNIEnv, output: F) -> T {
         if let Ok(b) = env.exception_check() {
             // If there is already an exception thrown we don't add one
             if !b {
                 let _ = env.throw(self.to_exception());
             }
         }
-        // A method returning an exception should return null
-        std::ptr::null_mut()
+        output()
     }
 }
 

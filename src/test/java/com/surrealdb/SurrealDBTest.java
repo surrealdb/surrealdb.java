@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SurrealDBTest {
 
     @Test
-    void surrealdb_websocket() throws Exception {
-        try (Surreal surreal = Surreal.new_instance()) {
+    void surrealdb_websocket() throws SurrealDBException {
+        try (Surreal surreal = new Surreal()) {
             // We expected an exception as there is no running server
             RuntimeException e = assertThrows(SurrealDBException.class, () -> {
                 surreal.connect("ws://localhost:8000");
@@ -19,9 +19,9 @@ public class SurrealDBTest {
     }
 
     @Test
-    void surreal_db_memory() throws Exception {
-        try (Surreal surreal = Surreal.new_instance()) {
-            surreal.connect("memory");
+    void surreal_db_memory() throws SurrealDBException {
+        try (Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
         }
     }
 }
