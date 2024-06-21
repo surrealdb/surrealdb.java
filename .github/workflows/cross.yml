@@ -154,17 +154,17 @@ jobs:
           mkdir -p src/main/resources/natives/osx_arm64
           mkdir -p src/main/resources/natives/windows_64
 
-      #      - name: Download Android artifacts
-      #        uses: actions/download-artifact@v4
-      #        with:
-      #          name: x86_64-linux-android-build
-      #          path: src/main/resources/natives/android_64
-      #
-      #      - name: Download Arm Android artifacts
-      #        uses: actions/download-artifact@v4
-      #        with:
-      #          name: aarch64-linux-android-build
-      #          path: src/main/resources/natives/android_arm64
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-linux-android-build
+          path: src/main/resources/natives/android_64
+
+      - name: Download Arm Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: aarch64-linux-android-build
+          path: src/main/resources/natives/android_arm64
 
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
