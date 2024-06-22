@@ -2,6 +2,7 @@ package com.surrealdb;
 
 import org.junit.jupiter.api.Test;
 
+import java.awt.geom.Point2D;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,14 +40,15 @@ public class SurrealDBTest {
 
             }
             //
-            String sql = "CREATE person:1 SET name = 'Tobie',category = 1, active=true, score=5.0f, tags=['CEO', 'CTO'], uuid= u'f8e238f2-e734-47b8-9a16-476b291bd78a';\n" +
+            String sql = "CREATE person:1 SET name = 'Tobie',category = 1, active=true, score=5.0f, tags=['CEO', 'CTO']," +
+                    "uuid= u'f8e238f2-e734-47b8-9a16-476b291bd78a', pt = <geometry<point>> { type: \"Point\", coordinates: [-0.118092, 51.509865] };\n" +
                     "SELECT * FROM person;";
             try (Response response = surreal.query(sql)) {
                 Value create = response.take(0);
                 assertTrue(create.isArray());
                 Array createArray = create.getArray();
                 assertEquals(createArray.len(), 1);
-                assertEquals("[{ active: true, category: 1, id: person:1, name: 'Tobie', score: 5f, tags: ['CEO', 'CTO'], uuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
+                assertEquals("[{ active: true, category: 1, id: person:1, name: 'Tobie', pt: (-0.118092, 51.509865), score: 5f, tags: ['CEO', 'CTO'], uuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
                 Value select = response.take(1);
                 assertTrue(select.isArray());
                 Array selectArray = select.getArray();
@@ -57,6 +59,7 @@ public class SurrealDBTest {
                         "\t\tcategory: 1,\n" +
                         "\t\tid: person:1,\n" +
                         "\t\tname: 'Tobie',\n" +
+                        "\t\tpt: (-0.118092, 51.509865),\n" +
                         "\t\tscore: 5f,\n" +
                         "\t\ttags: [\n" +
                         "\t\t\t'CEO',\n" +
@@ -83,6 +86,9 @@ public class SurrealDBTest {
                 // Check String field
                 assertTrue(rowObject.get("name").isString());
                 assertEquals("Tobie", rowObject.get("name").getString());
+                // Check Geometry/Point field
+                assertTrue(rowObject.get("pt").isGeometry());
+                assertEquals(new Point2D.Double(-0.118092, 51.509865), rowObject.get("pt").getGeometry().getPoint());
                 // Check double field
                 assertTrue(rowObject.get("score").isDouble());
                 assertEquals(5.0, rowObject.get("score").getDouble());

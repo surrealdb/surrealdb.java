@@ -13,6 +13,7 @@ mod object;
 mod array;
 mod thing;
 mod id;
+mod geometry;
 
 
 static TOKIO_RUNTIME: Lazy<Runtime> =

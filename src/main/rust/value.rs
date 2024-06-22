@@ -204,6 +204,20 @@ pub extern "system" fn Java_com_surrealdb_Value_isGeometry<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getGeometry<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, id, ||0);
+    if let Value::Geometry(_) = value.as_ref() {
+        create_instance(value)
+    } else {
+        SurrealError::NullPointerException("Not a Geometry").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isNone<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,

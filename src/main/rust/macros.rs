@@ -47,3 +47,20 @@ macro_rules! new_string {
         }
     };
 }
+
+#[macro_export]
+macro_rules! new_double_point {
+    ($env:expr, $pt:expr, $default_fn:expr) => {
+        {
+            let double_array = match $env.new_double_array(2) {
+                Ok(d) => d,
+                Err(e) => return crate::SurrealError::from(e).exception($env, $default_fn)
+            };
+            let coordinates: [jni::sys::jdouble; 2] = [$pt.x(), $pt.y()];
+            if let Err(e) = $env.set_double_array_region(&double_array, 0, &coordinates) {
+                return crate::SurrealError::from(e).exception($env, $default_fn);
+            }
+            double_array.into_raw()
+        }
+    };
+}
