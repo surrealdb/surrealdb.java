@@ -11,6 +11,8 @@ mod response;
 mod value;
 mod object;
 mod array;
+mod thing;
+mod id;
 
 
 static TOKIO_RUNTIME: Lazy<Runtime> =

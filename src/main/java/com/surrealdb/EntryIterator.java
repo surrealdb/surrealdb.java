@@ -23,7 +23,6 @@ public class EntryIterator implements Iterator<Entry>, AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();

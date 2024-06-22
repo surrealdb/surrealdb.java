@@ -27,7 +27,7 @@ public class Object implements AutoCloseable {
     public String toPrettyString() {
         return toPrettyString(id);
     }
-    
+
     public Value get(String key) {
         return new Value(get(id, key));
     }
@@ -47,7 +47,6 @@ public class Object implements AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();

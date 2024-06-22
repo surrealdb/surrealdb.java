@@ -17,7 +17,6 @@ public class Geometry implements AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();

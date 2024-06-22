@@ -43,7 +43,7 @@ public class Value implements AutoCloseable {
 
     private static native boolean isUuid(long id);
 
-    private static native UUID getUuid(long id);
+    private static native String getUuid(long id);
 
     private static native boolean isArray(long id);
 
@@ -109,7 +109,7 @@ public class Value implements AutoCloseable {
         return isLong(id);
     }
 
-    public float getLong() {
+    public long getLong() {
         return getLong(id);
     }
 
@@ -142,7 +142,7 @@ public class Value implements AutoCloseable {
     }
 
     public UUID getUuid() {
-        return getUuid(id);
+        return UUID.fromString(getUuid(id));
     }
 
     public boolean isThing() {
@@ -176,7 +176,6 @@ public class Value implements AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();

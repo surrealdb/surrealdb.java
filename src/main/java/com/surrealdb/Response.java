@@ -23,7 +23,6 @@ public class Response implements AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();

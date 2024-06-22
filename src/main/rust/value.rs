@@ -136,6 +136,20 @@ pub extern "system" fn Java_com_surrealdb_Value_isLong<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getLong<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, id, ||0);
+    if let Value::Number(Number::Int(i)) = value.as_ref() {
+        *i
+    } else {
+        SurrealError::NullPointerException("Long").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isDateTime<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -244,6 +258,20 @@ pub extern "system" fn Java_com_surrealdb_Value_isThing<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, id, ||0);
+    if let Value::Thing(_) = value.as_ref() {
+        create_instance(value)
+    } else {
+        SurrealError::NullPointerException("Not a thing").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isUuid<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -251,4 +279,18 @@ pub extern "system" fn Java_com_surrealdb_Value_isUuid<'local>(
 ) -> jboolean {
     let value = get_value_instance!(&mut env, id, ||false as jboolean);
     value.is_uuid() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, id, ||null_mut());
+    if let Value::Uuid(uuid) = value.as_ref() {
+        new_string!(&mut env, uuid.0.to_string(), ||null_mut())
+    } else {
+        SurrealError::NullPointerException("Not an UUID").exception(&mut env, || null_mut())
+    }
 }

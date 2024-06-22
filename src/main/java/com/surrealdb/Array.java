@@ -27,7 +27,6 @@ public class Array implements AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();

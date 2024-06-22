@@ -23,7 +23,6 @@ public class ValueIterator implements Iterator<Value>, AutoCloseable {
     }
 
     @Override
-    @Deprecated
     protected void finalize() throws Throwable {
         try {
             close();
