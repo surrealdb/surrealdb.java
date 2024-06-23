@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Surreal.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb-jni</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">Surreal.java</span></div><h1>Surreal.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import com.surrealdb.signin.Jwt;
+import com.surrealdb.signin.Root;
+import com.surrealdb.signin.Signin;
+
+import java.util.Map;
+
+public class Surreal extends Native implements AutoCloseable {
+
+    static {
+<span class="fc" id="L12">        Loader.loadNative();</span>
+<span class="fc" id="L13">    }</span>
+
+    public Surreal() {
+<span class="fc" id="L16">        super(Surreal.newInstance());</span>
+<span class="fc" id="L17">    }</span>
+
+    private static native long newInstance();
+
+    private static native boolean connect(long id, String connect);
+
+    private static native String signinRoot(long id, String username, String password);
+
+    private static native boolean useNs(long id, String ns);
+
+    private static native boolean useDb(long id, String ns);
+
+    private static native long query(long id, String sql);
+
+    private static native long queryBind(long id, String sql, Map&lt;String, ?&gt; params);
+
+    final protected native boolean deleteInstance(long ptr);
+
+    public Surreal connect(String connect) {
+<span class="fc" id="L36">        connect(getPtr(), connect);</span>
+<span class="fc" id="L37">        return this;</span>
+    }
+
+    public Jwt signin(Signin signin) {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (signin instanceof Root) {</span>
+<span class="nc" id="L42">            final Root r = (Root) signin;</span>
+<span class="nc" id="L43">            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
+        }
+<span class="nc" id="L45">        throw new SurrealDBException(&quot;Unsupported signin&quot;);</span>
+    }
+
+    public Surreal useNs(String ns) {
+<span class="fc" id="L49">        useNs(getPtr(), ns);</span>
+<span class="fc" id="L50">        return this;</span>
+    }
+
+    public Surreal useDb(String ns) {
+<span class="fc" id="L54">        useDb(getPtr(), ns);</span>
+<span class="fc" id="L55">        return this;</span>
+    }
+
+    public Response query(String sql) {
+<span class="fc" id="L59">        return new Response(query(getPtr(), sql));</span>
+    }
+
+    public Response queryBind(String sql, Map&lt;String, ?&gt; params) {
+<span class="nc" id="L63">        return new Response(queryBind(getPtr(), sql, params));</span>
+    }
+
+    @Override
+    public void close() {
+<span class="fc" id="L68">        deleteInstance();</span>
+<span class="fc" id="L69">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

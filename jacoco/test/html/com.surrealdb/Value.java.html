@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Value.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb-jni</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">Value.java</span></div><h1>Value.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+public class Value extends Native {
+
+    Value(long ptr) {
+<span class="fc" id="L9">        super(ptr);</span>
+<span class="fc" id="L10">    }</span>
+
+    private static native String toString(long ptr);
+
+    private static native String toPrettyString(long ptr);
+
+    private static native boolean isNone(long ptr);
+
+    private static native boolean isNull(long ptr);
+
+    private static native boolean isBoolean(long ptr);
+
+    private static native boolean getBoolean(long ptr);
+
+    private static native boolean isDouble(long ptr);
+
+    private static native double getDouble(long ptr);
+
+    private static native boolean isLong(long ptr);
+
+    private static native long getLong(long ptr);
+
+    private static native boolean isBigDecimal(long ptr);
+
+    private static native BigDecimal getBigDecimal(long ptr);
+
+    private static native boolean isString(long ptr);
+
+    private static native String getString(long ptr);
+
+    private static native boolean isUuid(long ptr);
+
+    private static native String getUuid(long ptr);
+
+    private static native boolean isArray(long ptr);
+
+    private static native long getArray(long ptr);
+
+    private static native boolean isObject(long ptr);
+
+    private static native long getObject(long ptr);
+
+    private static native boolean isGeometry(long ptr);
+
+    private static native long getGeometry(long ptr);
+
+    private static native boolean isBytes(long ptr);
+
+    private static native byte[] getBytes(long ptr);
+
+    private static native boolean isThing(long ptr);
+
+    private static native long getThing(long ptr);
+
+    final protected native boolean deleteInstance(long ptr);
+
+    public String toString() {
+<span class="fc" id="L67">        return toString(getPtr());</span>
+    }
+
+    public String toPrettyString() {
+<span class="fc" id="L71">        return toPrettyString(getPtr());</span>
+    }
+
+    public boolean isArray() {
+<span class="fc" id="L75">        return isArray(getPtr());</span>
+    }
+
+    public Array getArray() {
+<span class="fc" id="L79">        return new Array(getArray(getPtr()));</span>
+    }
+
+    public boolean isObject() {
+<span class="fc" id="L83">        return isObject(getPtr());</span>
+    }
+
+    public Object getObject() {
+<span class="fc" id="L87">        return new Object(getObject(getPtr()));</span>
+    }
+
+    public boolean isBoolean() {
+<span class="fc" id="L91">        return isBoolean(getPtr());</span>
+    }
+
+    public boolean getBoolean() {
+<span class="fc" id="L95">        return getBoolean(getPtr());</span>
+    }
+
+    public boolean isDouble() {
+<span class="fc" id="L99">        return isDouble(getPtr());</span>
+    }
+
+    public double getDouble() {
+<span class="fc" id="L103">        return getDouble(getPtr());</span>
+    }
+
+    public boolean isLong() {
+<span class="fc" id="L107">        return isLong(getPtr());</span>
+    }
+
+    public long getLong() {
+<span class="fc" id="L111">        return getLong(getPtr());</span>
+    }
+
+    public boolean isBigdecimal() {
+<span class="nc" id="L115">        return isBigDecimal(getPtr());</span>
+    }
+
+    public BigDecimal getBigDecimal() {
+<span class="nc" id="L119">        return getBigDecimal(getPtr());</span>
+    }
+
+    public boolean isNull() {
+<span class="nc" id="L123">        return isNull(getPtr());</span>
+    }
+
+    public boolean isNone() {
+<span class="fc" id="L127">        return isNone(getPtr());</span>
+    }
+
+    public boolean isString() {
+<span class="fc" id="L131">        return isString(getPtr());</span>
+    }
+
+    public String getString() {
+<span class="fc" id="L135">        return getString(getPtr());</span>
+    }
+
+    public boolean isUuid() {
+<span class="fc" id="L139">        return isUuid(getPtr());</span>
+    }
+
+    public UUID getUuid() {
+<span class="fc" id="L143">        return UUID.fromString(getUuid(getPtr()));</span>
+    }
+
+    public boolean isThing() {
+<span class="fc" id="L147">        return isThing(getPtr());</span>
+    }
+
+    public Thing getThing() {
+<span class="fc" id="L151">        return new Thing(getThing(getPtr()));</span>
+    }
+
+    public boolean isBytes() {
+<span class="nc" id="L155">        return isBytes(getPtr());</span>
+    }
+
+    public byte[] getBytes() {
+<span class="nc" id="L159">        return getBytes(getPtr());</span>
+    }
+
+    public boolean isGeometry() {
+<span class="fc" id="L163">        return isGeometry(getPtr());</span>
+    }
+
+    public Geometry getGeometry() {
+<span class="fc" id="L167">        return new Geometry(getGeometry(getPtr()));</span>
+    }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

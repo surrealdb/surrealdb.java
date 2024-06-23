@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassValueConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb-jni</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ClassValueConverter.java</span></div><h1>ClassValueConverter.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+class ClassValueConverter&lt;T&gt; {
+
+    private final Class&lt;T&gt; clazz;
+
+<span class="fc" id="L13">    ClassValueConverter(Class&lt;T&gt; clazz) {</span>
+<span class="fc" id="L14">        this.clazz = clazz;</span>
+<span class="fc" id="L15">    }</span>
+
+    private static java.lang.Object convertSingleValue(final Value value) {
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if (value.isBoolean()) {</span>
+<span class="fc" id="L19">            return value.getBoolean();</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        } else if (value.isDouble()) {</span>
+<span class="nc" id="L21">            return value.getDouble();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        } else if (value.isLong()) {</span>
+<span class="fc" id="L23">            return value.getLong();</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        } else if (value.isString()) {</span>
+<span class="fc" id="L25">            return value.getString();</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        } else if (value.isThing()) {</span>
+<span class="fc" id="L27">            return value.getThing();</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        } else if (value.isGeometry()) {</span>
+<span class="nc" id="L29">            return value.getGeometry();</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        } else if (value.isBigdecimal()) {</span>
+<span class="nc" id="L31">            return value.getBigDecimal();</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        } else if (value.isBytes()) {</span>
+<span class="nc" id="L33">            return value.getBytes();</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        } else if (value.isUuid()) {</span>
+<span class="nc" id="L35">            return value.getUuid();</span>
+        }
+<span class="nc" id="L37">        throw new SurrealDBException(&quot;Unsupported value: &quot; + value);</span>
+    }
+
+
+    private static java.lang.Object convertArrayValue(final Field field, final Value value) throws ReflectiveOperationException {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (value.isObject()) {</span>
+<span class="fc" id="L43">            final Class&lt;?&gt; subType = getGenericType(field);</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">            if (subType == null) {</span>
+<span class="nc" id="L45">                throw new SurrealDBException(&quot;Unsupported field type: &quot; + field);</span>
+            }
+<span class="fc" id="L47">            return convertObject(subType, value.getObject());</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        } else if (value.isArray()) {</span>
+<span class="nc" id="L49">            final List&lt;java.lang.Object&gt; arrayList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            for (final Value elementValue : value.getArray()) {</span>
+<span class="nc" id="L51">                arrayList.add(convertArrayValue(field, elementValue));</span>
+<span class="nc" id="L52">            }</span>
+<span class="nc" id="L53">            return arrayList;</span>
+        } else {
+<span class="fc" id="L55">            return convertSingleValue(value);</span>
+        }
+    }
+
+    private static &lt;T&gt; T convertObject(Class&lt;T&gt; clazz, Object source) throws ReflectiveOperationException {
+<span class="fc" id="L60">        final T target = clazz.getConstructor().newInstance();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        for (final Entry entry : source) {</span>
+<span class="fc" id="L62">            final Field field = clazz.getDeclaredField(entry.getKey());</span>
+<span class="fc" id="L63">            final Value value = entry.getValue();</span>
+<span class="fc" id="L64">            field.setAccessible(true);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (value.isArray()) {</span>
+<span class="fc" id="L66">                final List&lt;java.lang.Object&gt; arrayList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">                for (final Value elementValue : value.getArray()) {</span>
+<span class="fc" id="L68">                    arrayList.add(convertArrayValue(field, elementValue));</span>
+<span class="fc" id="L69">                }</span>
+<span class="fc" id="L70">                field.set(target, arrayList);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            } else if (value.isObject()) {</span>
+<span class="fc" id="L72">                java.lang.Object o = convertObject(field.getType(), value.getObject());</span>
+<span class="fc" id="L73">                field.set(target, o);</span>
+<span class="fc" id="L74">            } else {</span>
+<span class="fc" id="L75">                field.set(target, convertSingleValue(value));</span>
+            }
+<span class="fc" id="L77">        }</span>
+<span class="fc" id="L78">        return target;</span>
+    }
+
+    private static Class&lt;?&gt; getGenericType(final Field field) {
+        // Check if the field is parameterized
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (field.getGenericType() instanceof ParameterizedType) {</span>
+<span class="fc" id="L84">            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();</span>
+
+            // Get the actual type arguments (generics)
+<span class="fc" id="L87">            final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();</span>
+
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">            if (actualTypeArguments.length &gt; 0) {</span>
+                // Return the first type argument
+<span class="fc" id="L91">                return (Class&lt;?&gt;) actualTypeArguments[0];</span>
+            }
+        }
+<span class="nc" id="L94">        return null;</span>
+    }
+
+    final T convertObject(final Value value) {
+        try {
+<span class="fc" id="L99">            return convertObject(clazz, value.getObject());</span>
+<span class="nc" id="L100">        } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L101">            throw new SurrealDBException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
