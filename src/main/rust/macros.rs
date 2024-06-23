@@ -39,9 +39,29 @@ macro_rules! get_value_instance {
 }
 
 #[macro_export]
+macro_rules! get_entry_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance::<(String, Arc<surrealdb::sql::Value>)>($id, "Entry") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! get_value_iterator_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match crate::get_instance::<std::vec::IntoIter<surrealdb::sql::Value>>($id, "ValueIterator") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_entry_iterator_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance::<std::collections::btree_map::IntoIter<String, surrealdb::sql::Value>>($id, "EntryIterator") {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -59,9 +79,29 @@ macro_rules! get_value_iterator_mut_instance {
 }
 
 #[macro_export]
+macro_rules! get_entry_iterator_mut_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance_mut::<std::collections::btree_map::IntoIter<String, surrealdb::sql::Value>>($id, "EntryIterator") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! get_sync_value_iterator_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match crate::get_instance::<Arc<parking_lot::Mutex<std::vec::IntoIter<surrealdb::sql::Value>>>>($id, "SynchronizedValueIterator") {
+            Ok(s) => s.clone(),
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_sync_entry_iterator_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance::<Arc<parking_lot::Mutex<std::collections::btree_map::IntoIter<String, surrealdb::sql::Value>>>>($id, "SynchronizedValueIterator") {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }

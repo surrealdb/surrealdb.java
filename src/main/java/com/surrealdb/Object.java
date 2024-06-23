@@ -12,7 +12,9 @@ public class Object extends Native implements Iterable<Entry> {
 
     private static native String toPrettyString(long ptr);
 
-    private static native long iter(long ptr);
+    private static native long iterator(long ptr);
+
+    private static native long synchronizedIterator(long ptr);
 
     private static native int len(long ptr);
 
@@ -38,11 +40,11 @@ public class Object extends Native implements Iterable<Entry> {
 
     @Override
     public Iterator<Entry> iterator() {
-        return new EntryIterator(iter(getPtr()));
+        return new EntryIterator(iterator(getPtr()));
     }
 
     public Iterator<Entry> synchronizedIterator() {
-        return new SynchronizedEntryIterator(iter(getPtr()));
+        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));
     }
 
 }

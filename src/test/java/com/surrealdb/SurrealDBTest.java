@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.awt.geom.Point2D;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -194,23 +195,60 @@ public class SurrealDBTest {
                     assertEquals(2, array.len());
                     assertEquals("CEO", array.get(0).getString());
                     assertEquals("CTO", array.get(1).getString());
-                    { // Check array iterator
-                        final Iterator<Value> iter = array.iterator();
+                    // Iterator checker
+                    final Consumer<Iterator<Value>> iteratorCheck = (iter) -> {
                         assertTrue(iter.hasNext());
                         assertEquals("CEO", iter.next().getString());
                         assertTrue(iter.hasNext());
                         assertEquals("CTO", iter.next().getString());
                         assertFalse(iter.hasNext());
-                    }
-                    { // Check array sync iterator
-                        final Iterator<Value> iter = array.synchronizedIterator();
-                        assertTrue(iter.hasNext());
-                        assertEquals("CEO", iter.next().getString());
-                        assertTrue(iter.hasNext());
-                        assertEquals("CTO", iter.next().getString());
-                        assertFalse(iter.hasNext());
-                    }
+                    };
+                    // Check array iterator
+                    iteratorCheck.accept((array.iterator()));
+                    // Check array sync iterator
+                    iteratorCheck.accept((array.synchronizedIterator()));
                 }
+            }
+        }
+    }
+
+    @Test
+    void surrealdb_query_object() throws SurrealDBException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "RETURN { name: 'Tobie', active: true, category: 1 };";
+                final Response response = surreal.query(sql);
+                final Value res = response.take(0);
+                assertTrue(res.isObject());
+                final Object obj = res.getObject();
+                assertEquals(3, obj.len());
+                // Iterator checker
+                final Consumer<Iterator<Entry>> objectCheck = (iter) -> {
+                    { // Check active
+                        assertTrue(iter.hasNext());
+                        final Entry active = iter.next();
+                        assertEquals("active", active.getKey());
+                        assertTrue(active.getValue().getBoolean());
+                    }
+                    { // Check category
+                        assertTrue(iter.hasNext());
+                        final Entry category = iter.next();
+                        assertEquals("category", category.getKey());
+                        assertEquals(1, category.getValue().getLong());
+                    }
+                    { // Check name
+                        assertTrue(iter.hasNext());
+                        final Entry name = iter.next();
+                        assertEquals("name", name.getKey());
+                        assertEquals("Tobie", name.getValue().getString());
+                        assertFalse(iter.hasNext());
+                    }
+                };
+                // Check object iterator
+                objectCheck.accept(obj.iterator());
+                // Check object sync iterator
+                objectCheck.accept(obj.synchronizedIterator());
             }
         }
     }

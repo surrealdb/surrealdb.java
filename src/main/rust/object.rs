@@ -4,6 +4,7 @@ use std::sync::Arc;
 use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
+use parking_lot::Mutex;
 use surrealdb::sql::Value;
 
 use crate::{create_instance, get_rust_string, get_value_instance, new_string, release_instance};
@@ -80,5 +81,34 @@ pub extern "system" fn Java_com_surrealdb_Object_get<'local>(
     }
 }
 
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Object_iterator<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, id, ||0);
+    if let Value::Object(o) = value.as_ref() {
+        let iter = o.0.clone().into_iter();
+        create_instance(iter)
+    } else {
+        SurrealError::NullPointerException("Object").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Object_synchronizedIterator<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, id, ||0);
+    if let Value::Object(o) = value.as_ref() {
+        let iter = o.0.clone().into_iter();
+        create_instance(Arc::new(Mutex::new(iter)))
+    } else {
+        SurrealError::NullPointerException("Object").exception(&mut env, || 0)
+    }
+}
 
 

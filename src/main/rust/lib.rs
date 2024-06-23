@@ -16,6 +16,9 @@ mod id;
 mod geometry;
 mod valueiterator;
 mod syncvalueiterator;
+mod entryiterator;
+mod entry;
+mod syncentryiterator;
 
 
 static TOKIO_RUNTIME: Lazy<Runtime> =
