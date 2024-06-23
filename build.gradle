@@ -1,221 +1,102 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'java-library'
-    id 'checkstyle'
-    id 'maven-publish'
-    id "com.diffplug.spotless" version "6.17.0"
-    id 'signing'
 }
 
 group 'com.surrealdb'
-version '0.1.0'
+version '0.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-ext {
-    slf4jVersion = "2.0.1"
-    logbackVersion = "1.3.1"
-    lombokVersion = "1.18.26"
-    junitVersion = "5.8.1"
-    nettyVersion = "4.1.96.Final"
-    testcontainersVersion = "1.17.6"
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 sourceSets {
-    intTest {
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
+    integrationTest {
+        java
     }
 }
 
 configurations {
-    intTestImplementation.extendsFrom implementation
-    intTestRuntimeOnly.extendsFrom runtimeOnly
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 dependencies {
-
-    // Java-WebSocket
-    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
-
-    // Netty
-    implementation "io.netty:netty-all:${nettyVersion}"
-
-    // Gson
-    implementation 'com.google.code.gson:gson:2.9.1'
-
-    // logging
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    testRuntimeOnly "ch.qos.logback:logback-core:${logbackVersion}"
-    testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
-    intTestRuntimeOnly "ch.qos.logback:logback-core:${logbackVersion}"
-    intTestRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
-
-    // lombok
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
-    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    intTestCompileOnly "org.projectlombok:lombok:${lombokVersion}"
-    intTestAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
-    // junit
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
-    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
-    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
-
-    intTestImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-    intTestRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-    intTestImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
-    intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
-    intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
-
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    integrationTestImplementation files("build/libs/surrealdb-jni-0.2-SNAPSHOT.jar")
 }
 
-spotless {
-    ratchetFrom 'main'
-
-    java {
-        cleanthat()
-        googleJavaFormat().aosp()
-        formatAnnotations()
-    }
+jacoco {
+    toolVersion = "0.8.12"
 }
 
 test {
     useJUnitPlatform()
+    systemProperty 'java.library.path', file('target/debug').absolutePath
+    testLogging {
+        events "passed"
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+//    finalizedBy jacocoTestCoverageVerification
+}
+
+//jacocoTestCoverageVerification {
+//    violationRules {
+//        rule {
+//            limit {
+//                minimum = 0.7
+//            }
+//        }
+//    }
+//}
+
+javadoc {
+    destinationDir = file("build/reports/javadoc")
+}
+
+tasks.register('createCombinedReport') {
+    dependsOn jacocoTestReport
+    dependsOn javadoc
+
+    doLast {
+        def indexFile = file("build/reports/index.html")
+        indexFile.text = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Combined Test, Coverage, and Javadoc Report</title>
+            </head>
+            <body>
+                <h1>Combined Test, Coverage, and Javadoc Report</h1>
+                <ul>
+                    <li><a href="./tests/test/index.html">Test Report</a></li>
+                    <li><a href="./jacoco/test/html/index.html">JaCoCo Coverage Report</a></li>
+                    <li><a href="./javadoc/index.html">Javadoc</a></li>
+                </ul>
+            </body>
+            </html>
+        """
+    }
 }
 
 tasks.register('integrationTest', Test) {
-    description = 'Runs integration tests.'
-    group = 'verification'
-
-    testClassesDirs = sourceSets.intTest.output.classesDirs
-    classpath = sourceSets.intTest.runtimeClasspath
-    shouldRunAfter test
-
     useJUnitPlatform()
-
-    environment('TEST_SURREAL_HOST', 'localhost')
-    environment('TEST_SURREAL_PORT', 8000)
-    environment('TEST_SURREAL_USERNAME', 'root')
-    environment('TEST_SURREAL_PASSWORD', 'root')
-    environment('TEST_SURREAL_NAMESPACE', 'test')
-    environment('TEST_SURREAL_DATABASE', 'test')
-    environment('TEST_SURREAL_TOKEN', '')
-    environment('TEST_SURREAL_SCOPE', 'allusers')
-
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
     testLogging {
-        events "passed", "skipped", "failed", "standardOut", "standardError"
         showStandardStreams = true
-        exceptionFormat = 'short'
-    }
-}
-
-checkstyle {
-    toolVersion = "10.9.3"
-    configFile = resources.text.fromUri("https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-${toolVersion}/src/main/resources/google_checks.xml").asFile()
-}
-
-tasks.register('fatJar', Jar) {
-    manifest {
-        attributes 'Main-Class': 'com.surrealdb.driver.SyncSurrealDriver'
-    }
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    with jar
-}
-
-tasks.register('javadocJar', Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
-
-tasks.register('sourcesJar', Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar, sourcesJar, fatJar
-}
-
-project.afterEvaluate {
-    def keyID=System.getenv('SIGNING_KEY_ID')
-    def key=System.getenv('SIGNING_KEY')
-    def _pass=System.getenv('SIGNING_KEY_PASS')
-
-    signing {
-        useInMemoryPgpKeys(keyID, key, _pass)
-        sign publishing.publications['surrealdb']
-    }
-}
-
-publishing {
-    publications {
-        surrealdb(MavenPublication) {
-            groupId 'com.surrealdb'
-            artifactId 'surrealdb-driver'
-            version "${version}"
-
-            from components.java
-            artifact(javadocJar)
-            artifact(sourcesJar)
-
-            pom {
-                name = 'SurrealDB Java Driver'
-                packaging = 'jar'
-                description = 'The Java Driver for accessing a SurrealDB instance remotely.'
-                url = 'https://surrealdb.com/docs/integration/libraries/java'
-
-                scm {
-                    connection = 'git@github.com:surrealdb/surrealdb.java.git'
-                    url = 'https://github.com/surrealdb/surrealdb.java'
-                }
-
-                licenses {
-                    license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'tobiemh'
-                        name = 'Tobie Morgan Hitchcock'
-                        email = 'tobie@surrealdb.com'
-                    }
-                    developer {
-                        id = 'phughk'
-                        name = 'Hugh Kaznowski'
-                        email = 'hugh@surrealdb.com'
-                    }
-                }
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = "Sonatype-Maven-Central"
-            url = version.endsWith("SNAPSHOT") ? "https://s01.oss.sonatype.org/content/repositories/snapshots/" : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = System.getenv("OSSRH_USER")
-                password = System.getenv("OSSRH_PASS")
-            }
-        }
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat = 'full'
+        showCauses = true
+        showStackTraces = true
     }
 }

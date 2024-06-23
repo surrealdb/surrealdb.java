@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - uses: actions/checkout@v4
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+
+      - name: Build native lib
+        run: cargo build
+
+      - name: Setup Gradle
+        run: chmod +x gradlew
+
+      - name: Clean
+        run: ./gradlew -i clean
+
+      - name: Test & Coverage
+        run: ./gradlew -i test jacocoTestReport
+
+      - name: Javadoc
+        run: ./gradlew -i javadoc
+
+      - name: Report
+        run: ./gradlew -i clean createCombinedReport
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/reports
