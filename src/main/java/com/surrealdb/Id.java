@@ -1,76 +1,59 @@
 package com.surrealdb;
 
-public class Id implements AutoCloseable {
+public class Id extends Native {
 
-    private long id;
-
-    Id(long id) {
-        this.id = id;
+    Id(long ptr) {
+        super(ptr);
     }
 
-    private static native boolean deleteInstance(long id);
+    private static native boolean isLong(long ptr);
 
-    private static native boolean isLong(long id);
+    private static native long getLong(long ptr);
 
-    private static native long getLong(long id);
+    private static native boolean isString(long ptr);
 
-    private static native boolean isString(long id);
+    private static native String getString(long ptr);
 
-    private static native String getString(long id);
+    private static native boolean isArray(long ptr);
 
-    private static native boolean isArray(long id);
+    private static native Array getArray(long ptr);
 
-    private static native Array getArray(long id);
+    private static native boolean isObject(long ptr);
 
-    private static native boolean isObject(long id);
+    private static native Object getObject(long ptr);
 
-    private static native Object getObject(long id);
-
-    @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
+    final protected native boolean deleteInstance(long ptr);
 
     public boolean isLong() {
-        return isLong(id);
+        return isLong(getPtr());
     }
 
     public long getLong() {
-        return getLong(id);
+        return getLong(getPtr());
     }
 
     public boolean isString() {
-        return isString(id);
+        return isString(getPtr());
     }
 
     public String getString() {
-        return getString(id);
+        return getString(getPtr());
     }
 
     public boolean isArray() {
-        return isArray(id);
+        return isArray(getPtr());
     }
 
     public Array getArray() {
-        return getArray(id);
+        return getArray(getPtr());
     }
 
     public boolean isObject() {
-        return isObject(id);
+        return isObject(getPtr());
     }
 
     public Object getObject() {
-        return getObject(id);
+        return getObject(getPtr());
     }
 }
 

@@ -14,6 +14,8 @@ mod array;
 mod thing;
 mod id;
 mod geometry;
+mod valueiterator;
+mod syncvalueiterator;
 
 
 static TOKIO_RUNTIME: Lazy<Runtime> =
@@ -32,6 +34,15 @@ fn get_instance<T>(id: jlong, name: &'static str) -> Result<&T, SurrealError> {
     }
     // Convert jlong
     let instance = unsafe { &*(id as *const T) };
+    Ok(instance)
+}
+
+fn get_instance_mut<T>(id: jlong, name: &'static str) -> Result<&mut T, SurrealError> {
+    if id == 0 {
+        return Err(SurrealError::NullPointerException(name));
+    }
+    // Convert jlong
+    let instance = unsafe { &mut *(id as *mut T) };
     Ok(instance)
 }
 

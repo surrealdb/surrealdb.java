@@ -3,185 +3,169 @@ package com.surrealdb;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class Value implements AutoCloseable {
+public class Value extends Native {
 
-    private long id;
-
-    Value(long id) {
-        this.id = id;
+    Value(long ptr) {
+        super(ptr);
     }
 
-    private static native boolean deleteInstance(long id);
+    private static native String toString(long ptr);
 
-    private static native String toString(long id);
+    private static native String toPrettyString(long ptr);
 
-    private static native String toPrettyString(long id);
+    private static native boolean isNone(long ptr);
 
-    private static native boolean isNone(long id);
+    private static native boolean isNull(long ptr);
 
-    private static native boolean isNull(long id);
+    private static native boolean isBoolean(long ptr);
 
-    private static native boolean isBoolean(long id);
+    private static native boolean getBoolean(long ptr);
 
-    private static native boolean getBoolean(long id);
+    private static native boolean isDouble(long ptr);
 
-    private static native boolean isDouble(long id);
+    private static native double getDouble(long ptr);
 
-    private static native double getDouble(long id);
+    private static native boolean isLong(long ptr);
 
-    private static native boolean isLong(long id);
+    private static native long getLong(long ptr);
 
-    private static native long getLong(long id);
+    private static native boolean isBigDecimal(long ptr);
 
-    private static native boolean isBigDecimal(long id);
+    private static native BigDecimal getBigDecimal(long ptr);
 
-    private static native BigDecimal getBigDecimal(long id);
+    private static native boolean isString(long ptr);
 
-    private static native boolean isString(long id);
+    private static native String getString(long ptr);
 
-    private static native String getString(long id);
+    private static native boolean isUuid(long ptr);
 
-    private static native boolean isUuid(long id);
+    private static native String getUuid(long ptr);
 
-    private static native String getUuid(long id);
+    private static native boolean isArray(long ptr);
 
-    private static native boolean isArray(long id);
+    private static native long getArray(long ptr);
 
-    private static native long getArray(long id);
+    private static native boolean isObject(long ptr);
 
-    private static native boolean isObject(long id);
+    private static native long getObject(long ptr);
 
-    private static native long getObject(long id);
+    private static native boolean isGeometry(long ptr);
 
-    private static native boolean isGeometry(long id);
+    private static native long getGeometry(long ptr);
 
-    private static native long getGeometry(long id);
+    private static native boolean isBytes(long ptr);
 
-    private static native boolean isBytes(long id);
+    private static native byte[] getBytes(long ptr);
 
-    private static native byte[] getBytes(long id);
+    private static native boolean isThing(long ptr);
 
-    private static native boolean isThing(long id);
+    private static native long getThing(long ptr);
 
-    private static native long getThing(long id);
+    final protected native boolean deleteInstance(long ptr);
 
     public String toString() {
-        return toString(id);
+        return toString(getPtr());
     }
 
     public String toPrettyString() {
-        return toPrettyString(id);
+        return toPrettyString(getPtr());
     }
 
     public boolean isArray() {
-        return isArray(id);
+        return isArray(getPtr());
     }
 
     public Array getArray() {
-        return new Array(getArray(id));
+        return new Array(getArray(getPtr()));
     }
 
     public boolean isObject() {
-        return isObject(id);
+        return isObject(getPtr());
     }
 
     public Object getObject() {
-        return new Object(getObject(id));
+        return new Object(getObject(getPtr()));
     }
 
     public boolean isBoolean() {
-        return isBoolean(id);
+        return isBoolean(getPtr());
     }
 
     public boolean getBoolean() {
-        return getBoolean(id);
+        return getBoolean(getPtr());
     }
 
     public boolean isDouble() {
-        return isDouble(id);
+        return isDouble(getPtr());
     }
 
     public double getDouble() {
-        return getDouble(id);
+        return getDouble(getPtr());
     }
 
     public boolean isLong() {
-        return isLong(id);
+        return isLong(getPtr());
     }
 
     public long getLong() {
-        return getLong(id);
+        return getLong(getPtr());
     }
 
     public boolean isBigdecimal() {
-        return isBigDecimal(id);
+        return isBigDecimal(getPtr());
     }
 
     public BigDecimal getBigDecimal() {
-        return getBigDecimal(id);
+        return getBigDecimal(getPtr());
     }
 
     public boolean isNull() {
-        return isNull(id);
+        return isNull(getPtr());
     }
 
     public boolean isNone() {
-        return isNone(id);
+        return isNone(getPtr());
     }
 
     public boolean isString() {
-        return isString(id);
+        return isString(getPtr());
     }
 
     public String getString() {
-        return getString(id);
+        return getString(getPtr());
     }
 
     public boolean isUuid() {
-        return isUuid(id);
+        return isUuid(getPtr());
     }
 
     public UUID getUuid() {
-        return UUID.fromString(getUuid(id));
+        return UUID.fromString(getUuid(getPtr()));
     }
 
     public boolean isThing() {
-        return isThing(id);
+        return isThing(getPtr());
     }
 
     public Thing getThing() {
-        return new Thing(getThing(id));
+        return new Thing(getThing(getPtr()));
     }
 
     public boolean isBytes() {
-        return isBytes(id);
+        return isBytes(getPtr());
     }
 
     public byte[] getBytes() {
-        return getBytes(id);
+        return getBytes(getPtr());
     }
 
     public boolean isGeometry() {
-        return isGeometry(id);
+        return isGeometry(getPtr());
     }
 
     public Geometry getGeometry() {
-        return new Geometry(getGeometry(id));
+        return new Geometry(getGeometry(getPtr()));
     }
 
-    @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
 }
 

@@ -31,7 +31,37 @@ macro_rules! get_response_instance {
 #[macro_export]
 macro_rules! get_value_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match crate::get_instance::<Arc<Value>>($id, "Value") {
+        match crate::get_instance::<Arc<surrealdb::sql::Value>>($id, "Value") {
+            Ok(s) => s.clone(),
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_value_iterator_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance::<std::vec::IntoIter<surrealdb::sql::Value>>($id, "ValueIterator") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_value_iterator_mut_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance_mut::<std::vec::IntoIter<surrealdb::sql::Value>>($id, "ValueIterator") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_sync_value_iterator_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match crate::get_instance::<Arc<parking_lot::Mutex<std::vec::IntoIter<surrealdb::sql::Value>>>>($id, "SynchronizedValueIterator") {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }

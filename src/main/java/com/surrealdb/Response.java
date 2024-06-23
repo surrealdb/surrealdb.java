@@ -1,33 +1,17 @@
 package com.surrealdb;
 
-public class Response implements AutoCloseable {
+public class Response extends Native {
 
-    private long id;
-
-    Response(long id) {
-        this.id = id;
+    Response(long ptr) {
+        super(ptr);
     }
 
-    private static native void deleteInstance(long id);
+    final protected native boolean deleteInstance(long ptr);
 
     private native long take(long id, int num);
 
     public Value take(int num) {
-        return new Value(take(id, num));
+        return new Value(take(getPtr(), num));
     }
 
-    @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
 }

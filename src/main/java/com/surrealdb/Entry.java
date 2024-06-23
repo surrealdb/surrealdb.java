@@ -1,40 +1,23 @@
 package com.surrealdb;
 
-public class Entry implements AutoCloseable {
+public class Entry extends Native {
 
-    private long id;
-
-    Entry(long id) {
-        this.id = id;
+    Entry(long ptr) {
+        super(ptr);
     }
 
-    private static native boolean deleteInstance(long id);
+    private static native String getKey(long ptr);
 
-    private static native String getKey(long id);
+    private static native long getValue(long ptr);
 
-    private static native long getValue(long id);
+    final protected native boolean deleteInstance(long ptr);
 
     public String getKey() {
-        return getKey(id);
+        return getKey(getPtr());
     }
 
     public Value getValue() {
-        return new Value(getValue(id));
-    }
-
-    @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
+        return new Value(getValue(getPtr()));
     }
 
 }

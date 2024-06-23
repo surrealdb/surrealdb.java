@@ -2,9 +2,9 @@ package com.surrealdb;
 
 import java.util.Iterator;
 
-public class ValueIterator extends Native implements Iterator<Value> {
+public class SynchronizedEntryIterator extends Native implements Iterator<Entry> {
 
-    ValueIterator(long ptr) {
+    SynchronizedEntryIterator(long ptr) {
         super(ptr);
     }
 
@@ -20,7 +20,7 @@ public class ValueIterator extends Native implements Iterator<Value> {
     }
 
     @Override
-    public Value next() {
-        return new Value(next(getPtr()));
+    public Entry next() {
+        return new Entry(next(getPtr()));
     }
 }

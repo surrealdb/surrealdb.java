@@ -3,6 +3,7 @@ package com.surrealdb;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
+import java.util.Iterator;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +25,8 @@ public class SurrealDBTest {
     void surreal_db_memory() throws SurrealDBException {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            try (Response response = surreal.query("INFO FOR ROOT")) {
+            {
+                Response response = surreal.query("INFO FOR ROOT");
                 Value value = response.take(0);
                 assertTrue(value.isObject());
                 Object object = value.getObject();
@@ -37,19 +39,19 @@ public class SurrealDBTest {
                 assertTrue(users.isObject());
                 assertEquals(users.getObject().len(), 0);
                 assertEquals("{}", users.toPrettyString());
-
             }
             //
-            String sql = "CREATE person:1 SET name = 'Tobie',category = 1, active=true, score=5.0f, tags=['CEO', 'CTO']," +
-                    "uuid= u'f8e238f2-e734-47b8-9a16-476b291bd78a', pt = <geometry<point>> { type: \"Point\", coordinates: [-0.118092, 51.509865] };\n" +
-                    "SELECT * FROM person;";
-            try (Response response = surreal.query(sql)) {
+            {
+                final String sql = "CREATE person:1 SET name = 'Tobie',category = 1, active=true, score=5.0f, tags=['CEO', 'CTO']," +
+                        "uuid= u'f8e238f2-e734-47b8-9a16-476b291bd78a', pt = <geometry<point>> { type: \"Point\", coordinates: [-0.118092, 51.509865] };\n" +
+                        "SELECT * FROM person;";
+                final Response response = surreal.query(sql);
                 Value create = response.take(0);
                 assertTrue(create.isArray());
-                Array createArray = create.getArray();
+                final Array createArray = create.getArray();
                 assertEquals(createArray.len(), 1);
                 assertEquals("[{ active: true, category: 1, id: person:1, name: 'Tobie', pt: (-0.118092, 51.509865), score: 5f, tags: ['CEO', 'CTO'], uuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
-                Value select = response.take(1);
+                final Value select = response.take(1);
                 assertTrue(select.isArray());
                 Array selectArray = select.getArray();
                 assertEquals(selectArray.len(), 1);
@@ -68,35 +70,61 @@ public class SurrealDBTest {
                         "\t\tuuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a'\n" +
                         "\t}\n" +
                         "]", selectArray.toPrettyString());
-                // Retrieve th fist record
+                // Retrieve the fist record
                 Value row = selectArray.get(0);
                 assertTrue(row.isObject());
                 Object rowObject = row.getObject();
-                // Check long field
-                assertTrue(rowObject.get("category").isLong());
-                assertEquals(1, rowObject.get("category").getLong());
-                // Check thing field
-                assertTrue(rowObject.get("id").isThing());
-                assertEquals("person", rowObject.get("id").getThing().getTable());
-                assertTrue(rowObject.get("id").getThing().getId().isLong());
-                assertEquals(1, rowObject.get("id").getThing().getId().getLong());
-                // Check boolean field
-                assertTrue(rowObject.get("active").isBoolean());
-                assertTrue(rowObject.get("active").getBoolean());
-                // Check String field
-                assertTrue(rowObject.get("name").isString());
-                assertEquals("Tobie", rowObject.get("name").getString());
-                // Check Geometry/Point field
-                assertTrue(rowObject.get("pt").isGeometry());
-                assertEquals(new Point2D.Double(-0.118092, 51.509865), rowObject.get("pt").getGeometry().getPoint());
-                // Check double field
-                assertTrue(rowObject.get("score").isDouble());
-                assertEquals(5.0, rowObject.get("score").getDouble());
-                // Check array field
-                assertTrue(rowObject.get("tags").isArray());
-                assertEquals(2, rowObject.get("tags").getArray().len());
-                assertEquals("CEO", rowObject.get("tags").getArray().get(0).getString());
-                assertEquals("CTO", rowObject.get("tags").getArray().get(1).getString());
+
+                { // Check long field
+                    assertTrue(rowObject.get("category").isLong());
+                    assertEquals(1, rowObject.get("category").getLong());
+                }
+                { // Check thing field
+                    assertTrue(rowObject.get("id").isThing());
+                    assertEquals("person", rowObject.get("id").getThing().getTable());
+                    assertTrue(rowObject.get("id").getThing().getId().isLong());
+                    assertEquals(1, rowObject.get("id").getThing().getId().getLong());
+                }
+                { // Check boolean field
+                    assertTrue(rowObject.get("active").isBoolean());
+                    assertTrue(rowObject.get("active").getBoolean());
+                }
+                { // Check String field
+                    assertTrue(rowObject.get("name").isString());
+                    assertEquals("Tobie", rowObject.get("name").getString());
+                }
+                {// Check Geometry/Point field
+                    assertTrue(rowObject.get("pt").isGeometry());
+                    assertEquals(new Point2D.Double(-0.118092, 51.509865), rowObject.get("pt").getGeometry().getPoint());
+                }
+                {// Check double field
+                    assertTrue(rowObject.get("score").isDouble());
+                    assertEquals(5.0, rowObject.get("score").getDouble());
+                }
+                {// Check array field
+                    assertTrue(rowObject.get("tags").isArray());
+                    Array array = rowObject.get("tags").getArray();
+                    assertEquals(2, array.len());
+                    assertEquals("CEO", array.get(0).getString());
+                    assertEquals("CTO", array.get(1).getString());
+                    { // Check array iterator
+                        Iterator<Value> iter = array.iterator();
+                        assertTrue(iter.hasNext());
+                        assertEquals("CEO", iter.next().getString());
+                        assertTrue(iter.hasNext());
+                        assertEquals("CTO", iter.next().getString());
+                        assertFalse(iter.hasNext());
+                    }
+                    { // Check array sync iterator
+                        Iterator<Value> iter = array.synchronizedIterator();
+                        assertTrue(iter.hasNext());
+                        assertEquals("CEO", iter.next().getString());
+                        assertTrue(iter.hasNext());
+                        assertEquals("CTO", iter.next().getString());
+                        assertFalse(iter.hasNext());
+                    }
+                }
+                // Check UUID
                 assertTrue(rowObject.get("uuid").isUuid());
                 assertEquals(UUID.fromString("f8e238f2-e734-47b8-9a16-476b291bd78a"), rowObject.get("uuid").getUuid());
                 // Outbounded should return none

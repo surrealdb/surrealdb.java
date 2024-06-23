@@ -1,58 +1,51 @@
 package com.surrealdb;
 
-public class Array implements AutoCloseable {
+import java.util.Iterator;
 
-    private long id;
+public class Array extends Native implements Iterable<Value> {
 
-    Array(long id) {
-        this.id = id;
+
+    Array(long ptr) {
+        super(ptr);
     }
 
-    private static native boolean deleteInstance(long id);
+    private static native String toString(long ptr);
 
-    private static native String toString(long id);
-
-    private static native String toPrettyString(long id);
+    private static native String toPrettyString(long ptr);
 
     private static native long get(long id, int idx);
 
-    private static native int len(long id);
+    private static native int len(long ptr);
 
-    private static native long iter(long id);
+    private static native long iterator(long ptr);
 
-    @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
+    private static native long synchronizedIterator(long ptr);
 
     public String toString() {
-        return toString(id);
+        return toString(getPtr());
     }
 
     public String toPrettyString() {
-        return toPrettyString(id);
+        return toPrettyString(getPtr());
     }
 
     public Value get(int idx) {
-        return new Value(get(id, idx));
+        return new Value(get(getPtr(), idx));
     }
 
     public int len() {
-        return len(id);
+        return len(getPtr());
     }
 
-    public ValueIterator iter() {
-        return new ValueIterator(iter(id));
+    final protected native boolean deleteInstance(long ptr);
+
+    @Override
+    public Iterator<Value> iterator() {
+        return new ValueIterator(iterator(getPtr()));
+    }
+
+    public SynchronizedValueIterator synchronizedIterator() {
+        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));
     }
 }
 

@@ -2,42 +2,25 @@ package com.surrealdb;
 
 import java.util.Iterator;
 
-public class EntryIterator implements Iterator<Entry>, AutoCloseable {
+public class EntryIterator extends Native implements Iterator<Entry> {
 
-    private long id;
-
-    EntryIterator(long id) {
-        this.id = id;
+    EntryIterator(long ptr) {
+        super(ptr);
     }
 
-    private static native boolean deleteInstance(long id);
+    private static native boolean hasNext(long ptr);
 
-    private static native boolean hasNext(long id);
+    private static native long next(long ptr);
 
-    private static native long next(long id);
-
-    @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
+    final protected native boolean deleteInstance(long ptr);
 
     @Override
     public boolean hasNext() {
-        return hasNext(id);
+        return hasNext(getPtr());
     }
 
     @Override
     public Entry next() {
-        return new Entry(next(id));
+        return new Entry(next(getPtr()));
     }
 }

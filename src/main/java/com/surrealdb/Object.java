@@ -1,58 +1,48 @@
 package com.surrealdb;
 
-public class Object implements AutoCloseable {
+import java.util.Iterator;
 
-    private long id;
+public class Object extends Native implements Iterable<Entry> {
 
-    Object(long id) {
-        this.id = id;
+    Object(long ptr) {
+        super(ptr);
     }
 
-    private static native boolean deleteInstance(long id);
+    private static native String toString(long ptr);
 
-    private static native String toString(long id);
+    private static native String toPrettyString(long ptr);
 
-    private static native String toPrettyString(long id);
+    private static native long iter(long ptr);
 
-    private static native long iter(long id);
-
-    private static native int len(long id);
+    private static native int len(long ptr);
 
     private static native long get(long id, String key);
 
+    final protected native boolean deleteInstance(long ptr);
+
     public String toString() {
-        return toString(id);
+        return toString(getPtr());
     }
 
     public String toPrettyString() {
-        return toPrettyString(id);
+        return toPrettyString(getPtr());
     }
 
     public Value get(String key) {
-        return new Value(get(id, key));
+        return new Value(get(getPtr(), key));
     }
 
     public int len() {
-        return len(id);
-    }
-
-    public EntryIterator iter() {
-        return new EntryIterator(iter(id));
+        return len(getPtr());
     }
 
     @Override
-    public void close() {
-        deleteInstance(id);
-        id = 0;
+    public Iterator<Entry> iterator() {
+        return new EntryIterator(iter(getPtr()));
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
+    public Iterator<Entry> synchronizedIterator() {
+        return new SynchronizedEntryIterator(iter(getPtr()));
     }
 
 }
