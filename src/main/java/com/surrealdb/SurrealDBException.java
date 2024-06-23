@@ -6,4 +6,8 @@ public class SurrealDBException extends RuntimeException {
         super(message);
     }
 
+    SurrealDBException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
