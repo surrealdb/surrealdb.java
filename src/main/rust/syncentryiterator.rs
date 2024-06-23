@@ -29,6 +29,6 @@ pub extern "system" fn Java_com_surrealdb_SynchronizedEntryIterator_next<'local>
     if let Some((key, value)) = iter.next() {
         create_instance((key, Arc::new(value)))
     } else {
-        SurrealError::NullPointerException("Value").exception(&mut env, || 0)
+        SurrealError::NoSuchElementException.exception(&mut env, || 0)
     }
 }

@@ -44,8 +44,16 @@ public class Array extends Native implements Iterable<Value> {
         return new ValueIterator(iterator(getPtr()));
     }
 
-    public SynchronizedValueIterator synchronizedIterator() {
+    public <T> Iterator<T> iterator(Class<T> clazz) {
+        return new ClassValueIterator(clazz, iterator());
+    }
+
+    public Iterator<Value> synchronizedIterator() {
         return new SynchronizedValueIterator(synchronizedIterator(getPtr()));
+    }
+
+    public <T> Iterator<T> synchronizedIterator(Class<T> clazz) {
+        return new ClassValueIterator(clazz, synchronizedIterator());
     }
 }
 

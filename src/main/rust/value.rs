@@ -62,7 +62,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getArray<'local>(
     if value.is_array() {
         create_instance(value)
     } else {
-        SurrealError::NullPointerException("Not an array").exception(&mut env, || 0)
+        SurrealError::NullPointerException("Array").exception(&mut env, || 0)
     }
 }
 
@@ -86,7 +86,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getObject<'local>(
     if value.is_object() {
         create_instance(value)
     } else {
-        SurrealError::NullPointerException("Not an object").exception(&mut env, || 0)
+        SurrealError::NullPointerException("Object").exception(&mut env, || 0)
     }
 }
 
@@ -111,7 +111,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getBoolean<'local>(
     if let Value::Bool(b) = value.as_ref() {
         *b as jboolean
     } else {
-        SurrealError::NullPointerException("Not a boolean").exception(&mut env, || 0)
+        SurrealError::NullPointerException("Boolean").exception(&mut env, || 0)
     }
 }
 
@@ -213,7 +213,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getGeometry<'local>(
     if let Value::Geometry(_) = value.as_ref() {
         create_instance(value)
     } else {
-        SurrealError::NullPointerException("Not a Geometry").exception(&mut env, || 0)
+        SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
     }
 }
 
@@ -257,7 +257,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getString<'local>(
     if let Value::Strand(s) = value.as_ref() {
         new_string!(&mut env, &s.0, ||null_mut())
     } else {
-        SurrealError::NullPointerException("Not a string").exception(&mut env, || null_mut())
+        SurrealError::NullPointerException("String").exception(&mut env, || null_mut())
     }
 }
 
@@ -281,7 +281,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
     if let Value::Thing(_) = value.as_ref() {
         create_instance(value)
     } else {
-        SurrealError::NullPointerException("Not a thing").exception(&mut env, || 0)
+        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
     }
 }
 
@@ -305,6 +305,6 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
     if let Value::Uuid(uuid) = value.as_ref() {
         new_string!(&mut env, uuid.0.to_string(), ||null_mut())
     } else {
-        SurrealError::NullPointerException("Not an UUID").exception(&mut env, || null_mut())
+        SurrealError::NullPointerException("UUID").exception(&mut env, || null_mut())
     }
 }

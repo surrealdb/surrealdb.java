@@ -2,7 +2,7 @@ package com.surrealdb;
 
 import java.util.Iterator;
 
-public class SynchronizedEntryIterator extends Native implements Iterator<Entry> {
+class SynchronizedEntryIterator extends Native implements Iterator<Entry> {
 
     SynchronizedEntryIterator(long ptr) {
         super(ptr);
@@ -15,12 +15,12 @@ public class SynchronizedEntryIterator extends Native implements Iterator<Entry>
     final protected native boolean deleteInstance(long ptr);
 
     @Override
-    public boolean hasNext() {
+    final public boolean hasNext() {
         return hasNext(getPtr());
     }
 
     @Override
-    public Entry next() {
+    final public Entry next() {
         return new Entry(next(getPtr()));
     }
 }

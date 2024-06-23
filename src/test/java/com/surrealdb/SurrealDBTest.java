@@ -3,7 +3,9 @@ package com.surrealdb;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -159,6 +161,76 @@ public class SurrealDBTest {
     }
 
     @Test
+    void surrealdb_query_uuid() throws SurrealDBException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "CREATE person:1 SET uuid= u'f8e238f2-e734-47b8-9a16-476b291bd78a';\n" +
+                        "SELECT * FROM person;";
+                final Response response = surreal.query(sql);
+                final Value create = response.take(0);
+                assertTrue(create.isArray());
+                final Array createArray = create.getArray();
+                assertEquals(createArray.len(), 1);
+                assertEquals("[{ id: person:1, uuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
+                final Value select = response.take(1);
+                assertTrue(select.isArray());
+                final Array selectArray = select.getArray();
+                assertEquals(selectArray.len(), 1);
+                assertEquals("[\n" +
+                        "\t{\n" +
+                        "\t\tid: person:1,\n" +
+                        "\t\tuuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a'\n" +
+                        "\t}\n" +
+                        "]", selectArray.toPrettyString());
+                // Retrieve the fist record
+                final Value row = selectArray.get(0);
+                assertTrue(row.isObject());
+                final Object rowObject = row.getObject();
+                // Check UUID
+                assertTrue(rowObject.get("uuid").isUuid());
+                assertEquals(UUID.fromString("f8e238f2-e734-47b8-9a16-476b291bd78a"), rowObject.get("uuid").getUuid());
+            }
+        }
+    }
+
+    @Test
+    void surrealdb_query_geometry() throws SurrealDBException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            //
+            {
+                final String sql = "CREATE person:1 SET pt = <geometry<point>> { type: \"Point\", coordinates: [-0.118092, 51.509865] };\n" +
+                        "SELECT * FROM person;";
+                final Response response = surreal.query(sql);
+                final Value create = response.take(0);
+                assertTrue(create.isArray());
+                final Array createArray = create.getArray();
+                assertEquals(createArray.len(), 1);
+                assertEquals("[{ id: person:1, pt: (-0.118092, 51.509865) }]", createArray.toString());
+                final Value select = response.take(1);
+                assertTrue(select.isArray());
+                final Array selectArray = select.getArray();
+                assertEquals(selectArray.len(), 1);
+                assertEquals("[\n" +
+                        "\t{\n" +
+                        "\t\tid: person:1,\n" +
+                        "\t\tpt: (-0.118092, 51.509865)\n" +
+                        "\t}\n" +
+                        "]", selectArray.toPrettyString());
+                // Retrieve the fist record
+                final Value row = selectArray.get(0);
+                assertTrue(row.isObject());
+                final Object rowObject = row.getObject();
+                {// Check Geometry/Point field
+                    assertTrue(rowObject.get("pt").isGeometry());
+                    assertEquals(new Point2D.Double(-0.118092, 51.509865), rowObject.get("pt").getGeometry().getPoint());
+                }
+            }
+        }
+    }
+
+    @Test
     void surrealdb_query_array() throws SurrealDBException {
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -254,72 +326,73 @@ public class SurrealDBTest {
     }
 
     @Test
-    void surrealdb_query_uuid() throws SurrealDBException {
+    void surrealdb_class_value_iterator() throws SurrealDBException {
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             {
-                final String sql = "CREATE person:1 SET uuid= u'f8e238f2-e734-47b8-9a16-476b291bd78a';\n" +
-                        "SELECT * FROM person;";
+                final String sql =
+                        "CREATE person:1 SET active=true, category=1, tags=['CEO', 'CTO'], emails=[{address: 'tobie@surrealdb.com', name: { first:'Tobie', last: 'Hitchcock' }}];" +
+                                "CREATE person:2 SET active=true, category=2, tags=['COO'], emails=[{address: 'jaime@surrealdb.com', name: { first:'Jaime', last:'Hitchcock' }}];" +
+                                "SELECT * FROM person;";
                 final Response response = surreal.query(sql);
-                final Value create = response.take(0);
-                assertTrue(create.isArray());
-                final Array createArray = create.getArray();
-                assertEquals(createArray.len(), 1);
-                assertEquals("[{ id: person:1, uuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
-                final Value select = response.take(1);
-                assertTrue(select.isArray());
-                final Array selectArray = select.getArray();
-                assertEquals(selectArray.len(), 1);
-                assertEquals("[\n" +
-                        "\t{\n" +
-                        "\t\tid: person:1,\n" +
-                        "\t\tuuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a'\n" +
-                        "\t}\n" +
-                        "]", selectArray.toPrettyString());
-                // Retrieve the fist record
-                final Value row = selectArray.get(0);
-                assertTrue(row.isObject());
-                final Object rowObject = row.getObject();
-                // Check UUID
-                assertTrue(rowObject.get("uuid").isUuid());
-                assertEquals(UUID.fromString("f8e238f2-e734-47b8-9a16-476b291bd78a"), rowObject.get("uuid").getUuid());
+                // Iterator over the SELECT
+                final Value select = response.take(2);
+                final Array results = select.getArray();
+                final Iterator<Person> iterator = results.iterator(Person.class);
+                {
+                    assertTrue(iterator.hasNext());
+                    final Person p = iterator.next();
+                    assertEquals("person", p.id.getTable());
+                    assertEquals(1, p.id.getId().getLong());
+                    assertEquals(1, p.category);
+                    assertTrue(p.active);
+                    assertEquals(Arrays.asList("CEO", "CTO"), p.tags);
+                    assertEquals("Tobie", p.emails.get(0).name.first);
+                    assertEquals("Hitchcock", p.emails.get(0).name.last);
+                    assertEquals("tobie@surrealdb.com", p.emails.get(0).address);
+                }
+                {
+                    assertTrue(iterator.hasNext());
+                    final Person p = iterator.next();
+                    assertEquals("person", p.id.getTable());
+                    assertEquals(2, p.id.getId().getLong());
+                    assertEquals(2, p.category);
+                    assertTrue(p.active);
+                    assertEquals(Arrays.asList("COO"), p.tags);
+                    assertEquals("Jaime", p.emails.get(0).name.first);
+                    assertEquals("Hitchcock", p.emails.get(0).name.last);
+                    assertEquals("jaime@surrealdb.com", p.emails.get(0).address);
+                }
+                assertFalse(iterator.hasNext());
             }
         }
     }
+}
 
-    @Test
-    void surrealdb_query_geometry() throws SurrealDBException {
-        try (final Surreal surreal = new Surreal()) {
-            surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            //
-            {
-                final String sql = "CREATE person:1 SET pt = <geometry<point>> { type: \"Point\", coordinates: [-0.118092, 51.509865] };\n" +
-                        "SELECT * FROM person;";
-                final Response response = surreal.query(sql);
-                final Value create = response.take(0);
-                assertTrue(create.isArray());
-                final Array createArray = create.getArray();
-                assertEquals(createArray.len(), 1);
-                assertEquals("[{ id: person:1, pt: (-0.118092, 51.509865) }]", createArray.toString());
-                final Value select = response.take(1);
-                assertTrue(select.isArray());
-                final Array selectArray = select.getArray();
-                assertEquals(selectArray.len(), 1);
-                assertEquals("[\n" +
-                        "\t{\n" +
-                        "\t\tid: person:1,\n" +
-                        "\t\tpt: (-0.118092, 51.509865)\n" +
-                        "\t}\n" +
-                        "]", selectArray.toPrettyString());
-                // Retrieve the fist record
-                final Value row = selectArray.get(0);
-                assertTrue(row.isObject());
-                final Object rowObject = row.getObject();
-                {// Check Geometry/Point field
-                    assertTrue(rowObject.get("pt").isGeometry());
-                    assertEquals(new Point2D.Double(-0.118092, 51.509865), rowObject.get("pt").getGeometry().getPoint());
-                }
-            }
-        }
+class Person {
+    Thing id;
+    String name;
+    List<String> tags;
+    long category;
+    boolean active;
+    List<Email> emails;
+
+    public Person() {
+    }
+}
+
+class Email {
+    String address;
+    Name name;
+
+    public Email() {
+    }
+}
+
+class Name {
+    String first;
+    String last;
+
+    public Name() {
     }
 }

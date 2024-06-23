@@ -4,11 +4,13 @@ use jni::JNIEnv;
 pub(super) enum SurrealError {
     Exception(Error),
     NullPointerException(&'static str),
+    NoSuchElementException,
     SurrealDB(surrealdb::Error),
 }
 
 const EXCEPTION: &str = "java/lang/exception";
 const NULL_POINTER_EXCEPTION: &str = "java/lang/NullPointerException";
+const NO_SUCH_ELEMENT_EXCEPTION: &str = "java/util/NoSuchElementException";
 const SURREALDB_EXCEPTION: &str = "com/surrealdb/SurrealDBException";
 
 impl ToException for SurrealError {
@@ -16,6 +18,7 @@ impl ToException for SurrealError {
         match self {
             Self::Exception(e) => Exception { class: EXCEPTION.to_string(), msg: format!("{e}") },
             Self::NullPointerException(s) => Exception { class: NULL_POINTER_EXCEPTION.to_string(), msg: format!("{s} instance not found") },
+            Self::NoSuchElementException => Exception { class: NO_SUCH_ELEMENT_EXCEPTION.to_string(), msg: "No more elements".to_string() },
             Self::SurrealDB(e) => Exception { class: SURREALDB_EXCEPTION.to_string(), msg: format!("{e}") }
         }
     }

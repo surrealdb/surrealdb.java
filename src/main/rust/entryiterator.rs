@@ -28,6 +28,6 @@ pub extern "system" fn Java_com_surrealdb_EntryIterator_next<'local>(
     if let Some((k, v)) = iter.next() {
         create_instance((k, Arc::new(v)))
     } else {
-        SurrealError::NullPointerException("Value").exception(&mut env, || 0)
+        SurrealError::NoSuchElementException.exception(&mut env, || 0)
     }
 }
