@@ -3,6 +3,7 @@ package com.surrealdb.pojos;
 import com.surrealdb.Thing;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Person {
@@ -23,5 +24,18 @@ public class Person {
         this.category = category;
         this.active = active;
         this.emails = emails;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final Person person = (Person) o;
+        return category == person.category &&
+            active == person.active &&
+            Objects.equals(id, person.id) &&
+            Objects.equals(name, person.name) &&
+            Objects.equals(tags, person.tags) &&
+            Objects.equals(emails, person.emails);
     }
 }

@@ -88,7 +88,7 @@ class ValueClassConverter<T> {
         }
     }
 
-    private static Class<?> getGenericType(final Field field) {
+    static Class<?> getGenericType(final Field field) {
         // Check if the field is parameterized
         if (field.getGenericType() instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();

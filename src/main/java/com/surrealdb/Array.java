@@ -13,7 +13,7 @@ public class Array extends Native implements Iterable<Value> {
 
     private static native String toPrettyString(long ptr);
 
-    private static native long get(long id, int idx);
+    private static native long get(long ptr, int idx);
 
     private static native int len(long ptr);
 

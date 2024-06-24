@@ -154,3 +154,16 @@ macro_rules! new_double_point {
         double_array.into_raw()
     }};
 }
+
+#[macro_export]
+macro_rules! take_value_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::take_instance::<surrealdb::sql::Value>(
+            $id,
+            "ValueMut",
+        ) {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}

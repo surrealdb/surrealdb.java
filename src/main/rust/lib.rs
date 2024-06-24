@@ -19,6 +19,8 @@ mod syncvalueiterator;
 mod thing;
 mod value;
 mod valueiterator;
+mod valuemut;
+mod entrymut;
 
 static TOKIO_RUNTIME: Lazy<Runtime> =
     Lazy::new(|| Runtime::new().expect("Cannot start Tokio runtime"));
@@ -46,6 +48,15 @@ fn get_instance_mut<T>(ptr: jlong, name: &'static str) -> Result<&mut T, Surreal
     // Convert jlong
     let instance = unsafe { &mut *(ptr as *mut T) };
     Ok(instance)
+}
+
+fn take_instance<T>(ptr: jlong, name: &'static str) -> Result<T, SurrealError> {
+    if ptr == 0 {
+        return Err(SurrealError::NullPointerException(name));
+    }
+    // Convert jlong to a Box<T>, effectively taking ownership of the instance
+    let instance = unsafe { Box::from_raw(ptr as *mut T) };
+    Ok(*instance)
 }
 
 fn release_instance<T>(ptr: jlong) {

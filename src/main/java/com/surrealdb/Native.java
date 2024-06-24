@@ -21,6 +21,10 @@ public abstract class Native {
         return b;
     }
 
+    final protected void moved() {
+        this.ptr = 0;
+    }
+
     @Override
     protected void finalize() throws Throwable {
         try {

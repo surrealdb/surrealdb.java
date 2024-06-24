@@ -8,7 +8,7 @@ public class Response extends Native {
 
     final protected native boolean deleteInstance(long ptr);
 
-    private native long take(long id, int num);
+    private native long take(long ptr, int num);
 
     public Value take(int num) {
         return new Value(take(getPtr(), num));

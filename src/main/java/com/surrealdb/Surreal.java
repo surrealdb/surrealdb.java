@@ -20,17 +20,19 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long newInstance();
 
-    private static native boolean connect(long id, String connect);
+    private static native boolean connect(long ptr, String connect);
 
-    private static native String signinRoot(long id, String username, String password);
+    private static native String signinRoot(long ptr, String username, String password);
 
-    private static native boolean useNs(long id, String ns);
+    private static native boolean useNs(long ptr, String ns);
 
-    private static native boolean useDb(long id, String ns);
+    private static native boolean useDb(long ptr, String ns);
 
-    private static native long query(long id, String sql);
+    private static native long query(long ptr, String sql);
 
-    private static native long queryBind(long id, String sql, Map<String, ?> params);
+    private static native long queryBind(long ptr, String sql, Map<String, ?> params);
+
+    private static native long create(long ptr, String table, long valuePtr);
 
     final protected native boolean deleteInstance(long ptr);
 
@@ -69,11 +71,12 @@ public class Surreal extends Native implements AutoCloseable {
         throw new SurrealException("Not implemented yet");
     }
 
-    public <T> T create(String table, T content) {
-        throw new SurrealException("Not implemented yet");
+    public <T> Thing create(String table, T content) {
+        final ValueMut value = ValueBuilder.convert(content);
+        return new Thing(create(getPtr(), table, value.getPtr()));
     }
 
-    public <T> T create(String table, T ...content) {
+    public <T> T create(String table, T... content) {
         throw new SurrealException("Not implemented yet");
     }
 
