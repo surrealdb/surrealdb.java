@@ -184,3 +184,13 @@ macro_rules! take_entry_mut_instance {
         }
     };
 }
+
+#[macro_export]
+macro_rules! get_entry_mut_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::get_instance::<(String, surrealdb::sql::Value)>($id, "EntryMut") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}

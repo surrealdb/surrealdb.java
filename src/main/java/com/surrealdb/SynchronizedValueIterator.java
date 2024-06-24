@@ -1,6 +1,7 @@
 package com.surrealdb;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 class SynchronizedValueIterator extends Native implements Iterator<Value> {
 
@@ -16,13 +17,19 @@ class SynchronizedValueIterator extends Native implements Iterator<Value> {
     final protected native boolean deleteInstance(long ptr);
 
     @Override
-    final protected native String toString(long ptr);
+    protected String toString(long ptr) {
+        return getClass().getName() + "[ptr=" + ptr + "]";
+    }
 
     @Override
-    final protected native int hashCode(long ptr);
+    protected int hashCode(long ptr) {
+        return Objects.hashCode(ptr);
+    }
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    protected boolean equals(long ptr1, long ptr2) {
+        return ptr1 == ptr2;
+    }
 
     @Override
     final public boolean hasNext() {

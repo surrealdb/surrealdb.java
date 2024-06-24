@@ -23,6 +23,34 @@ pub extern "system" fn Java_com_surrealdb_Thing_newTableId<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Thing_getTable<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Thing(o) = value.as_ref() {
+        new_string!(&mut env, &o.tb, null_mut)
+    } else {
+        SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Thing_getId<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Thing(_) = value.as_ref() {
+        create_instance(value)
+    } else {
+        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Thing_equals<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -52,34 +80,6 @@ pub extern "system" fn Java_com_surrealdb_Thing_hashCode<'local>(
         return (hash64 & 0xFFFFFFFF) as jint;
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
-}
-
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_getTable<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Thing(o) = value.as_ref() {
-        new_string!(&mut env, &o.tb, null_mut)
-    } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
-    }
-}
-
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_getId<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(_) = value.as_ref() {
-        create_instance(value)
-    } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
-    }
 }
 
 #[no_mangle]

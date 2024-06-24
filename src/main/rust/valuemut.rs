@@ -1,13 +1,15 @@
 use std::collections::BTreeMap;
+use std::hash::{DefaultHasher, Hash, Hasher};
+use std::ptr::null_mut;
 
 use jni::errors::Error;
-use jni::objects::{JClass, JLongArray, JString};
-use jni::sys::{jboolean, jlong};
 use jni::JNIEnv;
+use jni::objects::{JClass, JLongArray, JString};
+use jni::sys::{jboolean, jint, jlong, jstring};
 use surrealdb::sql::{Array, Number, Object, Strand, Value};
 
+use crate::{create_instance, get_rust_string, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
 use crate::error::SurrealError;
-use crate::{create_instance, get_rust_string, take_entry_mut_instance, take_value_mut_instance};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
@@ -83,4 +85,39 @@ fn get_long_array(env: &mut JNIEnv, ptrs: &JLongArray) -> Result<Vec<jlong>, Err
     let mut long_ptrs: Vec<jlong> = vec![0; length as usize];
     env.get_long_array_region(ptrs, 0, &mut long_ptrs)?;
     Ok(long_ptrs)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_toString<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_mut_instance!(&mut env, ptr, null_mut);
+    new_string!(&mut env, value.to_string(), null_mut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_hashCode<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jint {
+    let value = get_value_mut_instance!(&mut env, ptr, ||0);
+    let mut hasher = DefaultHasher::new();
+    value.hash(&mut hasher);
+    let hash64 = hasher.finish();
+    (hash64 & 0xFFFFFFFF) as jint
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_equals<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr1: jlong,
+    ptr2: jlong,
+) -> jboolean {
+    let v1 = get_value_mut_instance!(&mut env, ptr1, || false as jboolean);
+    let v2 = get_value_mut_instance!(&mut env, ptr2, || false as jboolean);
+    v1.eq(v2) as jboolean
 }

@@ -11,7 +11,7 @@ use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
 
-use crate::{create_instance, get_rust_string, get_surreal_instance, get_value_mut_instance, new_string, release_instance, TOKIO_RUNTIME};
+use crate::{create_instance, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_string, release_instance, TOKIO_RUNTIME};
 use crate::error::SurrealError;
 
 #[no_mangle]
@@ -185,10 +185,46 @@ pub extern "system" fn Java_com_surrealdb_Surreal_create<'local>(
         Ok(r) => r,
         Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
     };
+    // There should be only one result
     if let Value::Array(ref mut a) = res {
         if a.len() == 1 {
             return create_instance(Arc::new(a.remove(0)));
         }
     }
     SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_select<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    thing_ptr: jlong,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    // Build the parameters
+    let thing = get_value_instance!(&mut env, thing_ptr, ||0);
+    // Execute the query
+    let query = format!("SELECT * FROM {thing}");
+    let res = surrealdb_query(&surreal, &query, None);
+    // Check the result
+    let mut res = match res {
+        Ok(res) => res,
+        Err(e) => {
+            return SurrealError::SurrealDB(e).exception(&mut env, || 0);
+        }
+    };
+    // There is only one statement
+    let mut res: Value = match res.take(0) {
+        Ok(r) => r,
+        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
+    };
+    // There should be only one result
+    if let Value::Array(ref mut a) = res {
+        if a.len() == 1 {
+            return create_instance(Arc::new(a.remove(0)));
+        }
+    }
+    0
 }

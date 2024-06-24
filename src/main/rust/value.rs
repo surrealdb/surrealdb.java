@@ -21,28 +21,6 @@ pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_toString<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    let s = value.to_string();
-    new_string!(&mut env, s, null_mut)
-}
-
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_toPrettyString<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    let s = format!("{value:#}");
-    new_string!(&mut env, s, null_mut)
-}
-
-#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isArray<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -306,6 +284,28 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
     } else {
         SurrealError::NullPointerException("UUID").exception(&mut env, null_mut)
     }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_toString<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    let s = value.to_string();
+    new_string!(&mut env, s, null_mut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_toPrettyString<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    let s = format!("{value:#}");
+    new_string!(&mut env, s, null_mut)
 }
 
 #[no_mangle]

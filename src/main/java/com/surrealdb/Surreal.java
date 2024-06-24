@@ -4,10 +4,7 @@ import com.surrealdb.signin.Jwt;
 import com.surrealdb.signin.Root;
 import com.surrealdb.signin.Signin;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Surreal extends Native implements AutoCloseable {
 
@@ -35,15 +32,24 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long create(long ptr, String table, long valuePtr);
 
-    @Override
-    final protected native String toString(long ptr);
+    private static native long select(long ptr, long thing);
 
     @Override
-    final protected native int hashCode(long ptr);
+    protected String toString(long ptr) {
+        return getClass().getName() + "[ptr=" + ptr + "]";
+    }
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    protected int hashCode(long ptr) {
+        return Objects.hashCode(ptr);
+    }
 
+    @Override
+    protected boolean equals(long ptr1, long ptr2) {
+        return ptr1 == ptr2;
+    }
+
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
     public Surreal connect(String connect) {
@@ -99,8 +105,12 @@ public class Surreal extends Native implements AutoCloseable {
         throw new SurrealException("Not implemented yet");
     }
 
-    public <T> Iterator<T> select(Thing thing, Class<T> type) {
-        throw new SurrealException("Not implemented yet");
+    public Optional<Value> select(Thing thing) {
+        final long valuePtr = select(getPtr(), thing.getPtr());
+        if (valuePtr == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(new Value(valuePtr));
     }
 
     public <T> Iterator<T> select(Collection<Thing> things, Class<T> type) {

@@ -1,5 +1,7 @@
 package com.surrealdb;
 
+import java.util.Objects;
+
 public class Response extends Native {
 
     Response(long ptr) {
@@ -16,12 +18,18 @@ public class Response extends Native {
     }
 
     @Override
-    final protected native String toString(long ptr);
+    protected String toString(long ptr) {
+        return getClass().getName() + "[ptr=" + ptr + "]";
+    }
 
     @Override
-    final protected native int hashCode(long ptr);
+    protected int hashCode(long ptr) {
+        return Objects.hashCode(ptr);
+    }
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    protected boolean equals(long ptr1, long ptr2) {
+        return ptr1 == ptr2;
+    }
 
 }
