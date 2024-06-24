@@ -34,7 +34,7 @@ class ClassValueConverter<T> {
         } else if (value.isUuid()) {
             return value.getUuid();
         }
-        throw new SurrealDBException("Unsupported value: " + value);
+        throw new SurrealException("Unsupported value: " + value);
     }
 
 
@@ -42,7 +42,7 @@ class ClassValueConverter<T> {
         if (value.isObject()) {
             final Class<?> subType = getGenericType(field);
             if (subType == null) {
-                throw new SurrealDBException("Unsupported field type: " + field);
+                throw new SurrealException("Unsupported field type: " + field);
             }
             return convertObject(subType, value.getObject());
         } else if (value.isArray()) {
@@ -98,7 +98,7 @@ class ClassValueConverter<T> {
         try {
             return convertObject(clazz, value.getObject());
         } catch (ReflectiveOperationException e) {
-            throw new SurrealDBException("Failed to create instance of " + clazz.getName(), e);
+            throw new SurrealException("Failed to create instance of " + clazz.getName(), e);
         }
     }
 }

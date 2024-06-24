@@ -1,7 +1,7 @@
 package com.surrealdb.integration;
 
 import com.surrealdb.Surreal;
-import com.surrealdb.SurrealDBException;
+import com.surrealdb.SurrealException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class IntegrationTest {
 
     @Test
-    void surrealdb_websocket() throws SurrealDBException {
+    void surrealdb_websocket() throws SurrealException {
         try (Surreal surreal = new Surreal()) {
             // We expected an exception as there is no running server
             RuntimeException e = assertThrows(RuntimeException.class, () -> {
@@ -21,7 +21,7 @@ public class IntegrationTest {
     }
 
     @Test
-    void surreal_db_memory() throws SurrealDBException {
+    void surreal_db_memory() throws SurrealException {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory");
         }

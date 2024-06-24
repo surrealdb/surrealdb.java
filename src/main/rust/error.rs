@@ -11,7 +11,7 @@ pub(super) enum SurrealError {
 const EXCEPTION: &str = "java/lang/exception";
 const NULL_POINTER_EXCEPTION: &str = "java/lang/NullPointerException";
 const NO_SUCH_ELEMENT_EXCEPTION: &str = "java/util/NoSuchElementException";
-const SURREALDB_EXCEPTION: &str = "com/surrealdb/SurrealDBException";
+const SURREAL_EXCEPTION: &str = "com/surrealdb/SurrealException";
 
 impl ToException for SurrealError {
     fn to_exception(&self) -> Exception {
@@ -19,7 +19,7 @@ impl ToException for SurrealError {
             Self::Exception(e) => Exception { class: EXCEPTION.to_string(), msg: format!("{e}") },
             Self::NullPointerException(s) => Exception { class: NULL_POINTER_EXCEPTION.to_string(), msg: format!("{s} instance not found") },
             Self::NoSuchElementException => Exception { class: NO_SUCH_ELEMENT_EXCEPTION.to_string(), msg: "No more elements".to_string() },
-            Self::SurrealDB(e) => Exception { class: SURREALDB_EXCEPTION.to_string(), msg: format!("{e}") }
+            Self::SurrealDB(e) => Exception { class: SURREAL_EXCEPTION.to_string(), msg: format!("{e}") }
         }
     }
 }
