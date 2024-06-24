@@ -20,13 +20,13 @@ public class Array extends Native implements Iterable<Value> {
     private static native long synchronizedIterator(long ptr);
 
     @Override
-    final protected native String toString(long ptr);
+    final native String toString(long ptr);
 
     @Override
-    final protected native int hashCode(long ptr);
+    final native int hashCode(long ptr);
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    final native boolean equals(long ptr1, long ptr2);
 
     final public String toPrettyString() {
         return toPrettyString(getPtr());
@@ -40,7 +40,8 @@ public class Array extends Native implements Iterable<Value> {
         return len(getPtr());
     }
 
-    final protected native boolean deleteInstance(long ptr);
+    @Override
+    final native boolean deleteInstance(long ptr);
 
     @Override
     final public Iterator<Value> iterator() {

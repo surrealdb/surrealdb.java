@@ -35,22 +35,22 @@ public class Surreal extends Native implements AutoCloseable {
     private static native long select(long ptr, long thing);
 
     @Override
-    protected String toString(long ptr) {
+    final String toString(long ptr) {
         return getClass().getName() + "[ptr=" + ptr + "]";
     }
 
     @Override
-    protected int hashCode(long ptr) {
+    final int hashCode(long ptr) {
         return Objects.hashCode(ptr);
     }
 
     @Override
-    protected boolean equals(long ptr1, long ptr2) {
+    final boolean equals(long ptr1, long ptr2) {
         return ptr1 == ptr2;
     }
 
     @Override
-    final protected native boolean deleteInstance(long ptr);
+    final native boolean deleteInstance(long ptr);
 
     public Surreal connect(String connect) {
         connect(getPtr(), connect);

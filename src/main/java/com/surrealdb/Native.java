@@ -5,29 +5,28 @@ public abstract class Native {
     // Unique internal ptr used by the native library to locate the SurrealDB instance
     private long ptr;
 
-    protected Native(long ptr) {
+    Native(long ptr) {
         this.ptr = ptr;
     }
 
-    protected abstract String toString(long ptr);
+    abstract String toString(long ptr);
 
-    protected abstract int hashCode(long ptr);
+    abstract int hashCode(long ptr);
 
-    protected abstract boolean equals(long ptr1, long ptr2);
+    abstract boolean equals(long ptr1, long ptr2);
 
-    protected abstract boolean deleteInstance(long ptr);
+    abstract boolean deleteInstance(long ptr);
 
-    final protected long getPtr() {
+    final long getPtr() {
         return this.ptr;
     }
 
-    final protected boolean deleteInstance() {
-        final boolean b = deleteInstance(ptr);
+    final void deleteInstance() {
+        deleteInstance(ptr);
         ptr = 0;
-        return b;
     }
 
-    final protected void moved() {
+    final void moved() {
         this.ptr = 0;
     }
 
