@@ -18,7 +18,7 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
 
     private static native int len(long ptr);
 
-    private static native long get(long id, String key);
+    private static native long get(long ptr, String key);
 
     final protected native boolean deleteInstance(long ptr);
 

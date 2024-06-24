@@ -1,47 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb-jni</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ValueBuilder.java</span></div><h1>ValueBuilder.java</h1><pre class="source lang-java linenums">package com.surrealdb;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+
 class ValueBuilder extends Native {
 
     ValueBuilder(long ptr) {
-<span class="nc" id="L6">        super(ptr);</span>
-<span class="nc" id="L7">    }</span>
+<span class="nc" id="L14">        super(ptr);</span>
+<span class="nc" id="L15">    }</span>
 
-    static protected native long newValueString(String string);
 
-    static protected native long newValueBoolean(boolean b);
+    private static &lt;T&gt; ValueMut convertObject(final T object) throws IllegalAccessException {
+<span class="nc bnc" id="L19" title="All 2 branches missed.">        if (object == null) {</span>
+<span class="nc" id="L20">            return null;</span>
+        }
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if (object instanceof String) {</span>
+<span class="nc" id="L23">            return ValueMut.createString((String) object);</span>
+        }
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (object instanceof Double) {</span>
+<span class="nc" id="L26">            return ValueMut.createDouble((Double) object);</span>
+        }
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        if (object instanceof Float) {</span>
+<span class="nc" id="L29">            return ValueMut.createDouble((Float) object);</span>
+        }
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (object instanceof Long) {</span>
+<span class="nc" id="L32">            return ValueMut.createLong((Long) object);</span>
+        }
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (object instanceof Integer) {</span>
+<span class="nc" id="L35">            return ValueMut.createLong((Integer) object);</span>
+        }
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (object instanceof Short) {</span>
+<span class="nc" id="L38">            return ValueMut.createLong((Short) object);</span>
+        }
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (object instanceof Boolean) {</span>
+<span class="nc" id="L41">            return ValueMut.createBoolean((Boolean) object);</span>
+        }
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (object instanceof Collection) {</span>
+<span class="nc" id="L44">            final Collection&lt;?&gt; collection = (Collection&lt;?&gt;) object;</span>
+            // Create a ValueMut for each element of the collection
+<span class="nc" id="L46">            final List&lt;ValueMut&gt; values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());</span>
+<span class="nc" id="L47">            return ValueMut.createArray(values);</span>
+        }
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (object instanceof Optional) {</span>
+<span class="nc" id="L50">            final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
+<span class="nc" id="L51">            return optional.map(ValueBuilder::convert).orElse(null);</span>
+        }
+<span class="nc" id="L53">        final Field[] fields = object.getClass().getFields();</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (fields.length &gt; 0) {</span>
+<span class="nc" id="L55">            final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            for (Field field : fields) {</span>
+<span class="nc" id="L57">                final String name = field.getName();</span>
+<span class="nc" id="L58">                final ValueMut value = convert(field.get(object));</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                if (value != null) {</span>
+<span class="nc" id="L60">                    entries.add(EntryMut.newEntry(name, value));</span>
+                }
+            }
+<span class="nc" id="L63">            return ValueMut.createObject(entries);</span>
+        }
+<span class="nc" id="L65">        throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getName());</span>
+    }
 
-    static protected native long newValueDouble(double d);
-
-    static protected native long newValueLong(long l);
-
-    static &lt;T&gt; Value convert(final T object) {
-<span class="nc bnc" id="L18" title="All 2 branches missed.">        if (object == null) {</span>
-<span class="nc" id="L19">            return null;</span>
+    static &lt;T&gt; ValueMut convert(final T object) {
+        try {
+<span class="nc" id="L70">            return convertObject(object);</span>
+<span class="nc" id="L71">        } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L72">            throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
         }
-<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (object instanceof String) {</span>
-<span class="nc" id="L22">            return new Value(newValueString((String) object));</span>
-        }
-<span class="nc bnc" id="L24" title="All 2 branches missed.">        if (object instanceof Double) {</span>
-<span class="nc" id="L25">            return new Value(newValueDouble((Double) object));</span>
-        }
-<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (object instanceof Float) {</span>
-<span class="nc" id="L28">            return new Value(newValueDouble((Float) object));</span>
-        }
-<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (object instanceof Long) {</span>
-<span class="nc" id="L31">            return new Value(newValueLong((Long) object));</span>
-        }
-<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (object instanceof Integer) {</span>
-<span class="nc" id="L34">            return new Value(newValueLong((Integer) object));</span>
-        }
-<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (object instanceof Short) {</span>
-<span class="nc" id="L37">            return new Value(newValueLong((Short) object));</span>
-        }
-<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (object instanceof Boolean) {</span>
-<span class="nc" id="L40">            return new Value(newValueBoolean((Boolean) object));</span>
-        }
-<span class="nc" id="L42">        throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getName());</span>
     }
 
     final protected native boolean deleteInstance(long ptr);
+
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

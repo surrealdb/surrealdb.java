@@ -88,7 +88,7 @@ class ValueClassConverter&lt;T&gt; {
         }
 <span class="fc" id="L89">    }</span>
 
-    private static Class&lt;?&gt; getGenericType(final Field field) {
+    static Class&lt;?&gt; getGenericType(final Field field) {
         // Check if the field is parameterized
 <span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if (field.getGenericType() instanceof ParameterizedType) {</span>
 <span class="fc" id="L94">            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();</span>
