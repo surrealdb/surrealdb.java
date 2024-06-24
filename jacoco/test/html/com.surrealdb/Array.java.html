@@ -20,13 +20,13 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
     private static native long synchronizedIterator(long ptr);
 
     @Override
-    final protected native String toString(long ptr);
+    final native String toString(long ptr);
 
     @Override
-    final protected native int hashCode(long ptr);
+    final native int hashCode(long ptr);
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    final native boolean equals(long ptr1, long ptr2);
 
     final public String toPrettyString() {
 <span class="fc" id="L32">        return toPrettyString(getPtr());</span>
@@ -40,23 +40,24 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 <span class="fc" id="L40">        return len(getPtr());</span>
     }
 
-    final protected native boolean deleteInstance(long ptr);
+    @Override
+    final native boolean deleteInstance(long ptr);
 
     @Override
     final public Iterator&lt;Value&gt; iterator() {
-<span class="fc" id="L47">        return new ValueIterator(iterator(getPtr()));</span>
+<span class="fc" id="L48">        return new ValueIterator(iterator(getPtr()));</span>
     }
 
     final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
-<span class="fc" id="L51">        return new ClassValueIterator&lt;&gt;(clazz, iterator());</span>
+<span class="fc" id="L52">        return new ClassValueIterator&lt;&gt;(clazz, iterator());</span>
     }
 
     final public Iterator&lt;Value&gt; synchronizedIterator() {
-<span class="fc" id="L55">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
+<span class="fc" id="L56">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
     }
 
     final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
-<span class="nc" id="L59">        return new ClassValueIterator&lt;&gt;(clazz, synchronizedIterator());</span>
+<span class="nc" id="L60">        return new ClassValueIterator&lt;&gt;(clazz, synchronizedIterator());</span>
     }
 }
 

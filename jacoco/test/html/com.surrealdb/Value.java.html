@@ -60,118 +60,119 @@ public class Value extends Native {
     private static native long getThing(long ptr);
 
     @Override
-    final protected native String toString(long ptr);
+    final native String toString(long ptr);
 
     @Override
-    final protected native int hashCode(long ptr);
+    final native int hashCode(long ptr);
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    final native boolean equals(long ptr1, long ptr2);
 
-    final protected native boolean deleteInstance(long ptr);
+    @Override
+    final native boolean deleteInstance(long ptr);
 
     public String toPrettyString() {
-<span class="fc" id="L74">        return toPrettyString(getPtr());</span>
+<span class="fc" id="L75">        return toPrettyString(getPtr());</span>
     }
 
     public boolean isArray() {
-<span class="fc" id="L78">        return isArray(getPtr());</span>
+<span class="fc" id="L79">        return isArray(getPtr());</span>
     }
 
     public Array getArray() {
-<span class="fc" id="L82">        return new Array(getArray(getPtr()));</span>
+<span class="fc" id="L83">        return new Array(getArray(getPtr()));</span>
     }
 
     public boolean isObject() {
-<span class="fc" id="L86">        return isObject(getPtr());</span>
+<span class="fc" id="L87">        return isObject(getPtr());</span>
     }
 
     public Object getObject() {
-<span class="fc" id="L90">        return new Object(getObject(getPtr()));</span>
+<span class="fc" id="L91">        return new Object(getObject(getPtr()));</span>
     }
 
     public boolean isBoolean() {
-<span class="fc" id="L94">        return isBoolean(getPtr());</span>
+<span class="fc" id="L95">        return isBoolean(getPtr());</span>
     }
 
     public boolean getBoolean() {
-<span class="fc" id="L98">        return getBoolean(getPtr());</span>
+<span class="fc" id="L99">        return getBoolean(getPtr());</span>
     }
 
     public boolean isDouble() {
-<span class="fc" id="L102">        return isDouble(getPtr());</span>
+<span class="fc" id="L103">        return isDouble(getPtr());</span>
     }
 
     public double getDouble() {
-<span class="fc" id="L106">        return getDouble(getPtr());</span>
+<span class="fc" id="L107">        return getDouble(getPtr());</span>
     }
 
     public boolean isLong() {
-<span class="fc" id="L110">        return isLong(getPtr());</span>
+<span class="fc" id="L111">        return isLong(getPtr());</span>
     }
 
     public long getLong() {
-<span class="fc" id="L114">        return getLong(getPtr());</span>
+<span class="fc" id="L115">        return getLong(getPtr());</span>
     }
 
     public boolean isBigdecimal() {
-<span class="nc" id="L118">        return isBigDecimal(getPtr());</span>
+<span class="nc" id="L119">        return isBigDecimal(getPtr());</span>
     }
 
     public BigDecimal getBigDecimal() {
-<span class="nc" id="L122">        return getBigDecimal(getPtr());</span>
+<span class="nc" id="L123">        return getBigDecimal(getPtr());</span>
     }
 
     public boolean isNull() {
-<span class="nc" id="L126">        return isNull(getPtr());</span>
+<span class="nc" id="L127">        return isNull(getPtr());</span>
     }
 
     public boolean isNone() {
-<span class="fc" id="L130">        return isNone(getPtr());</span>
+<span class="fc" id="L131">        return isNone(getPtr());</span>
     }
 
     public boolean isString() {
-<span class="fc" id="L134">        return isString(getPtr());</span>
+<span class="fc" id="L135">        return isString(getPtr());</span>
     }
 
     public String getString() {
-<span class="fc" id="L138">        return getString(getPtr());</span>
+<span class="fc" id="L139">        return getString(getPtr());</span>
     }
 
     public boolean isUuid() {
-<span class="fc" id="L142">        return isUuid(getPtr());</span>
+<span class="fc" id="L143">        return isUuid(getPtr());</span>
     }
 
     public UUID getUuid() {
-<span class="fc" id="L146">        return UUID.fromString(getUuid(getPtr()));</span>
+<span class="fc" id="L147">        return UUID.fromString(getUuid(getPtr()));</span>
     }
 
     public boolean isThing() {
-<span class="fc" id="L150">        return isThing(getPtr());</span>
+<span class="fc" id="L151">        return isThing(getPtr());</span>
     }
 
     public Thing getThing() {
-<span class="fc" id="L154">        return new Thing(getThing(getPtr()));</span>
+<span class="fc" id="L155">        return new Thing(getThing(getPtr()));</span>
     }
 
     public boolean isBytes() {
-<span class="nc" id="L158">        return isBytes(getPtr());</span>
+<span class="nc" id="L159">        return isBytes(getPtr());</span>
     }
 
     public byte[] getBytes() {
-<span class="nc" id="L162">        return getBytes(getPtr());</span>
+<span class="nc" id="L163">        return getBytes(getPtr());</span>
     }
 
     public boolean isGeometry() {
-<span class="fc" id="L166">        return isGeometry(getPtr());</span>
+<span class="fc" id="L167">        return isGeometry(getPtr());</span>
     }
 
     public Geometry getGeometry() {
-<span class="fc" id="L170">        return new Geometry(getGeometry(getPtr()));</span>
+<span class="fc" id="L171">        return new Geometry(getGeometry(getPtr()));</span>
     }
 
     public &lt;T&gt; T get(Class&lt;T&gt; type) {
-<span class="fc" id="L174">        return new ValueClassConverter&lt;&gt;(type).convert(this);</span>
+<span class="fc" id="L175">        return new ValueClassConverter&lt;&gt;(type).convert(this);</span>
     }
 }
 

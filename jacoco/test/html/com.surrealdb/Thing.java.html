@@ -18,16 +18,16 @@ public class Thing extends Native {
     private static native long getId(long ptr);
 
     @Override
-    final protected native String toString(long ptr);
+    final native String toString(long ptr);
 
     @Override
-    final protected native int hashCode(long ptr);
+    final native int hashCode(long ptr);
 
     @Override
-    final protected native boolean equals(long ptr1, long ptr2);
+    final native boolean equals(long ptr1, long ptr2);
 
     @Override
-    final protected native boolean deleteInstance(long ptr);
+    final native boolean deleteInstance(long ptr);
 
 
     public String getTable() {
@@ -37,7 +37,7 @@ public class Thing extends Native {
     public Id getId() {
 <span class="fc" id="L38">        return new Id(getId(getPtr()));</span>
     }
-    
+
 }
 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
