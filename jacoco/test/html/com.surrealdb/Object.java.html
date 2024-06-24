@@ -8,8 +8,6 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
 <span class="fc" id="L8">        super(ptr);</span>
 <span class="fc" id="L9">    }</span>
 
-    private static native String toString(long ptr);
-
     private static native String toPrettyString(long ptr);
 
     private static native long iterator(long ptr);
@@ -20,31 +18,36 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
 
     private static native long get(long ptr, String key);
 
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
     final protected native boolean deleteInstance(long ptr);
 
-    public String toString() {
-<span class="nc" id="L26">        return toString(getPtr());</span>
+    final public String toPrettyString() {
+<span class="nc" id="L33">        return toPrettyString(getPtr());</span>
     }
 
-    public String toPrettyString() {
-<span class="nc" id="L30">        return toPrettyString(getPtr());</span>
+    final public Value get(String key) {
+<span class="fc" id="L37">        return new Value(get(getPtr(), key));</span>
     }
 
-    public Value get(String key) {
-<span class="fc" id="L34">        return new Value(get(getPtr(), key));</span>
-    }
-
-    public int len() {
-<span class="fc" id="L38">        return len(getPtr());</span>
+    final public int len() {
+<span class="fc" id="L41">        return len(getPtr());</span>
     }
 
     @Override
-    public Iterator&lt;Entry&gt; iterator() {
-<span class="fc" id="L43">        return new EntryIterator(iterator(getPtr()));</span>
+    final public Iterator&lt;Entry&gt; iterator() {
+<span class="fc" id="L46">        return new EntryIterator(iterator(getPtr()));</span>
     }
 
-    public Iterator&lt;Entry&gt; synchronizedIterator() {
-<span class="fc" id="L47">        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
+    final public Iterator&lt;Entry&gt; synchronizedIterator() {
+<span class="fc" id="L50">        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
     }
 
 }

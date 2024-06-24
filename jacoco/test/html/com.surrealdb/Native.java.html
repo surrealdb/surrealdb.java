@@ -9,29 +9,57 @@ public abstract class Native {
 <span class="fc" id="L9">        this.ptr = ptr;</span>
 <span class="fc" id="L10">    }</span>
 
+    protected abstract String toString(long ptr);
+
+    protected abstract int hashCode(long ptr);
+
+    protected abstract boolean equals(long ptr1, long ptr2);
+
     protected abstract boolean deleteInstance(long ptr);
 
     final protected long getPtr() {
-<span class="fc" id="L15">        return this.ptr;</span>
+<span class="fc" id="L21">        return this.ptr;</span>
     }
 
     final protected boolean deleteInstance() {
-<span class="fc" id="L19">        final boolean b = deleteInstance(ptr);</span>
-<span class="fc" id="L20">        ptr = 0;</span>
-<span class="fc" id="L21">        return b;</span>
+<span class="fc" id="L25">        final boolean b = deleteInstance(ptr);</span>
+<span class="fc" id="L26">        ptr = 0;</span>
+<span class="fc" id="L27">        return b;</span>
     }
 
     final protected void moved() {
-<span class="nc" id="L25">        this.ptr = 0;</span>
-<span class="nc" id="L26">    }</span>
+<span class="nc" id="L31">        this.ptr = 0;</span>
+<span class="nc" id="L32">    }</span>
 
     @Override
-    protected void finalize() throws Throwable {
-        try {
-<span class="nc" id="L31">            deleteInstance();</span>
-        } finally {
-<span class="nc" id="L33">            super.finalize();</span>
+    final public boolean equals(java.lang.Object o) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L37">            return true;</span>
         }
-<span class="nc" id="L35">    }</span>
+<span class="pc bpc" id="L39" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L40">            return false;</span>
+        }
+<span class="fc" id="L42">        final Native n2 = (Native) o;</span>
+<span class="fc" id="L43">        return equals(ptr, n2.ptr);</span>
+    }
+
+    @Override
+    final public int hashCode() {
+<span class="nc" id="L48">        return hashCode(ptr);</span>
+    }
+
+    @Override
+    final public String toString() {
+<span class="fc" id="L53">        return toString(ptr);</span>
+    }
+
+    @Override
+    final protected void finalize() throws Throwable {
+        try {
+<span class="nc" id="L59">            deleteInstance();</span>
+        } finally {
+<span class="nc" id="L61">            super.finalize();</span>
+        }
+<span class="nc" id="L63">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

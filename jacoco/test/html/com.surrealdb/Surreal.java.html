@@ -6,17 +6,18 @@ import com.surrealdb.signin.Signin;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class Surreal extends Native implements AutoCloseable {
 
     static {
-<span class="fc" id="L14">        Loader.loadNative();</span>
-<span class="fc" id="L15">    }</span>
+<span class="fc" id="L15">        Loader.loadNative();</span>
+<span class="fc" id="L16">    }</span>
 
     public Surreal() {
-<span class="fc" id="L18">        super(Surreal.newInstance());</span>
-<span class="fc" id="L19">    }</span>
+<span class="fc" id="L19">        super(Surreal.newInstance());</span>
+<span class="fc" id="L20">    }</span>
 
     private static native long newInstance();
 
@@ -34,67 +35,81 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long create(long ptr, String table, long valuePtr);
 
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
     final protected native boolean deleteInstance(long ptr);
 
     public Surreal connect(String connect) {
-<span class="fc" id="L40">        connect(getPtr(), connect);</span>
-<span class="fc" id="L41">        return this;</span>
+<span class="fc" id="L50">        connect(getPtr(), connect);</span>
+<span class="fc" id="L51">        return this;</span>
     }
 
     public Jwt signin(Signin signin) {
-<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (signin instanceof Root) {</span>
-<span class="nc" id="L46">            final Root r = (Root) signin;</span>
-<span class="nc" id="L47">            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (signin instanceof Root) {</span>
+<span class="nc" id="L56">            final Root r = (Root) signin;</span>
+<span class="nc" id="L57">            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
         }
-<span class="nc" id="L49">        throw new SurrealException(&quot;Unsupported signin&quot;);</span>
+<span class="nc" id="L59">        throw new SurrealException(&quot;Unsupported signin&quot;);</span>
     }
 
     public Surreal useNs(String ns) {
-<span class="fc" id="L53">        useNs(getPtr(), ns);</span>
-<span class="fc" id="L54">        return this;</span>
+<span class="fc" id="L63">        useNs(getPtr(), ns);</span>
+<span class="fc" id="L64">        return this;</span>
     }
 
     public Surreal useDb(String ns) {
-<span class="fc" id="L58">        useDb(getPtr(), ns);</span>
-<span class="fc" id="L59">        return this;</span>
+<span class="fc" id="L68">        useDb(getPtr(), ns);</span>
+<span class="fc" id="L69">        return this;</span>
     }
 
     public Response query(String sql) {
-<span class="fc" id="L63">        return new Response(query(getPtr(), sql));</span>
+<span class="fc" id="L73">        return new Response(query(getPtr(), sql));</span>
     }
 
     public Response queryBind(String sql, Map&lt;String, ?&gt; params) {
-<span class="nc" id="L67">        return new Response(queryBind(getPtr(), sql, params));</span>
+<span class="nc" id="L77">        return new Response(queryBind(getPtr(), sql, params));</span>
     }
 
     public &lt;T&gt; T create(Thing Id, T content) {
-<span class="nc" id="L71">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+<span class="nc" id="L81">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
-    public &lt;T&gt; Thing create(String table, T content) {
-<span class="nc" id="L75">        final ValueMut value = ValueBuilder.convert(content);</span>
-<span class="nc" id="L76">        return new Thing(create(getPtr(), table, value.getPtr()));</span>
+    public &lt;T&gt; Value create(String table, T content) {
+<span class="nc" id="L85">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="nc" id="L86">        final long valuePtr = create(getPtr(), table, valueMut.getPtr());</span>
+<span class="nc" id="L87">        return new Value(valuePtr);</span>
     }
 
-    public &lt;T&gt; T create(String table, T... content) {
-<span class="nc" id="L80">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    public &lt;T&gt; List&lt;Value&gt; create(String table, T... content) {
+<span class="nc" id="L91">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
-    public &lt;T&gt; Iterator&lt;T&gt; update(Thing thing, Class&lt;T&gt; type) {
-<span class="nc" id="L84">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    public &lt;T&gt; Value update(Thing thing, T content) {
+<span class="nc" id="L95">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    }
+
+    public &lt;T&gt; List&lt;Value&gt; update(Thing thing, T... content) {
+<span class="nc" id="L99">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; select(Thing thing, Class&lt;T&gt; type) {
-<span class="nc" id="L88">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+<span class="nc" id="L103">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; select(Collection&lt;Thing&gt; things, Class&lt;T&gt; type) {
-<span class="nc" id="L92">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+<span class="nc" id="L107">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
     @Override
     public void close() {
-<span class="fc" id="L97">        deleteInstance();</span>
-<span class="fc" id="L98">    }</span>
+<span class="fc" id="L112">        deleteInstance();</span>
+<span class="fc" id="L113">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

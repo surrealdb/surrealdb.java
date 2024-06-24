@@ -13,15 +13,25 @@ public class Geometry extends Native {
 
     private static native double[] getPoint(long ptr);
 
+    @Override
+    final native protected String toString(long ptr);
+
+    @Override
+    final native protected int hashCode(long ptr);
+
+    @Override
+    final native protected boolean equals(long ptr1, long ptr2);
+
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
     public boolean isPoint() {
-<span class="nc" id="L19">        return isPoint(getPtr());</span>
+<span class="nc" id="L29">        return isPoint(getPtr());</span>
     }
 
     public Point2D.Double getPoint() {
-<span class="fc" id="L23">        final double[] coord = getPoint(getPtr());</span>
-<span class="fc" id="L24">        return new Point2D.Double(coord[0], coord[1]);</span>
+<span class="fc" id="L33">        final double[] coord = getPoint(getPtr());</span>
+<span class="fc" id="L34">        return new Point2D.Double(coord[0], coord[1]);</span>
     }
 }
 

@@ -9,8 +9,6 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 <span class="fc" id="L9">        super(ptr);</span>
 <span class="fc" id="L10">    }</span>
 
-    private static native String toString(long ptr);
-
     private static native String toPrettyString(long ptr);
 
     private static native long get(long ptr, int idx);
@@ -21,39 +19,44 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 
     private static native long synchronizedIterator(long ptr);
 
-    public String toString() {
-<span class="fc" id="L25">        return toString(getPtr());</span>
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
+    final public String toPrettyString() {
+<span class="fc" id="L32">        return toPrettyString(getPtr());</span>
     }
 
-    public String toPrettyString() {
-<span class="fc" id="L29">        return toPrettyString(getPtr());</span>
+    final public Value get(int idx) {
+<span class="fc" id="L36">        return new Value(get(getPtr(), idx));</span>
     }
 
-    public Value get(int idx) {
-<span class="fc" id="L33">        return new Value(get(getPtr(), idx));</span>
-    }
-
-    public int len() {
-<span class="fc" id="L37">        return len(getPtr());</span>
+    final public int len() {
+<span class="fc" id="L40">        return len(getPtr());</span>
     }
 
     final protected native boolean deleteInstance(long ptr);
 
     @Override
-    public Iterator&lt;Value&gt; iterator() {
-<span class="fc" id="L44">        return new ValueIterator(iterator(getPtr()));</span>
+    final public Iterator&lt;Value&gt; iterator() {
+<span class="fc" id="L47">        return new ValueIterator(iterator(getPtr()));</span>
     }
 
-    public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
-<span class="fc" id="L48">        return new ClassValueIterator(clazz, iterator());</span>
+    final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
+<span class="fc" id="L51">        return new ClassValueIterator&lt;&gt;(clazz, iterator());</span>
     }
 
-    public Iterator&lt;Value&gt; synchronizedIterator() {
-<span class="fc" id="L52">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
+    final public Iterator&lt;Value&gt; synchronizedIterator() {
+<span class="fc" id="L55">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
     }
 
-    public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
-<span class="nc" id="L56">        return new ClassValueIterator(clazz, synchronizedIterator());</span>
+    final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
+<span class="nc" id="L59">        return new ClassValueIterator&lt;&gt;(clazz, synchronizedIterator());</span>
     }
 }
 

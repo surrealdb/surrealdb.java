@@ -16,6 +16,16 @@ class EntryMut extends Native {
 <span class="nc" id="L16">        return entry;</span>
     }
 
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
 }

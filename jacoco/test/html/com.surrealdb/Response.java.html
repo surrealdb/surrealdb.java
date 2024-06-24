@@ -6,13 +6,23 @@ public class Response extends Native {
 <span class="fc" id="L6">        super(ptr);</span>
 <span class="fc" id="L7">    }</span>
 
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
     private native long take(long ptr, int num);
 
     public Value take(int num) {
-<span class="fc" id="L14">        return new Value(take(getPtr(), num));</span>
+<span class="fc" id="L15">        return new Value(take(getPtr(), num));</span>
     }
+
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

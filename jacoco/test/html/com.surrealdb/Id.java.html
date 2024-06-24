@@ -22,39 +22,49 @@ public class Id extends Native {
 
     private static native Object getObject(long ptr);
 
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
     final protected native boolean deleteInstance(long ptr);
 
-    public boolean isLong() {
-<span class="fc" id="L28">        return isLong(getPtr());</span>
+    final public boolean isLong() {
+<span class="fc" id="L37">        return isLong(getPtr());</span>
     }
 
-    public long getLong() {
-<span class="fc" id="L32">        return getLong(getPtr());</span>
+    final public long getLong() {
+<span class="fc" id="L41">        return getLong(getPtr());</span>
     }
 
-    public boolean isString() {
-<span class="nc" id="L36">        return isString(getPtr());</span>
+    final public boolean isString() {
+<span class="nc" id="L45">        return isString(getPtr());</span>
     }
 
-    public String getString() {
-<span class="nc" id="L40">        return getString(getPtr());</span>
+    final public String getString() {
+<span class="nc" id="L49">        return getString(getPtr());</span>
     }
 
-    public boolean isArray() {
-<span class="nc" id="L44">        return isArray(getPtr());</span>
+    final public boolean isArray() {
+<span class="nc" id="L53">        return isArray(getPtr());</span>
     }
 
-    public Array getArray() {
-<span class="nc" id="L48">        return getArray(getPtr());</span>
+    final public Array getArray() {
+<span class="nc" id="L57">        return getArray(getPtr());</span>
     }
 
-    public boolean isObject() {
-<span class="nc" id="L52">        return isObject(getPtr());</span>
+    final public boolean isObject() {
+<span class="nc" id="L61">        return isObject(getPtr());</span>
     }
 
-    public Object getObject() {
-<span class="nc" id="L56">        return getObject(getPtr());</span>
+    final public Object getObject() {
+<span class="nc" id="L65">        return getObject(getPtr());</span>
     }
+
 }
 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
