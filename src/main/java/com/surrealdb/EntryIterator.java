@@ -12,6 +12,7 @@ public class EntryIterator extends Native implements Iterator<Entry> {
 
     private static native long next(long ptr);
 
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
     @Override
@@ -23,4 +24,14 @@ public class EntryIterator extends Native implements Iterator<Entry> {
     public Entry next() {
         return new Entry(next(getPtr()));
     }
+
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
 }

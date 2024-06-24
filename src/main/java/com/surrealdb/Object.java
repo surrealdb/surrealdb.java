@@ -8,8 +8,6 @@ public class Object extends Native implements Iterable<Entry> {
         super(ptr);
     }
 
-    private static native String toString(long ptr);
-
     private static native String toPrettyString(long ptr);
 
     private static native long iterator(long ptr);
@@ -20,30 +18,35 @@ public class Object extends Native implements Iterable<Entry> {
 
     private static native long get(long ptr, String key);
 
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
     final protected native boolean deleteInstance(long ptr);
 
-    public String toString() {
-        return toString(getPtr());
-    }
-
-    public String toPrettyString() {
+    final public String toPrettyString() {
         return toPrettyString(getPtr());
     }
 
-    public Value get(String key) {
+    final public Value get(String key) {
         return new Value(get(getPtr(), key));
     }
 
-    public int len() {
+    final public int len() {
         return len(getPtr());
     }
 
     @Override
-    public Iterator<Entry> iterator() {
+    final public Iterator<Entry> iterator() {
         return new EntryIterator(iterator(getPtr()));
     }
 
-    public Iterator<Entry> synchronizedIterator() {
+    final public Iterator<Entry> synchronizedIterator() {
         return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));
     }
 

@@ -13,6 +13,16 @@ public class Geometry extends Native {
 
     private static native double[] getPoint(long ptr);
 
+    @Override
+    final native protected String toString(long ptr);
+
+    @Override
+    final native protected int hashCode(long ptr);
+
+    @Override
+    final native protected boolean equals(long ptr1, long ptr2);
+
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
     public boolean isPoint() {

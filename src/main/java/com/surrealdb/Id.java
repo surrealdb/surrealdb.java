@@ -22,38 +22,48 @@ public class Id extends Native {
 
     private static native Object getObject(long ptr);
 
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
     final protected native boolean deleteInstance(long ptr);
 
-    public boolean isLong() {
+    final public boolean isLong() {
         return isLong(getPtr());
     }
 
-    public long getLong() {
+    final public long getLong() {
         return getLong(getPtr());
     }
 
-    public boolean isString() {
+    final public boolean isString() {
         return isString(getPtr());
     }
 
-    public String getString() {
+    final public String getString() {
         return getString(getPtr());
     }
 
-    public boolean isArray() {
+    final public boolean isArray() {
         return isArray(getPtr());
     }
 
-    public Array getArray() {
+    final public Array getArray() {
         return getArray(getPtr());
     }
 
-    public boolean isObject() {
+    final public boolean isObject() {
         return isObject(getPtr());
     }
 
-    public Object getObject() {
+    final public Object getObject() {
         return getObject(getPtr());
     }
+
 }
 

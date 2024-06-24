@@ -10,6 +10,15 @@ public class Entry extends Native {
 
     private static native long getValue(long ptr);
 
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final native protected boolean equals(long ptr1, long ptr2);
+
     final protected native boolean deleteInstance(long ptr);
 
     public String getKey() {

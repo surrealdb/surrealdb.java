@@ -156,12 +156,29 @@ macro_rules! new_double_point {
 }
 
 #[macro_export]
-macro_rules! take_value_instance {
+macro_rules! take_value_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::take_instance::<surrealdb::sql::Value>(
-            $id,
-            "ValueMut",
-        ) {
+        match $crate::take_instance::<surrealdb::sql::Value>($id, "ValueMut") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_value_mut_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::get_instance::<surrealdb::sql::Value>($id, "ValueMut") {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! take_entry_mut_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::take_instance::<(String, surrealdb::sql::Value)>($id, "EntryMut") {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }

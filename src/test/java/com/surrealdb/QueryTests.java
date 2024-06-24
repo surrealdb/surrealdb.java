@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -306,7 +306,7 @@ public class QueryTests {
                 {
                     assertTrue(iterator.hasNext());
                     final Person p = iterator.next();
-                    assertEquals(Optional.of(new Thing("person", 1)), p.id);
+                    assertEquals(new Thing("person", 1), p.id);
                     assertEquals(1, p.category);
                     assertTrue(p.active);
                     assertEquals(Arrays.asList("CEO", "CTO"), p.tags);
@@ -317,10 +317,10 @@ public class QueryTests {
                 {
                     assertTrue(iterator.hasNext());
                     final Person p = iterator.next();
-                    assertEquals(Optional.of(new Thing("person", 2)), p.id);
+                    assertEquals(new Thing("person", 2), p.id);
                     assertEquals(2, p.category);
                     assertTrue(p.active);
-                    assertEquals(Arrays.asList("COO"), p.tags);
+                    assertEquals(Collections.singletonList("COO"), p.tags);
                     assertEquals("Jaime", p.emails.get(0).name.first);
                     assertEquals("Bar", p.emails.get(0).name.last);
                     assertEquals("jaime@example.com", p.emails.get(0).address);

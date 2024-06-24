@@ -4,10 +4,9 @@ import com.surrealdb.Thing;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class Person {
-    public Optional<Thing> id;
+    public Thing id;
     public String name;
     public List<String> tags;
     public long category;
@@ -17,7 +16,7 @@ public class Person {
     public Person() {
     }
 
-    public Person(Optional<Thing> id, String name, List<String> tags, long category, boolean active, List<Email> emails) {
+    public Person(Thing id, String name, List<String> tags, long category, boolean active, List<Email> emails) {
         this.id = id;
         this.name = name;
         this.tags = tags;
@@ -35,7 +34,17 @@ public class Person {
             active == person.active &&
             Objects.equals(id, person.id) &&
             Objects.equals(name, person.name) &&
-            Objects.equals(tags, person.tags) &&
-            Objects.equals(emails, person.emails);
+            Objects.deepEquals(tags, person.tags) &&
+            Objects.deepEquals(emails, person.emails);
+    }
+
+    @Override
+    public String toString() {
+        return "id: " + id + ", name: " + name + ", tags: " + tags + ", category: " + category + ", active: " + active + ", emails: " + emails;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, tags, category, active, emails);
     }
 }

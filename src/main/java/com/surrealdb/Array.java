@@ -9,8 +9,6 @@ public class Array extends Native implements Iterable<Value> {
         super(ptr);
     }
 
-    private static native String toString(long ptr);
-
     private static native String toPrettyString(long ptr);
 
     private static native long get(long ptr, int idx);
@@ -21,39 +19,44 @@ public class Array extends Native implements Iterable<Value> {
 
     private static native long synchronizedIterator(long ptr);
 
-    public String toString() {
-        return toString(getPtr());
-    }
+    @Override
+    final protected native String toString(long ptr);
 
-    public String toPrettyString() {
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
+    final public String toPrettyString() {
         return toPrettyString(getPtr());
     }
 
-    public Value get(int idx) {
+    final public Value get(int idx) {
         return new Value(get(getPtr(), idx));
     }
 
-    public int len() {
+    final public int len() {
         return len(getPtr());
     }
 
     final protected native boolean deleteInstance(long ptr);
 
     @Override
-    public Iterator<Value> iterator() {
+    final public Iterator<Value> iterator() {
         return new ValueIterator(iterator(getPtr()));
     }
 
-    public <T> Iterator<T> iterator(Class<T> clazz) {
-        return new ClassValueIterator(clazz, iterator());
+    final public <T> Iterator<T> iterator(Class<T> clazz) {
+        return new ClassValueIterator<>(clazz, iterator());
     }
 
-    public Iterator<Value> synchronizedIterator() {
+    final public Iterator<Value> synchronizedIterator() {
         return new SynchronizedValueIterator(synchronizedIterator(getPtr()));
     }
 
-    public <T> Iterator<T> synchronizedIterator(Class<T> clazz) {
-        return new ClassValueIterator(clazz, synchronizedIterator());
+    final public <T> Iterator<T> synchronizedIterator(Class<T> clazz) {
+        return new ClassValueIterator<>(clazz, synchronizedIterator());
     }
 }
 

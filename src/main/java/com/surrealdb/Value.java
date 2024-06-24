@@ -9,8 +9,6 @@ public class Value extends Native {
         super(ptr);
     }
 
-    private static native String toString(long ptr);
-
     private static native String toPrettyString(long ptr);
 
     private static native boolean isNone(long ptr);
@@ -61,11 +59,16 @@ public class Value extends Native {
 
     private static native long getThing(long ptr);
 
-    final protected native boolean deleteInstance(long ptr);
+    @Override
+    final protected native String toString(long ptr);
 
-    public String toString() {
-        return toString(getPtr());
-    }
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
+    final protected native boolean deleteInstance(long ptr);
 
     public String toPrettyString() {
         return toPrettyString(getPtr());
@@ -167,5 +170,8 @@ public class Value extends Native {
         return new Geometry(getGeometry(getPtr()));
     }
 
+    public <T> T get(Class<T> type) {
+        return new ValueClassConverter<>(type).convert(this);
+    }
 }
 

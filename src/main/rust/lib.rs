@@ -7,6 +7,7 @@ use crate::error::SurrealError;
 mod array;
 mod entry;
 mod entryiterator;
+mod entrymut;
 mod error;
 mod geometry;
 mod id;
@@ -20,7 +21,6 @@ mod thing;
 mod value;
 mod valueiterator;
 mod valuemut;
-mod entrymut;
 
 static TOKIO_RUNTIME: Lazy<Runtime> =
     Lazy::new(|| Runtime::new().expect("Cannot start Tokio runtime"));

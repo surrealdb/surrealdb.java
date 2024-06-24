@@ -2,20 +2,17 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
+use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jlong, jstring};
-use jni::JNIEnv;
 use parking_lot::Mutex;
+use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
-use surrealdb::Surreal;
 
+use crate::{create_instance, get_rust_string, get_surreal_instance, get_value_mut_instance, new_string, release_instance, TOKIO_RUNTIME};
 use crate::error::SurrealError;
-use crate::{
-    create_instance, get_rust_string, get_surreal_instance, new_string, release_instance,
-    TOKIO_RUNTIME,
-};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -126,47 +123,72 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     ptr: jlong,
     query: JString<'local>,
 ) -> jlong {
-    surrealdb_query(&mut env, ptr, query, None)
-}
-
-fn surrealdb_query<'local>(
-    env: &mut JNIEnv<'local>,
-    ptr: jlong,
-    query: JString<'local>,
-    params: Option<BTreeMap<String, Value>>,
-) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(env, ptr, || 0);
+    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    // Retrieve the query
     let query: String = match env.get_string(&query) {
         Ok(s) => s.into(),
         Err(_) => return 0,
     };
-
     // Execute the query
-    let res = TOKIO_RUNTIME.block_on(async {
+    let res = surrealdb_query(&surreal, &query, None);
+    // Check the response
+    let res = match res {
+        Ok(r) => r,
+        Err(e) => return SurrealError::from(e).exception(&mut env, || 0),
+    };
+    // Build a response instance
+    create_instance(Arc::new(Mutex::new(res)))
+}
+
+fn surrealdb_query(
+    surreal: &Surreal<Any>,
+    query: &str,
+    params: Option<BTreeMap<&str, &Value>>,
+) -> Result<Response, Error> {
+    TOKIO_RUNTIME.block_on(async {
         let q = surreal.query(query);
         if let Some(p) = params {
             q.bind(p).await
         } else {
             q.await
         }
-    });
-    // Check the response
-    let response = match res {
-        Ok(r) => r,
-        Err(e) => return SurrealError::from(e).exception(env, || 0),
-    };
-    // Build a response instance
-    create_instance(Arc::new(Mutex::new(response)))
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_create<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
-    ptr: jlong,
+    surreal_ptr: jlong,
+    resource: JString<'local>,
+    value_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let _surreal = get_surreal_instance!(&mut env, ptr, || 0);
-    todo!()
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    // Build the parameters
+    let resource = get_rust_string!(&mut env, resource, ||0);
+    let value = get_value_mut_instance!(&mut env, value_ptr, ||0);
+    // Execute the query
+    let query = format!("CREATE {resource} CONTENT $val");
+    let params = BTreeMap::from([("val", value)]);
+    let res = surrealdb_query(&surreal, &query, Some(params));
+    // Check the result
+    let mut res = match res {
+        Ok(res) => res,
+        Err(e) => {
+            return SurrealError::SurrealDB(e).exception(&mut env, || 0);
+        }
+    };
+    // There is only one statement
+    let mut res: Value = match res.take(0) {
+        Ok(r) => r,
+        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
+    };
+    if let Value::Array(ref mut a) = res {
+        if a.len() == 1 {
+            return create_instance(Arc::new(a.remove(0)));
+        }
+    }
+    SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, || 0)
 }

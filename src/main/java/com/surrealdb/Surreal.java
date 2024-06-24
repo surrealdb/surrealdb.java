@@ -6,6 +6,7 @@ import com.surrealdb.signin.Signin;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class Surreal extends Native implements AutoCloseable {
@@ -33,6 +34,15 @@ public class Surreal extends Native implements AutoCloseable {
     private static native long queryBind(long ptr, String sql, Map<String, ?> params);
 
     private static native long create(long ptr, String table, long valuePtr);
+
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
 
     final protected native boolean deleteInstance(long ptr);
 
@@ -71,16 +81,21 @@ public class Surreal extends Native implements AutoCloseable {
         throw new SurrealException("Not implemented yet");
     }
 
-    public <T> Thing create(String table, T content) {
-        final ValueMut value = ValueBuilder.convert(content);
-        return new Thing(create(getPtr(), table, value.getPtr()));
+    public <T> Value create(String table, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = create(getPtr(), table, valueMut.getPtr());
+        return new Value(valuePtr);
     }
 
-    public <T> T create(String table, T... content) {
+    public <T> List<Value> create(String table, T... content) {
         throw new SurrealException("Not implemented yet");
     }
 
-    public <T> Iterator<T> update(Thing thing, Class<T> type) {
+    public <T> Value update(Thing thing, T content) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> List<Value> update(Thing thing, T... content) {
         throw new SurrealException("Not implemented yet");
     }
 

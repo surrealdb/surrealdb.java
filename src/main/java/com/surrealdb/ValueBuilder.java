@@ -14,7 +14,6 @@ class ValueBuilder extends Native {
         super(ptr);
     }
 
-
     private static <T> ValueMut convertObject(final T object) throws IllegalAccessException {
         if (object == null) {
             return null;
@@ -73,6 +72,16 @@ class ValueBuilder extends Native {
         }
     }
 
+    @Override
+    final protected native String toString(long ptr);
+
+    @Override
+    final protected native int hashCode(long ptr);
+
+    @Override
+    final protected native boolean equals(long ptr1, long ptr2);
+
+    @Override
     final protected native boolean deleteInstance(long ptr);
 
 }

@@ -1,13 +1,14 @@
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::objects::JClass;
-use jni::sys::{jboolean, jdouble, jlong, jstring};
 use jni::JNIEnv;
+use jni::objects::JClass;
+use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use surrealdb::sql::{Number, Value};
 
-use crate::error::SurrealError;
 use crate::{create_instance, get_value_instance, new_string, release_instance};
+use crate::error::SurrealError;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
@@ -305,4 +306,29 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
     } else {
         SurrealError::NullPointerException("UUID").exception(&mut env, null_mut)
     }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_hashCode<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jint {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    let mut hasher = DefaultHasher::new();
+    value.hash(&mut hasher);
+    let hash64 = hasher.finish();
+    (hash64 & 0xFFFFFFFF) as jint
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_equals<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr1: jlong,
+    ptr2: jlong,
+) -> jboolean {
+    let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
+    let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
+    return v1.equal(v2.as_ref()) as jboolean;
 }
