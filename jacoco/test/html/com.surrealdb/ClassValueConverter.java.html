@@ -34,7 +34,7 @@ class ClassValueConverter&lt;T&gt; {
 <span class="nc bnc" id="L34" title="All 2 branches missed.">        } else if (value.isUuid()) {</span>
 <span class="nc" id="L35">            return value.getUuid();</span>
         }
-<span class="nc" id="L37">        throw new SurrealDBException(&quot;Unsupported value: &quot; + value);</span>
+<span class="nc" id="L37">        throw new SurrealException(&quot;Unsupported value: &quot; + value);</span>
     }
 
 
@@ -42,7 +42,7 @@ class ClassValueConverter&lt;T&gt; {
 <span class="fc bfc" id="L42" title="All 2 branches covered.">        if (value.isObject()) {</span>
 <span class="fc" id="L43">            final Class&lt;?&gt; subType = getGenericType(field);</span>
 <span class="pc bpc" id="L44" title="1 of 2 branches missed.">            if (subType == null) {</span>
-<span class="nc" id="L45">                throw new SurrealDBException(&quot;Unsupported field type: &quot; + field);</span>
+<span class="nc" id="L45">                throw new SurrealException(&quot;Unsupported field type: &quot; + field);</span>
             }
 <span class="fc" id="L47">            return convertObject(subType, value.getObject());</span>
 <span class="pc bpc" id="L48" title="1 of 2 branches missed.">        } else if (value.isArray()) {</span>
@@ -98,7 +98,7 @@ class ClassValueConverter&lt;T&gt; {
         try {
 <span class="fc" id="L99">            return convertObject(clazz, value.getObject());</span>
 <span class="nc" id="L100">        } catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L101">            throw new SurrealDBException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
+<span class="nc" id="L101">            throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
         }
     }
 }

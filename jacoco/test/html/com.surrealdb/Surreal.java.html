@@ -42,7 +42,7 @@ public class Surreal extends Native implements AutoCloseable {
 <span class="nc" id="L42">            final Root r = (Root) signin;</span>
 <span class="nc" id="L43">            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
         }
-<span class="nc" id="L45">        throw new SurrealDBException(&quot;Unsupported signin&quot;);</span>
+<span class="nc" id="L45">        throw new SurrealException(&quot;Unsupported signin&quot;);</span>
     }
 
     public Surreal useNs(String ns) {
