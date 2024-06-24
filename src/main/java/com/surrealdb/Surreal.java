@@ -5,6 +5,8 @@ import com.surrealdb.signin.Root;
 import com.surrealdb.signin.Signin;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Surreal extends Native implements AutoCloseable {
 
@@ -30,9 +32,17 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, Map<String, ?> params);
 
-    private static native long create(long ptr, String table, long valuePtr);
+    private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
 
-    private static native long select(long ptr, long thing);
+    private static native long createTableValue(long ptr, String table, long valuePtr);
+
+    private static native long[] createTableValues(long ptr, String table, long[] valuePtrs);
+
+    private static native long selectThing(long ptr, long thing);
+
+    private static native long[] selectThings(long ptr, long[] things);
+
+    private static native long selectTable(long ptr, String table);
 
     @Override
     final String toString(long ptr) {
@@ -83,18 +93,32 @@ public class Surreal extends Native implements AutoCloseable {
         return new Response(queryBind(getPtr(), sql, params));
     }
 
-    public <T> T create(Thing Id, T content) {
-        throw new SurrealException("Not implemented yet");
+    public <T> Value create(Thing thg, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
+        return new Value(valuePtr);
     }
 
     public <T> Value create(String table, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = create(getPtr(), table, valueMut.getPtr());
+        final long valuePtr = createTableValue(getPtr(), table, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> List<Value> create(String table, T... content) {
-        throw new SurrealException("Not implemented yet");
+    public <T> List<Value> create(String table, T... contents) {
+        final long[] valueMutPtrs = contents2longs(contents);
+        final long[] valuePtrs = createTableValues(getPtr(), table, valueMutPtrs);
+        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+    }
+
+    @SafeVarargs
+    private final <T> long[] contents2longs(T... contents) {
+        final long[] ptrs = new long[contents.length];
+        int index = 0;
+        for (final T c : contents) {
+            ptrs[index++] = ValueBuilder.convert(c).getPtr();
+        }
+        return ptrs;
     }
 
     public <T> Value update(Thing thing, T content) {
@@ -106,14 +130,43 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     public Optional<Value> select(Thing thing) {
-        final long valuePtr = select(getPtr(), thing.getPtr());
+        final long valuePtr = selectThing(getPtr(), thing.getPtr());
         if (valuePtr == 0) {
             return Optional.empty();
         }
         return Optional.of(new Value(valuePtr));
     }
 
-    public <T> Iterator<T> select(Collection<Thing> things, Class<T> type) {
+    public <T> Optional<T> select(Class<T> type, Thing thing) {
+        return select(thing).map(v -> v.get(type));
+    }
+
+    public List<Value> select(Thing... things) {
+        final long[] thingsPtr = things2longs(things);
+        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);
+        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+    }
+
+    private long[] things2longs(Thing... things) {
+        final long[] ptrs = new long[things.length];
+        int index = 0;
+        for (final Thing t : things) {
+            ptrs[index++] = t.getPtr();
+        }
+        return ptrs;
+    }
+
+    public <T> List<T> select(Class<T> type, Thing... things) {
+        try (final Stream<Value> s = select(things).stream()) {
+            return s.map(v -> v.get(type)).collect(Collectors.toList());
+        }
+    }
+
+    public Iterator<Value> select(String table) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> Iterator<T> select(Class<T> type, String table) {
         throw new SurrealException("Not implemented yet");
     }
 

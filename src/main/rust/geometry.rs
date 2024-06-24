@@ -77,7 +77,7 @@ pub extern "system" fn Java_com_surrealdb_Geometry_toString<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Geometry(g) = value.as_ref() {
-        new_string!(&mut env, g.to_string(), null_mut)
+        return new_string!(&mut env, g.to_string(), null_mut);
     }
     SurrealError::NullPointerException("Geometry").exception(&mut env, null_mut)
 }

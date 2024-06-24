@@ -90,7 +90,7 @@ pub extern "system" fn Java_com_surrealdb_Thing_toString<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Thing(o) = value.as_ref() {
-        new_string!(&mut env, o.to_string(), null_mut)
+        return new_string!(&mut env, o.to_string(), null_mut);
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
 }

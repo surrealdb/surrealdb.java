@@ -70,7 +70,7 @@ pub extern "system" fn Java_com_surrealdb_Id_getString<'local>(
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Thing(o) = value.as_ref() {
         if let Id::String(s) = &o.id {
-            new_string!(&mut env, s, null_mut)
+            return new_string!(&mut env, s, null_mut);
         }
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
@@ -153,7 +153,7 @@ pub extern "system" fn Java_com_surrealdb_Id_toString<'local>(
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Thing(o) = value.as_ref() {
         let s = o.id.to_string();
-        new_string!(&mut env, s, null_mut)
+        return new_string!(&mut env, s, null_mut);
     }
     SurrealError::NullPointerException("Id").exception(&mut env, null_mut)
 }

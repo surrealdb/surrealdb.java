@@ -2,13 +2,12 @@ use std::collections::BTreeMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 
-use jni::errors::Error;
 use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use surrealdb::sql::{Array, Number, Object, Strand, Value};
 
-use crate::{create_instance, get_rust_string, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
+use crate::{create_instance, get_long_array, get_rust_string, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
 use crate::error::SurrealError;
 
 #[no_mangle]
@@ -48,10 +47,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
     _class: JClass<'local>,
     ptrs: JLongArray<'local>,
 ) -> jlong {
-    let ptrs = match get_long_array(&mut env, &ptrs) {
-        Ok(ptrs) => ptrs,
-        Err(e) => return SurrealError::from(e).exception(&mut env, || 0),
-    };
+    let ptrs = get_long_array!(&mut env, &ptrs, ||0);
     let mut values = Vec::with_capacity(ptrs.len());
     for ptr in ptrs {
         let value = take_value_mut_instance!(&mut env, ptr, || 0);
@@ -67,10 +63,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
     _class: JClass<'local>,
     ptrs: JLongArray<'local>,
 ) -> jlong {
-    let ptrs = match get_long_array(&mut env, &ptrs) {
-        Ok(ptrs) => ptrs,
-        Err(e) => return SurrealError::from(e).exception(&mut env, || 0),
-    };
+    let ptrs = get_long_array!(&mut env, &ptrs, ||0);
     let mut map = BTreeMap::new();
     for ptr in ptrs {
         let (key, value) = take_entry_mut_instance!(&mut env, ptr, || 0);
@@ -80,12 +73,6 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
     create_instance(value)
 }
 
-fn get_long_array(env: &mut JNIEnv, ptrs: &JLongArray) -> Result<Vec<jlong>, Error> {
-    let length = env.get_array_length(ptrs).unwrap();
-    let mut long_ptrs: Vec<jlong> = vec![0; length as usize];
-    env.get_long_array_region(ptrs, 0, &mut long_ptrs)?;
-    Ok(long_ptrs)
-}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_toString<'local>(

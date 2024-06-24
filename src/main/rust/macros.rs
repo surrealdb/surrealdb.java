@@ -1,9 +1,11 @@
 #[macro_export]
 macro_rules! get_rust_string {
     ($env:expr, $str:expr, $default_fn:expr) => {
-        match $env.get_string(&$str) {
-            Ok(s) => String::from(s),
-            Err(e) => return SurrealError::from(e).exception(&mut $env, $default_fn),
+        {
+            match $env.get_string(&$str) {
+                Ok(s) => String::from(s),
+                Err(e) => return SurrealError::from(e).exception(&mut $env, $default_fn),
+            }
         }
     };
 }
@@ -134,8 +136,25 @@ macro_rules! get_sync_entry_iterator_instance {
 macro_rules! new_string {
     ($env:expr, $str:expr, $default_fn:expr) => {
         match $env.new_string($str) {
-            Ok(output) => return output.into_raw(),
+            Ok(output) => output.into_raw(),
             Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_long_array {
+    ($env:expr, $ptrs:expr, $default_fn:expr) => {
+        {
+              let length = match $env.get_array_length($ptrs) {
+                  Ok(l) => l,
+                  Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
+              };
+              let mut long_ptrs: Vec<jlong> = vec![0; length as usize];
+              if let Err(e) = $env.get_long_array_region($ptrs, 0, &mut long_ptrs) {
+                  return $crate::SurrealError::from(e).exception($env, $default_fn);
+              };
+              long_ptrs
         }
     };
 }
