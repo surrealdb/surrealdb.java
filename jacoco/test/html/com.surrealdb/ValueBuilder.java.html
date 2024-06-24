@@ -8,81 +8,65 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-class ValueBuilder extends Native {
-
-    ValueBuilder(long ptr) {
-<span class="nc" id="L14">        super(ptr);</span>
-<span class="nc" id="L15">    }</span>
+<span class="nc" id="L11">class ValueBuilder {</span>
 
     private static &lt;T&gt; ValueMut convertObject(final T object) throws IllegalAccessException {
-<span class="nc bnc" id="L18" title="All 2 branches missed.">        if (object == null) {</span>
-<span class="nc" id="L19">            return null;</span>
+<span class="fc bfc" id="L14" title="All 2 branches covered.">        if (object == null) {</span>
+<span class="fc" id="L15">            return null;</span>
         }
-<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (object instanceof String) {</span>
-<span class="nc" id="L22">            return ValueMut.createString((String) object);</span>
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        if (object instanceof String) {</span>
+<span class="fc" id="L18">            return ValueMut.createString((String) object);</span>
         }
-<span class="nc bnc" id="L24" title="All 2 branches missed.">        if (object instanceof Double) {</span>
-<span class="nc" id="L25">            return ValueMut.createDouble((Double) object);</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        if (object instanceof Double) {</span>
+<span class="nc" id="L21">            return ValueMut.createDouble((Double) object);</span>
         }
-<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (object instanceof Float) {</span>
-<span class="nc" id="L28">            return ValueMut.createDouble((Float) object);</span>
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (object instanceof Float) {</span>
+<span class="nc" id="L24">            return ValueMut.createDouble((Float) object);</span>
         }
-<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (object instanceof Long) {</span>
-<span class="nc" id="L31">            return ValueMut.createLong((Long) object);</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (object instanceof Long) {</span>
+<span class="fc" id="L27">            return ValueMut.createLong((Long) object);</span>
         }
-<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (object instanceof Integer) {</span>
-<span class="nc" id="L34">            return ValueMut.createLong((Integer) object);</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        if (object instanceof Integer) {</span>
+<span class="nc" id="L30">            return ValueMut.createLong((Integer) object);</span>
         }
-<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (object instanceof Short) {</span>
-<span class="nc" id="L37">            return ValueMut.createLong((Short) object);</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (object instanceof Short) {</span>
+<span class="nc" id="L33">            return ValueMut.createLong((Short) object);</span>
         }
-<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (object instanceof Boolean) {</span>
-<span class="nc" id="L40">            return ValueMut.createBoolean((Boolean) object);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (object instanceof Boolean) {</span>
+<span class="fc" id="L36">            return ValueMut.createBoolean((Boolean) object);</span>
         }
-<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (object instanceof Collection) {</span>
-<span class="nc" id="L43">            final Collection&lt;?&gt; collection = (Collection&lt;?&gt;) object;</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (object instanceof Collection) {</span>
+<span class="fc" id="L39">            final Collection&lt;?&gt; collection = (Collection&lt;?&gt;) object;</span>
             // Create a ValueMut for each element of the collection
-<span class="nc" id="L45">            final List&lt;ValueMut&gt; values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());</span>
-<span class="nc" id="L46">            return ValueMut.createArray(values);</span>
+<span class="fc" id="L41">            final List&lt;ValueMut&gt; values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());</span>
+<span class="fc" id="L42">            return ValueMut.createArray(values);</span>
         }
-<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (object instanceof Optional) {</span>
-<span class="nc" id="L49">            final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
-<span class="nc" id="L50">            return optional.map(ValueBuilder::convert).orElse(null);</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (object instanceof Optional) {</span>
+<span class="nc" id="L45">            final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
+<span class="nc" id="L46">            return optional.map(ValueBuilder::convert).orElse(null);</span>
         }
-<span class="nc" id="L52">        final Field[] fields = object.getClass().getFields();</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (fields.length &gt; 0) {</span>
-<span class="nc" id="L54">            final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
-<span class="nc bnc" id="L55" title="All 2 branches missed.">            for (Field field : fields) {</span>
-<span class="nc" id="L56">                final String name = field.getName();</span>
-<span class="nc" id="L57">                final ValueMut value = convert(field.get(object));</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">                if (value != null) {</span>
-<span class="nc" id="L59">                    entries.add(EntryMut.newEntry(name, value));</span>
+<span class="fc" id="L48">        final Field[] fields = object.getClass().getFields();</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (fields.length &gt; 0) {</span>
+<span class="fc" id="L50">            final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            for (Field field : fields) {</span>
+<span class="fc" id="L52">                final String name = field.getName();</span>
+<span class="fc" id="L53">                final ValueMut value = convert(field.get(object));</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">                if (value != null) {</span>
+<span class="fc" id="L55">                    entries.add(EntryMut.newEntry(name, value));</span>
                 }
             }
-<span class="nc" id="L62">            return ValueMut.createObject(entries);</span>
+<span class="fc" id="L58">            return ValueMut.createObject(entries);</span>
         }
-<span class="nc" id="L64">        throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getName());</span>
+<span class="nc" id="L60">        throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getName());</span>
     }
 
     static &lt;T&gt; ValueMut convert(final T object) {
         try {
-<span class="nc" id="L69">            return convertObject(object);</span>
-<span class="nc" id="L70">        } catch (IllegalAccessException e) {</span>
-<span class="nc" id="L71">            throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
+<span class="fc" id="L65">            return convertObject(object);</span>
+<span class="nc" id="L66">        } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L67">            throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
         }
     }
-
-    @Override
-    final protected native String toString(long ptr);
-
-    @Override
-    final protected native int hashCode(long ptr);
-
-    @Override
-    final protected native boolean equals(long ptr1, long ptr2);
-
-    @Override
-    final protected native boolean deleteInstance(long ptr);
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

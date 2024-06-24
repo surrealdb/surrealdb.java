@@ -3,17 +3,17 @@
 class EntryMut extends Native {
 
     private EntryMut(long ptr) {
-<span class="nc" id="L6">        super(ptr);</span>
-<span class="nc" id="L7">    }</span>
+<span class="fc" id="L6">        super(ptr);</span>
+<span class="fc" id="L7">    }</span>
 
     private static native long create(String name, long valuePtr);
 
     static EntryMut newEntry(String name, ValueMut value) {
-<span class="nc" id="L12">        final long ptr = create(name, value.getPtr());</span>
-<span class="nc" id="L13">        EntryMut entry = new EntryMut(ptr);</span>
+<span class="fc" id="L12">        final long ptr = create(name, value.getPtr());</span>
+<span class="fc" id="L13">        EntryMut entry = new EntryMut(ptr);</span>
         // The lifecycle of ValueMut is now moved to the Entry
-<span class="nc" id="L15">        value.moved();</span>
-<span class="nc" id="L16">        return entry;</span>
+<span class="fc" id="L15">        value.moved();</span>
+<span class="fc" id="L16">        return entry;</span>
     }
 
     @Override
