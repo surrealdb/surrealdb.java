@@ -5,16 +5,18 @@ import com.surrealdb.signin.Root;
 import com.surrealdb.signin.Signin;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Surreal extends Native implements AutoCloseable {
 
     static {
-<span class="fc" id="L12">        Loader.loadNative();</span>
-<span class="fc" id="L13">    }</span>
+<span class="fc" id="L14">        Loader.loadNative();</span>
+<span class="fc" id="L15">    }</span>
 
     public Surreal() {
-<span class="fc" id="L16">        super(Surreal.newInstance());</span>
-<span class="fc" id="L17">    }</span>
+<span class="fc" id="L18">        super(Surreal.newInstance());</span>
+<span class="fc" id="L19">    }</span>
 
     private static native long newInstance();
 
@@ -30,96 +32,147 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, Map&lt;String, ?&gt; params);
 
-    private static native long create(long ptr, String table, long valuePtr);
+    private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
 
-    private static native long select(long ptr, long thing);
+    private static native long createTableValue(long ptr, String table, long valuePtr);
+
+    private static native long[] createTableValues(long ptr, String table, long[] valuePtrs);
+
+    private static native long selectThing(long ptr, long thing);
+
+    private static native long[] selectThings(long ptr, long[] things);
+
+    private static native long selectTable(long ptr, String table);
 
     @Override
     final String toString(long ptr) {
-<span class="nc" id="L39">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L49">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
     }
 
     @Override
     final int hashCode(long ptr) {
-<span class="nc" id="L44">        return Objects.hashCode(ptr);</span>
+<span class="nc" id="L54">        return Objects.hashCode(ptr);</span>
     }
 
     @Override
     final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L49" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
     }
 
     @Override
     final native boolean deleteInstance(long ptr);
 
     public Surreal connect(String connect) {
-<span class="fc" id="L56">        connect(getPtr(), connect);</span>
-<span class="fc" id="L57">        return this;</span>
+<span class="fc" id="L66">        connect(getPtr(), connect);</span>
+<span class="fc" id="L67">        return this;</span>
     }
 
     public Jwt signin(Signin signin) {
-<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (signin instanceof Root) {</span>
-<span class="nc" id="L62">            final Root r = (Root) signin;</span>
-<span class="nc" id="L63">            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (signin instanceof Root) {</span>
+<span class="nc" id="L72">            final Root r = (Root) signin;</span>
+<span class="nc" id="L73">            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
         }
-<span class="nc" id="L65">        throw new SurrealException(&quot;Unsupported signin&quot;);</span>
+<span class="nc" id="L75">        throw new SurrealException(&quot;Unsupported signin&quot;);</span>
     }
 
     public Surreal useNs(String ns) {
-<span class="fc" id="L69">        useNs(getPtr(), ns);</span>
-<span class="fc" id="L70">        return this;</span>
+<span class="fc" id="L79">        useNs(getPtr(), ns);</span>
+<span class="fc" id="L80">        return this;</span>
     }
 
     public Surreal useDb(String ns) {
-<span class="fc" id="L74">        useDb(getPtr(), ns);</span>
-<span class="fc" id="L75">        return this;</span>
+<span class="fc" id="L84">        useDb(getPtr(), ns);</span>
+<span class="fc" id="L85">        return this;</span>
     }
 
     public Response query(String sql) {
-<span class="fc" id="L79">        return new Response(query(getPtr(), sql));</span>
+<span class="fc" id="L89">        return new Response(query(getPtr(), sql));</span>
     }
 
     public Response queryBind(String sql, Map&lt;String, ?&gt; params) {
-<span class="nc" id="L83">        return new Response(queryBind(getPtr(), sql, params));</span>
+<span class="nc" id="L93">        return new Response(queryBind(getPtr(), sql, params));</span>
     }
 
-    public &lt;T&gt; T create(Thing Id, T content) {
-<span class="nc" id="L87">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    public &lt;T&gt; Value create(Thing thg, T content) {
+<span class="nc" id="L97">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="nc" id="L98">        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());</span>
+<span class="nc" id="L99">        return new Value(valuePtr);</span>
     }
 
     public &lt;T&gt; Value create(String table, T content) {
-<span class="fc" id="L91">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L92">        final long valuePtr = create(getPtr(), table, valueMut.getPtr());</span>
-<span class="fc" id="L93">        return new Value(valuePtr);</span>
+<span class="fc" id="L103">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L104">        final long valuePtr = createTableValue(getPtr(), table, valueMut.getPtr());</span>
+<span class="fc" id="L105">        return new Value(valuePtr);</span>
     }
 
-    public &lt;T&gt; List&lt;Value&gt; create(String table, T... content) {
-<span class="nc" id="L97">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    public &lt;T&gt; List&lt;Value&gt; create(String table, T... contents) {
+<span class="fc" id="L109">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L110">        final long[] valuePtrs = createTableValues(getPtr(), table, valueMutPtrs);</span>
+<span class="fc" id="L111">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+    }
+
+    @SafeVarargs
+    private final &lt;T&gt; long[] contents2longs(T... contents) {
+<span class="fc" id="L116">        final long[] ptrs = new long[contents.length];</span>
+<span class="fc" id="L117">        int index = 0;</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        for (final T c : contents) {</span>
+<span class="fc" id="L119">            ptrs[index++] = ValueBuilder.convert(c).getPtr();</span>
+        }
+<span class="fc" id="L121">        return ptrs;</span>
     }
 
     public &lt;T&gt; Value update(Thing thing, T content) {
-<span class="nc" id="L101">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+<span class="nc" id="L125">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
     public &lt;T&gt; List&lt;Value&gt; update(Thing thing, T... content) {
-<span class="nc" id="L105">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+<span class="nc" id="L129">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
     public Optional&lt;Value&gt; select(Thing thing) {
-<span class="fc" id="L109">        final long valuePtr = select(getPtr(), thing.getPtr());</span>
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (valuePtr == 0) {</span>
-<span class="nc" id="L111">            return Optional.empty();</span>
+<span class="fc" id="L133">        final long valuePtr = selectThing(getPtr(), thing.getPtr());</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        if (valuePtr == 0) {</span>
+<span class="nc" id="L135">            return Optional.empty();</span>
         }
-<span class="fc" id="L113">        return Optional.of(new Value(valuePtr));</span>
+<span class="fc" id="L137">        return Optional.of(new Value(valuePtr));</span>
     }
 
-    public &lt;T&gt; Iterator&lt;T&gt; select(Collection&lt;Thing&gt; things, Class&lt;T&gt; type) {
-<span class="nc" id="L117">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    public &lt;T&gt; Optional&lt;T&gt; select(Class&lt;T&gt; type, Thing thing) {
+<span class="fc" id="L141">        return select(thing).map(v -&gt; v.get(type));</span>
+    }
+
+    public List&lt;Value&gt; select(Thing... things) {
+<span class="fc" id="L145">        final long[] thingsPtr = things2longs(things);</span>
+<span class="fc" id="L146">        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);</span>
+<span class="fc" id="L147">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+    }
+
+    private long[] things2longs(Thing... things) {
+<span class="fc" id="L151">        final long[] ptrs = new long[things.length];</span>
+<span class="fc" id="L152">        int index = 0;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        for (final Thing t : things) {</span>
+<span class="fc" id="L154">            ptrs[index++] = t.getPtr();</span>
+        }
+<span class="fc" id="L156">        return ptrs;</span>
+    }
+
+    public &lt;T&gt; List&lt;T&gt; select(Class&lt;T&gt; type, Thing... things) {
+<span class="fc" id="L160">        try (final Stream&lt;Value&gt; s = select(things).stream()) {</span>
+<span class="fc" id="L161">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+        }
+    }
+
+    public Iterator&lt;Value&gt; select(String table) {
+<span class="nc" id="L166">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
+    }
+
+    public &lt;T&gt; Iterator&lt;T&gt; select(Class&lt;T&gt; type, String table) {
+<span class="nc" id="L170">        throw new SurrealException(&quot;Not implemented yet&quot;);</span>
     }
 
     @Override
     public void close() {
-<span class="fc" id="L122">        deleteInstance();</span>
-<span class="fc" id="L123">    }</span>
+<span class="fc" id="L175">        deleteInstance();</span>
+<span class="fc" id="L176">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
