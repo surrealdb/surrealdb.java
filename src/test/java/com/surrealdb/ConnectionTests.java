@@ -1,12 +1,13 @@
 package com.surrealdb;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectionTests {
 
-    @org.junit.jupiter.api.Test
-    void surrealdb_websocket() throws SurrealException {
+    @Test
+    void connectWebsocket() throws SurrealException {
         try (Surreal surreal = new Surreal()) {
             // We expected an exception as there is no running server
             RuntimeException e = assertThrows(SurrealException.class, () -> {
@@ -16,8 +17,8 @@ public class ConnectionTests {
         }
     }
 
-    @org.junit.jupiter.api.Test
-    void surrealdb_memory() throws SurrealException {
+    @Test
+    void connectMemory() throws SurrealException {
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             {

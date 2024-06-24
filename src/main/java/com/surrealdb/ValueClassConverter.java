@@ -5,12 +5,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-class ClassValueConverter<T> {
+class ValueClassConverter<T> {
 
     private final Class<T> clazz;
 
-    ClassValueConverter(Class<T> clazz) {
+    ValueClassConverter(Class<T> clazz) {
         this.clazz = clazz;
     }
 
@@ -44,7 +45,7 @@ class ClassValueConverter<T> {
             if (subType == null) {
                 throw new SurrealException("Unsupported field type: " + field);
             }
-            return convertObject(subType, value.getObject());
+            return convert(subType, value.getObject());
         } else if (value.isArray()) {
             final List<java.lang.Object> arrayList = new ArrayList<>();
             for (final Value elementValue : value.getArray()) {
@@ -56,26 +57,35 @@ class ClassValueConverter<T> {
         }
     }
 
-    private static <T> T convertObject(Class<T> clazz, Object source) throws ReflectiveOperationException {
+    private static <T> T convert(Class<T> clazz, Object source) throws ReflectiveOperationException {
         final T target = clazz.getConstructor().newInstance();
         for (final Entry entry : source) {
             final Field field = clazz.getDeclaredField(entry.getKey());
             final Value value = entry.getValue();
             field.setAccessible(true);
+            final Class<?> type = field.getType();
             if (value.isArray()) {
                 final List<java.lang.Object> arrayList = new ArrayList<>();
                 for (final Value elementValue : value.getArray()) {
                     arrayList.add(convertArrayValue(field, elementValue));
                 }
-                field.set(target, arrayList);
+                setField(field, type, target, arrayList);
             } else if (value.isObject()) {
-                java.lang.Object o = convertObject(field.getType(), value.getObject());
-                field.set(target, o);
+                java.lang.Object o = convert(type, value.getObject());
+                setField(field, type, target, o);
             } else {
-                field.set(target, convertSingleValue(value));
+                setField(field, type, target, convertSingleValue(value));
             }
         }
         return target;
+    }
+
+    private static <T, V> void setField(Field field, Class<?> type, T target, V value) throws ReflectiveOperationException {
+        if (Optional.class.equals(type)) {
+            field.set(target, Optional.of(value));
+        } else {
+            field.set(target, value);
+        }
     }
 
     private static Class<?> getGenericType(final Field field) {
@@ -94,9 +104,9 @@ class ClassValueConverter<T> {
         return null;
     }
 
-    final T convertObject(final Value value) {
+    final T convert(final Value value) {
         try {
-            return convertObject(clazz, value.getObject());
+            return convert(clazz, value.getObject());
         } catch (ReflectiveOperationException e) {
             throw new SurrealException("Failed to create instance of " + clazz.getName(), e);
         }

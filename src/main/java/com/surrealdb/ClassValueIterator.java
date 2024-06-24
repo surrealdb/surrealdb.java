@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 class ClassValueIterator<T> implements Iterator<T> {
 
-    private final ClassValueConverter<T> converter;
+    private final ValueClassConverter<T> converter;
     private final Iterator<Value> iterator;
 
     ClassValueIterator(Class<T> clazz, Iterator<Value> iterator) {
-        this.converter = new ClassValueConverter<>(clazz);
+        this.converter = new ValueClassConverter<>(clazz);
         this.iterator = iterator;
     }
 
@@ -21,6 +21,6 @@ class ClassValueIterator<T> implements Iterator<T> {
     @Override
     final public T next() {
         final Value value = iterator.next();
-        return converter.convertObject(value);
+        return converter.convert(value);
     }
 }

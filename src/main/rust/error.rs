@@ -16,10 +16,22 @@ const SURREAL_EXCEPTION: &str = "com/surrealdb/SurrealException";
 impl ToException for SurrealError {
     fn to_exception(&self) -> Exception {
         match self {
-            Self::Exception(e) => Exception { class: EXCEPTION.to_string(), msg: format!("{e}") },
-            Self::NullPointerException(s) => Exception { class: NULL_POINTER_EXCEPTION.to_string(), msg: format!("{s} instance not found") },
-            Self::NoSuchElementException => Exception { class: NO_SUCH_ELEMENT_EXCEPTION.to_string(), msg: "No more elements".to_string() },
-            Self::SurrealDB(e) => Exception { class: SURREAL_EXCEPTION.to_string(), msg: format!("{e}") }
+            Self::Exception(e) => Exception {
+                class: EXCEPTION.to_string(),
+                msg: format!("{e}"),
+            },
+            Self::NullPointerException(s) => Exception {
+                class: NULL_POINTER_EXCEPTION.to_string(),
+                msg: format!("{s} instance not found"),
+            },
+            Self::NoSuchElementException => Exception {
+                class: NO_SUCH_ELEMENT_EXCEPTION.to_string(),
+                msg: "No more elements".to_string(),
+            },
+            Self::SurrealDB(e) => Exception {
+                class: SURREAL_EXCEPTION.to_string(),
+                msg: format!("{e}"),
+            },
         }
     }
 }

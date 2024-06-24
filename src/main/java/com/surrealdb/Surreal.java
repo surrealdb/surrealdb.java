@@ -4,6 +4,8 @@ import com.surrealdb.signin.Jwt;
 import com.surrealdb.signin.Root;
 import com.surrealdb.signin.Signin;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Surreal extends Native implements AutoCloseable {
@@ -61,6 +63,30 @@ public class Surreal extends Native implements AutoCloseable {
 
     public Response queryBind(String sql, Map<String, ?> params) {
         return new Response(queryBind(getPtr(), sql, params));
+    }
+
+    public <T> T create(Thing Id, T content) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> T create(String table, T content) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> T create(String table, T ...content) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> Iterator<T> update(Thing thing, Class<T> type) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> Iterator<T> select(Thing thing, Class<T> type) {
+        throw new SurrealException("Not implemented yet");
+    }
+
+    public <T> Iterator<T> select(Collection<Thing> things, Class<T> type) {
+        throw new SurrealException("Not implemented yet");
     }
 
     @Override
