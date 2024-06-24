@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 class ClassValueIterator&lt;T&gt; implements Iterator&lt;T&gt; {
 
-    private final ClassValueConverter&lt;T&gt; converter;
+    private final ValueClassConverter&lt;T&gt; converter;
     private final Iterator&lt;Value&gt; iterator;
 
 <span class="fc" id="L10">    ClassValueIterator(Class&lt;T&gt; clazz, Iterator&lt;Value&gt; iterator) {</span>
-<span class="fc" id="L11">        this.converter = new ClassValueConverter&lt;&gt;(clazz);</span>
+<span class="fc" id="L11">        this.converter = new ValueClassConverter&lt;&gt;(clazz);</span>
 <span class="fc" id="L12">        this.iterator = iterator;</span>
 <span class="fc" id="L13">    }</span>
 
@@ -21,7 +21,7 @@ class ClassValueIterator&lt;T&gt; implements Iterator&lt;T&gt; {
     @Override
     final public T next() {
 <span class="fc" id="L23">        final Value value = iterator.next();</span>
-<span class="fc" id="L24">        return converter.convertObject(value);</span>
+<span class="fc" id="L24">        return converter.convert(value);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

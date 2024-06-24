@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb-jni</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ValueBuilder.java</span></div><h1>ValueBuilder.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+class ValueBuilder extends Native {
+
+    ValueBuilder(long ptr) {
+<span class="nc" id="L6">        super(ptr);</span>
+<span class="nc" id="L7">    }</span>
+
+    static protected native long newValueString(String string);
+
+    static protected native long newValueBoolean(boolean b);
+
+    static protected native long newValueDouble(double d);
+
+    static protected native long newValueLong(long l);
+
+    static &lt;T&gt; Value convert(final T object) {
+<span class="nc bnc" id="L18" title="All 2 branches missed.">        if (object == null) {</span>
+<span class="nc" id="L19">            return null;</span>
+        }
+<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (object instanceof String) {</span>
+<span class="nc" id="L22">            return new Value(newValueString((String) object));</span>
+        }
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        if (object instanceof Double) {</span>
+<span class="nc" id="L25">            return new Value(newValueDouble((Double) object));</span>
+        }
+<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (object instanceof Float) {</span>
+<span class="nc" id="L28">            return new Value(newValueDouble((Float) object));</span>
+        }
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (object instanceof Long) {</span>
+<span class="nc" id="L31">            return new Value(newValueLong((Long) object));</span>
+        }
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (object instanceof Integer) {</span>
+<span class="nc" id="L34">            return new Value(newValueLong((Integer) object));</span>
+        }
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (object instanceof Short) {</span>
+<span class="nc" id="L37">            return new Value(newValueLong((Short) object));</span>
+        }
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (object instanceof Boolean) {</span>
+<span class="nc" id="L40">            return new Value(newValueBoolean((Boolean) object));</span>
+        }
+<span class="nc" id="L42">        throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getName());</span>
+    }
+
+    final protected native boolean deleteInstance(long ptr);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
