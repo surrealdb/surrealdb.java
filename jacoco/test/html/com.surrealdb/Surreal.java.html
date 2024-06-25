@@ -229,17 +229,17 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     public void delete(Thing thing) {
-<span class="nc" id="L232">        deleteThing(getPtr(), thing.getPtr());</span>
-<span class="nc" id="L233">    }</span>
+<span class="fc" id="L232">        deleteThing(getPtr(), thing.getPtr());</span>
+<span class="fc" id="L233">    }</span>
 
     public void delete(Thing... things) {
-<span class="nc" id="L236">        final long[] thingsPtr = things2longs(things);</span>
-<span class="nc" id="L237">        deleteThings(getPtr(), thingsPtr);</span>
-<span class="nc" id="L238">    }</span>
+<span class="fc" id="L236">        final long[] thingsPtr = things2longs(things);</span>
+<span class="fc" id="L237">        deleteThings(getPtr(), thingsPtr);</span>
+<span class="fc" id="L238">    }</span>
 
     public void delete(String targets) {
-<span class="nc" id="L241">        deleteTargets(getPtr(), targets);</span>
-<span class="nc" id="L242">    }</span>
+<span class="fc" id="L241">        deleteTargets(getPtr(), targets);</span>
+<span class="fc" id="L242">    }</span>
 
     @Override
     public void close() {
