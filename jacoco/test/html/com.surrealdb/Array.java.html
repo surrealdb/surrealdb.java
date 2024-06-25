@@ -49,7 +49,7 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
     }
 
     final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
-<span class="fc" id="L52">        return new ClassValueIterator&lt;&gt;(clazz, iterator());</span>
+<span class="fc" id="L52">        return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
     }
 
     final public Iterator&lt;Value&gt; synchronizedIterator() {
@@ -57,7 +57,7 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
     }
 
     final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
-<span class="nc" id="L60">        return new ClassValueIterator&lt;&gt;(clazz, synchronizedIterator());</span>
+<span class="nc" id="L60">        return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
     }
 }
 
