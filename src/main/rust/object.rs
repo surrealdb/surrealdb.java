@@ -2,14 +2,14 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
+use jni::JNIEnv;
 use parking_lot::Mutex;
 use surrealdb::sql::Value;
 
-use crate::{create_instance, get_rust_string, get_value_instance, new_string, release_instance};
 use crate::error::SurrealError;
+use crate::{create_instance, get_rust_string, get_value_instance, new_string, release_instance};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Object_deleteInstance<'local>(
@@ -137,8 +137,7 @@ pub extern "system" fn Java_com_surrealdb_Object_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    if let
-        (Value::Object(o1), Value::Object(o2)) = (v1.as_ref(), v2.as_ref()) {
+    if let (Value::Object(o1), Value::Object(o2)) = (v1.as_ref(), v2.as_ref()) {
         return o1.eq(o2) as jboolean;
     }
     SurrealError::NullPointerException("Object").exception(&mut env, || false as jboolean)

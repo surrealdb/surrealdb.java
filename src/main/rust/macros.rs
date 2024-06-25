@@ -1,13 +1,11 @@
 #[macro_export]
 macro_rules! get_rust_string {
-    ($env:expr, $str:expr, $default_fn:expr) => {
-        {
-            match $env.get_string(&$str) {
-                Ok(s) => String::from(s),
-                Err(e) => return SurrealError::from(e).exception(&mut $env, $default_fn),
-            }
+    ($env:expr, $str:expr, $default_fn:expr) => {{
+        match $env.get_string(&$str) {
+            Ok(s) => String::from(s),
+            Err(e) => return SurrealError::from(e).exception(&mut $env, $default_fn),
         }
-    };
+    }};
 }
 
 #[macro_export]
@@ -144,37 +142,32 @@ macro_rules! new_string {
 
 #[macro_export]
 macro_rules! get_long_array {
-    ($env:expr, $ptrs:expr, $default_fn:expr) => {
-        {
-              let length = match $env.get_array_length($ptrs) {
-                  Ok(l) => l,
-                  Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
-              };
-              let mut long_ptrs: Vec<jlong> = vec![0; length as usize];
-              if let Err(e) = $env.get_long_array_region($ptrs, 0, &mut long_ptrs) {
-                  return $crate::SurrealError::from(e).exception($env, $default_fn);
-              };
-              long_ptrs
-        }
-    };
+    ($env:expr, $ptrs:expr, $default_fn:expr) => {{
+        let length = match $env.get_array_length($ptrs) {
+            Ok(l) => l,
+            Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
+        };
+        let mut long_ptrs: Vec<jlong> = vec![0; length as usize];
+        if let Err(e) = $env.get_long_array_region($ptrs, 0, &mut long_ptrs) {
+            return $crate::SurrealError::from(e).exception($env, $default_fn);
+        };
+        long_ptrs
+    }};
 }
-
 
 #[macro_export]
 macro_rules! new_jlong_array {
-    ($env:expr, $array:expr, $default_fn:expr) => {
-        {
-            // Create a new jlongArray with the appropriate length
-            let mut jarray = match $env.new_long_array($array.len() as jni::sys::jsize) {
-                Ok(a) => a,
-                Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn)
-            };
-            // Set the values of the jlongArray
-            $env.set_long_array_region(&mut jarray, 0, $array).unwrap();
-            // Return the populated jlongArray
-            jarray.into_raw()
-        }
-    };
+    ($env:expr, $array:expr, $default_fn:expr) => {{
+        // Create a new jlongArray with the appropriate length
+        let mut jarray = match $env.new_long_array($array.len() as jni::sys::jsize) {
+            Ok(a) => a,
+            Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
+        };
+        // Set the values of the jlongArray
+        $env.set_long_array_region(&mut jarray, 0, $array).unwrap();
+        // Return the populated jlongArray
+        jarray.into_raw()
+    }};
 }
 
 #[macro_export]

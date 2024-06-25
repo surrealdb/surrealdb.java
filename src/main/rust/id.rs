@@ -2,13 +2,13 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::JClass;
 use jni::sys::{jboolean, jint, jlong, jstring};
+use jni::JNIEnv;
 use surrealdb::sql::{Id, Value};
 
-use crate::{create_instance, get_value_instance, new_string};
 use crate::error::SurrealError;
+use crate::{create_instance, get_value_instance, new_string};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Id_isLong<'local>(
@@ -183,8 +183,7 @@ pub extern "system" fn Java_com_surrealdb_Id_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    if let
-        (Value::Thing(t1), Value::Thing(t2)) = (v1.as_ref(), v2.as_ref()) {
+    if let (Value::Thing(t1), Value::Thing(t2)) = (v1.as_ref(), v2.as_ref()) {
         return t1.id.eq(&t2.id) as jboolean;
     }
     SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)

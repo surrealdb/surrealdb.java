@@ -4,14 +4,17 @@ use std::ptr::null_mut;
 use std::str::FromStr;
 
 use chrono::DateTime;
-use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
+use jni::JNIEnv;
 use rust_decimal::Decimal;
 use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Value};
 
-use crate::{create_instance, get_long_array, get_rust_string, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
 use crate::error::SurrealError;
+use crate::{
+    create_instance, get_long_array, get_rust_string, get_value_mut_instance, new_string,
+    take_entry_mut_instance, take_value_mut_instance,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
@@ -60,7 +63,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDecimal<'local>(
     _class: JClass<'local>,
     s: JString<'local>,
 ) -> jlong {
-    let s = get_rust_string!(&mut env,s, ||0);
+    let s = get_rust_string!(&mut env, s, || 0);
     let d = match Decimal::from_str(&s) {
         Ok(d) => d,
         Err(e) => return SurrealError::SurrealDBJni(e.to_string()).exception(&mut env, || 0),
@@ -90,7 +93,10 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDatetime<'local>(
         let value = Value::Datetime(Datetime(d));
         create_instance(value)
     } else {
-        SurrealError::SurrealDBJni(format!("Can't create the Datetime from seconds: {seconds}, nanos: {nanos}")).exception(&mut env, || 0)
+        SurrealError::SurrealDBJni(format!(
+            "Can't create the Datetime from seconds: {seconds}, nanos: {nanos}"
+        ))
+        .exception(&mut env, || 0)
     }
 }
 
@@ -100,7 +106,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
     _class: JClass<'local>,
     ptrs: JLongArray<'local>,
 ) -> jlong {
-    let ptrs = get_long_array!(&mut env, &ptrs, ||0);
+    let ptrs = get_long_array!(&mut env, &ptrs, || 0);
     let mut values = Vec::with_capacity(ptrs.len());
     for ptr in ptrs {
         let value = take_value_mut_instance!(&mut env, ptr, || 0);
@@ -116,7 +122,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
     _class: JClass<'local>,
     ptrs: JLongArray<'local>,
 ) -> jlong {
-    let ptrs = get_long_array!(&mut env, &ptrs, ||0);
+    let ptrs = get_long_array!(&mut env, &ptrs, || 0);
     let mut map = BTreeMap::new();
     for ptr in ptrs {
         let (key, value) = take_entry_mut_instance!(&mut env, ptr, || 0);
@@ -125,7 +131,6 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
     let value = Value::Object(Object(map));
     create_instance(value)
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_toString<'local>(
@@ -143,7 +148,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_hashCode<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jint {
-    let value = get_value_mut_instance!(&mut env, ptr, ||0);
+    let value = get_value_mut_instance!(&mut env, ptr, || 0);
     let mut hasher = DefaultHasher::new();
     value.hash(&mut hasher);
     let hash64 = hasher.finish();

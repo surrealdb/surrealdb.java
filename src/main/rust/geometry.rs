@@ -2,13 +2,13 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::JClass;
 use jni::sys::{jboolean, jdoubleArray, jint, jlong, jstring};
+use jni::JNIEnv;
 use surrealdb::sql::{Geometry, Value};
 
-use crate::{get_value_instance, new_double_point, new_string};
 use crate::error::SurrealError;
+use crate::{get_value_instance, new_double_point, new_string};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Geometry_isPoint<'local>(
@@ -46,8 +46,7 @@ pub extern "system" fn Java_com_surrealdb_Geometry_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    if let
-        (Value::Geometry(g1), Value::Geometry(g2)) = (v1.as_ref(), v2.as_ref()) {
+    if let (Value::Geometry(g1), Value::Geometry(g2)) = (v1.as_ref(), v2.as_ref()) {
         return g1.eq(g2) as jboolean;
     }
     SurrealError::NullPointerException("Geometry").exception(&mut env, || false as jboolean)

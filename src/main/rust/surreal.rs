@@ -2,17 +2,21 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
+use jni::JNIEnv;
 use parking_lot::Mutex;
-use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
+use surrealdb::{Error, Response, Surreal};
 
-use crate::{check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance, take_one_result, TOKIO_RUNTIME};
 use crate::error::SurrealError;
+use crate::{
+    check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
+    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance,
+    take_one_result, TOKIO_RUNTIME,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -133,7 +137,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     // Execute the query
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
-    let res = check_query_result!(&mut env, res, ||0);
+    let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     create_instance(Arc::new(Mutex::new(res)))
 }
@@ -164,16 +168,16 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTableValue<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
-    let resource = get_rust_string!(&mut env, resource, ||0);
-    let value = get_value_mut_instance!(&mut env, value_ptr, ||0);
+    let resource = get_rust_string!(&mut env, resource, || 0);
+    let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
     let query = format!("CREATE {resource} CONTENT $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
-    let mut res = check_query_result!(&mut env, res, ||0);
+    let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let mut res: Value = take_one_result!(&mut env, res, ||0);
+    let mut res: Value = take_one_result!(&mut env, res, || 0);
     // There should be only one result
     if let Value::Array(ref mut a) = res {
         if a.len() == 1 {
@@ -221,7 +225,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTableValues<'local>(
         // There should be only one result per statement
         if let Value::Array(ref mut a) = res {
             if a.len() != 1 {
-                return SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, null_mut);
+                return SurrealError::SurrealDBJni(format!("Unexpected result: {res}"))
+                    .exception(&mut env, null_mut);
             }
             let val = a.remove(0);
             let value_ptr = create_instance(Arc::new(val));
@@ -241,14 +246,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
-    let thing = get_value_instance!(&mut env, thing_ptr, ||0);
+    let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Execute the query
     let query = format!("SELECT * FROM {thing}");
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
-    let mut res = check_query_result!(&mut env, res, ||0);
+    let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let mut res: Value = take_one_result!(&mut env, res, ||0);
+    let mut res: Value = take_one_result!(&mut env, res, || 0);
     // There should be only one result
     if let Value::Array(ref mut a) = res {
         if a.len() == 1 {
@@ -292,10 +297,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
         // Return the results
         new_jlong_array!(&mut env, &value_ptrs, null_mut)
     } else {
-        SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, null_mut)
+        SurrealError::SurrealDBJni(format!("Unexpected result: {res}"))
+            .exception(&mut env, null_mut)
     }
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValues<'local>(
@@ -307,15 +312,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValues<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Get the table
-    let table = get_rust_string!(&mut env, table, ||0);
+    let table = get_rust_string!(&mut env, table, || 0);
     // Prepare the query
     let query = format!("SELECT * FROM {table}");
     // Execute the query
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
-    let mut res = check_query_result!(&mut env, res, ||0);
+    let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let res: Value = take_one_result!(&mut env, res, ||0);
+    let res: Value = take_one_result!(&mut env, res, || 0);
     // Return the result
     if let Value::Array(a) = res {
         let iter = a.into_iter();
@@ -334,15 +339,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValuesSync<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Get the table
-    let table = get_rust_string!(&mut env, table, ||0);
+    let table = get_rust_string!(&mut env, table, || 0);
     // Prepare the query
     let query = format!("SELECT * FROM {table}");
     // Execute the query
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
-    let mut res = check_query_result!(&mut env, res, ||0);
+    let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let res: Value = take_one_result!(&mut env, res, ||0);
+    let res: Value = take_one_result!(&mut env, res, || 0);
     // There should be only one result
     if let Value::Array(a) = res {
         let iter = a.into_iter();

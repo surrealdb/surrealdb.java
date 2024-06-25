@@ -2,13 +2,13 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::JClass;
 use jni::sys::{jboolean, jdouble, jint, jlong, jlongArray, jstring};
+use jni::JNIEnv;
 use surrealdb::sql::{Number, Value};
 
-use crate::{create_instance, get_value_instance, new_jlong_array, new_string, release_instance};
 use crate::error::SurrealError;
+use crate::{create_instance, get_value_instance, new_jlong_array, new_string, release_instance};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
@@ -136,7 +136,6 @@ pub extern "system" fn Java_com_surrealdb_Value_isDateTime<'local>(
     value.is_datetime() as jboolean
 }
 
-
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getDateTime<'local>(
     mut env: JNIEnv<'local>,
@@ -163,7 +162,6 @@ pub extern "system" fn Java_com_surrealdb_Value_isDuration<'local>(
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
     value.is_duration() as jboolean
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
