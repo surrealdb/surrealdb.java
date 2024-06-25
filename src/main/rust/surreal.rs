@@ -2,22 +2,22 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
+use jni::JNIEnv;
 use parking_lot::Mutex;
 use serde::Serialize;
-use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
+use surrealdb::{Error, Response, Surreal};
 
+use crate::error::SurrealError;
 use crate::{
     check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
-    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance,
-    take_one_result, TOKIO_RUNTIME,
+    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
+    release_instance, take_one_result, TOKIO_RUNTIME,
 };
-use crate::error::SurrealError;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -147,7 +147,8 @@ fn surrealdb_query<T>(
     surreal: &Surreal<Any>,
     query: &str,
     params: Option<BTreeMap<String, T>>,
-) -> Result<Response, Error> where
+) -> Result<Response, Error>
+where
     T: Serialize,
 {
     TOKIO_RUNTIME.block_on(async {
@@ -172,6 +173,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValue<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let targets = get_rust_string!(&mut env, targets, || 0);
+    // Parse the targets
+    let targets = parse_value!(&mut env, &targets, || 0);
+    // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
     let query = format!("CREATE {targets} CONTENT $val");
@@ -202,6 +206,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValues<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let targets = get_rust_string!(&mut env, targets, null_mut);
+    // Parse the targets
+    let targets = parse_value!(&mut env, &targets, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
@@ -316,6 +322,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Get the targets
     let targets = get_rust_string!(&mut env, targets, || 0);
+    // Parse the targets
+    let targets = parse_value!(&mut env, &targets, || 0);
     // Prepare the query
     let query = format!("SELECT * FROM {targets}");
     // Execute the query
@@ -343,6 +351,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Get the targets
     let targets = get_rust_string!(&mut env, targets, || 0);
+    // Parse the targets
+    let targets = parse_value!(&mut env, &targets, || 0);
     // Prepare the query
     let query = format!("SELECT * FROM {targets}");
     // Execute the query
@@ -417,8 +427,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTargets<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
     // Get the targets
-    let targets = get_rust_string!(&mut env, targets, || 0);
-    // Prepare the params
+    let targets = get_rust_string!(&mut env, targets, || false as jboolean);
+    // Parse the targets
+    let targets = parse_value!(&mut env, &targets, || false as jboolean);
+    // Prepare the query
     let query = format!("DELETE FROM {targets}");
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);

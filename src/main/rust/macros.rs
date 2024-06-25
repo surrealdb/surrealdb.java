@@ -246,3 +246,16 @@ macro_rules! check_query_result {
         }
     };
 }
+
+#[macro_export]
+macro_rules! parse_value {
+    ($env:expr, $val:expr, $default_fn:expr) => {
+        match surrealdb::sql::value($val) {
+            Ok(v) => v,
+            Err(e) => {
+                return $crate::SurrealError::SurrealDBJni(e.to_string())
+                    .exception($env, $default_fn)
+            }
+        }
+    };
+}
