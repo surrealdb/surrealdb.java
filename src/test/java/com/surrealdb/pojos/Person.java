@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Person {
+
     public Thing id;
     public String name;
     public List<String> tags;
