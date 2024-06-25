@@ -49,7 +49,7 @@ public class Array extends Native implements Iterable<Value> {
     }
 
     final public <T> Iterator<T> iterator(Class<T> clazz) {
-        return new ClassValueIterator<>(clazz, iterator());
+        return new ValueObjectIterator<>(clazz, iterator());
     }
 
     final public Iterator<Value> synchronizedIterator() {
@@ -57,7 +57,7 @@ public class Array extends Native implements Iterable<Value> {
     }
 
     final public <T> Iterator<T> synchronizedIterator(Class<T> clazz) {
-        return new ClassValueIterator<>(clazz, synchronizedIterator());
+        return new ValueObjectIterator<>(clazz, synchronizedIterator());
     }
 }
 

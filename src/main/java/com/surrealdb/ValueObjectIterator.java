@@ -2,12 +2,12 @@ package com.surrealdb;
 
 import java.util.Iterator;
 
-class ClassValueIterator<T> implements Iterator<T> {
+class ValueObjectIterator<T> implements Iterator<T> {
 
     private final ValueClassConverter<T> converter;
     private final Iterator<Value> iterator;
 
-    ClassValueIterator(Class<T> clazz, Iterator<Value> iterator) {
+    ValueObjectIterator(Class<T> clazz, Iterator<Value> iterator) {
         this.converter = new ValueClassConverter<>(clazz);
         this.iterator = iterator;
     }

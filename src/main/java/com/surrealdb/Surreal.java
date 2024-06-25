@@ -6,6 +6,7 @@ import com.surrealdb.signin.Signin;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public class Surreal extends Native implements AutoCloseable {
@@ -42,7 +43,9 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long[] selectThings(long ptr, long[] things);
 
-    private static native long selectTable(long ptr, String table);
+    private static native long selectTableValues(long ptr, String table);
+
+    private static native long selectTableValuesSync(long ptr, String table);
 
     @Override
     final String toString(long ptr) {
@@ -144,7 +147,9 @@ public class Surreal extends Native implements AutoCloseable {
     public List<Value> select(Thing... things) {
         final long[] thingsPtr = things2longs(things);
         final long[] valuePtrs = selectThings(getPtr(), thingsPtr);
-        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+        try (final LongStream s = Arrays.stream(valuePtrs)) {
+            return s.mapToObj(Value::new).collect(Collectors.toList());
+        }
     }
 
     private long[] things2longs(Thing... things) {
@@ -163,11 +168,19 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     public Iterator<Value> select(String table) {
-        throw new SurrealException("Not implemented yet");
+        return new ValueIterator(selectTableValues(getPtr(), table));
+    }
+
+    public Iterator<Value> selectSync(String table) {
+        return new SynchronizedValueIterator(selectTableValuesSync(getPtr(), table));
     }
 
     public <T> Iterator<T> select(Class<T> type, String table) {
-        throw new SurrealException("Not implemented yet");
+        return new ValueObjectIterator<>(type, select(table));
+    }
+
+    public <T> Iterator<T> selectSync(Class<T> type, String table) {
+        return new ValueObjectIterator<>(type, selectSync(table));
     }
 
     @Override

@@ -11,7 +11,7 @@ use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
 
-use crate::{create_instance, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_string, release_instance, TOKIO_RUNTIME};
+use crate::{check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_string, release_instance, take_one_result, TOKIO_RUNTIME};
 use crate::error::SurrealError;
 
 #[no_mangle]
@@ -132,11 +132,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     };
     // Execute the query
     let res = surrealdb_query(&surreal, &query, None);
-    // Check the response
-    let res = match res {
-        Ok(r) => r,
-        Err(e) => return SurrealError::from(e).exception(&mut env, || 0),
-    };
+    // Check the result
+    let res = check_query_result!(&mut env, res, ||0);
     // Build a response instance
     create_instance(Arc::new(Mutex::new(res)))
 }
@@ -174,19 +171,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTableValue<'local>(
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
-    let mut res = match res {
-        Ok(res) => res,
-        Err(e) => {
-            return SurrealError::SurrealDB(e).exception(&mut env, || 0);
-        }
-    };
+    let mut res = check_query_result!(&mut env, res, ||0);
     // There is only one statement
-    let mut res: Value = match res.take(0) {
-        Ok(r) => r,
-        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
-    };
+    let mut res: Value = take_one_result!(&mut env, res, ||0);
     // There should be only one result
-
     if let Value::Array(ref mut a) = res {
         if a.len() == 1 {
             return create_instance(Arc::new(a.remove(0)));
@@ -221,12 +209,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTableValues<'local>(
     // Execute the query
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
-    let mut res = match res {
-        Ok(res) => res,
-        Err(e) => {
-            return SurrealError::SurrealDB(e).exception(&mut env, null_mut);
-        }
-    };
+    let mut res = check_query_result!(&mut env, res, null_mut);
     // Prepare the result
     let mut value_ptrs: Vec<jlong> = Vec::with_capacity(res.num_statements());
     // Iterate overt the statement
@@ -272,17 +255,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     let query = format!("SELECT * FROM {thing}");
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
-    let mut res = match res {
-        Ok(res) => res,
-        Err(e) => {
-            return SurrealError::SurrealDB(e).exception(&mut env, || 0);
-        }
-    };
+    let mut res = check_query_result!(&mut env, res, ||0);
     // There is only one statement
-    let mut res: Value = match res.take(0) {
-        Ok(r) => r,
-        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
-    };
+    let mut res: Value = take_one_result!(&mut env, res, ||0);
     // There should be only one result
     if let Value::Array(ref mut a) = res {
         if a.len() == 1 {
@@ -313,17 +288,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
     let query = format!("SELECT * FROM {}", things.join(","));
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
-    let mut res = match res {
-        Ok(res) => res,
-        Err(e) => {
-            return SurrealError::SurrealDB(e).exception(&mut env, null_mut);
-        }
-    };
+    let mut res = check_query_result!(&mut env, res, null_mut);
     // There is only one statement
-    let res: Value = match res.take(0) {
-        Ok(r) => r,
-        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, null_mut),
-    };
+    let res: Value = take_one_result!(&mut env, res, null_mut);
     // Prepare the result
     if let Value::Array(a) = res {
         let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
@@ -335,4 +302,59 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
         return build_jlong_array(&mut env, value_ptrs);
     }
     SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, null_mut)
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValues<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    table: JString<'local>,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    // Get the table
+    let table = get_rust_string!(&mut env, table, ||0);
+    // Prepare the query
+    let query = format!("SELECT * FROM {table}");
+    // Execute the query
+    let res = surrealdb_query(&surreal, &query, None);
+    // Check the result
+    let mut res = check_query_result!(&mut env, res, ||0);
+    // There is only one statement
+    let res: Value = take_one_result!(&mut env, res, ||0);
+    // Return the result
+    if let Value::Array(a) = res {
+        let iter = a.into_iter();
+        return create_instance(iter);
+    }
+    SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValuesSync<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    table: JString<'local>,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    // Get the table
+    let table = get_rust_string!(&mut env, table, ||0);
+    // Prepare the query
+    let query = format!("SELECT * FROM {table}");
+    // Execute the query
+    let res = surrealdb_query(&surreal, &query, None);
+    // Check the result
+    let mut res = check_query_result!(&mut env, res, ||0);
+    // There is only one statement
+    let res: Value = take_one_result!(&mut env, res, ||0);
+    // There should be only one result
+    if let Value::Array(a) = res {
+        let iter = a.into_iter();
+        return create_instance(Arc::new(Mutex::new(iter)));
+    }
+    SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, || 0)
 }

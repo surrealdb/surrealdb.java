@@ -213,3 +213,25 @@ macro_rules! get_entry_mut_instance {
         }
     };
 }
+
+#[macro_export]
+macro_rules! take_one_result {
+    ($env:expr, $res:expr, $default_fn:expr) => {
+        match $res.take(0) {
+            Ok(r) => r,
+            Err(e) => return $crate::SurrealError::SurrealDB(e).exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! check_query_result {
+    ($env:expr, $res:expr, $default_fn:expr) => {
+        match $res {
+            Ok(res) => res,
+            Err(e) => {
+                return $crate::SurrealError::SurrealDB(e).exception($env, $default_fn);
+            }
+        }
+    };
+}
