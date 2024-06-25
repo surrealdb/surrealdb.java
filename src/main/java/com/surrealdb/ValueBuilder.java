@@ -1,6 +1,8 @@
 package com.surrealdb;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +37,12 @@ class ValueBuilder {
         if (object instanceof Boolean) {
             return ValueMut.createBoolean((Boolean) object);
         }
+        if (object instanceof BigDecimal) {
+            return ValueMut.createBigDecimal((BigDecimal) object);
+        }
+        if (object instanceof BigInteger) {
+            throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());
+        }
         if (object instanceof Collection) {
             final Collection<?> collection = (Collection<?>) object;
             // Create a ValueMut for each element of the collection
@@ -48,7 +56,7 @@ class ValueBuilder {
         final Field[] fields = object.getClass().getFields();
         if (fields.length > 0) {
             final List<EntryMut> entries = new ArrayList<>(fields.length);
-            for (Field field : fields) {
+            for (final Field field : fields) {
                 final String name = field.getName();
                 final ValueMut value = convert(field.get(object));
                 if (value != null) {
@@ -57,7 +65,7 @@ class ValueBuilder {
             }
             return ValueMut.createObject(entries);
         }
-        throw new SurrealException("Type not supported: " + object.getClass().getName());
+        throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());
     }
 
     static <T> ValueMut convert(final T object) {

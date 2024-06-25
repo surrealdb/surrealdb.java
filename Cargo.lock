@@ -3091,6 +3091,7 @@ dependencies = [
  "jni",
  "once_cell",
  "parking_lot",
+ "rust_decimal",
  "surrealdb 1.5.3",
  "tokio",
 ]

@@ -47,6 +47,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long selectTableValuesSync(long ptr, String table);
 
+
     @Override
     final String toString(long ptr) {
         return getClass().getName() + "[ptr=" + ptr + "]";
@@ -102,16 +103,30 @@ public class Surreal extends Native implements AutoCloseable {
         return new Value(valuePtr);
     }
 
+    public <T> T create(Class<T> type, Thing thg, T content) {
+        return create(thg, content).get(type);
+    }
+
     public <T> Value create(String table, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = createTableValue(getPtr(), table, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
+    public <T> T create(Class<T> type, String table, T content) {
+        return create(table, content).get(type);
+    }
+
     public <T> List<Value> create(String table, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
         final long[] valuePtrs = createTableValues(getPtr(), table, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+    }
+
+    public <T> List<T> create(Class<T> type, String table, T... contents) {
+        try (final Stream<Value> s = create(table, contents).stream()) {
+            return s.map(v -> v.get(type)).collect(Collectors.toList());
+        }
     }
 
     @SafeVarargs

@@ -2,10 +2,10 @@
 
 The official SurrealDB library for Java.
 
-
 ### Features
+
 - A thread-safe native JAVA client for SurrealDB.
-- Simple API: [see docs](https://surrealdb.com/docs/integration/libraries/java)).
+- Simple API: [see docs](https://surrealdb.com/docs/integration/libraries/java).
 - Support of 'memory' (embedded SurrealDB).
 - Support of remote connection to SurrealDB.
 - Supported on JAVA JDK 8, 11, 17, 21, 22.
@@ -20,14 +20,16 @@ The official SurrealDB library for Java.
 - Zero dependencies
 
 ### Minimum Requirements
+
 - Java 8
 
 ### Installation
 
 Gradle:
+
 ```groovy
 ext {
-	surrealdbVersion = "0.2.0"
+    surrealdbVersion = "0.2.0"
 }
 
 dependencies {
@@ -36,11 +38,13 @@ dependencies {
 ```
 
 Maven:
+
 ```xml
+
 <dependency>
-	<groupId>com.surrealdb</groupId>
-	<artifactId>surrealdb-driver</artifactId>
-	<version>0.2.0</version>
+    <groupId>com.surrealdb</groupId>
+    <artifactId>surrealdb-driver</artifactId>
+    <version>0.2.0</version>
 </dependency>
 ```
 

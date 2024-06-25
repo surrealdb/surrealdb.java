@@ -1,10 +1,12 @@
 use std::collections::BTreeMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
+use std::str::FromStr;
 
 use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
-use jni::sys::{jboolean, jint, jlong, jstring};
+use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
+use rust_decimal::Decimal;
 use surrealdb::sql::{Array, Number, Object, Strand, Value};
 
 use crate::{create_instance, get_long_array, get_rust_string, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
@@ -32,12 +34,37 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newLong<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newDouble<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    d: jdouble,
+) -> jlong {
+    let value = Value::Number(Number::Float(d));
+    create_instance(value)
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newBoolean<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     b: jboolean,
 ) -> jlong {
     let value = Value::Bool(b == 1);
+    create_instance(value)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newDecimal<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    s: JString<'local>,
+) -> jlong {
+    let s = get_rust_string!(&mut env,s, ||0);
+    let d = match Decimal::from_str(&s) {
+        Ok(d) => d,
+        Err(e) => return SurrealError::SurrealDBJni(e.to_string()).exception(&mut env, || 0),
+    };
+    let value = Value::Number(Number::Decimal(d));
     create_instance(value)
 }
 

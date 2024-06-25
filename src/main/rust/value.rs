@@ -136,6 +136,46 @@ pub extern "system" fn Java_com_surrealdb_Value_isDateTime<'local>(
     value.is_datetime() as jboolean
 }
 
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getDateTime<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Datetime(dt) = value.as_ref() {
+        dt.timestamp_millis()
+    } else {
+        SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isDuration<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_duration() as jboolean
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Duration(d) = value.as_ref() {
+        d.as_millis() as jlong
+    } else {
+        SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
+    }
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isBigDecimal<'local>(
     mut env: JNIEnv<'local>,
@@ -144,6 +184,20 @@ pub extern "system" fn Java_com_surrealdb_Value_isBigDecimal<'local>(
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
     value.is_decimal() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getBigDecimal<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Number(Number::Decimal(d)) = value.as_ref() {
+        new_string!(&mut env, &d.to_string(), null_mut)
+    } else {
+        SurrealError::NullPointerException("BigDecimal").exception(&mut env, null_mut)
+    }
 }
 
 #[no_mangle]

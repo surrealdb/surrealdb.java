@@ -38,6 +38,48 @@ class ValueClassConverter<T> {
         throw new SurrealException("Unsupported value: " + value);
     }
 
+    private static <T> void setSingleValue(final Field field, final Class<?> type, final T target, final Value value) throws IllegalAccessException {
+        if (value.isBoolean()) {
+            field.setBoolean(target, value.getBoolean());
+        } else if (value.isDouble()) {
+            final double d = value.getDouble();
+            if (type == Double.TYPE)
+                field.setDouble(target, d);
+            else if (type == Float.TYPE)
+                field.setFloat(target, (float) d);
+            else if (type == Float.class)
+                field.set(target, (float) d);
+            else field.set(target, d);
+        } else if (value.isLong()) {
+            final long l = value.getLong();
+            if (type == Long.TYPE)
+                field.setLong(target, l);
+            else if (type == Integer.TYPE)
+                field.setInt(target, (int) l);
+            else if (type == Integer.class)
+                field.set(target, (int) l);
+            else if (type == Short.TYPE)
+                field.setShort(target, (short) l);
+            else if (type == Short.class)
+                field.set(target, (short) l);
+            else
+                field.set(target, l);
+        } else if (value.isString()) {
+            field.set(target, value.getString());
+        } else if (value.isThing()) {
+            field.set(target, value.getThing());
+        } else if (value.isGeometry()) {
+            field.set(target, value.getGeometry());
+        } else if (value.isBigdecimal()) {
+            field.set(target, value.getBigDecimal());
+        } else if (value.isBytes()) {
+            field.set(target, value.getBytes());
+        } else if (value.isUuid()) {
+            field.set(target, value.getUuid());
+        } else {
+            throw new SurrealException("Unsupported value: " + value);
+        }
+    }
 
     private static java.lang.Object convertArrayValue(final Field field, final Value value) throws ReflectiveOperationException {
         if (value.isObject()) {
@@ -60,31 +102,43 @@ class ValueClassConverter<T> {
     private static <T> T convert(Class<T> clazz, Object source) throws ReflectiveOperationException {
         final T target = clazz.getConstructor().newInstance();
         for (final Entry entry : source) {
-            final Field field = clazz.getDeclaredField(entry.getKey());
-            final Value value = entry.getValue();
-            field.setAccessible(true);
-            final Class<?> type = field.getType();
-            if (value.isArray()) {
-                final List<java.lang.Object> arrayList = new ArrayList<>();
-                for (final Value elementValue : value.getArray()) {
-                    arrayList.add(convertArrayValue(field, elementValue));
+            try {
+                final Field field = clazz.getDeclaredField(entry.getKey());
+                final Value value = entry.getValue();
+                field.setAccessible(true);
+                final Class<?> type = field.getType();
+                if (value.isArray()) {
+                    final List<java.lang.Object> arrayList = new ArrayList<>();
+                    for (final Value elementValue : value.getArray()) {
+                        arrayList.add(convertArrayValue(field, elementValue));
+                    }
+                    setFieldObject(field, type, target, arrayList);
+                } else if (value.isObject()) {
+                    java.lang.Object o = convert(type, value.getObject());
+                    setFieldObject(field, type, target, o);
+                } else {
+                    setFieldSingleValue(field, type, target, value);
                 }
-                setField(field, type, target, arrayList);
-            } else if (value.isObject()) {
-                java.lang.Object o = convert(type, value.getObject());
-                setField(field, type, target, o);
-            } else {
-                setField(field, type, target, convertSingleValue(value));
+            } catch (NoSuchFieldException e) {
+                // Safe to ignore
             }
         }
         return target;
     }
 
-    private static <T, V> void setField(Field field, Class<?> type, T target, V value) throws ReflectiveOperationException {
+    private static <T, V> void setFieldObject(Field field, Class<?> type, T target, V value) throws ReflectiveOperationException {
         if (Optional.class.equals(type)) {
             field.set(target, Optional.of(value));
         } else {
             field.set(target, value);
+        }
+    }
+
+    private static <T, V> void setFieldSingleValue(Field field, Class<?> type, T target, Value value) throws ReflectiveOperationException {
+        if (Optional.class.equals(type)) {
+            field.set(target, convertSingleValue(value));
+        } else {
+            setSingleValue(field, type, target, value);
         }
     }
 

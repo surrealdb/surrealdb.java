@@ -1,5 +1,6 @@
 package com.surrealdb;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 class ValueMut extends Native {
@@ -15,6 +16,8 @@ class ValueMut extends Native {
     private static native long newDouble(double d);
 
     private static native long newLong(long l);
+
+    private static native long newDecimal(String s);
 
     private static native long newArray(long[] ptrs);
 
@@ -34,6 +37,10 @@ class ValueMut extends Native {
 
     static ValueMut createLong(long l) {
         return new ValueMut(newLong(l));
+    }
+
+    static ValueMut createBigDecimal(BigDecimal d) {
+        return new ValueMut(newDecimal(d.toString()));
     }
 
     static ValueMut createArray(List<ValueMut> values) {

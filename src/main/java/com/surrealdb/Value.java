@@ -1,6 +1,10 @@
 package com.surrealdb;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class Value extends Native {
@@ -29,7 +33,7 @@ public class Value extends Native {
 
     private static native boolean isBigDecimal(long ptr);
 
-    private static native BigDecimal getBigDecimal(long ptr);
+    private static native String getBigDecimal(long ptr);
 
     private static native boolean isString(long ptr);
 
@@ -50,6 +54,14 @@ public class Value extends Native {
     private static native boolean isGeometry(long ptr);
 
     private static native long getGeometry(long ptr);
+
+    private static native boolean isDateTime(long ptr);
+
+    private static native long getDateTime(long ptr);
+
+    private static native boolean isDuration(long ptr);
+
+    private static native long getDuration(long ptr);
 
     private static native boolean isBytes(long ptr);
 
@@ -120,7 +132,7 @@ public class Value extends Native {
     }
 
     public BigDecimal getBigDecimal() {
-        return getBigDecimal(getPtr());
+        return new BigDecimal(getBigDecimal(getPtr()));
     }
 
     public boolean isNull() {
@@ -169,6 +181,25 @@ public class Value extends Native {
 
     public Geometry getGeometry() {
         return new Geometry(getGeometry(getPtr()));
+    }
+
+    public boolean isDateTime() {
+        return isDateTime(getPtr());
+    }
+
+    public ZonedDateTime getDateTime() {
+        final long timestamp = getDateTime(getPtr());
+        final Instant instant = Instant.ofEpochMilli(timestamp);
+        return ZonedDateTime.ofInstant(instant, ZoneId.of("UTC"));
+    }
+
+    public boolean isDuration() {
+        return isDuration(getPtr());
+    }
+
+    public Duration getDuration() {
+        final long durationMillis = getDuration(getPtr());
+        return Duration.ofMillis(durationMillis);
     }
 
     public <T> T get(Class<T> type) {
