@@ -2,21 +2,21 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
+use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
-use jni::JNIEnv;
 use parking_lot::Mutex;
+use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
-use surrealdb::{Error, Response, Surreal};
 
-use crate::error::SurrealError;
 use crate::{
     check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
     get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance,
     take_one_result, TOKIO_RUNTIME,
 };
+use crate::error::SurrealError;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -158,7 +158,7 @@ fn surrealdb_query(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_createTableValue<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_createResourceValue<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
@@ -188,24 +188,24 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTableValue<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_createTableValues<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_createResourceValues<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    table: JString<'local>,
+    resource: JString<'local>,
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
-    let table = get_rust_string!(&mut env, table, null_mut);
+    let resource = get_rust_string!(&mut env, resource, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
     let mut queries = Vec::with_capacity(value_ptrs.len());
     let mut params = BTreeMap::new();
     for (idx, value_ptr) in value_ptrs.iter().enumerate() {
-        queries.push(format!("CREATE {table} CONTENT $i{idx}"));
+        queries.push(format!("CREATE {resource} CONTENT $i{idx}"));
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
         params.insert(format!("i{idx}"), value);
     }

@@ -33,11 +33,9 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, Map<String, ?> params);
 
-    private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
+    private static native long createResourceValue(long ptr, String resource, long valuePtr);
 
-    private static native long createTableValue(long ptr, String table, long valuePtr);
-
-    private static native long[] createTableValues(long ptr, String table, long[] valuePtrs);
+    private static native long[] createResourceValues(long ptr, String resource, long[] valuePtrs);
 
     private static native long selectThing(long ptr, long thing);
 
@@ -99,7 +97,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     public <T> Value create(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
+        final long valuePtr = createResourceValue(getPtr(), thg.toString(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -107,9 +105,9 @@ public class Surreal extends Native implements AutoCloseable {
         return create(thg, content).get(type);
     }
 
-    public <T> Value create(String table, T content) {
+    public <T> Value create(String resource, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createTableValue(getPtr(), table, valueMut.getPtr());
+        final long valuePtr = createResourceValue(getPtr(), resource, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -117,9 +115,9 @@ public class Surreal extends Native implements AutoCloseable {
         return create(table, content).get(type);
     }
 
-    public <T> List<Value> create(String table, T... contents) {
+    public <T> List<Value> create(String resource, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
-        final long[] valuePtrs = createTableValues(getPtr(), table, valueMutPtrs);
+        final long[] valuePtrs = createResourceValues(getPtr(), resource, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 

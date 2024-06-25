@@ -16,8 +16,7 @@ public class Person {
     public Person() {
     }
 
-    public Person(Thing id, String name, List<String> tags, long category, boolean active, List<Email> emails) {
-        this.id = id;
+    public Person(String name, List<String> tags, long category, boolean active, List<Email> emails) {
         this.name = name;
         this.tags = tags;
         this.category = category;
