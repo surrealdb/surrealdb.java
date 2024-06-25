@@ -67,10 +67,10 @@ import java.util.stream.Stream;
 <span class="nc" id="L67">    }</span>
 
     private static File extract(String path) throws IOException {
-<span class="nc" id="L70">        final String resourcePath = &quot;natives/&quot; + path + &quot;/&quot; + SURREALDB_LIBNAME;</span>
-<span class="nc" id="L71">        final URL resource = Surreal.class.getClassLoader().getResource(resourcePath);</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (resource == null) {</span>
-<span class="nc" id="L73">            throw new RuntimeException(&quot;Couldn't find resource: &quot; + resourcePath);</span>
+<span class="nc" id="L70">        final String TargetsPath = &quot;natives/&quot; + path + &quot;/&quot; + SURREALDB_LIBNAME;</span>
+<span class="nc" id="L71">        final URL Targets = Surreal.class.getClassLoader().getResource(TargetsPath);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (Targets == null) {</span>
+<span class="nc" id="L73">            throw new RuntimeException(&quot;Couldn't find Targets: &quot; + TargetsPath);</span>
         }
 <span class="nc" id="L75">        final Path tempDir = Files.createTempDirectory(&quot;surrealdb-jni&quot;);</span>
 
@@ -83,7 +83,7 @@ import java.util.stream.Stream;
 <span class="nc" id="L83">            }</span>
 <span class="nc" id="L84">        }));</span>
 
-<span class="nc" id="L86">        final URLConnection connection = resource.openConnection();</span>
+<span class="nc" id="L86">        final URLConnection connection = Targets.openConnection();</span>
 <span class="nc" id="L87">        connection.setUseCaches(false);</span>
 <span class="nc" id="L88">        try (InputStream in = new BufferedInputStream(connection.getInputStream())) {</span>
 <span class="nc" id="L89">            final File outfile = new File(tempDir.toFile(), SURREALDB_LIBNAME);</span>
@@ -98,13 +98,13 @@ import java.util.stream.Stream;
 <span class="nc bnc" id="L98" title="All 2 branches missed.">        if (Files.isDirectory(path)) {</span>
 <span class="nc" id="L99">            try (Stream&lt;Path&gt; walker = Files.walk(path)) {</span>
 <span class="nc" id="L100">                walker.sorted(Comparator.reverseOrder())</span>
-<span class="nc" id="L101">                        .forEach(p -&gt; {</span>
-                            try {
-<span class="nc" id="L103">                                Files.delete(p);</span>
-<span class="nc" id="L104">                            } catch (IOException e) {</span>
-                                // Safe to ignore
-<span class="nc" id="L106">                            }</span>
-<span class="nc" id="L107">                        });</span>
+<span class="nc" id="L101">                    .forEach(p -&gt; {</span>
+                        try {
+<span class="nc" id="L103">                            Files.delete(p);</span>
+<span class="nc" id="L104">                        } catch (IOException e) {</span>
+                            // Safe to ignore
+<span class="nc" id="L106">                        }</span>
+<span class="nc" id="L107">                    });</span>
             }
         }
 <span class="nc" id="L110">    }</span>
