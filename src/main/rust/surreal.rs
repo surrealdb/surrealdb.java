@@ -2,21 +2,22 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
+use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
-use jni::JNIEnv;
 use parking_lot::Mutex;
+use serde::Serialize;
+use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
-use surrealdb::{Error, Response, Surreal};
 
-use crate::error::SurrealError;
 use crate::{
     check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
     get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance,
     take_one_result, TOKIO_RUNTIME,
 };
+use crate::error::SurrealError;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -135,18 +136,20 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
         Err(_) => return 0,
     };
     // Execute the query
-    let res = surrealdb_query(&surreal, &query, None);
+    let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     create_instance(Arc::new(Mutex::new(res)))
 }
 
-fn surrealdb_query(
+fn surrealdb_query<T>(
     surreal: &Surreal<Any>,
     query: &str,
-    params: Option<BTreeMap<String, &Value>>,
-) -> Result<Response, Error> {
+    params: Option<BTreeMap<String, T>>,
+) -> Result<Response, Error> where
+    T: Serialize,
+{
     TOKIO_RUNTIME.block_on(async {
         let q = surreal.query(query);
         if let Some(p) = params {
@@ -249,7 +252,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Execute the query
     let query = format!("SELECT * FROM {thing}");
-    let res = surrealdb_query(&surreal, &query, None);
+    let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -282,7 +285,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
     }
     // Execute the query
     let query = format!("SELECT * FROM {}", things.join(","));
-    let res = surrealdb_query(&surreal, &query, None);
+    let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, null_mut);
     // There is only one statement
@@ -316,7 +319,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     // Prepare the query
     let query = format!("SELECT * FROM {targets}");
     // Execute the query
-    let res = surrealdb_query(&surreal, &query, None);
+    let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -343,7 +346,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     // Prepare the query
     let query = format!("SELECT * FROM {targets}");
     // Execute the query
-    let res = surrealdb_query(&surreal, &query, None);
+    let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -354,4 +357,72 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
         return create_instance(Arc::new(Mutex::new(iter)));
     }
     SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteThing<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    thing_ptr: jlong,
+) -> jboolean {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
+    // Build the parameters
+    let thing = get_value_instance!(&mut env, thing_ptr, || false as jboolean);
+    // Prepare the params
+    let params = BTreeMap::from([("t".to_string(), thing.as_ref())]);
+    // Execute the query
+    let res = surrealdb_query(&surreal, "DELETE $t", Some(params));
+    // Check the result
+    check_query_result!(&mut env, res, || false as jboolean);
+    true as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteThings<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    thing_ptrs: JLongArray<'local>,
+) -> jboolean {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
+    // Extract the things
+    let thing_ptrs = get_long_array!(&mut env, &thing_ptrs, || false as jboolean);
+    // Prepare the params
+    let mut targets = Vec::with_capacity(thing_ptrs.len());
+    let mut params = BTreeMap::new();
+    for (idx, thing_ptr) in thing_ptrs.iter().enumerate() {
+        let value = get_value_instance!(&mut env, *thing_ptr, || false as jboolean);
+        params.insert(format!("t{idx}"), value);
+        targets.push(format!("$t{idx}"));
+    }
+    // Prepare the query
+    let query = format!("DELETE {}", targets.join(","));
+    // Execute the query
+    let res = surrealdb_query(&surreal, &query, Some(params));
+    // Check the result
+    check_query_result!(&mut env, res, || 0);
+    true as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteTargets<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    targets: JString<'local>,
+) -> jboolean {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
+    // Get the targets
+    let targets = get_rust_string!(&mut env, targets, || 0);
+    // Prepare the params
+    let query = format!("DELETE FROM {targets}");
+    // Execute the query
+    let res = surrealdb_query::<()>(&surreal, &query, None);
+    // Check the result
+    check_query_result!(&mut env, res, || false as jboolean);
+    true as jboolean
 }

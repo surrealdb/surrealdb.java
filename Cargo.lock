@@ -3093,6 +3093,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "rust_decimal",
+ "serde",
  "surrealdb 1.5.3",
  "tokio",
 ]
