@@ -57,7 +57,7 @@ public class Value extends Native {
 
     private static native boolean isDateTime(long ptr);
 
-    private static native long getDateTime(long ptr);
+    private static native long[] getDateTime(long ptr);
 
     private static native boolean isDuration(long ptr);
 
@@ -168,7 +168,7 @@ public class Value extends Native {
     }
 
     public boolean isBytes() {
-<span class="nc" id="L171">        return isBytes(getPtr());</span>
+<span class="fc" id="L171">        return isBytes(getPtr());</span>
     }
 
     public byte[] getBytes() {
@@ -184,22 +184,22 @@ public class Value extends Native {
     }
 
     public boolean isDateTime() {
-<span class="nc" id="L187">        return isDateTime(getPtr());</span>
+<span class="fc" id="L187">        return isDateTime(getPtr());</span>
     }
 
     public ZonedDateTime getDateTime() {
-<span class="nc" id="L191">        final long timestamp = getDateTime(getPtr());</span>
-<span class="nc" id="L192">        final Instant instant = Instant.ofEpochMilli(timestamp);</span>
-<span class="nc" id="L193">        return ZonedDateTime.ofInstant(instant, ZoneId.of(&quot;UTC&quot;));</span>
+<span class="fc" id="L191">        final long[] timestamps = getDateTime(getPtr());</span>
+<span class="fc" id="L192">        final Instant instant = Instant.ofEpochSecond(timestamps[0], timestamps[1]);</span>
+<span class="fc" id="L193">        return ZonedDateTime.ofInstant(instant, ZoneId.of(&quot;UTC&quot;));</span>
     }
 
     public boolean isDuration() {
-<span class="nc" id="L197">        return isDuration(getPtr());</span>
+<span class="fc" id="L197">        return isDuration(getPtr());</span>
     }
 
     public Duration getDuration() {
-<span class="nc" id="L201">        final long durationMillis = getDuration(getPtr());</span>
-<span class="nc" id="L202">        return Duration.ofMillis(durationMillis);</span>
+<span class="fc" id="L201">        final long durationMillis = getDuration(getPtr());</span>
+<span class="fc" id="L202">        return Duration.ofMillis(durationMillis);</span>
     }
 
     public &lt;T&gt; T get(Class&lt;T&gt; type) {
