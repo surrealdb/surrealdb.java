@@ -67,10 +67,10 @@ class Loader {
     }
 
     private static File extract(String path) throws IOException {
-        final String resourcePath = "natives/" + path + "/" + SURREALDB_LIBNAME;
-        final URL resource = Surreal.class.getClassLoader().getResource(resourcePath);
-        if (resource == null) {
-            throw new RuntimeException("Couldn't find resource: " + resourcePath);
+        final String TargetsPath = "natives/" + path + "/" + SURREALDB_LIBNAME;
+        final URL Targets = Surreal.class.getClassLoader().getResource(TargetsPath);
+        if (Targets == null) {
+            throw new RuntimeException("Couldn't find Targets: " + TargetsPath);
         }
         final Path tempDir = Files.createTempDirectory("surrealdb-jni");
 
@@ -83,7 +83,7 @@ class Loader {
             }
         }));
 
-        final URLConnection connection = resource.openConnection();
+        final URLConnection connection = Targets.openConnection();
         connection.setUseCaches(false);
         try (InputStream in = new BufferedInputStream(connection.getInputStream())) {
             final File outfile = new File(tempDir.toFile(), SURREALDB_LIBNAME);
@@ -98,13 +98,13 @@ class Loader {
         if (Files.isDirectory(path)) {
             try (Stream<Path> walker = Files.walk(path)) {
                 walker.sorted(Comparator.reverseOrder())
-                        .forEach(p -> {
-                            try {
-                                Files.delete(p);
-                            } catch (IOException e) {
-                                // Safe to ignore
-                            }
-                        });
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            // Safe to ignore
+                        }
+                    });
             }
         }
     }

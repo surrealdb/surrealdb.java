@@ -33,17 +33,29 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, Map<String, ?> params);
 
-    private static native long createResourceValue(long ptr, String resource, long valuePtr);
+    private static native long createTargetsValue(long ptr, String targets, long valuePtr);
 
-    private static native long[] createResourceValues(long ptr, String resource, long[] valuePtrs);
+    private static native long[] createTargetsValues(long ptr, String targets, long[] valuePtrs);
+
+    private static native long updateTargetsValue(long ptr, String targets, long valuePtr);
+
+    private static native long updateTargetsValues(long ptr, String targets, long valuePtr);
+
+    private static native long updateTargetsValuesSync(long ptr, String targets, long valuePtr);
 
     private static native long selectThing(long ptr, long thing);
 
     private static native long[] selectThings(long ptr, long[] things);
 
-    private static native long selectTableValues(long ptr, String table);
+    private static native long selectTargetsValues(long ptr, String targets);
 
-    private static native long selectTableValuesSync(long ptr, String table);
+    private static native long selectTargetsValuesSync(long ptr, String targets);
+
+    private static native boolean deleteThing(long ptr, long thing);
+
+    private static native boolean deleteThings(long ptr, long[] things);
+
+    private static native boolean deleteTargets(long ptr, String targets);
 
 
     @Override
@@ -97,7 +109,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     public <T> Value create(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createResourceValue(getPtr(), thg.toString(), valueMut.getPtr());
+        final long valuePtr = createTargetsValue(getPtr(), thg.toString(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -105,26 +117,54 @@ public class Surreal extends Native implements AutoCloseable {
         return create(thg, content).get(type);
     }
 
-    public <T> Value create(String resource, T content) {
+    public <T> Value create(String targets, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createResourceValue(getPtr(), resource, valueMut.getPtr());
+        final long valuePtr = createTargetsValue(getPtr(), targets, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> T create(Class<T> type, String table, T content) {
-        return create(table, content).get(type);
+    public <T> T create(Class<T> type, String targets, T content) {
+        return create(targets, content).get(type);
     }
 
-    public <T> List<Value> create(String resource, T... contents) {
+    public <T> List<Value> create(String targets, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
-        final long[] valuePtrs = createResourceValues(getPtr(), resource, valueMutPtrs);
+        final long[] valuePtrs = createTargetsValues(getPtr(), targets, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 
-    public <T> List<T> create(Class<T> type, String table, T... contents) {
-        try (final Stream<Value> s = create(table, contents).stream()) {
+    public <T> List<T> create(Class<T> type, String targets, T... contents) {
+        try (final Stream<Value> s = create(targets, contents).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
+    }
+
+    public <T> Value update(Thing thg, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = updateTargetsValue(getPtr(), thg.toString(), valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    public <T> T update(Class<T> type, Thing thg, T content) {
+        return update(thg, content).get(type);
+    }
+
+    public <T> Iterator<Value> update(String targets, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new ValueIterator(updateTargetsValues(getPtr(), targets, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> update(Class<T> type, String targets, T content) {
+        return new ValueObjectIterator<>(type, update(targets, content));
+    }
+
+    public <T> Iterator<Value> updateSync(String targets, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new SynchronizedValueIterator(updateTargetsValuesSync(getPtr(), targets, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> updateSync(Class<T> type, String targets, T content) {
+        return new ValueObjectIterator<>(type, updateSync(targets, content));
     }
 
     @SafeVarargs
@@ -135,14 +175,6 @@ public class Surreal extends Native implements AutoCloseable {
             ptrs[index++] = ValueBuilder.convert(c).getPtr();
         }
         return ptrs;
-    }
-
-    public <T> Value update(Thing thing, T content) {
-        throw new SurrealException("Not implemented yet");
-    }
-
-    public <T> List<Value> update(Thing thing, T... content) {
-        throw new SurrealException("Not implemented yet");
     }
 
     public Optional<Value> select(Thing thing) {
@@ -180,20 +212,33 @@ public class Surreal extends Native implements AutoCloseable {
         }
     }
 
-    public Iterator<Value> select(String table) {
-        return new ValueIterator(selectTableValues(getPtr(), table));
+    public Iterator<Value> select(String targets) {
+        return new ValueIterator(selectTargetsValues(getPtr(), targets));
     }
 
-    public Iterator<Value> selectSync(String table) {
-        return new SynchronizedValueIterator(selectTableValuesSync(getPtr(), table));
+    public Iterator<Value> selectSync(String targets) {
+        return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));
     }
 
-    public <T> Iterator<T> select(Class<T> type, String table) {
-        return new ValueObjectIterator<>(type, select(table));
+    public <T> Iterator<T> select(Class<T> type, String targets) {
+        return new ValueObjectIterator<>(type, select(targets));
     }
 
-    public <T> Iterator<T> selectSync(Class<T> type, String table) {
-        return new ValueObjectIterator<>(type, selectSync(table));
+    public <T> Iterator<T> selectSync(Class<T> type, String targets) {
+        return new ValueObjectIterator<>(type, selectSync(targets));
+    }
+
+    public void delete(Thing thing) {
+        deleteThing(getPtr(), thing.getPtr());
+    }
+
+    public void delete(Thing... things) {
+        final long[] thingsPtr = things2longs(things);
+        deleteThings(getPtr(), thingsPtr);
+    }
+
+    public void delete(String targets) {
+        deleteTargets(getPtr(), targets);
     }
 
     @Override

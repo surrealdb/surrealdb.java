@@ -2,21 +2,21 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
+use jni::JNIEnv;
 use parking_lot::Mutex;
-use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
+use surrealdb::{Error, Response, Surreal};
 
+use crate::error::SurrealError;
 use crate::{
     check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
     get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance,
     take_one_result, TOKIO_RUNTIME,
 };
-use crate::error::SurrealError;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -158,20 +158,20 @@ fn surrealdb_query(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_createResourceValue<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValue<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    resource: JString<'local>,
+    targets: JString<'local>,
     value_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
-    let resource = get_rust_string!(&mut env, resource, || 0);
+    let targets = get_rust_string!(&mut env, targets, || 0);
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("CREATE {resource} CONTENT $val");
+    let query = format!("CREATE {targets} CONTENT $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -188,24 +188,24 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createResourceValue<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_createResourceValues<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValues<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    resource: JString<'local>,
+    targets: JString<'local>,
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
-    let resource = get_rust_string!(&mut env, resource, null_mut);
+    let targets = get_rust_string!(&mut env, targets, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
     let mut queries = Vec::with_capacity(value_ptrs.len());
     let mut params = BTreeMap::new();
     for (idx, value_ptr) in value_ptrs.iter().enumerate() {
-        queries.push(format!("CREATE {resource} CONTENT $i{idx}"));
+        queries.push(format!("CREATE {targets} CONTENT $i{idx}"));
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
         params.insert(format!("i{idx}"), value);
     }
@@ -303,18 +303,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValues<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    table: JString<'local>,
+    targets: JString<'local>,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
-    // Get the table
-    let table = get_rust_string!(&mut env, table, || 0);
+    // Get the targets
+    let targets = get_rust_string!(&mut env, targets, || 0);
     // Prepare the query
-    let query = format!("SELECT * FROM {table}");
+    let query = format!("SELECT * FROM {targets}");
     // Execute the query
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
@@ -330,18 +330,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValues<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_selectTableValuesSync<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    table: JString<'local>,
+    targets: JString<'local>,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
-    // Get the table
-    let table = get_rust_string!(&mut env, table, || 0);
+    // Get the targets
+    let targets = get_rust_string!(&mut env, targets, || 0);
     // Prepare the query
-    let query = format!("SELECT * FROM {table}");
+    let query = format!("SELECT * FROM {targets}");
     // Execute the query
     let res = surrealdb_query(&surreal, &query, None);
     // Check the result
