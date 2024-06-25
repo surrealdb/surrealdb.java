@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueMut.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb-jni</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ValueMut.java</span></div><h1>ValueMut.java</h1><pre class="source lang-java linenums">package com.surrealdb;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 class ValueMut extends Native {
 
     private ValueMut(long ptr) {
-<span class="fc" id="L8">        super(ptr);</span>
-<span class="fc" id="L9">    }</span>
+<span class="fc" id="L9">        super(ptr);</span>
+<span class="fc" id="L10">    }</span>
 
     private static native long newString(String s);
 
@@ -16,50 +17,56 @@ class ValueMut extends Native {
 
     private static native long newLong(long l);
 
+    private static native long newDecimal(String s);
+
     private static native long newArray(long[] ptrs);
 
     private static native long newObject(long[] ptrs);
 
     static ValueMut createString(String s) {
-<span class="fc" id="L24">        return new ValueMut(newString(s));</span>
+<span class="fc" id="L27">        return new ValueMut(newString(s));</span>
     }
 
     static ValueMut createBoolean(boolean b) {
-<span class="fc" id="L28">        return new ValueMut(newBoolean(b));</span>
+<span class="fc" id="L31">        return new ValueMut(newBoolean(b));</span>
     }
 
     static ValueMut createDouble(double d) {
-<span class="nc" id="L32">        return new ValueMut(newDouble(d));</span>
+<span class="fc" id="L35">        return new ValueMut(newDouble(d));</span>
     }
 
     static ValueMut createLong(long l) {
-<span class="fc" id="L36">        return new ValueMut(newLong(l));</span>
+<span class="fc" id="L39">        return new ValueMut(newLong(l));</span>
+    }
+
+    static ValueMut createBigDecimal(BigDecimal d) {
+<span class="fc" id="L43">        return new ValueMut(newDecimal(d.toString()));</span>
     }
 
     static ValueMut createArray(List&lt;ValueMut&gt; values) {
-<span class="fc" id="L40">        final long[] ptrs = new long[values.size()];</span>
-<span class="fc" id="L41">        int idx = 0;</span>
+<span class="fc" id="L47">        final long[] ptrs = new long[values.size()];</span>
+<span class="fc" id="L48">        int idx = 0;</span>
         // Retrieve the PTR for each element
-<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (final ValueMut value : values) {</span>
-<span class="fc" id="L44">            ptrs[idx++] = value.getPtr();</span>
-<span class="fc" id="L45">        }</span>
-<span class="fc" id="L46">        final ValueMut value = new ValueMut(newArray(ptrs));</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        for (final ValueMut value : values) {</span>
+<span class="fc" id="L51">            ptrs[idx++] = value.getPtr();</span>
+<span class="fc" id="L52">        }</span>
+<span class="fc" id="L53">        final ValueMut value = new ValueMut(newArray(ptrs));</span>
         // The Values have been moved
-<span class="fc" id="L48">        values.forEach(Native::moved);</span>
-<span class="fc" id="L49">        return value;</span>
+<span class="fc" id="L55">        values.forEach(Native::moved);</span>
+<span class="fc" id="L56">        return value;</span>
     }
 
     static ValueMut createObject(List&lt;EntryMut&gt; entries) {
-<span class="fc" id="L53">        final long[] ptrs = new long[entries.size()];</span>
-<span class="fc" id="L54">        int idx = 0;</span>
+<span class="fc" id="L60">        final long[] ptrs = new long[entries.size()];</span>
+<span class="fc" id="L61">        int idx = 0;</span>
         // Retrieve the PTR for each element
-<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (final EntryMut entry : entries) {</span>
-<span class="fc" id="L57">            ptrs[idx++] = entry.getPtr();</span>
-<span class="fc" id="L58">        }</span>
-<span class="fc" id="L59">        final ValueMut value = new ValueMut(newObject(ptrs));</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (final EntryMut entry : entries) {</span>
+<span class="fc" id="L64">            ptrs[idx++] = entry.getPtr();</span>
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">        final ValueMut value = new ValueMut(newObject(ptrs));</span>
         // The Entries have been moved
-<span class="fc" id="L61">        entries.forEach(Native::moved);</span>
-<span class="fc" id="L62">        return value;</span>
+<span class="fc" id="L68">        entries.forEach(Native::moved);</span>
+<span class="fc" id="L69">        return value;</span>
     }
 
     @Override
