@@ -16,25 +16,28 @@ class ValueClassConverter<T> {
     }
 
     private static java.lang.Object convertSingleValue(final Value value) {
-        if (value.isBoolean()) {
+        if (value.isBoolean())
             return value.getBoolean();
-        } else if (value.isDouble()) {
+        if (value.isDouble())
             return value.getDouble();
-        } else if (value.isLong()) {
+        if (value.isLong())
             return value.getLong();
-        } else if (value.isString()) {
+        if (value.isString())
             return value.getString();
-        } else if (value.isThing()) {
+        if (value.isThing())
             return value.getThing();
-        } else if (value.isGeometry()) {
+        if (value.isGeometry())
             return value.getGeometry();
-        } else if (value.isBigdecimal()) {
+        if (value.isBigdecimal())
             return value.getBigDecimal();
-        } else if (value.isBytes()) {
+        if (value.isBytes())
             return value.getBytes();
-        } else if (value.isUuid()) {
+        if (value.isUuid())
             return value.getUuid();
-        }
+        if (value.isDuration())
+            return value.getDuration();
+        if (value.isDateTime())
+            return value.getDateTime();
         throw new SurrealException("Unsupported value: " + value);
     }
 
@@ -76,6 +79,10 @@ class ValueClassConverter<T> {
             field.set(target, value.getBytes());
         } else if (value.isUuid()) {
             field.set(target, value.getUuid());
+        } else if (value.isDuration()) {
+            field.set(target, value.getDuration());
+        } else if (value.isDateTime()) {
+            field.set(target, value.getDateTime());
         } else {
             throw new SurrealException("Unsupported value: " + value);
         }

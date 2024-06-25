@@ -3,11 +3,12 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::str::FromStr;
 
+use chrono::DateTime;
 use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use rust_decimal::Decimal;
-use surrealdb::sql::{Array, Number, Object, Strand, Value};
+use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Value};
 
 use crate::{create_instance, get_long_array, get_rust_string, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
 use crate::error::SurrealError;
@@ -66,6 +67,31 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDecimal<'local>(
     };
     let value = Value::Number(Number::Decimal(d));
     create_instance(value)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newDuration<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    millis: jlong,
+) -> jlong {
+    let value = Value::Duration(Duration::from_millis(millis as u64));
+    create_instance(value)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newDatetime<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    seconds: jlong,
+    nanos: jlong,
+) -> jlong {
+    if let Some(d) = DateTime::from_timestamp(seconds, nanos as u32) {
+        let value = Value::Datetime(Datetime(d));
+        create_instance(value)
+    } else {
+        SurrealError::SurrealDBJni(format!("Can't create the Datetime from seconds: {seconds}, nanos: {nanos}")).exception(&mut env, || 0)
+    }
 }
 
 #[no_mangle]

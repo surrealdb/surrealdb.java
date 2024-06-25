@@ -4,14 +4,14 @@ use std::sync::Arc;
 
 use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
-use jni::sys::{jboolean, jlong, jlongArray, jsize, jstring};
+use jni::sys::{jboolean, jlong, jlongArray, jstring};
 use parking_lot::Mutex;
 use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
 
-use crate::{check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_string, release_instance, take_one_result, TOKIO_RUNTIME};
+use crate::{check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_jlong_array, new_string, release_instance, take_one_result, TOKIO_RUNTIME};
 use crate::error::SurrealError;
 
 #[no_mangle]
@@ -228,16 +228,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTableValues<'local>(
             value_ptrs.push(value_ptr);
         }
     }
-    build_jlong_array(&mut env, value_ptrs)
-}
-
-fn build_jlong_array(env: &mut JNIEnv, value_ptrs: Vec<jlong>) -> jlongArray {
-    // Create a new jlongArray with the appropriate length
-    let mut jarray = env.new_long_array(value_ptrs.len() as jsize).unwrap();
-    // Set the values of the jlongArray
-    env.set_long_array_region(&mut jarray, 0, &value_ptrs).unwrap();
-    // Return the populated jlongArray
-    jarray.into_raw()
+    new_jlong_array!(&mut env, &value_ptrs, null_mut)
 }
 
 #[no_mangle]
@@ -299,9 +290,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
             value_ptrs.push(value_ptr);
         }
         // Return the results
-        return build_jlong_array(&mut env, value_ptrs);
+        new_jlong_array!(&mut env, &value_ptrs, null_mut)
+    } else {
+        SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, null_mut)
     }
-    SurrealError::SurrealDBJni(format!("Unexpected result: {res}")).exception(&mut env, null_mut)
 }
 
 

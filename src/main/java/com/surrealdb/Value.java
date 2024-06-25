@@ -57,7 +57,7 @@ public class Value extends Native {
 
     private static native boolean isDateTime(long ptr);
 
-    private static native long getDateTime(long ptr);
+    private static native long[] getDateTime(long ptr);
 
     private static native boolean isDuration(long ptr);
 
@@ -188,8 +188,8 @@ public class Value extends Native {
     }
 
     public ZonedDateTime getDateTime() {
-        final long timestamp = getDateTime(getPtr());
-        final Instant instant = Instant.ofEpochMilli(timestamp);
+        final long[] timestamps = getDateTime(getPtr());
+        final Instant instant = Instant.ofEpochSecond(timestamps[0], timestamps[1]);
         return ZonedDateTime.ofInstant(instant, ZoneId.of("UTC"));
     }
 

@@ -159,6 +159,24 @@ macro_rules! get_long_array {
     };
 }
 
+
+#[macro_export]
+macro_rules! new_jlong_array {
+    ($env:expr, $array:expr, $default_fn:expr) => {
+        {
+            // Create a new jlongArray with the appropriate length
+            let mut jarray = match $env.new_long_array($array.len() as jni::sys::jsize) {
+                Ok(a) => a,
+                Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn)
+            };
+            // Set the values of the jlongArray
+            $env.set_long_array_region(&mut jarray, 0, $array).unwrap();
+            // Return the populated jlongArray
+            jarray.into_raw()
+        }
+    };
+}
+
 #[macro_export]
 macro_rules! new_double_point {
     ($env:expr, $pt:expr, $default_fn:expr) => {{

@@ -4,10 +4,10 @@ use std::sync::Arc;
 
 use jni::JNIEnv;
 use jni::objects::JClass;
-use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
+use jni::sys::{jboolean, jdouble, jint, jlong, jlongArray, jstring};
 use surrealdb::sql::{Number, Value};
 
-use crate::{create_instance, get_value_instance, new_string, release_instance};
+use crate::{create_instance, get_value_instance, new_jlong_array, new_string, release_instance};
 use crate::error::SurrealError;
 
 #[no_mangle]
@@ -142,12 +142,15 @@ pub extern "system" fn Java_com_surrealdb_Value_getDateTime<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
+) -> jlongArray {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Datetime(dt) = value.as_ref() {
-        dt.timestamp_millis()
+        let seconds = dt.timestamp();
+        let nanos = dt.timestamp_subsec_nanos() as i64;
+        let buf: [jlong; 2] = [seconds, nanos];
+        new_jlong_array!(&mut env, &buf, null_mut)
     } else {
-        SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
+        SurrealError::NullPointerException("Geometry").exception(&mut env, null_mut)
     }
 }
 

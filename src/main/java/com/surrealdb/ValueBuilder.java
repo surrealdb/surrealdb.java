@@ -3,6 +3,8 @@ package com.surrealdb;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +41,12 @@ class ValueBuilder {
         }
         if (object instanceof BigDecimal) {
             return ValueMut.createBigDecimal((BigDecimal) object);
+        }
+        if (object instanceof Duration) {
+            return ValueMut.createDuration((Duration) object);
+        }
+        if (object instanceof ZonedDateTime) {
+            return ValueMut.createDatetime((ZonedDateTime) object);
         }
         if (object instanceof BigInteger) {
             throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());

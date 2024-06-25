@@ -1,6 +1,8 @@
 package com.surrealdb;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 class ValueMut extends Native {
@@ -18,6 +20,10 @@ class ValueMut extends Native {
     private static native long newLong(long l);
 
     private static native long newDecimal(String s);
+
+    private static native long newDuration(long l);
+
+    private static native long newDatetime(long seconds, long nanos);
 
     private static native long newArray(long[] ptrs);
 
@@ -41,6 +47,14 @@ class ValueMut extends Native {
 
     static ValueMut createBigDecimal(BigDecimal d) {
         return new ValueMut(newDecimal(d.toString()));
+    }
+
+    static ValueMut createDuration(Duration d) {
+        return new ValueMut(newDuration(d.toMillis()));
+    }
+
+    static ValueMut createDatetime(ZonedDateTime d) {
+        return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));
     }
 
     static ValueMut createArray(List<ValueMut> values) {
