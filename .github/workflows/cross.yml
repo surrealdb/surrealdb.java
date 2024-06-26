@@ -320,8 +320,9 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        run-os: [ macos-12, macos-latest, windows-latest, ubuntu-latest ]
-    runs-on: ${{ matrix.runs-on }}
+        os: [ macos-12, macos-latest, windows-latest, ubuntu-latest ]
+
+    runs-on: ${{ matrix.os }}
     needs:
       - aggregated-jar
     steps:
