@@ -95,7 +95,7 @@ jobs:
       - name: Install Mingw64
         uses: msys2/setup-msys2@v2
         with:
-          msystem: ${{ matrix.system }}
+          msystem: ${{ matrix.msystem }}
           update: true
           install: >-
             mingw-w64-${{ matrix.arch }}-toolchain
