@@ -101,7 +101,8 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: mingw32
-          pacboy: openssl:p
+          update: true
+          install: mingw-w64-gcc
 
       - name: Build
         run: cargo build --target i686-pc-windows-gnu --release
