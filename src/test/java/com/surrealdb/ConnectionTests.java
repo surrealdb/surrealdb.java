@@ -1,6 +1,11 @@
 package com.surrealdb;
 
+import com.surrealdb.pojos.Person;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,6 +19,16 @@ public class ConnectionTests {
                 surreal.connect("ws://localhost:8000");
             });
             assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error:"));
+        }
+    }
+
+    @Test
+    void connectSurrealKV() throws SurrealException, IOException {
+        final Path tempDir = Files.createTempDirectory("surrealkv");
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("surrealkv://" + tempDir.toAbsolutePath()).useNs("test").useDb("test");
+            final Person created = surreal.create(Person.class, "person", Helpers.tobie);
+            assertNotNull(created.id);
         }
     }
 

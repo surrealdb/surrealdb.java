@@ -1,11 +1,12 @@
 package com.surrealdb;
 
-import com.surrealdb.pojos.Email;
-import com.surrealdb.pojos.Name;
 import com.surrealdb.pojos.Person;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -24,9 +25,7 @@ public class SelectTests implements AutoCloseable {
         this.surreal = new Surreal();
         surreal.connect("memory").useNs("test_ns").useDb("test_db");
         // Create a new Person(s) in the table `person`
-        final Person tobie = new Person("Tobie", Arrays.asList("CEO", "CTO"), 1, true, Collections.singletonList(new Email("tobie@example.com", new Name("Tobie", "Foo"))));
-        final Person jaime = new Person("Jaime", Collections.singletonList("COO"), 2, true, Collections.singletonList(new Email("jamie@example.com", new Name("Jamie", "Bar"))));
-        final List<Value> created = surreal.create("person", tobie, jaime);
+        final List<Value> created = surreal.create("person", Helpers.tobie, Helpers.jaime);
         this.tobie = created.get(0).get(Person.class);
         this.jaime = created.get(1).get(Person.class);
     }
