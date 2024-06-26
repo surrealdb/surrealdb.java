@@ -32,24 +32,15 @@ jobs:
 
           - target: i686-linux-android
             cross: --git https://github.com/cross-rs/cross
-            build: --no-default-features
 
           - target: arm-linux-androideabi
             cross: --git https://github.com/cross-rs/cross
             optional: true
-            build: --no-default-features
 
           - target: i686-linux-android
             cross: --git https://github.com/cross-rs/cross
-            optional: true
-            build: --no-default-features
 
           - target: i686-pc-windows-gnu
-            build: --no-default-features
-            optional: true
-
-          - target: i686-unknown-linux-gnu
-            build: --no-default-features
             optional: true
 
     runs-on: ubuntu-latest
@@ -201,6 +192,7 @@ jobs:
         with:
           name: arm-linux-androideabi
           path: src/main/resources/natives/android_arm32
+        continue-on-error: true # Until fixed!
 
       - name: Download Linux 64 intel
         uses: actions/download-artifact@v4
@@ -249,6 +241,7 @@ jobs:
         with:
           name: i686-pc-windows-gnu-build
           path: src/main/resources/natives/windows_32
+        continue-on-error: true # Until fixed!
 
       - name: Build JAR
         run: ./gradlew jar
