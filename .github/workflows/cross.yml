@@ -47,6 +47,7 @@ jobs:
 
       - name: Build
         run: |
+          export ${{ matrix.linker }}
           cargo build --target ${{ matrix.target }} --release
 
       - name: Upload so lib
