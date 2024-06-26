@@ -23,6 +23,15 @@ jobs:
           - arm-linux-androideabi # android 32 arm
           - x86_64-pc-windows-gnu # windows 64 intel
           - i686-pc-windows-gnu # windows 32 intel
+        include:
+          - target: x86_64-linux-android
+            cross: --git https://github.com/cross-rs/cross
+          - target: aarch64-linux-android
+            cross: --git https://github.com/cross-rs/cross
+          - target: i686-linux-android
+            cross: --git https://github.com/cross-rs/cross
+          - target: arm-linux-androideabi
+            cross: --git https://github.com/cross-rs/cross
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
@@ -37,7 +46,7 @@ jobs:
           toolchain: stable
 
       - name: Install cross
-        run: cargo install cross ${{ matrix.target }}
+        run: cargo install cross ${{ matrix.cross }}
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
