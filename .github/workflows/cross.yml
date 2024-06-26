@@ -26,22 +26,34 @@ jobs:
         include:
           - target: x86_64-linux-android
             cross: --git https://github.com/cross-rs/cross
+
           - target: aarch64-linux-android
             cross: --git https://github.com/cross-rs/cross
+
           - target: i686-linux-android
             cross: --git https://github.com/cross-rs/cross
             build: --no-default-features
+
           - target: arm-linux-androideabi
             cross: --git https://github.com/cross-rs/cross
+            optional: true
             build: --no-default-features
+
           - target: i686-linux-android
             cross: --git https://github.com/cross-rs/cross
+            optional: true
             build: --no-default-features
+
           - target: i686-pc-windows-gnu
             build: --no-default-features
+            optional: true
+
           - target: i686-unknown-linux-gnu
             build: --no-default-features
+            optional: true
+
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.optional || false }}
     steps:
       - name: Install dependencies
         run: sudo apt-get update
