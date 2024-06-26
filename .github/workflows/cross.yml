@@ -236,7 +236,7 @@ jobs:
   windows-integration-test:
     runs-on: windows-latest
     needs:
-      - build-aggregated-jar
+      - aggregated-jar
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -265,7 +265,7 @@ jobs:
   mac-intel-integration-test:
     runs-on: macos-12
     needs:
-      - build-aggregated-jar
+      - aggregated-jar
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -294,7 +294,7 @@ jobs:
   mac-arm-integration-test:
     runs-on: macos-latest
     needs:
-      - build-aggregated-jar
+      - aggregated-jar
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
