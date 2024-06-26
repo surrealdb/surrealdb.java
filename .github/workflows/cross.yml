@@ -44,7 +44,7 @@ jobs:
         run: cargo install cargo-ndk
 
       - name: Build
-        run: cargo ndk -t ${{ matrix.ndk }} --release
+        run: cargo ndk -t ${{ matrix.ndk }} build --release
 
       - name: Upload so lib
         uses: actions/upload-artifact@v4
