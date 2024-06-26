@@ -33,11 +33,13 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, Map<String, ?> params);
 
+    private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
+
     private static native long createTargetsValue(long ptr, String targets, long valuePtr);
 
     private static native long[] createTargetsValues(long ptr, String targets, long[] valuePtrs);
 
-    private static native long updateTargetsValue(long ptr, String targets, long valuePtr);
+    private static native long updateThingValue(long ptr, long thingPtr, long valuePtr);
 
     private static native long updateTargetsValues(long ptr, String targets, long valuePtr);
 
@@ -109,7 +111,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     public <T> Value create(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createTargetsValue(getPtr(), thg.toString(), valueMut.getPtr());
+        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -141,7 +143,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     public <T> Value update(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = updateTargetsValue(getPtr(), thg.toString(), valueMut.getPtr());
+        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
