@@ -102,7 +102,7 @@ jobs:
         with:
           msystem: mingw32
           update: true
-          install: mingw-w64-i686-gcc
+          install: mingw-w64-i686-toolchain
 
       - name: Build
         run: cargo build --target i686-pc-windows-gnu --release
