@@ -31,83 +31,95 @@ import java.util.stream.Stream;
 <span class="nc" id="L31">        final String arch = System.getProperty(&quot;os.arch&quot;).toLowerCase(Locale.ENGLISH);</span>
 <span class="nc" id="L32">        final String name = System.getProperty(&quot;os.name&quot;).toLowerCase(Locale.ENGLISH);</span>
 <span class="nc" id="L33">        final boolean android = vendor.contains(&quot;android&quot;);</span>
-<span class="nc" id="L34">        final boolean linux = name.contains(&quot;linux&quot;);</span>
-<span class="nc" id="L35">        final boolean windows = name.contains(&quot;win&quot;);</span>
-<span class="nc" id="L36">        final boolean osx = name.contains(&quot;mac&quot;);</span>
-<span class="nc bnc" id="L37" title="All 4 branches missed.">        final boolean intel = arch.contains(&quot;x86_64&quot;) || arch.contains(&quot;amd64&quot;);</span>
-<span class="nc bnc" id="L38" title="All 4 branches missed.">        final boolean arm = arch.contains(&quot;aarch64&quot;) || arch.contains(&quot;arm64&quot;);</span>
-<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (android) {</span>
-<span class="nc bnc" id="L40" title="All 2 branches missed.">            if (arm)</span>
-<span class="nc" id="L41">                return &quot;android_arm64&quot;;</span>
-<span class="nc bnc" id="L42" title="All 2 branches missed.">            else if (intel)</span>
-<span class="nc" id="L43">                return &quot;android_64&quot;;</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">        } else if (linux) {</span>
-<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (arm)</span>
-<span class="nc" id="L46">                return &quot;linux_arm64&quot;;</span>
-<span class="nc bnc" id="L47" title="All 2 branches missed.">            else if (intel)</span>
-<span class="nc" id="L48">                return &quot;linux_64&quot;;</span>
-<span class="nc bnc" id="L49" title="All 2 branches missed.">        } else if (windows) {</span>
-<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (intel)</span>
-<span class="nc" id="L51">                return &quot;windows_64&quot;;</span>
-<span class="nc bnc" id="L52" title="All 2 branches missed.">        } else if (osx) {</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (arm)</span>
-<span class="nc" id="L54">                return &quot;osx_arm64&quot;;</span>
-<span class="nc bnc" id="L55" title="All 2 branches missed.">            else if (intel)</span>
-<span class="nc" id="L56">                return &quot;osx_64&quot;;</span>
+<span class="nc bnc" id="L34" title="All 4 branches missed.">        final boolean linux = !android &amp;&amp; name.contains(&quot;linux&quot;);</span>
+<span class="nc bnc" id="L35" title="All 4 branches missed.">        final boolean windows = !linux &amp;&amp; name.contains(&quot;win&quot;);</span>
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        final boolean osx = !windows &amp;&amp; name.contains(&quot;mac&quot;);</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        final boolean intel64 = arch.contains(&quot;x86_64&quot;) || arch.contains(&quot;amd64&quot;);</span>
+<span class="nc bnc" id="L38" title="All 8 branches missed.">        final boolean intel32 = !intel64 &amp;&amp; arch.contains(&quot;i386&quot;) || arch.contains(&quot;i686&quot;) || arch.contains(&quot;x86&quot;);</span>
+<span class="nc bnc" id="L39" title="All 4 branches missed.">        final boolean arm64 = arch.contains(&quot;aarch64&quot;) || arch.contains(&quot;arm64&quot;);</span>
+<span class="nc bnc" id="L40" title="All 6 branches missed.">        final boolean arm32 = !arm64 &amp;&amp; (arch.contains(&quot;armv7&quot;) || arch.contains(&quot;arm&quot;));</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (android) {</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (arm64)</span>
+<span class="nc" id="L43">                return &quot;android_arm64&quot;;</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (intel64)</span>
+<span class="nc" id="L45">                return &quot;android_64&quot;;</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">            if (arm32)</span>
+<span class="nc" id="L47">                return &quot;android_arm32&quot;;</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (intel32)</span>
+<span class="nc" id="L49">                return &quot;android_32&quot;;</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        } else if (linux) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            if (arm64)</span>
+<span class="nc" id="L52">                return &quot;linux_arm64&quot;;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (intel64)</span>
+<span class="nc" id="L54">                return &quot;linux_64&quot;;</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            if (arm32)</span>
+<span class="nc" id="L56">                return &quot;linux_arm32&quot;;</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            if (intel32)</span>
+<span class="nc" id="L58">                return &quot;linux_32&quot;;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        } else if (windows) {</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">            if (intel64)</span>
+<span class="nc" id="L61">                return &quot;windows_64&quot;;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (intel32)</span>
+<span class="nc" id="L63">                return &quot;windows_32&quot;;</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        } else if (osx) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (arm64)</span>
+<span class="nc" id="L66">                return &quot;osx_arm64&quot;;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            else if (intel64)</span>
+<span class="nc" id="L68">                return &quot;osx_64&quot;;</span>
         }
-<span class="nc" id="L58">        throw new RuntimeException(&quot;Unsupported architecture: &quot; + arch + &quot; - name: &quot; + name);</span>
+<span class="nc" id="L70">        throw new RuntimeException(&quot;Unsupported architecture: &quot; + arch + &quot; - name: &quot; + name);</span>
     }
 
     private static void copy(InputStream input, OutputStream output) throws IOException {
-<span class="nc" id="L62">        final byte[] buffer = new byte[8192];</span>
+<span class="nc" id="L74">        final byte[] buffer = new byte[8192];</span>
         int bytesRead;
-<span class="nc bnc" id="L64" title="All 2 branches missed.">        while ((bytesRead = input.read(buffer)) != -1) {</span>
-<span class="nc" id="L65">            output.write(buffer, 0, bytesRead);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        while ((bytesRead = input.read(buffer)) != -1) {</span>
+<span class="nc" id="L77">            output.write(buffer, 0, bytesRead);</span>
         }
-<span class="nc" id="L67">    }</span>
+<span class="nc" id="L79">    }</span>
 
     private static File extract(String path) throws IOException {
-<span class="nc" id="L70">        final String TargetsPath = &quot;natives/&quot; + path + &quot;/&quot; + SURREALDB_LIBNAME;</span>
-<span class="nc" id="L71">        final URL Targets = Surreal.class.getClassLoader().getResource(TargetsPath);</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (Targets == null) {</span>
-<span class="nc" id="L73">            throw new RuntimeException(&quot;Couldn't find Targets: &quot; + TargetsPath);</span>
+<span class="nc" id="L82">        final String TargetsPath = &quot;natives/&quot; + path + &quot;/&quot; + SURREALDB_LIBNAME;</span>
+<span class="nc" id="L83">        final URL Targets = Surreal.class.getClassLoader().getResource(TargetsPath);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (Targets == null) {</span>
+<span class="nc" id="L85">            throw new RuntimeException(&quot;Couldn't find Targets: &quot; + TargetsPath);</span>
         }
-<span class="nc" id="L75">        final Path tempDir = Files.createTempDirectory(&quot;surrealdb-jni&quot;);</span>
+<span class="nc" id="L87">        final Path tempDir = Files.createTempDirectory(&quot;surrealdb-jni&quot;);</span>
 
         // Add a hook to delete the temporary files on shutdown
-<span class="nc" id="L78">        Runtime.getRuntime().addShutdownHook(new Thread(() -&gt; {</span>
+<span class="nc" id="L90">        Runtime.getRuntime().addShutdownHook(new Thread(() -&gt; {</span>
             try {
-<span class="nc" id="L80">                deleteDirectory(tempDir);</span>
-<span class="nc" id="L81">            } catch (IOException e) {</span>
+<span class="nc" id="L92">                deleteDirectory(tempDir);</span>
+<span class="nc" id="L93">            } catch (IOException e) {</span>
                 // Safe to ignore
-<span class="nc" id="L83">            }</span>
-<span class="nc" id="L84">        }));</span>
+<span class="nc" id="L95">            }</span>
+<span class="nc" id="L96">        }));</span>
 
-<span class="nc" id="L86">        final URLConnection connection = Targets.openConnection();</span>
-<span class="nc" id="L87">        connection.setUseCaches(false);</span>
-<span class="nc" id="L88">        try (InputStream in = new BufferedInputStream(connection.getInputStream())) {</span>
-<span class="nc" id="L89">            final File outfile = new File(tempDir.toFile(), SURREALDB_LIBNAME);</span>
-<span class="nc" id="L90">            try (FileOutputStream out = new FileOutputStream(outfile)) {</span>
-<span class="nc" id="L91">                copy(in, out);</span>
+<span class="nc" id="L98">        final URLConnection connection = Targets.openConnection();</span>
+<span class="nc" id="L99">        connection.setUseCaches(false);</span>
+<span class="nc" id="L100">        try (InputStream in = new BufferedInputStream(connection.getInputStream())) {</span>
+<span class="nc" id="L101">            final File outfile = new File(tempDir.toFile(), SURREALDB_LIBNAME);</span>
+<span class="nc" id="L102">            try (FileOutputStream out = new FileOutputStream(outfile)) {</span>
+<span class="nc" id="L103">                copy(in, out);</span>
             }
-<span class="nc" id="L93">            return outfile;</span>
+<span class="nc" id="L105">            return outfile;</span>
         }
     }
 
     private static void deleteDirectory(Path path) throws IOException {
-<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (Files.isDirectory(path)) {</span>
-<span class="nc" id="L99">            try (Stream&lt;Path&gt; walker = Files.walk(path)) {</span>
-<span class="nc" id="L100">                walker.sorted(Comparator.reverseOrder())</span>
-<span class="nc" id="L101">                    .forEach(p -&gt; {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (Files.isDirectory(path)) {</span>
+<span class="nc" id="L111">            try (Stream&lt;Path&gt; walker = Files.walk(path)) {</span>
+<span class="nc" id="L112">                walker.sorted(Comparator.reverseOrder())</span>
+<span class="nc" id="L113">                    .forEach(p -&gt; {</span>
                         try {
-<span class="nc" id="L103">                            Files.delete(p);</span>
-<span class="nc" id="L104">                        } catch (IOException e) {</span>
+<span class="nc" id="L115">                            Files.delete(p);</span>
+<span class="nc" id="L116">                        } catch (IOException e) {</span>
                             // Safe to ignore
-<span class="nc" id="L106">                        }</span>
-<span class="nc" id="L107">                    });</span>
+<span class="nc" id="L118">                        }</span>
+<span class="nc" id="L119">                    });</span>
             }
         }
-<span class="nc" id="L110">    }</span>
+<span class="nc" id="L122">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
