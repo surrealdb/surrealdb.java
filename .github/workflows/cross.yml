@@ -67,7 +67,7 @@ jobs:
       - name: Upload so lib
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-build
+          name: ${{ matrix.target }}
           path: target/${{ matrix.target }}/release/*.so
 
   windows:
@@ -75,9 +75,9 @@ jobs:
       matrix:
         include:
           - arch: x86_64
-            msystem: mingw64
+          #            msystem: mingw64
           - arch: i686
-            msystem: mingw32
+    #            msystem: mingw32
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -90,26 +90,26 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          target: ${{ matrix.arch }}-pc-windows-gnu
+          target: ${{ matrix.arch }}-pc-windows-msvc
 
-      - name: Install Mingw64
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{ matrix.msystem }}
-          update: true
-          install: >-
-            mingw-w64-${{ matrix.arch }}-toolchain
-            mingw-w64-${{ matrix.arch }}-cmake
-            mingw-w64-${{ matrix.arch }}-pkg-config
+      #      - name: Install Mingw64
+      #        uses: msys2/setup-msys2@v2
+      #        with:
+      #          msystem: ${{ matrix.msystem }}
+      #          update: true
+      #          install: >-
+      #            mingw-w64-${{ matrix.arch }}-toolchain
+      #            mingw-w64-${{ matrix.arch }}-cmake
+      #            mingw-w64-${{ matrix.arch }}-pkg-config
 
       - name: Build
-        run: cargo build --target ${{ matrix.arch }}-pc-windows-gnu --release
+        run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}-pc-windows-gnu-build
-          path: target/${{ matrix.arch }}-pc-windows-gnu/release/*.dll
+          name: ${{ matrix.arch }}-pc-windows-msvc
+          path: target/${{ matrix.arch }}-pc-windows-msvc/release/*.dll
 
   macos:
     strategy:
@@ -138,7 +138,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}-apple-darwin-build
+          name: ${{ matrix.arch }}-apple-darwin
           path: target/${{ matrix.arch }}-apple-darwin/release/*.dylib
 
   aggregated-jar:
@@ -181,19 +181,19 @@ jobs:
       - name: Download Android 64 intel
         uses: actions/download-artifact@v4
         with:
-          name: x86_64-linux-android-build
+          name: x86_64-linux-android
           path: src/main/resources/natives/android_64
 
       - name: Download Android 32 intel
         uses: actions/download-artifact@v4
         with:
-          name: i686-linux-android-build
+          name: i686-linux-android
           path: src/main/resources/natives/android_32
 
       - name: Download Android 64 arm
         uses: actions/download-artifact@v4
         with:
-          name: aarch64-linux-android-build
+          name: aarch64-linux-android
           path: src/main/resources/natives/android_arm64
 
       - name: Download Android 32 arm
@@ -205,49 +205,49 @@ jobs:
       - name: Download Linux 64 intel
         uses: actions/download-artifact@v4
         with:
-          name: x86_64-unknown-linux-gnu-build
+          name: x86_64-unknown-linux-gnu
           path: src/main/resources/natives/linux_64
 
       - name: Download Linux 32 intel
         uses: actions/download-artifact@v4
         with:
-          name: i686-unknown-linux-gnu-build
+          name: i686-unknown-linux-gnu
           path: src/main/resources/natives/linux_32
 
       - name: Download Linux 64 arm
         uses: actions/download-artifact@v4
         with:
-          name: aarch64-unknown-linux-gnu-build
+          name: aarch64-unknown-linux-gnu
           path: src/main/resources/natives/linux_arm64
 
       - name: Download Linux 32 arm
         uses: actions/download-artifact@v4
         with:
-          name: armv7-unknown-linux-gnueabihf-build
+          name: armv7-unknown-linux-gnueabihf
           path: src/main/resources/natives/linux_arm32
 
       - name: Download Darwin 64 intel
         uses: actions/download-artifact@v4
         with:
-          name: x86_64-apple-darwin-build
+          name: x86_64-apple-darwin
           path: src/main/resources/natives/osx_64
 
       - name: Download Darwin 64 arm
         uses: actions/download-artifact@v4
         with:
-          name: aarch64-apple-darwin-build
+          name: aarch64-apple-darwin
           path: src/main/resources/natives/osx_arm64
 
       - name: Download Windows 64 intel
         uses: actions/download-artifact@v4
         with:
-          name: x86_64-pc-windows-gnu-build
+          name: x86_64-pc-windows-gnu
           path: src/main/resources/natives/windows_64
 
       - name: Download Windows 32 intel
         uses: actions/download-artifact@v4
         with:
-          name: i686-pc-windows-gnu-build
+          name: i686-pc-windows-gnu
           path: src/main/resources/natives/windows_32
         continue-on-error: true # Until fixed!
 
