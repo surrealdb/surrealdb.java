@@ -30,8 +30,17 @@ jobs:
             cross: --git https://github.com/cross-rs/cross
           - target: i686-linux-android
             cross: --git https://github.com/cross-rs/cross
+            build: --no-default-features
           - target: arm-linux-androideabi
             cross: --git https://github.com/cross-rs/cross
+            build: --no-default-features
+          - target: i686-linux-android
+            cross: --git https://github.com/cross-rs/cross
+            build: --no-default-features
+          - target: i686-pc-windows-gnu
+            build: --no-default-features
+          - target: i686-unknown-linux-gnu
+            build: --no-default-features
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
@@ -55,7 +64,7 @@ jobs:
         run: docker pull rustembedded/cross:${{ matrix.target }}
 
       - name: Cross compile
-        run: cross build --target ${{ matrix.target }} --release
+        run: cross build --target ${{ matrix.target }} --release ${{ matrix.build }}
 
       - name: Upload so lib
         if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'
