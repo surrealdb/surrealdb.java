@@ -31,28 +31,40 @@ class Loader {
         final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
         final String name = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         final boolean android = vendor.contains("android");
-        final boolean linux = name.contains("linux");
-        final boolean windows = name.contains("win");
-        final boolean osx = name.contains("mac");
-        final boolean intel = arch.contains("x86_64") || arch.contains("amd64");
-        final boolean arm = arch.contains("aarch64") || arch.contains("arm64");
+        final boolean linux = !android && name.contains("linux");
+        final boolean windows = !linux && name.contains("win");
+        final boolean osx = !windows && name.contains("mac");
+        final boolean intel64 = arch.contains("x86_64") || arch.contains("amd64");
+        final boolean intel32 = !intel64 && arch.contains("i386") || arch.contains("i686") || arch.contains("x86");
+        final boolean arm64 = arch.contains("aarch64") || arch.contains("arm64");
+        final boolean arm32 = !arm64 && (arch.contains("armv7") || arch.contains("arm"));
         if (android) {
-            if (arm)
+            if (arm64)
                 return "android_arm64";
-            else if (intel)
+            if (intel64)
                 return "android_64";
+            if (arm32)
+                return "android_arm32";
+            if (intel32)
+                return "android_32";
         } else if (linux) {
-            if (arm)
+            if (arm64)
                 return "linux_arm64";
-            else if (intel)
+            if (intel64)
                 return "linux_64";
+            if (arm32)
+                return "linux_arm32";
+            if (intel32)
+                return "linux_32";
         } else if (windows) {
-            if (intel)
+            if (intel64)
                 return "windows_64";
+            if (intel32)
+                return "windows_32";
         } else if (osx) {
-            if (arm)
+            if (arm64)
                 return "osx_arm64";
-            else if (intel)
+            else if (intel64)
                 return "osx_64";
         }
         throw new RuntimeException("Unsupported architecture: " + arch + " - name: " + name);
