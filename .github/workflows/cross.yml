@@ -21,7 +21,6 @@ jobs:
           - aarch64-linux-android # android 64 arm
           - i686-linux-android # android 32 intel
           - armv7-linux-androideabi # android 32 arm
-          - x86_64-pc-windows-gnu # windows 64 intel
         include:
           - target: x86_64-linux-android
             cross: --git https://github.com/cross-rs/cross
@@ -66,23 +65,22 @@ jobs:
         run: cross build --target ${{ matrix.target }} --release ${{ matrix.build }}
 
       - name: Upload so lib
-        if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'
-          || matrix.target == 'x86_64-linux-android' || matrix.target == 'aarch64-linux-android'
-          || matrix.target == 'i686-unknown-linux-gnu' || matrix.target == 'armv7-unknown-linux-gnueabihf'
-          || matrix.target == 'i686-linux-android' || matrix.target == 'armv7-linux-androideabi'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-build
           path: target/${{ matrix.target }}/release/*.so
 
-      - name: Upload dll lib
-        if: matrix.target == 'x86_64-pc-windows-gnu'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/*.dll
-
-  window-32-intel:
+  windows:
+    strategy:
+      matrix:
+        arch: [ 'x86_64', 'i686' ]
+        includes:
+          - toolchain: mingw-w64-i686-toolchain
+            target: i686-pc-windows-gnu
+            path: C:\\msys64\\mingw64\\bin
+          - toolchain: mingw-w64-i686-toolchain
+            target: i686-pc-windows-gnu
+            path: C:\\msys64\\mingw32\\bin
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -95,23 +93,26 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          target: i686-pc-windows-gnu
+          target: ${{ matrix.arch }}-pc-windows-gnu
 
       - name: Install Mingw64
         uses: msys2/setup-msys2@v2
         with:
           msystem: mingw32
           update: true
-          install: mingw-w64-i686-toolchain
+          install: >-
+            mingw-w64-${{ matrix.arch }}-toolchain
+            mingw-w64-${{ matrix.arch }}-cmake
+            mingw-w64-${{ matrix.arch }}-pkg-config
 
       - name: Build
-        run: cargo build --target i686-pc-windows-gnu --release
+        run: cargo build --target ${{ matrix.arch }}-pc-windows-gnu --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: i686-pc-windows-gnu-build
-          path: target/i686-pc-windows-gnu/release/*.dll
+          name: ${{ matrix.arch }}-pc-windows-gnu-build
+          path: target/${{ matrix.arch }}-pc-windows-gnu/release/*.dll
 
   macos-64-intel:
     runs-on: macos-12
