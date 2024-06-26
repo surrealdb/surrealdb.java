@@ -248,7 +248,7 @@ macro_rules! return_value_array_first {
 
 #[macro_export]
 macro_rules! return_value_array_iter {
-     ($val:expr) => {
+    ($val:expr) => {
         if let Value::Array(a) = $val {
             let iter = a.into_iter();
             return $crate::create_instance(iter);
@@ -258,7 +258,7 @@ macro_rules! return_value_array_iter {
 
 #[macro_export]
 macro_rules! return_value_array_iter_sync {
-     ($val:expr) => {
+    ($val:expr) => {
         if let Value::Array(a) = $val {
             let iter = a.into_iter();
             return $crate::create_instance(std::sync::Arc::new(parking_lot::Mutex::new(iter)));
@@ -294,8 +294,7 @@ macro_rules! parse_value {
 #[macro_export]
 macro_rules! return_unexpected_result {
     ($env:expr, $res:expr, $default_fn:expr) => {
-        return $crate::SurrealError::SurrealDBJni(format!("Unexpected result: {}", $res)).exception($env, $default_fn)
+        return $crate::SurrealError::SurrealDBJni(format!("Unexpected result: {}", $res))
+            .exception($env, $default_fn)
     };
 }
-
-

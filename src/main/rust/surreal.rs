@@ -2,18 +2,23 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::JNIEnv;
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
+use jni::JNIEnv;
 use parking_lot::Mutex;
 use serde::Serialize;
-use surrealdb::{Error, Response, Surreal};
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
+use surrealdb::{Error, Response, Surreal};
 
-use crate::{check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value, release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter, return_value_array_iter_sync, take_one_result, TOKIO_RUNTIME};
 use crate::error::SurrealError;
+use crate::{
+    check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
+    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
+    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
+    return_value_array_iter_sync, take_one_result, TOKIO_RUNTIME,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -182,7 +187,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
 
 #[no_mangle]
@@ -212,7 +217,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValue<'local>(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
 
 #[no_mangle]
@@ -352,7 +357,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     // Return the iterator
     return_value_array_iter!(result);
     // Otherwise throw an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
 
 #[no_mangle]
@@ -379,7 +384,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     // Return tne sync iterator
     return_value_array_iter_sync!(result);
     // Otherwise throw an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
 
 #[no_mangle]
@@ -477,7 +482,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateThingValue<'local>(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
 
 #[no_mangle]
@@ -507,7 +512,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValues<'local>(
     // There should be only one result
     return_value_array_iter!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
 
 #[no_mangle]
@@ -537,5 +542,5 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValuesSync<'local
     // Return tne sync iterator
     return_value_array_iter_sync!(result);
     // Otherwise throw an error
-    return_unexpected_result!(&mut env, result, ||0)
+    return_unexpected_result!(&mut env, result, || 0)
 }
