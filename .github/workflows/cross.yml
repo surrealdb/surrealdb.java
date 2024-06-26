@@ -73,9 +73,8 @@ jobs:
   windows:
     strategy:
       matrix:
-        includes:
-          - arch: x86_64
-          - arch: i686
+        arch: [ x86_64, i686 ]
+        msystem: [ mingw64, mingw32 ]
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -93,7 +92,7 @@ jobs:
       - name: Install Mingw64
         uses: msys2/setup-msys2@v2
         with:
-          msystem: mingw32
+          msystem: ${{ matrix.system }}
           update: true
           install: >-
             mingw-w64-${{ matrix.arch }}-toolchain
@@ -112,11 +111,8 @@ jobs:
   macos:
     strategy:
       matrix:
-        includes:
-          - arch: x86_64
-            runs-on: macos-12
-          - arch: aarch64
-            runs-on: macos-latest
+        arch: [ x86_64, aarch64 ]
+        runs-on: [ macos-12, macos-latest ]
     runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout repository
