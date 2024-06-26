@@ -9,35 +9,22 @@ on:
       - main
 
 jobs:
-  build-cross:
+  cross:
     strategy:
       matrix:
         target:
-          - x86_64-unknown-linux-gnu
-          - aarch64-unknown-linux-gnu
-          - x86_64-linux-android
-          - aarch64-linux-android
-          - x86_64-pc-windows-gnu
-        include:
-          - target: x86_64-unknown-linux-gnu
-            runs-on: ubuntu-latest
-            optional: false
-          - target: aarch64-unknown-linux-gnu
-            runs-on: ubuntu-latest
-            optional: false
-          - target: x86_64-linux-android
-            runs-on: ubuntu-24.04
-            cross: --git https://github.com/cross-rs/cross
-            optional: true
-          - target: aarch64-linux-android
-            runs-on: ubuntu-24.04
-            cross: --git https://github.com/cross-rs/cross
-            optional: true
-          - target: x86_64-pc-windows-gnu
-            runs-on: ubuntu-latest
-            optional: false
-    runs-on: ${{ matrix.runs-on }}
-    continue-on-error: ${{ matrix.optional }}
+          - x86_64-unknown-linux-gnu # linux 64 intel
+          - aarch64-unknown-linux-gnu # linux 64 arm
+          - i686-unknown-linux-gnu # linux 32 intel
+          - armv7-unknown-linux-gnueabihf # linux 32 arm
+          - x86_64-linux-android # android 64 intel
+          - aarch64-linux-android # android 64 arm
+          - i686-linux-android # android 32 intel
+          - arm-linux-androideabi # android 32 arm
+          - x86_64-pc-windows-gnu # windows 64 intel
+          - i686-pc-windows-gnu # windows 32 intel
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix }}
     steps:
       - name: Install dependencies
         run: sudo apt-get update
@@ -51,32 +38,35 @@ jobs:
           toolchain: stable
 
       - name: Install cross
-        run: cargo install cross ${{ matrix.cross }}
+        run: cargo install cross ${{ matrix }}
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
 
       - name: Pull cross Docker image
-        run: docker pull rustembedded/cross:${{ matrix.target }}
+        run: docker pull rustembedded/cross:${{ matrix }}
 
       - name: Cross compile
-        run: cross build --target ${{ matrix.target }} --release
+        run: cross build --target ${{ matrix }} --release
 
       - name: Upload so lib
-        if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'  || matrix.target == 'x86_64-linux-android'  || matrix.target == 'aarch64-linux-android'
+        if: matrix == 'x86_64-unknown-linux-gnu' || matrix == 'aarch64-unknown-linux-gnu'
+          || matrix == 'x86_64-linux-android' || matrix == 'aarch64-linux-android'
+          || matrix == 'i686-unknown-linux-gnu' || matrix == 'armv7-unknown-linux-gnueabihf'
+          || matrix == 'i686-linux-android' || matrix == 'arm-linux-androideabi'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/*.so
+          name: ${{ matrix }}-build
+          path: target/${{ matrix }}/release/*.so
 
       - name: Upload dll lib
-        if: matrix.target == 'x86_64-pc-windows-gnu'
+        if: matrix == 'x86_64-pc-windows-gnu' || matrix == 'i686-pc-windows-gnu'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-build
-          path: target/${{ matrix.target }}/release/*.dll
+          name: ${{ matrix }}-build
+          path: target/${{ matrix }}/release/*.dll
 
-  build-macos-intel:
+  macos-intel:
     runs-on: macos-12
     steps:
       - name: Checkout repository
@@ -99,7 +89,7 @@ jobs:
           name: x86_64-apple-darwin-build
           path: target/x86_64-apple-darwin/release/*.dylib
 
-  build-macos-arm:
+  macos-arm:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
@@ -122,12 +112,12 @@ jobs:
           name: aarch64-apple-darwin-build
           path: target/aarch64-apple-darwin/release/*.dylib
 
-  build-aggregated-jar:
+  aggregated-jar:
     runs-on: ubuntu-latest
     needs:
-      - build-cross
-      - build-macos-intel
-      - build-macos-arm
+      - cross
+      - macos-intel
+      - macos-arm
     steps:
       - name: Install dependencies
         run: sudo apt-get update
@@ -147,54 +137,89 @@ jobs:
       - name: Create directories for artifacts
         run: |
           mkdir -p src/main/resources/natives/android_64
+          mkdir -p src/main/resources/natives/android_32
           mkdir -p src/main/resources/natives/android_arm64
+          mkdir -p src/main/resources/natives/android_arm32
           mkdir -p src/main/resources/natives/linux_64
+          mkdir -p src/main/resources/natives/linux_32
           mkdir -p src/main/resources/natives/linux_arm64
+          mkdir -p src/main/resources/natives/linux_arm32
           mkdir -p src/main/resources/natives/osx_64
           mkdir -p src/main/resources/natives/osx_arm64
           mkdir -p src/main/resources/natives/windows_64
+          mkdir -p src/main/resources/natives/windows_32
 
-      - name: Download Android artifacts
+      - name: Download Android 64 intel
         uses: actions/download-artifact@v4
         with:
           name: x86_64-linux-android-build
           path: src/main/resources/natives/android_64
 
-      - name: Download Arm Android artifacts
+      - name: Download Android 32 intel
+        uses: actions/download-artifact@v4
+        with:
+          name: i686-linux-android-build
+          path: src/main/resources/natives/android_32
+
+      - name: Download Android 64 arm
         uses: actions/download-artifact@v4
         with:
           name: aarch64-linux-android-build
           path: src/main/resources/natives/android_arm64
 
-      - name: Download Linux artifacts
+      - name: Download Android 32 arm
+        uses: actions/download-artifact@v4
+        with:
+          name: arm-linux-androideabi
+          path: src/main/resources/natives/android_arm32
+
+      - name: Download Linux 64 intel
         uses: actions/download-artifact@v4
         with:
           name: x86_64-unknown-linux-gnu-build
           path: src/main/resources/natives/linux_64
 
-      - name: Download AArch64 Linux artifacts
+      - name: Download Linux 32 intel
+        uses: actions/download-artifact@v4
+        with:
+          name: i686-unknown-linux-gnu-build
+          path: src/main/resources/natives/linux_32
+
+      - name: Download Linux 64 arm
         uses: actions/download-artifact@v4
         with:
           name: aarch64-unknown-linux-gnu-build
           path: src/main/resources/natives/linux_arm64
 
-      - name: Download macOS Intel artifacts
+      - name: Download Linux 32 arm
+        uses: actions/download-artifact@v4
+        with:
+          name: armv7-unknown-linux-gnueabihf-build
+          path: src/main/resources/natives/linux_arm32
+
+      - name: Download Darwin 64 intel
         uses: actions/download-artifact@v4
         with:
           name: x86_64-apple-darwin-build
           path: src/main/resources/natives/osx_64
 
-      - name: Download macOS ARM64 artifacts
+      - name: Download Darwin 64 arm
         uses: actions/download-artifact@v4
         with:
           name: aarch64-apple-darwin-build
           path: src/main/resources/natives/osx_arm64
 
-      - name: Download Windows artifacts
+      - name: Download Windows 64 intel
         uses: actions/download-artifact@v4
         with:
           name: x86_64-pc-windows-gnu-build
           path: src/main/resources/natives/windows_64
+
+      - name: Download Windows 32 intel
+        uses: actions/download-artifact@v4
+        with:
+          name: i686-pc-windows-gnu-build
+          path: src/main/resources/natives/windows_32
 
       - name: Build JAR
         run: ./gradlew jar
