@@ -73,8 +73,11 @@ jobs:
   windows:
     strategy:
       matrix:
-        arch: [ x86_64, i686 ]
-        msystem: [ mingw64, mingw32 ]
+        include:
+          - arch: x86_64
+            msystem: mingw64
+          - arch: i686
+            msystem: mingw32
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -111,8 +114,11 @@ jobs:
   macos:
     strategy:
       matrix:
-        arch: [ x86_64, aarch64 ]
-        runs-on: [ macos-12, macos-latest ]
+        include:
+          - arch: x86_64
+            runs-on: macos-12
+          - arch: aarch64
+            runs-on: macos-latest
     runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout repository
