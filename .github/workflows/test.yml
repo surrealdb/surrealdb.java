@@ -39,6 +39,8 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build native lib
+        env:
+          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build
 
       - name: Test

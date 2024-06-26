@@ -44,6 +44,8 @@ jobs:
         run: cargo install cargo-ndk
 
       - name: Build
+        env:
+          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo ndk -t ${{ matrix.ndk }} build --release
 
       - name: Upload so lib
@@ -89,6 +91,8 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Build
+        env:
+          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: |
           export ${{ matrix.linker }}
           cargo build --target ${{ matrix.target }} --release
@@ -118,6 +122,8 @@ jobs:
           target: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
+        env:
+          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
 
       - name: Upload artifact
@@ -148,6 +154,8 @@ jobs:
           toolchain: stable
 
       - name: Build
+        env:
+          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release
 
       - name: Upload artifact
