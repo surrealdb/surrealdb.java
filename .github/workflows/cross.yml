@@ -48,6 +48,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -55,9 +58,6 @@ jobs:
 
       - name: Install cross
         run: cargo install cross ${{ matrix.cross }}
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
 
       - name: Pull cross Docker image
         run: docker pull rustembedded/cross:${{ matrix.target }}
@@ -88,6 +88,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -97,10 +100,7 @@ jobs:
       - name: Install mingw-w64
         run: |
           choco install mingw -y
-          set PATH=C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin;%PATH%
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+          echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" >> $Env:PATH
 
       - name: Build
         run: cargo build --target i686-pc-windows-gnu --release
@@ -117,13 +117,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
 
       - name: Build
         run: cargo build --target x86_64-apple-darwin --release
@@ -140,13 +140,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
 
       - name: Build
         run: cargo build --target aarch64-apple-darwin --release
