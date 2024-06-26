@@ -24,7 +24,6 @@ jobs:
           - x86_64-pc-windows-gnu # windows 64 intel
           - i686-pc-windows-gnu # windows 32 intel
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix }}
     steps:
       - name: Install dependencies
         run: sudo apt-get update
@@ -38,33 +37,33 @@ jobs:
           toolchain: stable
 
       - name: Install cross
-        run: cargo install cross ${{ matrix }}
+        run: cargo install cross ${{ matrix.target }}
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
 
       - name: Pull cross Docker image
-        run: docker pull rustembedded/cross:${{ matrix }}
+        run: docker pull rustembedded/cross:${{ matrix.target }}
 
       - name: Cross compile
-        run: cross build --target ${{ matrix }} --release
+        run: cross build --target ${{ matrix.target }} --release
 
       - name: Upload so lib
-        if: matrix == 'x86_64-unknown-linux-gnu' || matrix == 'aarch64-unknown-linux-gnu'
-          || matrix == 'x86_64-linux-android' || matrix == 'aarch64-linux-android'
-          || matrix == 'i686-unknown-linux-gnu' || matrix == 'armv7-unknown-linux-gnueabihf'
-          || matrix == 'i686-linux-android' || matrix == 'arm-linux-androideabi'
+        if: matrix.target == 'x86_64-unknown-linux-gnu' || matrix.target == 'aarch64-unknown-linux-gnu'
+          || matrix.target == 'x86_64-linux-android' || matrix.target == 'aarch64-linux-android'
+          || matrix.target == 'i686-unknown-linux-gnu' || matrix.target == 'armv7-unknown-linux-gnueabihf'
+          || matrix.target == 'i686-linux-android' || matrix.target == 'arm-linux-androideabi'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix }}-build
-          path: target/${{ matrix }}/release/*.so
+          name: ${{ matrix.target }}-build
+          path: target/${{ matrix.target }}/release/*.so
 
       - name: Upload dll lib
-        if: matrix == 'x86_64-pc-windows-gnu' || matrix == 'i686-pc-windows-gnu'
+        if: matrix.target == 'x86_64-pc-windows-gnu' || matrix.target == 'i686-pc-windows-gnu'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix }}-build
-          path: target/${{ matrix }}/release/*.dll
+          name: ${{ matrix.target }}-build
+          path: target/${{ matrix.target }}/release/*.dll
 
   macos-intel:
     runs-on: macos-12
