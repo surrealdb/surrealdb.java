@@ -59,13 +59,17 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            linker: DUMMY
+            linker: CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc
+            apt-get: gcc
           - target: aarch64-unknown-linux-gnu
-            linker: CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
+            linker: CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+            apt-get: gcc-aarch64-linux-gnu
           - target: i686-unknown-linux-gnu
-            linker: CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/gcc
+            linker: CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc
+            apt-get: gcc-multilib
           - target: armv7-unknown-linux-gnueabihf
-            linker: CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=/usr/bin/arm-linux-gnueabihf-gcc
+            linker: CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+            apt-get: gcc-arm-linux-gnueabihf
 
     runs-on: ubuntu-latest
     steps:
@@ -78,10 +82,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-          gcc-multilib \
-          gcc-arm-linux-gnueabihf \
-          gcc-aarch64-linux-gnu
+          sudo apt-get install -y ${{ matrix.apt-get }}
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
