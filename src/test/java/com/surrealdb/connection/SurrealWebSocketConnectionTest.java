@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
-class SurrealWebSocketConnectionTest {
+public class SurrealWebSocketConnectionTest {
 
     @DisplayName("Can create a Connection")
     @ParameterizedTest(name = "Can create a Connection for {3}")
@@ -36,15 +36,15 @@ class SurrealWebSocketConnectionTest {
     @ParameterizedTest(name = "Can create a Connection for {3}")
     @MethodSource("urlProviderWithoutPort")
     public void canCreateAConnectionWithUrlWithoutPort(
-        String host, boolean useTls, String expectedUrl) {
+            String host, boolean useTls, String expectedUrl) {
         SurrealWebSocketConnection connection = new SurrealWebSocketConnection(host, useTls);
         assertEquals(expectedUrl, connection.getURI().toASCIIString());
     }
 
     static Stream<Arguments> urlProviderWithoutPort() {
         return Stream.of(
-            Arguments.of("1",false, "ws://1:80/rpc"),
-            Arguments.of("10", true, "wss://10:443/rpc"));
+                Arguments.of("1", false, "ws://1:80/rpc"),
+                Arguments.of("10", true, "wss://10:443/rpc"));
     }
 
     private static final String localAddr = "ws://localhost";
@@ -66,7 +66,7 @@ class SurrealWebSocketConnectionTest {
     }
 
     @Test
-    void canHandleMultiObjectResult() {
+    public void canHandleMultiObjectResult() {
         SurrealWebSocketConnection connection =
                 new SurrealWebSocketConnection(localAddr, localPort, false);
         connection.connect(1);
