@@ -2,6 +2,13 @@ use std::collections::BTreeMap;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
+use crate::error::SurrealError;
+use crate::{
+    check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
+    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
+    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
+    return_value_array_iter_sync, take_one_result, TOKIO_RUNTIME,
+};
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
 use jni::JNIEnv;
@@ -10,15 +17,7 @@ use serde::Serialize;
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Value;
-use surrealdb::{Error, Response, Surreal};
-
-use crate::error::SurrealError;
-use crate::{
-    check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
-    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
-    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
-    return_value_array_iter_sync, take_one_result, TOKIO_RUNTIME,
-};
+use surrealdb::{sql, Error, Response, Surreal};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -150,7 +149,7 @@ fn surrealdb_query<T>(
     params: Option<BTreeMap<String, T>>,
 ) -> Result<Response, Error>
 where
-    T: Serialize,
+    T: Serialize + 'static,
 {
     TOKIO_RUNTIME.block_on(async {
         let q = surreal.query(query);
@@ -183,7 +182,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let mut result: Value = take_one_result!(&mut env, response, || 0);
+    let mut result = take_one_result!(&mut env, response, || 0);
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
@@ -213,7 +212,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValue<'local>(
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let mut result: Value = take_one_result!(&mut env, response, || 0);
+    let mut result = take_one_result!(&mut env, response, || 0);
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
@@ -253,8 +252,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValues<'local>(
     let mut value_ptrs: Vec<jlong> = Vec::with_capacity(res.num_statements());
     // Iterate overt the statement
     for i in 0..res.num_statements() {
-        let mut res: Value = match res.take(i) {
-            Ok(r) => r,
+        let mut res = match res.take::<surrealdb::Value>(i) {
+            Ok(r) => r.into_inner(),
             Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, null_mut),
         };
         // There should be only one result per statement
@@ -288,7 +287,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let mut res: Value = take_one_result!(&mut env, res, || 0);
+    let mut res = take_one_result!(&mut env, res, || 0);
     // There should be only one result
     return_value_array_first!(res);
     0
@@ -317,9 +316,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
     // Check the result
     let mut res = check_query_result!(&mut env, res, null_mut);
     // There is only one statement
-    let res: Value = take_one_result!(&mut env, res, null_mut);
+    let res = take_one_result!(&mut env, res, null_mut);
     // Prepare the result
-    if let Value::Array(a) = res {
+    if let sql::Value::Array(a) = res {
         let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
         for value in a {
             let value_ptr = create_instance(Arc::new(value));
@@ -353,7 +352,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let result: Value = take_one_result!(&mut env, response, || 0);
+    let result = take_one_result!(&mut env, response, || 0);
     // Return the iterator
     return_value_array_iter!(result);
     // Otherwise throw an error
@@ -380,7 +379,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
-    let result: Value = take_one_result!(&mut env, response, || 0);
+    let result = take_one_result!(&mut env, response, || 0);
     // Return tne sync iterator
     return_value_array_iter_sync!(result);
     // Otherwise throw an error
@@ -399,7 +398,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteThing<'local>(
     // Build the parameters
     let thing = get_value_instance!(&mut env, thing_ptr, || false as jboolean);
     // Prepare the params
-    let params = BTreeMap::from([("t".to_string(), thing.as_ref())]);
+    let params = BTreeMap::from([("t".to_string(), thing)]);
     // Execute the query
     let res = surrealdb_query(&surreal, "DELETE $t", Some(params));
     // Check the result

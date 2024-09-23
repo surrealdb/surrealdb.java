@@ -41,18 +41,29 @@ public class ConnectionTests {
                 final Value value = response.take(0);
                 assertTrue(value.isObject());
                 final Object object = value.getObject();
-                assertEquals(object.len(), 2);
+                assertEquals(object.len(), 4);
                 {
-                    final Value ns = object.get("namespaces");
-                    assertTrue(ns.isObject());
-                    assertEquals("{  }", ns.toString());
-                    assertEquals(ns.getObject().len(), 0);
+                    final Value v = object.get("accesses");
+                    assertTrue(v.isObject());
+                    assertEquals(v.getObject().len(), 0);
+                    assertEquals("{}", v.toPrettyString());
                 }
                 {
-                    final Value users = object.get("users");
-                    assertTrue(users.isObject());
-                    assertEquals(users.getObject().len(), 0);
-                    assertEquals("{}", users.toPrettyString());
+                    final Value v = object.get("namespaces");
+                    assertTrue(v.isObject());
+                    assertEquals("{  }", v.toString());
+                    assertEquals(v.getObject().len(), 0);
+                }
+                {
+                    final Value v = object.get("users");
+                    assertTrue(v.isObject());
+                    assertEquals(v.getObject().len(), 0);
+                    assertEquals("{}", v.toPrettyString());
+                }
+                {
+                    final Value v = object.get("nodes");
+                    assertTrue(v.isObject());
+                    assertEquals(v.getObject().len(), 1);
                 }
             }
         }

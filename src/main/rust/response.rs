@@ -4,8 +4,7 @@ use jni::objects::JClass;
 use jni::sys::{jboolean, jint, jlong};
 use jni::JNIEnv;
 use parking_lot::Mutex;
-use surrealdb::sql::Value;
-use surrealdb::Response;
+use surrealdb::{Response, Value};
 
 use crate::error::SurrealError;
 use crate::{create_instance, get_response_instance, release_instance};

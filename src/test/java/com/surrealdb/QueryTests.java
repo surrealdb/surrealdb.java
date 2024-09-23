@@ -136,7 +136,7 @@ public class QueryTests {
                 assertTrue(create.isArray());
                 final Array createArray = create.getArray();
                 assertEquals(createArray.len(), 1);
-                assertEquals("[{ id: person:1, uuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
+                assertEquals("[{ id: person:1, uuid: u'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
                 final Value select = response.take(1);
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
@@ -144,7 +144,7 @@ public class QueryTests {
                 assertEquals("[\n" +
                     "\t{\n" +
                     "\t\tid: person:1,\n" +
-                    "\t\tuuid: 'f8e238f2-e734-47b8-9a16-476b291bd78a'\n" +
+                    "\t\tuuid: u'f8e238f2-e734-47b8-9a16-476b291bd78a'\n" +
                     "\t}\n" +
                     "]", selectArray.toPrettyString());
                 // Retrieve the fist record

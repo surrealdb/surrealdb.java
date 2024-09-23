@@ -23,7 +23,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
     s: JString<'local>,
 ) -> jlong {
     let s = get_rust_string!(&mut env, s, || 0);
-    let value = Value::Strand(Strand(s));
+    let value = Value::Strand(Strand::from(s));
     create_instance(value)
 }
 
@@ -90,13 +90,13 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDatetime<'local>(
     nanos: jlong,
 ) -> jlong {
     if let Some(d) = DateTime::from_timestamp(seconds, nanos as u32) {
-        let value = Value::Datetime(Datetime(d));
+        let value = Value::Datetime(Datetime::from(d));
         create_instance(value)
     } else {
         SurrealError::SurrealDBJni(format!(
             "Can't create the Datetime from seconds: {seconds}, nanos: {nanos}"
         ))
-        .exception(&mut env, || 0)
+            .exception(&mut env, || 0)
     }
 }
 
@@ -128,7 +128,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
         let (key, value) = take_entry_mut_instance!(&mut env, ptr, || 0);
         map.insert(key, value);
     }
-    let value = Value::Object(Object(map));
+    let value = Value::Object(Object::from(map));
     create_instance(value)
 }
 

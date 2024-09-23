@@ -228,8 +228,11 @@ macro_rules! get_entry_mut_instance {
 #[macro_export]
 macro_rules! take_one_result {
     ($env:expr, $res:expr, $default_fn:expr) => {
-        match $res.take(0) {
-            Ok(r) => r,
+        match $res.take::<surrealdb::Value>(0) {
+            Ok(r) => {
+                let r: surrealdb::sql::Value = r.into_inner();
+                r
+            },
             Err(e) => return $crate::SurrealError::SurrealDB(e).exception($env, $default_fn),
         }
     };
@@ -238,7 +241,7 @@ macro_rules! take_one_result {
 #[macro_export]
 macro_rules! return_value_array_first {
     ($val:expr) => {
-        if let Value::Array(ref mut a) = $val {
+        if let surrealdb::sql::Value::Array(ref mut a) = $val {
             if a.len() == 1 {
                 return $crate::create_instance(Arc::new(a.remove(0)));
             }
@@ -249,7 +252,7 @@ macro_rules! return_value_array_first {
 #[macro_export]
 macro_rules! return_value_array_iter {
     ($val:expr) => {
-        if let Value::Array(a) = $val {
+        if let surrealdb::sql::Value::Array(a) = $val {
             let iter = a.into_iter();
             return $crate::create_instance(iter);
         }
@@ -259,7 +262,7 @@ macro_rules! return_value_array_iter {
 #[macro_export]
 macro_rules! return_value_array_iter_sync {
     ($val:expr) => {
-        if let Value::Array(a) = $val {
+        if let surrealdb::sql::Value::Array(a) = $val {
             let iter = a.into_iter();
             return $crate::create_instance(std::sync::Arc::new(parking_lot::Mutex::new(iter)));
         }
