@@ -1,8 +1,6 @@
 package com.surrealdb;
 
-import com.surrealdb.signin.Jwt;
-import com.surrealdb.signin.Root;
-import com.surrealdb.signin.Signin;
+import com.surrealdb.signin.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,6 +22,10 @@ public class Surreal extends Native implements AutoCloseable {
     private static native boolean connect(long ptr, String connect);
 
     private static native String signinRoot(long ptr, String username, String password);
+
+    private static native String signinNamespace(long ptr, String username, String password, String ns);
+
+    private static native String signinDatabase(long ptr, String username, String password, String ns, String db);
 
     private static native boolean useNs(long ptr, String ns);
 
@@ -83,12 +85,18 @@ public class Surreal extends Native implements AutoCloseable {
         return this;
     }
 
-    public Jwt signin(Signin signin) {
-        if (signin instanceof Root) {
+    public Token signin(Signin signin) {
+        if (signin instanceof Database) {
+            final Database db = (Database) signin;
+            return new Token(signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase()));
+        } else if (signin instanceof Namespace) {
+            final Namespace ns = (Namespace) signin;
+            return new Token(signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace()));
+        } else if (signin instanceof Root) {
             final Root r = (Root) signin;
-            return new Jwt(signinRoot(getPtr(), r.getUsername(), r.getPassword()));
+            return new Token(signinRoot(getPtr(), r.getUsername(), r.getPassword()));
         }
-        throw new SurrealException("Unsupported signin");
+        throw new SurrealException("Unsupported sign in");
     }
 
     public Surreal useNs(String ns) {

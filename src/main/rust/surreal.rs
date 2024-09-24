@@ -15,7 +15,7 @@ use jni::JNIEnv;
 use parking_lot::Mutex;
 use serde::Serialize;
 use surrealdb::engine::any::Any;
-use surrealdb::opt::auth::Root;
+use surrealdb::opt::auth::{Database, Namespace, Root};
 use surrealdb::sql::Value;
 use surrealdb::{sql, Error, Response, Surreal};
 
@@ -72,6 +72,75 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
             .signin(Root {
                 username: &username,
                 password: &password,
+            })
+            .await
+    }) {
+        Ok(jwt) => {
+            let jwt = jwt.into_insecure_token();
+            new_string!(&mut env, jwt, null_mut)
+        }
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    username: JString<'local>,
+    password: JString<'local>,
+    ns: JString<'local>,
+) -> jstring {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, ptr, null_mut);
+    // Convert the parameters
+    let username = get_rust_string!(&mut env, username, null_mut);
+    let password = get_rust_string!(&mut env, password, null_mut);
+    let namespace = get_rust_string!(&mut env, ns, null_mut);
+    // Signin
+    match TOKIO_RUNTIME.block_on(async {
+        surreal
+            .signin(Namespace {
+                username: &username,
+                password: &password,
+                namespace: &namespace,
+            })
+            .await
+    }) {
+        Ok(jwt) => {
+            let jwt = jwt.into_insecure_token();
+            new_string!(&mut env, jwt, null_mut)
+        }
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    username: JString<'local>,
+    password: JString<'local>,
+    ns: JString<'local>,
+    db: JString<'local>,
+) -> jstring {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, ptr, null_mut);
+    // Convert the parameters
+    let username = get_rust_string!(&mut env, username, null_mut);
+    let password = get_rust_string!(&mut env, password, null_mut);
+    let namespace = get_rust_string!(&mut env, ns, null_mut);
+    let database = get_rust_string!(&mut env, db, null_mut);
+    // Signin
+    match TOKIO_RUNTIME.block_on(async {
+        surreal
+            .signin(Database {
+                username: &username,
+                password: &password,
+                namespace: &namespace,
+                database: &database,
             })
             .await
     }) {

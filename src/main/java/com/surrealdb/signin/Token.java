@@ -1,10 +1,10 @@
 package com.surrealdb.signin;
 
-public class Jwt {
+public class Token {
 
     private final String token;
 
-    public Jwt(String token) {
+    public Token(String token) {
         this.token = token;
     }
 
