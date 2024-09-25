@@ -3419,14 +3419,15 @@ dependencies = [
  "parking_lot",
  "rust_decimal",
  "serde",
- "surrealdb 2.0.1",
+ "surrealdb 2.0.2",
  "tokio",
 ]
 
 [[package]]
 name = "surrealdb"
-version = "2.0.1"
-source = "git+https://github.com/surrealdb/surrealdb.git#97eb95b65e021bbd5c5b1eb1aebb10fb9569b794"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39763f42366823f524ded4e423420fe990352a18665f00151521ea49f590d33e"
 dependencies = [
  "arrayvec",
  "async-channel 1.9.0",
@@ -3465,8 +3466,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-core"
-version = "2.0.1"
-source = "git+https://github.com/surrealdb/surrealdb.git#97eb95b65e021bbd5c5b1eb1aebb10fb9569b794"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12d8339a5d2968dedee86705482becc6a6181a07cc30ed2e674526a81bd7389e"
 dependencies = [
  "addr",
  "ahash 0.8.11",

@@ -13,7 +13,7 @@ opt-level = 3
 
 [dependencies]
 jni = "0.21.1"
-surrealdb = { git = "https://github.com/surrealdb/surrealdb.git" } # to be replaced by v2.0.2
+surrealdb = "2.0.2"
 serde = "1.0.210"
 rust_decimal = "1.36.0"
 tokio = "1.40.0"
