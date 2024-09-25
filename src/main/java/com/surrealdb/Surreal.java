@@ -41,6 +41,16 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long[] createTargetsValues(long ptr, String targets, long[] valuePtrs);
 
+    private static native long insertTargetValue(long ptr, String target, long valuePtr);
+
+    private static native long[] insertTargetValues(long ptr, String target, long[] valuePtrs);
+
+    private static native long insertRelationTargetValue(long ptr, String target, long valuePtr);
+
+    private static native long relate(long ptr, long from, String table, long to);
+
+    private static native long relateValue(long ptr, long from, String table, long to, long valuePtr);
+
     private static native long updateThingValue(long ptr, long thingPtr, long valuePtr);
 
     private static native long updateTargetsValues(long ptr, String targets, long valuePtr);
@@ -137,17 +147,69 @@ public class Surreal extends Native implements AutoCloseable {
         return create(targets, content).get(type);
     }
 
-    public <T> List<Value> create(String targets, T... contents) {
+    @SafeVarargs
+    public final <T> List<Value> create(String targets, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
         final long[] valuePtrs = createTargetsValues(getPtr(), targets, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 
-    public <T> List<T> create(Class<T> type, String targets, T... contents) {
+    @SafeVarargs
+    public final <T> List<T> create(Class<T> type, String targets, T... contents) {
         try (final Stream<Value> s = create(targets, contents).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
     }
+
+    public <T> Value insert(String target, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = insertTargetValue(getPtr(), target, valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    public <T> T insert(Class<T> type, String target, T content) {
+        return insert(target, content).get(type);
+    }
+
+    @SafeVarargs
+    public final <T> List<Value> insert(String target, T... contents) {
+        final long[] valueMutPtrs = contents2longs(contents);
+        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
+        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+    }
+
+    @SafeVarargs
+    public final <T> List<T> insert(Class<T> type, String target, T... contents) {
+        try (final Stream<Value> s = insert(target, contents).stream()) {
+            return s.map(v -> v.get(type)).collect(Collectors.toList());
+        }
+    }
+
+    public <T> Value insertRelation(String target, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    public Value relate(Thing from, String table, Thing to) {
+        final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());
+        return new Value(valuePtr);
+    }
+
+    public <T> T relate(Class<T> type, Thing from, String table, Thing to) {
+        return relate(from, table, to).get(type);
+    }
+
+    public <T> Value relate(Thing from, String table, Thing to, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = relateValue(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    public <T> T relate(Class<T> type, Thing from, String table, Thing to, T content) {
+        return relate(from, table, to, content).get(type);
+    }
+
 
     public <T> Value update(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
