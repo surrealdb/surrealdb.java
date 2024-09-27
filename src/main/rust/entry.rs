@@ -1,6 +1,5 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
-use std::sync::Arc;
 
 use jni::objects::JClass;
 use jni::sys::{jboolean, jint, jlong, jstring};

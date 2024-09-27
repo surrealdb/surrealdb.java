@@ -23,7 +23,7 @@ public class InsertRelationTests {
             final Thing tobie = persons.get(0).get(Person.class).id;
             final Thing jaime = persons.get(1).get(Person.class).id;
             // Relate records
-            final InsertRelation insert = new InsertRelation(new Id(1), tobie, jaime);
+            final InsertRelation insert = new InsertRelation(Id.from(1), tobie, jaime);
             final Value value = surreal.insertRelation("brother", insert);
             // Get the relation:
             final InsertRelation relation = value.get(InsertRelation.class);
@@ -43,7 +43,7 @@ public class InsertRelationTests {
             final Thing tobie = persons.get(0).get(Person.class).id;
             final Thing jaime = persons.get(1).get(Person.class).id;
             // Relate records
-            final InsertRelation insert = new InsertRelation(new Id(1), tobie, jaime);
+            final InsertRelation insert = new InsertRelation(Id.from(1), tobie, jaime);
             final InsertRelation relation = surreal.insertRelation(InsertRelation.class, "brother", insert);
             // Assertion
             assertEquals(insert, relation);
@@ -61,8 +61,8 @@ public class InsertRelationTests {
             final Thing tobie = persons.get(0).get(Person.class).id;
             final Thing jaime = persons.get(1).get(Person.class).id;
             // Relate records
-            final InsertRelation insert1 = new InsertRelation(new Id(1), tobie, jaime);
-            final InsertRelation insert2 = new InsertRelation(new Id(2), jaime, tobie);
+            final InsertRelation insert1 = new InsertRelation(Id.from("A"), tobie, jaime);
+            final InsertRelation insert2 = new InsertRelation(Id.from("B"), jaime, tobie);
             final List<Value> relations = surreal.insertRelations("brother", insert1, insert2);
             // Get the relation:
             final InsertRelation relation1 = relations.get(0).get(InsertRelation.class);
@@ -85,8 +85,8 @@ public class InsertRelationTests {
             final Thing tobie = persons.get(0).get(Person.class).id;
             final Thing jaime = persons.get(1).get(Person.class).id;
             // Relate records
-            final InsertRelation insert1 = new InsertRelation(new Id(1), tobie, jaime);
-            final InsertRelation insert2 = new InsertRelation(new Id(2), jaime, tobie);
+            final InsertRelation insert1 = new InsertRelation(Id.from(1), tobie, jaime);
+            final InsertRelation insert2 = new InsertRelation(Id.from(2), jaime, tobie);
             final List<InsertRelation> relations = surreal.insertRelations(InsertRelation.class, "brother", insert1, insert2);
             // Assertion
             assertEquals(insert1, relations.get(0));

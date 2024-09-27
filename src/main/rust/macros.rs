@@ -31,7 +31,7 @@ macro_rules! get_response_instance {
 #[macro_export]
 macro_rules! get_value_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<Arc<surrealdb::sql::Value>>($id, "Value") {
+        match $crate::get_instance::<std::sync::Arc<surrealdb::sql::Value>>($id, "Value") {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -41,7 +41,7 @@ macro_rules! get_value_instance {
 #[macro_export]
 macro_rules! get_entry_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<(String, Arc<surrealdb::sql::Value>)>($id, "Entry") {
+        match $crate::get_instance::<(String, std::sync::Arc<surrealdb::sql::Value>)>($id, "Entry") {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }

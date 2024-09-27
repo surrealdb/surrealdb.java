@@ -61,6 +61,12 @@ class ValueBuilder {
             final Optional<?> optional = (Optional<?>) object;
             return optional.map(ValueBuilder::convert).orElse(null);
         }
+        if (object instanceof Id) {
+            return ValueMut.createId((Id) object);
+        }
+        if (object instanceof Thing) {
+            return ValueMut.createThing((Thing) object);
+        }
         final Field[] fields = object.getClass().getFields();
         if (fields.length > 0) {
             final List<EntryMut> entries = new ArrayList<>(fields.length);

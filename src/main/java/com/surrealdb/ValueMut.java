@@ -25,6 +25,10 @@ class ValueMut extends Native {
 
     private static native long newDatetime(long seconds, long nanos);
 
+    private static native long newId(long ptr);
+
+    private static native long newThing(long ptr);
+
     private static native long newArray(long[] ptrs);
 
     private static native long newObject(long[] ptrs);
@@ -55,6 +59,14 @@ class ValueMut extends Native {
 
     static ValueMut createDatetime(ZonedDateTime d) {
         return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));
+    }
+
+    static ValueMut createId(Id id) {
+        return new ValueMut(newId(id.getPtr()));
+    }
+
+    static ValueMut createThing(Thing thing) {
+        return new ValueMut(newThing(thing.getPtr()));
     }
 
     static ValueMut createArray(List<ValueMut> values) {

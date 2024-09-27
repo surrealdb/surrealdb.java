@@ -11,10 +11,7 @@ use rust_decimal::Decimal;
 use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Value};
 
 use crate::error::SurrealError;
-use crate::{
-    create_instance, get_long_array, get_rust_string, get_value_mut_instance, new_string,
-    take_entry_mut_instance, take_value_mut_instance,
-};
+use crate::{create_instance, get_long_array, get_rust_string, get_value_instance, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
@@ -99,6 +96,37 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDatetime<'local>(
             .exception(&mut env, || 0)
     }
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    println!("1");
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    println!("2");
+    if matches!(value.as_ref(), Value::Thing(_)) {
+        println!("3");
+        return create_instance(value.as_ref().clone());
+    }
+    println!("4");
+    SurrealError::NullPointerException("Id").exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if matches!(value.as_ref(), Value::Thing(_)) {
+        return create_instance(value.clone());
+    }
+    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+}
+
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
