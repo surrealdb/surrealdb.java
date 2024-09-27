@@ -11,7 +11,7 @@ use crate::error::SurrealError;
 use crate::{create_instance, get_rust_string, get_value_instance, new_string};
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_newTableId<'local>(
+pub extern "system" fn Java_com_surrealdb_Thing_newThingLongId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     table: JString<'local>,

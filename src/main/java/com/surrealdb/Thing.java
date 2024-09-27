@@ -8,10 +8,16 @@ public class Thing extends Native {
     }
 
     public Thing(String table, long id) {
-        super(newTableId(table, id));
+        super(newThingLongId(table, id));
     }
 
-    private static native long newTableId(String table, long id);
+    public Thing(String table, String id) {
+        super(newThingStringId(table, id));
+    }
+
+    private static native long newThingLongId(String table, long id);
+
+    private static native long newThingStringId(String table, String id);
 
     private static native String getTable(long ptr);
 

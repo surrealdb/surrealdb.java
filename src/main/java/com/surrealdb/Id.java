@@ -6,6 +6,18 @@ public class Id extends Native {
         super(ptr);
     }
 
+    public static Id from(long id) {
+        return new Id(newLongId(id));
+    }
+
+    public static Id from(String id) {
+        return new Id(newStringId(id));
+    }
+
+    private static native long newLongId(long id);
+
+    private static native long newStringId(String id);
+
     private static native boolean isLong(long ptr);
 
     private static native long getLong(long ptr);

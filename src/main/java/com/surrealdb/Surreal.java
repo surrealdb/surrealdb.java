@@ -187,18 +187,18 @@ public class Surreal extends Native implements AutoCloseable {
         }
     }
 
-    public <T> Value insertRelation(String target, T content) {
+    public <T extends InsertRelation> Value insertRelation(String target, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T extends Relation> T insertRelation(Class<T> type, String target, T content) {
+    public <T extends InsertRelation> T insertRelation(Class<T> type, String target, T content) {
         return insertRelation(target, content).get(type);
     }
 
     @SafeVarargs
-    public final <T> List<Value> insertRelations(String target, T... contents) {
+    public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
         final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
         final long[] valuePtr = insertRelationTargetValues(getPtr(), target, valuePtrs);
@@ -206,7 +206,7 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     @SafeVarargs
-    public final <T extends Relation> List<T> insertRelations(Class<T> type, String target, T... contents) {
+    public final <T extends InsertRelation> List<T> insertRelations(Class<T> type, String target, T... contents) {
         try (final Stream<Value> s = insertRelations(target, contents).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
