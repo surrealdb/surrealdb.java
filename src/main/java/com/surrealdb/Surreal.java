@@ -196,7 +196,7 @@ public class Surreal extends Native implements AutoCloseable {
         return new Value(valuePtr);
     }
 
-    public <T> T relate(Class<T> type, Thing from, String table, Thing to) {
+    public <T extends Relation> T relate(Class<T> type, Thing from, String table, Thing to) {
         return relate(from, table, to).get(type);
     }
 
@@ -206,11 +206,10 @@ public class Surreal extends Native implements AutoCloseable {
         return new Value(valuePtr);
     }
 
-    public <T> T relate(Class<T> type, Thing from, String table, Thing to, T content) {
+    public <R extends Relation, T> R relate(Class<R> type, Thing from, String table, Thing to, T content) {
         return relate(from, table, to, content).get(type);
     }
-
-
+    
     public <T> Value update(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
