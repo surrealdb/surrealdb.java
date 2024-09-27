@@ -47,6 +47,8 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long insertRelationTargetValue(long ptr, String target, long valuePtr);
 
+    private static native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
+
     private static native long relate(long ptr, long from, String table, long to);
 
     private static native long relateValue(long ptr, long from, String table, long to, long valuePtr);
@@ -191,6 +193,25 @@ public class Surreal extends Native implements AutoCloseable {
         return new Value(valuePtr);
     }
 
+    public <T extends Relation> T insertRelation(Class<T> type, String target, T content) {
+        return insertRelation(target, content).get(type);
+    }
+
+    @SafeVarargs
+    public final <T> List<Value> insertRelations(String target, T... contents) {
+        final long[] valueMutPtrs = contents2longs(contents);
+        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
+        final long[] valuePtr = insertRelationTargetValues(getPtr(), target, valuePtrs);
+        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+    }
+
+    @SafeVarargs
+    public final <T extends Relation> List<T> insertRelations(Class<T> type, String target, T... contents) {
+        try (final Stream<Value> s = insertRelations(target, contents).stream()) {
+            return s.map(v -> v.get(type)).collect(Collectors.toList());
+        }
+    }
+
     public Value relate(Thing from, String table, Thing to) {
         final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());
         return new Value(valuePtr);
@@ -209,7 +230,7 @@ public class Surreal extends Native implements AutoCloseable {
     public <R extends Relation, T> R relate(Class<R> type, Thing from, String table, Thing to, T content) {
         return relate(from, table, to, content).get(type);
     }
-    
+
     public <T> Value update(Thing thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
