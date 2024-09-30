@@ -8,10 +8,16 @@ public class Thing extends Native {
 <span class="fc" id="L8">    }</span>
 
     public Thing(String table, long id) {
-<span class="fc" id="L11">        super(newTableId(table, id));</span>
+<span class="fc" id="L11">        super(newThingLongId(table, id));</span>
 <span class="fc" id="L12">    }</span>
 
-    private static native long newTableId(String table, long id);
+    public Thing(String table, String id) {
+<span class="nc" id="L15">        super(newThingStringId(table, id));</span>
+<span class="nc" id="L16">    }</span>
+
+    private static native long newThingLongId(String table, long id);
+
+    private static native long newThingStringId(String table, String id);
 
     private static native String getTable(long ptr);
 
@@ -31,11 +37,11 @@ public class Thing extends Native {
 
 
     public String getTable() {
-<span class="fc" id="L34">        return getTable(getPtr());</span>
+<span class="fc" id="L40">        return getTable(getPtr());</span>
     }
 
     public Id getId() {
-<span class="fc" id="L38">        return new Id(getId(getPtr()));</span>
+<span class="fc" id="L44">        return new Id(getId(getPtr()));</span>
     }
 
 }

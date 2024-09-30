@@ -6,6 +6,18 @@ public class Id extends Native {
 <span class="fc" id="L6">        super(ptr);</span>
 <span class="fc" id="L7">    }</span>
 
+    public static Id from(long id) {
+<span class="fc" id="L10">        return new Id(newLongId(id));</span>
+    }
+
+    public static Id from(String id) {
+<span class="fc" id="L14">        return new Id(newStringId(id));</span>
+    }
+
+    private static native long newLongId(long id);
+
+    private static native long newStringId(String id);
+
     private static native boolean isLong(long ptr);
 
     private static native long getLong(long ptr);
@@ -35,35 +47,35 @@ public class Id extends Native {
     final native boolean deleteInstance(long ptr);
 
     final public boolean isLong() {
-<span class="fc" id="L38">        return isLong(getPtr());</span>
+<span class="fc" id="L50">        return isLong(getPtr());</span>
     }
 
     final public long getLong() {
-<span class="fc" id="L42">        return getLong(getPtr());</span>
+<span class="fc" id="L54">        return getLong(getPtr());</span>
     }
 
     final public boolean isString() {
-<span class="nc" id="L46">        return isString(getPtr());</span>
+<span class="nc" id="L58">        return isString(getPtr());</span>
     }
 
     final public String getString() {
-<span class="nc" id="L50">        return getString(getPtr());</span>
+<span class="nc" id="L62">        return getString(getPtr());</span>
     }
 
     final public boolean isArray() {
-<span class="nc" id="L54">        return isArray(getPtr());</span>
+<span class="nc" id="L66">        return isArray(getPtr());</span>
     }
 
     final public Array getArray() {
-<span class="nc" id="L58">        return getArray(getPtr());</span>
+<span class="nc" id="L70">        return getArray(getPtr());</span>
     }
 
     final public boolean isObject() {
-<span class="nc" id="L62">        return isObject(getPtr());</span>
+<span class="nc" id="L74">        return isObject(getPtr());</span>
     }
 
     final public Object getObject() {
-<span class="nc" id="L66">        return getObject(getPtr());</span>
+<span class="nc" id="L78">        return getObject(getPtr());</span>
     }
 
 }
