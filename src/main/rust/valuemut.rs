@@ -11,7 +11,10 @@ use rust_decimal::Decimal;
 use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Value};
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_long_array, get_rust_string, get_value_instance, get_value_mut_instance, new_string, take_entry_mut_instance, take_value_mut_instance};
+use crate::{
+    create_instance, get_long_array, get_rust_string, get_value_instance, get_value_mut_instance,
+    new_string, take_entry_mut_instance, take_value_mut_instance, JniTypes,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
@@ -21,7 +24,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
 ) -> jlong {
     let s = get_rust_string!(&mut env, s, || 0);
     let value = Value::Strand(Strand::from(s));
-    create_instance(value)
+    create_instance(value, JniTypes::ValueMut)
 }
 
 #[no_mangle]
@@ -31,7 +34,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newLong<'local>(
     l: jlong,
 ) -> jlong {
     let value = Value::Number(Number::Int(l));
-    create_instance(value)
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]
@@ -41,7 +44,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDouble<'local>(
     d: jdouble,
 ) -> jlong {
     let value = Value::Number(Number::Float(d));
-    create_instance(value)
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]
@@ -51,7 +54,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newBoolean<'local>(
     b: jboolean,
 ) -> jlong {
     let value = Value::Bool(b == 1);
-    create_instance(value)
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]
@@ -66,7 +69,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDecimal<'local>(
         Err(e) => return SurrealError::SurrealDBJni(e.to_string()).exception(&mut env, || 0),
     };
     let value = Value::Number(Number::Decimal(d));
-    create_instance(value)
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]
@@ -76,7 +79,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDuration<'local>(
     millis: jlong,
 ) -> jlong {
     let value = Value::Duration(Duration::from_millis(millis as u64));
-    create_instance(value)
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]
@@ -88,12 +91,12 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDatetime<'local>(
 ) -> jlong {
     if let Some(d) = DateTime::from_timestamp(seconds, nanos as u32) {
         let value = Value::Datetime(Datetime::from(d));
-        create_instance(value)
+        JniTypes::new_value_mut(value)
     } else {
         SurrealError::SurrealDBJni(format!(
             "Can't create the Datetime from seconds: {seconds}, nanos: {nanos}"
         ))
-            .exception(&mut env, || 0)
+        .exception(&mut env, || 0)
     }
 }
 
@@ -103,15 +106,11 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    println!("1");
     let value = get_value_instance!(&mut env, ptr, || 0);
-    println!("2");
     if matches!(value.as_ref(), Value::Thing(_)) {
-        println!("3");
-        return create_instance(value.as_ref().clone());
+        return JniTypes::new_value_mut(value.as_ref().clone());
     }
-    println!("4");
-    SurrealError::NullPointerException("Id").exception(&mut env, || 0)
+    SurrealError::NullPointerException("ID").exception(&mut env, || 0)
 }
 
 #[no_mangle]
@@ -122,11 +121,10 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if matches!(value.as_ref(), Value::Thing(_)) {
-        return create_instance(value.clone());
+        return JniTypes::new_value_mut(value.as_ref().clone());
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
@@ -141,7 +139,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
         values.push(value);
     }
     let value = Value::Array(Array::from(values));
-    create_instance(value)
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]
@@ -157,7 +155,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
         map.insert(key, value);
     }
     let value = Value::Object(Object::from(map));
-    create_instance(value)
+    create_instance(value, JniTypes::ValueMut)
 }
 
 #[no_mangle]

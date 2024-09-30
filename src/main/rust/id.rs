@@ -1,6 +1,5 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
-use std::sync::Arc;
 
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
@@ -8,7 +7,7 @@ use jni::JNIEnv;
 use surrealdb::sql::{Id, Thing, Value};
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_rust_string, get_value_instance, new_string};
+use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Id_newLongId<'local>(
@@ -17,7 +16,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newLongId<'local>(
     id: jlong,
 ) -> jlong {
     let value = Value::Thing(Thing::from(("", Id::Number(id))));
-    create_instance(Arc::new(value))
+    JniTypes::new_value(value.into())
 }
 
 #[no_mangle]
@@ -28,7 +27,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newStringId<'local>(
 ) -> jlong {
     let id = get_rust_string!(&mut env, id, || 0);
     let value = Value::Thing(Thing::from(("", Id::String(id))));
-    create_instance(Arc::new(value))
+    JniTypes::new_value(value.into())
 }
 
 #[no_mangle]
@@ -45,7 +44,7 @@ pub extern "system" fn Java_com_surrealdb_Id_isLong<'local>(
             false as jboolean
         }
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
+        SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)
     }
 }
 
@@ -61,7 +60,7 @@ pub extern "system" fn Java_com_surrealdb_Id_getLong<'local>(
             return *i as jlong;
         }
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    SurrealError::NullPointerException("Id").exception(&mut env, || 0)
 }
 
 #[no_mangle]
@@ -78,7 +77,7 @@ pub extern "system" fn Java_com_surrealdb_Id_isString<'local>(
             false as jboolean
         }
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
+        SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)
     }
 }
 
@@ -94,7 +93,7 @@ pub extern "system" fn Java_com_surrealdb_Id_getString<'local>(
             return new_string!(&mut env, s, null_mut);
         }
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
+    SurrealError::NullPointerException("Id").exception(&mut env, null_mut)
 }
 
 #[no_mangle]
@@ -111,7 +110,7 @@ pub extern "system" fn Java_com_surrealdb_Id_isObject<'local>(
             false as jboolean
         }
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
+        SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)
     }
 }
 
@@ -124,11 +123,11 @@ pub extern "system" fn Java_com_surrealdb_Id_getObject<'local>(
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Thing(o) = value.as_ref() {
         if let Id::Object(o) = &o.id {
-            //TODO no clone?
-            return create_instance(Arc::new(Value::Object(o.clone())));
+            //TODO avoid cloning?
+            return JniTypes::new_value(Value::Object(o.clone()).into());
         }
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    SurrealError::NullPointerException("Id").exception(&mut env, || 0)
 }
 
 #[no_mangle]
@@ -145,7 +144,7 @@ pub extern "system" fn Java_com_surrealdb_Id_isArray<'local>(
             false as jboolean
         }
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
+        SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)
     }
 }
 
@@ -159,10 +158,10 @@ pub extern "system" fn Java_com_surrealdb_Id_getArray<'local>(
     if let Value::Thing(o) = value.as_ref() {
         if let Id::Array(a) = &o.id {
             //TODO no clone?
-            return create_instance(Arc::new(Value::Array(a.clone())));
+            return JniTypes::new_value(Value::Array(a.clone()).into());
         }
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    SurrealError::NullPointerException("Id").exception(&mut env, || 0)
 }
 
 #[no_mangle]

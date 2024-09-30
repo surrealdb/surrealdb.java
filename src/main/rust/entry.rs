@@ -5,7 +5,7 @@ use jni::objects::JClass;
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
 
-use crate::{create_instance, get_entry_instance, new_string};
+use crate::{get_entry_instance, new_string, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Entry_getKey<'local>(
@@ -24,7 +24,7 @@ pub extern "system" fn Java_com_surrealdb_Entry_getValue<'local>(
     ptr: jlong,
 ) -> jlong {
     let (_, value) = get_entry_instance!(&mut env, ptr, || 0);
-    create_instance(value.clone())
+    JniTypes::new_value(value.clone())
 }
 
 #[no_mangle]

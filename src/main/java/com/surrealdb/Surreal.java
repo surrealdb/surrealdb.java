@@ -200,8 +200,8 @@ public class Surreal extends Native implements AutoCloseable {
     @SafeVarargs
     public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
-        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
-        final long[] valuePtr = insertRelationTargetValues(getPtr(), target, valuePtrs);
+        final long[] insertPtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
+        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, insertPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 

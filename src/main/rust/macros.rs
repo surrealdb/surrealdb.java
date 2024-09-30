@@ -11,7 +11,7 @@ macro_rules! get_rust_string {
 #[macro_export]
 macro_rules! get_surreal_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<Surreal<Any>>($id, "Surreal") {
+        match $crate::get_instance::<Surreal<Any>>($id, JniTypes::Surreal) {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -21,7 +21,7 @@ macro_rules! get_surreal_instance {
 #[macro_export]
 macro_rules! get_response_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<Arc<parking_lot::Mutex<Response>>>($id, "Response") {
+        match $crate::get_instance::<Arc<parking_lot::Mutex<Response>>>($id, JniTypes::Response) {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -31,7 +31,10 @@ macro_rules! get_response_instance {
 #[macro_export]
 macro_rules! get_value_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<std::sync::Arc<surrealdb::sql::Value>>($id, "Value") {
+        match $crate::get_instance::<std::sync::Arc<surrealdb::sql::Value>>(
+            $id,
+            $crate::JniTypes::Value,
+        ) {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -41,7 +44,10 @@ macro_rules! get_value_instance {
 #[macro_export]
 macro_rules! get_entry_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<(String, std::sync::Arc<surrealdb::sql::Value>)>($id, "Entry") {
+        match $crate::get_instance::<(String, std::sync::Arc<surrealdb::sql::Value>)>(
+            $id,
+            $crate::JniTypes::KeyValueEntry,
+        ) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -53,7 +59,7 @@ macro_rules! get_value_iterator_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance::<std::vec::IntoIter<surrealdb::sql::Value>>(
             $id,
-            "ValueIterator",
+            $crate::JniTypes::ArrayIter,
         ) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
@@ -66,7 +72,7 @@ macro_rules! get_entry_iterator_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance::<
             std::collections::btree_map::IntoIter<String, surrealdb::sql::Value>,
-        >($id, "EntryIterator")
+        >($id, JniTypes::ObjectIter)
         {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
@@ -79,7 +85,7 @@ macro_rules! get_value_iterator_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance_mut::<std::vec::IntoIter<surrealdb::sql::Value>>(
             $id,
-            "ValueIterator",
+            $crate::JniTypes::ArrayIter,
         ) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
@@ -92,7 +98,7 @@ macro_rules! get_entry_iterator_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance_mut::<
             std::collections::btree_map::IntoIter<String, surrealdb::sql::Value>,
-        >($id, "EntryIterator")
+        >($id, $crate::JniTypes::ObjectIter)
         {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
@@ -105,7 +111,7 @@ macro_rules! get_sync_value_iterator_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance::<
             Arc<parking_lot::Mutex<std::vec::IntoIter<surrealdb::sql::Value>>>,
-        >($id, "SynchronizedValueIterator")
+        >($id, $crate::JniTypes::SyncArrayIter)
         {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
@@ -122,7 +128,7 @@ macro_rules! get_sync_entry_iterator_instance {
                     std::collections::btree_map::IntoIter<String, surrealdb::sql::Value>,
                 >,
             >,
-        >($id, "SynchronizedValueIterator")
+        >($id, $crate::JniTypes::SyncObjectIter)
         {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
@@ -188,7 +194,7 @@ macro_rules! new_double_point {
 #[macro_export]
 macro_rules! take_value_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::take_instance::<surrealdb::sql::Value>($id, "ValueMut") {
+        match $crate::take_instance::<surrealdb::sql::Value>($id, JniTypes::ValueMut) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -198,7 +204,7 @@ macro_rules! take_value_mut_instance {
 #[macro_export]
 macro_rules! get_value_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<surrealdb::sql::Value>($id, "ValueMut") {
+        match $crate::get_instance::<surrealdb::sql::Value>($id, JniTypes::ValueMut) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -208,7 +214,10 @@ macro_rules! get_value_mut_instance {
 #[macro_export]
 macro_rules! take_entry_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::take_instance::<(String, surrealdb::sql::Value)>($id, "EntryMut") {
+        match $crate::take_instance::<(String, surrealdb::sql::Value)>(
+            $id,
+            JniTypes::KeyValueMutEntry,
+        ) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -218,7 +227,10 @@ macro_rules! take_entry_mut_instance {
 #[macro_export]
 macro_rules! get_entry_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<(String, surrealdb::sql::Value)>($id, "EntryMut") {
+        match $crate::get_instance::<(String, surrealdb::sql::Value)>(
+            $id,
+            JniTypes::KeyValueMutEntry,
+        ) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -232,7 +244,7 @@ macro_rules! take_one_result {
             Ok(r) => {
                 let r: surrealdb::sql::Value = r.into_inner();
                 r
-            },
+            }
             Err(e) => return $crate::SurrealError::SurrealDB(e).exception($env, $default_fn),
         }
     };
@@ -243,7 +255,7 @@ macro_rules! return_value_array_first {
     ($val:expr) => {
         if let surrealdb::sql::Value::Array(ref mut a) = $val {
             if a.len() == 1 {
-                return $crate::create_instance(Arc::new(a.remove(0)));
+                return $crate::JniTypes::new_value(Arc::new(a.remove(0)));
             }
         }
     };
@@ -254,7 +266,7 @@ macro_rules! return_value_array_iter {
     ($val:expr) => {
         if let surrealdb::sql::Value::Array(a) = $val {
             let iter = a.into_iter();
-            return $crate::create_instance(iter);
+            return $crate::JniTypes::new_array_iter(iter);
         }
     };
 }
@@ -264,7 +276,9 @@ macro_rules! return_value_array_iter_sync {
     ($val:expr) => {
         if let surrealdb::sql::Value::Array(a) = $val {
             let iter = a.into_iter();
-            return $crate::create_instance(std::sync::Arc::new(parking_lot::Mutex::new(iter)));
+            return $crate::JniTypes::new_sync_array_iter(std::sync::Arc::new(
+                parking_lot::Mutex::new(iter),
+            ));
         }
     };
 }
@@ -287,7 +301,7 @@ macro_rules! parse_value {
         match surrealdb::sql::value($val) {
             Ok(v) => v,
             Err(e) => {
-                return $crate::SurrealError::SurrealDBJni(e.to_string())
+                return $crate::SurrealError::SurrealDBJni(e.to_string().into())
                     .exception($env, $default_fn)
             }
         }
@@ -297,7 +311,7 @@ macro_rules! parse_value {
 #[macro_export]
 macro_rules! return_unexpected_result {
     ($env:expr, $res:expr, $default_fn:expr) => {
-        return $crate::SurrealError::SurrealDBJni(format!("Unexpected result: {}", $res))
+        return $crate::SurrealError::SurrealDBJni(format!("Unexpected result: {}", $res).into())
             .exception($env, $default_fn)
     };
 }

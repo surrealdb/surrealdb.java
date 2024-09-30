@@ -4,10 +4,10 @@ use std::sync::Arc;
 
 use crate::error::SurrealError;
 use crate::{
-    check_query_result, create_instance, get_long_array, get_rust_string, get_surreal_instance,
-    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
-    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
-    return_value_array_iter_sync, take_one_result, TOKIO_RUNTIME,
+    check_query_result, get_long_array, get_rust_string, get_surreal_instance, get_value_instance,
+    get_value_mut_instance, new_jlong_array, new_string, parse_value, release_instance,
+    return_unexpected_result, return_value_array_first, return_value_array_iter,
+    return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME,
 };
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jlong, jlongArray, jstring};
@@ -17,14 +17,14 @@ use serde::Serialize;
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::{Database, Namespace, Root};
 use surrealdb::sql::Value;
-use surrealdb::{sql, Error, Response, Surreal};
+use surrealdb::{Error, Response, Surreal};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) -> jlong {
-    create_instance::<Surreal<Any>>(Surreal::init())
+    JniTypes::new_surreal(Surreal::<Any>::init())
 }
 
 #[no_mangle]
@@ -209,7 +209,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     // Check the result
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
-    create_instance(Arc::new(Mutex::new(res)))
+    JniTypes::new_response(Arc::new(Mutex::new(res)))
 }
 
 fn surrealdb_query<T>(
@@ -332,11 +332,84 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValues<'local>(
                     .exception(&mut env, null_mut);
             }
             let val = a.remove(0);
-            let value_ptr = create_instance(Arc::new(val));
+            let value_ptr = JniTypes::new_value(val.into());
             value_ptrs.push(value_ptr);
         }
     }
     new_jlong_array!(&mut env, &value_ptrs, null_mut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValue<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    target: JString<'local>,
+    value_ptr: jlong,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    // Build the parameters
+    let target = get_rust_string!(&mut env, target, || 0);
+    // Parse the targets
+    let target = parse_value!(&mut env, &target, || 0);
+    // Get the value
+    let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+    // Execute the query
+    let query = format!("INSERT INTO {target} $val");
+    let params = BTreeMap::from([("val".to_string(), value)]);
+    let res = surrealdb_query(&surreal, &query, Some(params));
+    // Check the result
+    let mut response = check_query_result!(&mut env, res, || 0);
+    // There is only one statement
+    let mut result = take_one_result!(&mut env, response, || 0);
+    // There should be only one result
+    return_value_array_first!(result);
+    // Otherwise we return an error
+    return_unexpected_result!(&mut env, result, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    target: JString<'local>,
+    value_ptrs: JLongArray<'local>,
+) -> jlongArray {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
+    // Build the parameters
+    let target = get_rust_string!(&mut env, target, null_mut);
+    // Parse the targets
+    let target = parse_value!(&mut env, &target, null_mut);
+    // Get the pointers
+    let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
+    // Build the queries
+    let mut records = Vec::with_capacity(value_ptrs.len());
+    for value_ptr in &value_ptrs {
+        let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
+        records.push(value.to_string());
+    }
+    let query = format!("INSERT INTO {target} [ {} ]", records.join(" , "));
+    // Execute the query
+    let res = surrealdb_query::<()>(&surreal, &query, None);
+    // Check the result
+    let mut response = check_query_result!(&mut env, res, null_mut);
+    // There is only one statement
+    let result = take_one_result!(&mut env, response, null_mut);
+    if let Value::Array(a) = result {
+        // Prepare the result
+        let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
+        for val in a.into_iter() {
+            let value_ptr = JniTypes::new_value(val.into());
+            value_ptrs.push(value_ptr);
+        }
+        new_jlong_array!(&mut env, &value_ptrs, null_mut)
+    } else {
+        SurrealError::SurrealDBJni(format!("Unexpected result: {result}"))
+            .exception(&mut env, null_mut)
+    }
 }
 
 #[no_mangle]
@@ -387,10 +460,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
     // There is only one statement
     let res = take_one_result!(&mut env, res, null_mut);
     // Prepare the result
-    if let sql::Value::Array(a) = res {
+    if let Value::Array(a) = res {
         let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
         for value in a {
-            let value_ptr = create_instance(Arc::new(value));
+            let value_ptr = JniTypes::new_value(Arc::new(value));
             value_ptrs.push(value_ptr);
         }
         // Return the results

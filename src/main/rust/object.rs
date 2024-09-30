@@ -9,7 +9,7 @@ use parking_lot::Mutex;
 use surrealdb::sql::Value;
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_rust_string, get_value_instance, new_string, release_instance};
+use crate::{get_rust_string, get_value_instance, new_string, release_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Object_deleteInstance<'local>(
@@ -62,7 +62,7 @@ pub extern "system" fn Java_com_surrealdb_Object_get<'local>(
         let key = get_rust_string!(&mut env, key, || 0);
         // TODO Avoid cloning
         let val = o.get(&key).cloned().unwrap_or(Value::None);
-        create_instance(Arc::new(val))
+        JniTypes::new_value(val.into())
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, || 0)
     }
@@ -77,7 +77,7 @@ pub extern "system" fn Java_com_surrealdb_Object_iterator<'local>(
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Object(o) = value.as_ref() {
         let iter = o.0.clone().into_iter();
-        create_instance(iter)
+        JniTypes::new_object_iter(iter)
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, || 0)
     }
@@ -92,7 +92,7 @@ pub extern "system" fn Java_com_surrealdb_Object_synchronizedIterator<'local>(
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Object(o) = value.as_ref() {
         let iter = o.0.clone().into_iter();
-        create_instance(Arc::new(Mutex::new(iter)))
+        JniTypes::new_sync_object_iter(Arc::new(Mutex::new(iter)))
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, || 0)
     }

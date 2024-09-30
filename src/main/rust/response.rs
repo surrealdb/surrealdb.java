@@ -7,7 +7,7 @@ use parking_lot::Mutex;
 use surrealdb::{Response, Value};
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_response_instance, release_instance};
+use crate::{create_instance, get_response_instance, release_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Response_deleteInstance<'local>(
@@ -31,5 +31,5 @@ pub extern "system" fn Java_com_surrealdb_Response_take<'local>(
         Ok(r) => r,
         Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
     };
-    create_instance(Arc::new(value))
+    create_instance(Arc::new(value), JniTypes::Value)
 }

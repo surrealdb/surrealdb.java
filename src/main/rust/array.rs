@@ -9,7 +9,7 @@ use parking_lot::Mutex;
 use surrealdb::sql::Value;
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_value_instance, new_string, release_instance};
+use crate::{get_value_instance, new_string, release_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Array_deleteInstance<'local>(
@@ -60,7 +60,7 @@ pub extern "system" fn Java_com_surrealdb_Array_get<'local>(
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Array(a) = value.as_ref() {
         let val = a.get(idx as usize).cloned().unwrap_or(Value::None);
-        create_instance(Arc::new(val))
+        JniTypes::new_value(val.into())
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, || 0)
     }
@@ -75,7 +75,7 @@ pub extern "system" fn Java_com_surrealdb_Array_iterator<'local>(
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Array(a) = value.as_ref() {
         let iter = a.0.clone().into_iter();
-        create_instance(iter)
+        JniTypes::new_array_iter(iter)
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, || 0)
     }
@@ -90,7 +90,7 @@ pub extern "system" fn Java_com_surrealdb_Array_synchronizedIterator<'local>(
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Array(a) = value.as_ref() {
         let iter = a.0.clone().into_iter();
-        create_instance(Arc::new(Mutex::new(iter)))
+        JniTypes::new_sync_array_iter(Mutex::new(iter).into())
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, || 0)
     }

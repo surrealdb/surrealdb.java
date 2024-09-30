@@ -31,9 +31,9 @@ impl SurrealError {
                 class: EXCEPTION.to_string(),
                 msg: e.to_string(),
             },
-            Self::NullPointerException(s) => Exception {
+            Self::NullPointerException(t) => Exception {
                 class: NULL_POINTER_EXCEPTION.to_string(),
-                msg: format!("{s} instance not found"),
+                msg: format!("{t} instance not found"),
             },
             Self::NoSuchElementException => Exception {
                 class: NO_SUCH_ELEMENT_EXCEPTION.to_string(),
@@ -45,7 +45,7 @@ impl SurrealError {
             },
             Self::SurrealDBJni(msg) => Exception {
                 class: SURREAL_EXCEPTION.to_string(),
-                msg,
+                msg: msg.to_string(),
             },
         }
     }

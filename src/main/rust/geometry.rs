@@ -19,7 +19,7 @@ pub extern "system" fn Java_com_surrealdb_Geometry_isPoint<'local>(
     if let Value::Geometry(g) = value.as_ref() {
         g.is_point() as jboolean
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
+        SurrealError::NullPointerException("Geometry").exception(&mut env, || false as jboolean)
     }
 }
 
@@ -33,7 +33,7 @@ pub extern "system" fn Java_com_surrealdb_Geometry_getPoint<'local>(
     if let Value::Geometry(Geometry::Point(pt)) = value.as_ref() {
         return new_double_point!(&mut env, pt, null_mut);
     }
-    SurrealError::NullPointerException("Geometry/Point").exception(&mut env, null_mut)
+    SurrealError::NullPointerException("Geometry").exception(&mut env, null_mut)
 }
 
 #[no_mangle]

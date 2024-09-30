@@ -5,7 +5,7 @@ use jni::sys::{jboolean, jlong};
 use jni::JNIEnv;
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_sync_value_iterator_instance};
+use crate::{get_sync_value_iterator_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_SynchronizedValueIterator_hasNext<'local>(
@@ -27,7 +27,7 @@ pub extern "system" fn Java_com_surrealdb_SynchronizedValueIterator_next<'local>
     let iter = get_sync_value_iterator_instance!(&mut env, ptr, || 0);
     let mut iter = iter.lock();
     if let Some(v) = iter.next() {
-        create_instance(Arc::new(v))
+        JniTypes::new_value(v.into())
     } else {
         SurrealError::NoSuchElementException.exception(&mut env, || 0)
     }

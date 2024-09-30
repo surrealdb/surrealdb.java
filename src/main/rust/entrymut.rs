@@ -7,7 +7,7 @@ use jni::JNIEnv;
 
 use crate::error::SurrealError;
 use crate::{
-    create_instance, get_entry_mut_instance, get_rust_string, new_string, take_value_mut_instance,
+    get_entry_mut_instance, get_rust_string, new_string, take_value_mut_instance, JniTypes,
 };
 
 #[no_mangle]
@@ -19,7 +19,7 @@ pub extern "system" fn Java_com_surrealdb_EntryMut_create<'local>(
 ) -> jlong {
     let s = get_rust_string!(&mut env, s, || 0);
     let v = take_value_mut_instance!(&mut env, v, || 0);
-    create_instance((s, v))
+    JniTypes::new_key_value_mut(s, v)
 }
 
 #[no_mangle]

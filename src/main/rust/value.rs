@@ -8,7 +8,7 @@ use jni::JNIEnv;
 use surrealdb::sql::{Number, Value};
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_value_instance, new_jlong_array, new_string, release_instance};
+use crate::{get_value_instance, new_jlong_array, new_string, release_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
@@ -38,7 +38,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getArray<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if value.is_array() {
-        create_instance(value)
+        JniTypes::new_value(value)
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, || 0)
     }
@@ -62,7 +62,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getObject<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if value.is_object() {
-        create_instance(value)
+        JniTypes::new_value(value)
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, || 0)
     }
@@ -243,7 +243,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getGeometry<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Geometry(_) = value.as_ref() {
-        create_instance(value)
+        JniTypes::new_value(value)
     } else {
         SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
     }
@@ -311,7 +311,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Thing(_) = value.as_ref() {
-        create_instance(value)
+        JniTypes::new_value(value)
     } else {
         SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
     }
@@ -337,7 +337,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
     if let Value::Uuid(uuid) = value.as_ref() {
         new_string!(&mut env, uuid.0.to_string(), null_mut)
     } else {
-        SurrealError::NullPointerException("UUID").exception(&mut env, null_mut)
+        SurrealError::NullPointerException("Uuid").exception(&mut env, null_mut)
     }
 }
 

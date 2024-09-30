@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
 use jni::objects::JClass;
 use jni::sys::{jboolean, jlong};
 use jni::JNIEnv;
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_value_iterator_instance, get_value_iterator_mut_instance};
+use crate::{get_value_iterator_instance, get_value_iterator_mut_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueIterator_hasNext<'local>(
@@ -25,7 +23,7 @@ pub extern "system" fn Java_com_surrealdb_ValueIterator_next<'local>(
 ) -> jlong {
     let iter = get_value_iterator_mut_instance!(&mut env, ptr, || 0);
     if let Some(v) = iter.next() {
-        create_instance(Arc::new(v))
+        JniTypes::new_value(v.into())
     } else {
         SurrealError::NullPointerException("Value").exception(&mut env, || 0)
     }
