@@ -50,7 +50,7 @@ public class Surreal extends Native implements AutoCloseable {
     private static native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
 
     private static native long relate(long ptr, long from, String table, long to);
-    
+
     private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
     private static native long updateThingValue(long ptr, long thingPtr, long valuePtr);
@@ -213,11 +213,6 @@ public class Surreal extends Native implements AutoCloseable {
 
     public Value relate(Thing from, String table, Thing to) {
         final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());
-        return new Value(valuePtr);
-    }
-
-    public Value relate(List<Thing> from, String table, List<Thing> to) {
-        final long valuePtr = relates(getPtr(), from.getPtr(), table, to.getPtr());
         return new Value(valuePtr);
     }
 
