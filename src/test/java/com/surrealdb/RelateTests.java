@@ -34,7 +34,26 @@ public class RelateTests {
     }
 
     @Test
-    void relateValue() {
+    void relateObject() {
+        try (final Surreal surreal = new Surreal()) {
+            // Starts an embedded in memory instance
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            // We create the records
+            final List<Person> values = surreal.create(Person.class, "person", tobie, jaime);
+            // Extract the ids
+            final Thing tobie = values.get(0).id;
+            final Thing jaime = values.get(1).id;
+            // Relate records
+            final Relation relation = surreal.relate(Relation.class, tobie, "brother", jaime);
+            // Assertion
+            assertEquals(tobie, relation.in);
+            assertEquals(jaime, relation.out);
+            assertEquals("brother", relation.id.getTable());
+        }
+    }
+
+    @Test
+    void relateValueContent() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -57,7 +76,7 @@ public class RelateTests {
     }
 
     @Test
-    void relateObject() {
+    void relateObjectContent() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");

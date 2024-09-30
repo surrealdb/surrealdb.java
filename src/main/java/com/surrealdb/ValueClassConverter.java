@@ -70,7 +70,11 @@ class ValueClassConverter<T> {
         } else if (value.isString()) {
             field.set(target, value.getString());
         } else if (value.isThing()) {
-            field.set(target, value.getThing());
+            if (field.getType() == Id.class) {
+                field.set(target, value.getThing().getId());
+            } else {
+                field.set(target, value.getThing());
+            }
         } else if (value.isGeometry()) {
             field.set(target, value.getGeometry());
         } else if (value.isBigdecimal()) {
@@ -110,7 +114,8 @@ class ValueClassConverter<T> {
         final T target = clazz.getConstructor().newInstance();
         for (final Entry entry : source) {
             try {
-                final Field field = clazz.getDeclaredField(entry.getKey());
+                final String key = entry.getKey();
+                final Field field = clazz.getField(key);
                 final Value value = entry.getValue();
                 field.setAccessible(true);
                 final Class<?> type = field.getType();

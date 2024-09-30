@@ -50,8 +50,8 @@ public class Surreal extends Native implements AutoCloseable {
     private static native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
 
     private static native long relate(long ptr, long from, String table, long to);
-
-    private static native long relateValue(long ptr, long from, String table, long to, long valuePtr);
+    
+    private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
     private static native long updateThingValue(long ptr, long thingPtr, long valuePtr);
 
@@ -200,8 +200,7 @@ public class Surreal extends Native implements AutoCloseable {
     @SafeVarargs
     public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
-        final long[] insertPtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
-        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, insertPtrs);
+        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 
@@ -217,13 +216,18 @@ public class Surreal extends Native implements AutoCloseable {
         return new Value(valuePtr);
     }
 
+    public Value relate(List<Thing> from, String table, List<Thing> to) {
+        final long valuePtr = relates(getPtr(), from.getPtr(), table, to.getPtr());
+        return new Value(valuePtr);
+    }
+
     public <T extends Relation> T relate(Class<T> type, Thing from, String table, Thing to) {
         return relate(from, table, to).get(type);
     }
 
     public <T> Value relate(Thing from, String table, Thing to, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = relateValue(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
+        final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
