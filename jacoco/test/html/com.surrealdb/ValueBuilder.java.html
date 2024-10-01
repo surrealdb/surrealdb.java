@@ -65,8 +65,8 @@ import java.util.stream.Collectors;
 <span class="fc bfc" id="L65" title="All 2 branches covered.">        if (object instanceof Id) {</span>
 <span class="fc" id="L66">            return ValueMut.createId((Id) object);</span>
         }
-<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (object instanceof Thing) {</span>
-<span class="fc" id="L69">            return ValueMut.createThing((Thing) object);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (object instanceof RecordId) {</span>
+<span class="fc" id="L69">            return ValueMut.createThing((RecordId) object);</span>
         }
 <span class="fc" id="L71">        final Field[] fields = object.getClass().getDeclaredFields();</span>
 <span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (fields.length &gt; 0) {</span>

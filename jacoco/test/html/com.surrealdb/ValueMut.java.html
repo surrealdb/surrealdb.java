@@ -65,8 +65,8 @@ class ValueMut extends Native {
 <span class="fc" id="L65">        return new ValueMut(newId(id.getPtr()));</span>
     }
 
-    static ValueMut createThing(Thing thing) {
-<span class="fc" id="L69">        return new ValueMut(newThing(thing.getPtr()));</span>
+    static ValueMut createThing(RecordId recordId) {
+<span class="fc" id="L69">        return new ValueMut(newThing(recordId.getPtr()));</span>
     }
 
     static ValueMut createArray(List&lt;ValueMut&gt; values) {
