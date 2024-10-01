@@ -3,12 +3,7 @@ use std::ptr::null_mut;
 use std::sync::Arc;
 
 use crate::error::SurrealError;
-use crate::{
-    check_query_result, convert_up_type, get_long_array, get_rust_string, get_surreal_instance,
-    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
-    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
-    return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME,
-};
+use crate::{check_query_result, check_value_table, convert_up_type, get_long_array, get_rust_string, get_surreal_instance, get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value, release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter, return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME};
 use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jint, jlong, jlongArray, jstring};
 use jni::JNIEnv;
@@ -271,11 +266,12 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetsValue<'local>(
     // Build the parameters
     let targets = get_rust_string!(&mut env, targets, || 0);
     // Parse the targets
-    let targets = parse_value!(&mut env, &targets, || 0);
+    let target = parse_value!(&mut env, &targets, || 0);
+    let table = check_value_table!(&mut env, target, ||0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("CREATE {targets} CONTENT $val");
+    let query = format!("CREATE {table} CONTENT $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -351,12 +347,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValue<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the targets
+    // Parse the target
     let target = parse_value!(&mut env, &target, || 0);
+    let table = check_value_table!(&mut env, target, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("INSERT INTO {target} $val");
+    let query = format!("INSERT INTO {table} $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -381,8 +378,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
-    // Parse the targets
+    // Parse the target
     let target = parse_value!(&mut env, &target, null_mut);
+    let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
@@ -391,7 +389,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
         records.push(value.to_string());
     }
-    let query = format!("INSERT INTO {target} [ {} ]", records.join(" , "));
+    let query = format!("INSERT INTO {table} [ {} ]", records.join(" , "));
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -424,12 +422,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValue<'loc
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the targets
+    // Parse the target
     let target = parse_value!(&mut env, &target, || 0);
+    let table = check_value_table!(&mut env, target, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("INSERT RELATION INTO {target} $val");
+    let query = format!("INSERT RELATION INTO {table} $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -454,8 +453,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
-    // Parse the targets
+    // Parse the target
     let target = parse_value!(&mut env, &target, null_mut);
+    let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
@@ -464,7 +464,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
         records.push(value.to_string());
     }
-    let query = format!("INSERT RELATION INTO {target} [ {} ]", records.join(" , "));
+    let query = format!("INSERT RELATION INTO {table} [ {} ]", records.join(" , "));
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -498,13 +498,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the targets
+    // Parse the target
     let target = parse_value!(&mut env, &target, || 0);
+    let table = check_value_table!(&mut env, target, ||0);
     // Get from and to
     let from_value = get_value_instance!(&mut env, from_ptr, || 0);
     let to_value = get_value_instance!(&mut env, to_ptr, || 0);
     // Execute the query
-    let query = format!("RELATE $from->{target}->$to");
+    let query = format!("RELATE $from->{table}->$to");
     let params = BTreeMap::from([
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),
@@ -534,14 +535,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the targets
+    // Parse the target
     let target = parse_value!(&mut env, &target, || 0);
+    let table = check_value_table!(&mut env, target, ||0);
     // Get from and to
     let from_value = get_value_instance!(&mut env, from_ptr, || 0);
     let to_value = get_value_instance!(&mut env, to_ptr, || 0);
     let content_value = get_value_mut_instance!(&mut env, content_ptr, || 0);
     // Execute the query
-    let query = format!("RELATE $from->{target}->$to CONTENT {content_value}");
+    let query = format!("RELATE $from->{table}->$to CONTENT {content_value}");
     let params = BTreeMap::from([
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),

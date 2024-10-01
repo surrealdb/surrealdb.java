@@ -301,8 +301,23 @@ macro_rules! parse_value {
         match surrealdb::sql::value($val) {
             Ok(v) => v,
             Err(e) => {
-                return $crate::SurrealError::SurrealDBJni(e.to_string().into())
+                return $crate::SurrealError::SurrealDBJni(e.to_string())
                     .exception($env, $default_fn)
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! check_value_table {
+    ($env:expr, $val:expr, $default_fn:expr) => {
+        match &$val {
+            surrealdb::sql::Value::Table(_) => $val,
+            surrealdb::sql::Value::Strand(_) => $val,
+            surrealdb::sql::Value::Idiom(i) if i.len() == 1 => $val,
+            _ => {
+                return $crate::SurrealError::SurrealDBJni(format!("The expression is not a table: {}", $val))
+                    .exception($env, $default_fn);
             }
         }
     };

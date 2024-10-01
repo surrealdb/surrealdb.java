@@ -55,23 +55,31 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long updateThingValue(long ptr, long thingPtr, int update, long valuePtr);
 
-    private static native long updateTargetsValues(long ptr, String targets, int update, long valuePtr);
+    private static native long updateTargetValue(long ptr, String target, int update, long valuePtr);
 
-    private static native long updateTargetsValuesSync(long ptr, String targets, int update, long valuePtr);
+    private static native long updateTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+
+    private static native long updateTargetValueSync(long ptr, String target, int update, long valuePtr);
+
+    private static native long updateTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
     private static native long upsertThingValue(long ptr, long thingPtr, int update, long valuePtr);
 
-    private static native long upsertTargetsValues(long ptr, String targets, int update, long valuePtr);
+    private static native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
-    private static native long upsertTargetsValuesSync(long ptr, String targets, int update, long valuePtr);
+    private static native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+
+    private static native long upsertTargetValueSync(long ptr, String targets, int update, long valuePtr);
+
+    private static native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
     private static native long selectThing(long ptr, long thing);
 
     private static native long[] selectThings(long ptr, long[] things);
 
-    private static native long selectTargetsValues(long ptr, String targets);
+    private static native long selectTargetsValues(long ptr, String... targets);
 
-    private static native long selectTargetsValuesSync(long ptr, String targets);
+    private static native long selectTargetsValuesSync(long ptr, String... targets);
 
     private static native boolean deleteThing(long ptr, long thing);
 
@@ -246,21 +254,39 @@ public class Surreal extends Native implements AutoCloseable {
         return update(thg, upType, content).get(type);
     }
 
-    public <T> Iterator<Value> update(String targets, UpType upType, T content) {
+    public <T> Iterator<Value> update(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        return new ValueIterator(updateTargetsValues(getPtr(), targets, upType.code, valueMut.getPtr()));
+        return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
-    public <T> Iterator<T> update(Class<T> type, String targets, UpType upType, T content) {
+    public <T> Iterator<Value> update(String[] targets, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> update(Class<T> type, String target, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, update(target, upType, content));
+    }
+
+    public <T> Iterator<T> update(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, update(targets, upType, content));
     }
 
-    public <T> Iterator<Value> updateSync(String targets, UpType upType, T content) {
+    public <T> Iterator<Value> updateSync(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        return new SynchronizedValueIterator(updateTargetsValuesSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+        return new SynchronizedValueIterator(updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
-    public <T> Iterator<T> updateSync(Class<T> type, String targets, UpType upType, T content) {
+    public <T> Iterator<Value> updateSync(String[] targets, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new SynchronizedValueIterator(updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> updateSync(Class<T> type, String target, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, updateSync(target, upType, content));
+    }
+
+    public <T> Iterator<T> updateSync(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, updateSync(targets, upType, content));
     }
 
@@ -274,21 +300,39 @@ public class Surreal extends Native implements AutoCloseable {
         return upsert(thg, upType, content).get(type);
     }
 
-    public <T> Iterator<Value> upsert(String targets, UpType upType, T content) {
+    public <T> Iterator<Value> upsert(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        return new ValueIterator(upsertTargetsValues(getPtr(), targets, upType.code, valueMut.getPtr()));
+        return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
-    public <T> Iterator<T> upsert(Class<T> type, String targets, UpType upType, T content) {
+    public <T> Iterator<Value> upsert(String[] targets, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> upsert(Class<T> type, String target, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, upsert(target, upType, content));
+    }
+
+    public <T> Iterator<T> upsert(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, upsert(targets, upType, content));
     }
 
-    public <T> Iterator<Value> upsertSync(String targets, UpType upType, T content) {
+    public <T> Iterator<Value> upsertSync(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        return new SynchronizedValueIterator(upsertTargetsValuesSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+        return new SynchronizedValueIterator(upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
-    public <T> Iterator<T> upsertSync(Class<T> type, String targets, UpType upType, T content) {
+    public <T> Iterator<Value> upsertSync(String[] targets, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new SynchronizedValueIterator(upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> upsertSync(Class<T> type, String target, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, upsertSync(target, upType, content));
+    }
+
+    public <T> Iterator<T> upsertSync(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, upsertSync(targets, upType, content));
     }
 
