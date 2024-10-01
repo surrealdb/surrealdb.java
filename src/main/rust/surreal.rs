@@ -4,13 +4,13 @@ use std::sync::Arc;
 
 use crate::error::SurrealError;
 use crate::{
-    check_query_result, get_long_array, get_rust_string, get_surreal_instance, get_value_instance,
-    get_value_mut_instance, new_jlong_array, new_string, parse_value, release_instance,
-    return_unexpected_result, return_value_array_first, return_value_array_iter,
+    check_query_result, convert_up_type, get_long_array, get_rust_string, get_surreal_instance,
+    get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value,
+    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
     return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME,
 };
 use jni::objects::{JClass, JLongArray, JString};
-use jni::sys::{jboolean, jlong, jlongArray, jstring};
+use jni::sys::{jboolean, jint, jlong, jlongArray, jstring};
 use jni::JNIEnv;
 use parking_lot::Mutex;
 use serde::Serialize;
@@ -505,7 +505,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
     let to_value = get_value_instance!(&mut env, to_ptr, || 0);
     // Execute the query
     let query = format!("RELATE $from->{target}->$to");
-    let params = BTreeMap::from([("from".to_string(), from_value), ("to".to_string(), to_value)]);
+    let params = BTreeMap::from([
+        ("from".to_string(), from_value),
+        ("to".to_string(), to_value),
+    ]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
@@ -539,7 +542,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
     let content_value = get_value_mut_instance!(&mut env, content_ptr, || 0);
     // Execute the query
     let query = format!("RELATE $from->{target}->$to CONTENT {content_value}");
-    let params = BTreeMap::from([("from".to_string(), from_value), ("to".to_string(), to_value)]);
+    let params = BTreeMap::from([
+        ("from".to_string(), from_value),
+        ("to".to_string(), to_value),
+    ]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
@@ -737,13 +743,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTargets<'local>(
     true as jboolean
 }
 
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_updateThingValue<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
+fn up_thing_value(
+    mut env: JNIEnv,
     surreal_ptr: jlong,
     thing_ptr: jlong,
+    up_type: jint,
     value_ptr: jlong,
+    up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
@@ -751,8 +757,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateThingValue<'local>(
     let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+    // Check the up type
+    let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("UPDATE {thing} CONTENT $val");
+    let query = format!("{up} {thing} {up_type} $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -766,12 +774,36 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateThingValue<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValues<'local>(
-    mut env: JNIEnv<'local>,
+pub extern "system" fn Java_com_surrealdb_Surreal_updateThingValue<'local>(
+    env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    targets: JString<'local>,
+    thing_ptr: jlong,
+    up_type: jint,
     value_ptr: jlong,
+) -> jlong {
+    up_thing_value(env, surreal_ptr, thing_ptr, up_type, value_ptr, "update")
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_upsertThingValue<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    thing_ptr: jlong,
+    up_type: jint,
+    value_ptr: jlong,
+) -> jlong {
+    up_thing_value(env, surreal_ptr, thing_ptr, up_type, value_ptr, "upsert")
+}
+
+fn up_targets_values(
+    mut env: JNIEnv,
+    surreal_ptr: jlong,
+    targets: JString,
+    up_type: jint,
+    value_ptr: jlong,
+    up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
@@ -781,8 +813,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValues<'local>(
     let targets = parse_value!(&mut env, &targets, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+    // Check the up type
+    let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("UPDATE {targets} CONTENT $val");
+    let query = format!("{up} {targets} {up_type} $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -796,12 +830,36 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValues<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValuesSync<'local>(
-    mut env: JNIEnv<'local>,
+pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValues<'local>(
+    env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
     targets: JString<'local>,
+    up_type: jint,
     value_ptr: jlong,
+) -> jlong {
+    up_targets_values(env, surreal_ptr, targets, up_type, value_ptr, "update")
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetsValues<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    targets: JString<'local>,
+    up_type: jint,
+    value_ptr: jlong,
+) -> jlong {
+    up_targets_values(env, surreal_ptr, targets, up_type, value_ptr, "upsert")
+}
+
+fn up_targets_values_sync<'local>(
+    mut env: JNIEnv<'local>,
+    surreal_ptr: jlong,
+    targets: JString<'local>,
+    up_type: jint,
+    value_ptr: jlong,
+    up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
@@ -811,8 +869,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValuesSync<'local
     let targets = parse_value!(&mut env, &targets, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+    // Check the up type
+    let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("UPDATE {targets} CONTENT $val");
+    let query = format!("{up} {targets} {up_type} $val");
     let params = BTreeMap::from([("val".to_string(), value)]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -823,4 +883,28 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValuesSync<'local
     return_value_array_iter_sync!(result);
     // Otherwise throw an error
     return_unexpected_result!(&mut env, result, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValuesSync<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    targets: JString<'local>,
+    up_type: jint,
+    value_ptr: jlong,
+) -> jlong {
+    up_targets_values_sync(env, surreal_ptr, targets, up_type, value_ptr, "update")
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetsValuesSync<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    targets: JString<'local>,
+    up_type: jint,
+    value_ptr: jlong,
+) -> jlong {
+    up_targets_values_sync(env, surreal_ptr, targets, up_type, value_ptr, "upsert")
 }

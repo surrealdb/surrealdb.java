@@ -53,11 +53,17 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
-    private static native long updateThingValue(long ptr, long thingPtr, long valuePtr);
+    private static native long updateThingValue(long ptr, long thingPtr, int update, long valuePtr);
 
-    private static native long updateTargetsValues(long ptr, String targets, long valuePtr);
+    private static native long updateTargetsValues(long ptr, String targets, int update, long valuePtr);
 
-    private static native long updateTargetsValuesSync(long ptr, String targets, long valuePtr);
+    private static native long updateTargetsValuesSync(long ptr, String targets, int update, long valuePtr);
+
+    private static native long upsertThingValue(long ptr, long thingPtr, int update, long valuePtr);
+
+    private static native long upsertTargetsValues(long ptr, String targets, int update, long valuePtr);
+
+    private static native long upsertTargetsValuesSync(long ptr, String targets, int update, long valuePtr);
 
     private static native long selectThing(long ptr, long thing);
 
@@ -230,32 +236,60 @@ public class Surreal extends Native implements AutoCloseable {
         return relate(from, table, to, content).get(type);
     }
 
-    public <T> Value update(Thing thg, T content) {
+    public <T> Value update(Thing thg, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
+        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> T update(Class<T> type, Thing thg, T content) {
-        return update(thg, content).get(type);
+    public <T> T update(Class<T> type, Thing thg, UpType upType, T content) {
+        return update(thg, upType, content).get(type);
     }
 
-    public <T> Iterator<Value> update(String targets, T content) {
+    public <T> Iterator<Value> update(String targets, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        return new ValueIterator(updateTargetsValues(getPtr(), targets, valueMut.getPtr()));
+        return new ValueIterator(updateTargetsValues(getPtr(), targets, upType.code, valueMut.getPtr()));
     }
 
-    public <T> Iterator<T> update(Class<T> type, String targets, T content) {
-        return new ValueObjectIterator<>(type, update(targets, content));
+    public <T> Iterator<T> update(Class<T> type, String targets, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, update(targets, upType, content));
     }
 
-    public <T> Iterator<Value> updateSync(String targets, T content) {
+    public <T> Iterator<Value> updateSync(String targets, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        return new SynchronizedValueIterator(updateTargetsValuesSync(getPtr(), targets, valueMut.getPtr()));
+        return new SynchronizedValueIterator(updateTargetsValuesSync(getPtr(), targets, upType.code, valueMut.getPtr()));
     }
 
-    public <T> Iterator<T> updateSync(Class<T> type, String targets, T content) {
-        return new ValueObjectIterator<>(type, updateSync(targets, content));
+    public <T> Iterator<T> updateSync(Class<T> type, String targets, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, updateSync(targets, upType, content));
+    }
+
+    public <T> Value upsert(Thing thg, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    public <T> T upsert(Class<T> type, Thing thg, UpType upType, T content) {
+        return upsert(thg, upType, content).get(type);
+    }
+
+    public <T> Iterator<Value> upsert(String targets, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new ValueIterator(upsertTargetsValues(getPtr(), targets, upType.code, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> upsert(Class<T> type, String targets, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, upsert(targets, upType, content));
+    }
+
+    public <T> Iterator<Value> upsertSync(String targets, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        return new SynchronizedValueIterator(upsertTargetsValuesSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+    }
+
+    public <T> Iterator<T> upsertSync(Class<T> type, String targets, UpType upType, T content) {
+        return new ValueObjectIterator<>(type, upsertSync(targets, upType, content));
     }
 
     @SafeVarargs

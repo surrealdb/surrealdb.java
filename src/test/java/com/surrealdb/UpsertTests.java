@@ -8,42 +8,38 @@ import java.util.Iterator;
 import static com.surrealdb.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class UpdateTests {
+public class UpsertTests {
 
     @Test
-    void updateThingValue() throws SurrealException {
+    void upsertThingValue() throws SurrealException {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // Build an id
             final Thing id = new Thing("person", 1);
-            // Let's create a person
-            final Value created = surreal.create(id, tobie);
-            // Update the person in SurrealDB
-            final Value updated = surreal.update(id, UpType.MERGE, jaime);
+            // Upsert the person in SurrealDB
+            final Value updated = surreal.upsert(id, UpType.CONTENT, jaime);
             // Check the person has been updated
             assertEquals("Jaime", updated.get(Person.class).name);
         }
     }
 
     @Test
-    void updateThingObject() throws SurrealException {
+    void upsertThingObject() throws SurrealException {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // Build an id
             final Thing id = new Thing("person", 1);
-            // Let's create a person
-            final Person created = surreal.create(Person.class, id, tobie);
             // Update the person in SurrealDB
-            final Person updated = surreal.update(Person.class, id, UpType.CONTENT, jaime);
+            final Person updated = surreal.upsert(Person.class, id, UpType.CONTENT, jaime);
             // Check the person has been updated
             assertEquals("Jaime", updated.name);
         }
     }
 
     @Test
-    void updateTableValues() {
+    void upsertTableValues() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -51,7 +47,7 @@ public class UpdateTests {
             surreal.create(new Thing("person", 1), tobie);
             surreal.create(new Thing("person", 2), emmanuel);
             // We update the records
-            final Iterator<Value> updated = surreal.update("person", UpType.CONTENT, jaime);
+            final Iterator<Value> updated = surreal.upsert("person", UpType.CONTENT, jaime);
             // Check the updated values
             updated.forEachRemaining(value -> {
                 assertEquals("Jaime", value.getObject().get("name").getString());
@@ -65,7 +61,7 @@ public class UpdateTests {
     }
 
     @Test
-    void updateTableValuesSync() {
+    void upsertTableValuesSync() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -73,7 +69,7 @@ public class UpdateTests {
             surreal.create(new Thing("person", 1), tobie);
             surreal.create(new Thing("person", 2), emmanuel);
             // We update the records
-            final Iterator<Value> updated = surreal.updateSync("person", UpType.CONTENT, jaime);
+            final Iterator<Value> updated = surreal.upsertSync("person", UpType.CONTENT, jaime);
             // Check the updated values
             updated.forEachRemaining(value -> {
                 assertEquals("Jaime", value.getObject().get("name").getString());
@@ -87,7 +83,7 @@ public class UpdateTests {
     }
 
     @Test
-    void updateTableObjects() {
+    void upsertTableObjects() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -95,7 +91,7 @@ public class UpdateTests {
             surreal.create(new Thing("person", 1), tobie);
             surreal.create(new Thing("person", 2), emmanuel);
             // We update the records
-            final Iterator<Person> updated = surreal.update(Person.class, "person", UpType.CONTENT, jaime);
+            final Iterator<Person> updated = surreal.upsert(Person.class, "person", UpType.CONTENT, jaime);
             // Check the updated values
             updated.forEachRemaining(person -> {
                 assertEquals("Jaime", person.name);
@@ -109,7 +105,7 @@ public class UpdateTests {
     }
 
     @Test
-    void updateTableObjectsSync() {
+    void upsertTableObjectsSync() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -117,7 +113,7 @@ public class UpdateTests {
             surreal.create(new Thing("person", 1), tobie);
             surreal.create(new Thing("person", 2), emmanuel);
             // We update the records
-            final Iterator<Person> updated = surreal.updateSync(Person.class, "person", UpType.CONTENT, jaime);
+            final Iterator<Person> updated = surreal.upsertSync(Person.class, "person", UpType.CONTENT, jaime);
             // Check the updated values
             updated.forEachRemaining(person -> {
                 assertEquals("Jaime", person.name);

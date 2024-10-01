@@ -311,7 +311,23 @@ macro_rules! parse_value {
 #[macro_export]
 macro_rules! return_unexpected_result {
     ($env:expr, $res:expr, $default_fn:expr) => {
-        return $crate::SurrealError::SurrealDBJni(format!("Unexpected result: {}", $res).into())
+        return $crate::SurrealError::SurrealDBJni(format!("Unexpected result: {}", $res))
             .exception($env, $default_fn)
+    };
+}
+
+#[macro_export]
+macro_rules! convert_up_type {
+    ($env:expr, $up_type:expr, $default_fn:expr) => {
+        if $up_type == 1 {
+            "CONTENT"
+        } else if $up_type == 2 {
+            "MERGE"
+        } else if $up_type == 3 {
+            "PATCH"
+        } else {
+            return $crate::SurrealError::SurrealDBJni(format!("Unexpected up type: {}", $up_type))
+                .exception($env, $default_fn);
+        }
     };
 }
