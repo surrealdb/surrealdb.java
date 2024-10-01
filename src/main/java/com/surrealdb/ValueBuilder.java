@@ -1,6 +1,7 @@
 package com.surrealdb;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -67,10 +68,13 @@ class ValueBuilder {
         if (object instanceof Thing) {
             return ValueMut.createThing((Thing) object);
         }
-        final Field[] fields = object.getClass().getFields();
+        final Field[] fields = object.getClass().getDeclaredFields();
         if (fields.length > 0) {
             final List<EntryMut> entries = new ArrayList<>(fields.length);
             for (final Field field : fields) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
                 final String name = field.getName();
                 final ValueMut value = convert(field.get(object));
                 if (value != null) {
@@ -79,7 +83,7 @@ class ValueBuilder {
             }
             return ValueMut.createObject(entries);
         }
-        throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());
+        throw new SurrealException("No field found: " + object.getClass().getCanonicalName());
     }
 
     static <T> ValueMut convert(final T object) {
