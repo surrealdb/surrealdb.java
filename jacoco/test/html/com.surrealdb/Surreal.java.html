@@ -53,11 +53,17 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
-    private static native long updateThingValue(long ptr, long thingPtr, long valuePtr);
+    private static native long updateThingValue(long ptr, long thingPtr, int update, long valuePtr);
 
-    private static native long updateTargetsValues(long ptr, String targets, long valuePtr);
+    private static native long updateTargetsValues(long ptr, String targets, int update, long valuePtr);
 
-    private static native long updateTargetsValuesSync(long ptr, String targets, long valuePtr);
+    private static native long updateTargetsValuesSync(long ptr, String targets, int update, long valuePtr);
+
+    private static native long upsertThingValue(long ptr, long thingPtr, int update, long valuePtr);
+
+    private static native long upsertTargetsValues(long ptr, String targets, int update, long valuePtr);
+
+    private static native long upsertTargetsValuesSync(long ptr, String targets, int update, long valuePtr);
 
     private static native long selectThing(long ptr, long thing);
 
@@ -76,265 +82,293 @@ public class Surreal extends Native implements AutoCloseable {
 
     @Override
     final String toString(long ptr) {
-<span class="nc" id="L79">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L85">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
     }
 
     @Override
     final int hashCode(long ptr) {
-<span class="nc" id="L84">        return Objects.hashCode(ptr);</span>
+<span class="nc" id="L90">        return Objects.hashCode(ptr);</span>
     }
 
     @Override
     final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L89" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
     }
 
     @Override
     final native boolean deleteInstance(long ptr);
 
     public Surreal connect(String connect) {
-<span class="fc" id="L96">        connect(getPtr(), connect);</span>
-<span class="fc" id="L97">        return this;</span>
+<span class="fc" id="L102">        connect(getPtr(), connect);</span>
+<span class="fc" id="L103">        return this;</span>
     }
 
     public Token signin(Signin signin) {
-<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (signin instanceof Database) {</span>
-<span class="nc" id="L102">            final Database db = (Database) signin;</span>
-<span class="nc" id="L103">            return new Token(signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase()));</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">        } else if (signin instanceof Namespace) {</span>
-<span class="nc" id="L105">            final Namespace ns = (Namespace) signin;</span>
-<span class="nc" id="L106">            return new Token(signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace()));</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">        } else if (signin instanceof Root) {</span>
-<span class="nc" id="L108">            final Root r = (Root) signin;</span>
-<span class="nc" id="L109">            return new Token(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (signin instanceof Database) {</span>
+<span class="nc" id="L108">            final Database db = (Database) signin;</span>
+<span class="nc" id="L109">            return new Token(signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase()));</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        } else if (signin instanceof Namespace) {</span>
+<span class="nc" id="L111">            final Namespace ns = (Namespace) signin;</span>
+<span class="nc" id="L112">            return new Token(signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace()));</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        } else if (signin instanceof Root) {</span>
+<span class="nc" id="L114">            final Root r = (Root) signin;</span>
+<span class="nc" id="L115">            return new Token(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
         }
-<span class="nc" id="L111">        throw new SurrealException(&quot;Unsupported sign in&quot;);</span>
+<span class="nc" id="L117">        throw new SurrealException(&quot;Unsupported sign in&quot;);</span>
     }
 
     public Surreal useNs(String ns) {
-<span class="fc" id="L115">        useNs(getPtr(), ns);</span>
-<span class="fc" id="L116">        return this;</span>
+<span class="fc" id="L121">        useNs(getPtr(), ns);</span>
+<span class="fc" id="L122">        return this;</span>
     }
 
     public Surreal useDb(String ns) {
-<span class="fc" id="L120">        useDb(getPtr(), ns);</span>
-<span class="fc" id="L121">        return this;</span>
+<span class="fc" id="L126">        useDb(getPtr(), ns);</span>
+<span class="fc" id="L127">        return this;</span>
     }
 
     public Response query(String sql) {
-<span class="fc" id="L125">        return new Response(query(getPtr(), sql));</span>
+<span class="fc" id="L131">        return new Response(query(getPtr(), sql));</span>
     }
 
     public Response queryBind(String sql, Map&lt;String, ?&gt; params) {
-<span class="nc" id="L129">        return new Response(queryBind(getPtr(), sql, params));</span>
+<span class="nc" id="L135">        return new Response(queryBind(getPtr(), sql, params));</span>
     }
 
     public &lt;T&gt; Value create(Thing thg, T content) {
-<span class="fc" id="L133">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L134">        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L135">        return new Value(valuePtr);</span>
+<span class="fc" id="L139">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L140">        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());</span>
+<span class="fc" id="L141">        return new Value(valuePtr);</span>
     }
 
     public &lt;T&gt; T create(Class&lt;T&gt; type, Thing thg, T content) {
-<span class="fc" id="L139">        return create(thg, content).get(type);</span>
+<span class="fc" id="L145">        return create(thg, content).get(type);</span>
     }
 
     public &lt;T&gt; Value create(String targets, T content) {
-<span class="fc" id="L143">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L144">        final long valuePtr = createTargetsValue(getPtr(), targets, valueMut.getPtr());</span>
-<span class="fc" id="L145">        return new Value(valuePtr);</span>
+<span class="fc" id="L149">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L150">        final long valuePtr = createTargetsValue(getPtr(), targets, valueMut.getPtr());</span>
+<span class="fc" id="L151">        return new Value(valuePtr);</span>
     }
 
     public &lt;T&gt; T create(Class&lt;T&gt; type, String targets, T content) {
-<span class="fc" id="L149">        return create(targets, content).get(type);</span>
+<span class="fc" id="L155">        return create(targets, content).get(type);</span>
     }
 
     @SafeVarargs
     public final &lt;T&gt; List&lt;Value&gt; create(String targets, T... contents) {
-<span class="fc" id="L154">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L155">        final long[] valuePtrs = createTargetsValues(getPtr(), targets, valueMutPtrs);</span>
-<span class="fc" id="L156">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L160">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L161">        final long[] valuePtrs = createTargetsValues(getPtr(), targets, valueMutPtrs);</span>
+<span class="fc" id="L162">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
     @SafeVarargs
     public final &lt;T&gt; List&lt;T&gt; create(Class&lt;T&gt; type, String targets, T... contents) {
-<span class="fc" id="L161">        try (final Stream&lt;Value&gt; s = create(targets, contents).stream()) {</span>
-<span class="fc" id="L162">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L167">        try (final Stream&lt;Value&gt; s = create(targets, contents).stream()) {</span>
+<span class="fc" id="L168">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
     public &lt;T&gt; Value insert(String target, T content) {
-<span class="fc" id="L167">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L168">        final long valuePtr = insertTargetValue(getPtr(), target, valueMut.getPtr());</span>
-<span class="fc" id="L169">        return new Value(valuePtr);</span>
+<span class="fc" id="L173">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L174">        final long valuePtr = insertTargetValue(getPtr(), target, valueMut.getPtr());</span>
+<span class="fc" id="L175">        return new Value(valuePtr);</span>
     }
 
     public &lt;T&gt; T insert(Class&lt;T&gt; type, String target, T content) {
-<span class="fc" id="L173">        return insert(target, content).get(type);</span>
+<span class="fc" id="L179">        return insert(target, content).get(type);</span>
     }
 
     @SafeVarargs
     public final &lt;T&gt; List&lt;Value&gt; insert(String target, T... contents) {
-<span class="fc" id="L178">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L179">        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L180">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L184">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L185">        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L186">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
     @SafeVarargs
     public final &lt;T&gt; List&lt;T&gt; insert(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L185">        try (final Stream&lt;Value&gt; s = insert(target, contents).stream()) {</span>
-<span class="fc" id="L186">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L191">        try (final Stream&lt;Value&gt; s = insert(target, contents).stream()) {</span>
+<span class="fc" id="L192">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
     public &lt;T extends InsertRelation&gt; Value insertRelation(String target, T content) {
-<span class="fc" id="L191">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L192">        final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());</span>
-<span class="fc" id="L193">        return new Value(valuePtr);</span>
+<span class="fc" id="L197">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L198">        final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());</span>
+<span class="fc" id="L199">        return new Value(valuePtr);</span>
     }
 
     public &lt;T extends InsertRelation&gt; T insertRelation(Class&lt;T&gt; type, String target, T content) {
-<span class="fc" id="L197">        return insertRelation(target, content).get(type);</span>
+<span class="fc" id="L203">        return insertRelation(target, content).get(type);</span>
     }
 
     @SafeVarargs
     public final &lt;T extends InsertRelation&gt; List&lt;Value&gt; insertRelations(String target, T... contents) {
-<span class="fc" id="L202">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L203">        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L204">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L208">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L209">        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L210">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
     @SafeVarargs
     public final &lt;T extends InsertRelation&gt; List&lt;T&gt; insertRelations(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L209">        try (final Stream&lt;Value&gt; s = insertRelations(target, contents).stream()) {</span>
-<span class="fc" id="L210">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L215">        try (final Stream&lt;Value&gt; s = insertRelations(target, contents).stream()) {</span>
+<span class="fc" id="L216">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
     public Value relate(Thing from, String table, Thing to) {
-<span class="fc" id="L215">        final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());</span>
-<span class="fc" id="L216">        return new Value(valuePtr);</span>
+<span class="fc" id="L221">        final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());</span>
+<span class="fc" id="L222">        return new Value(valuePtr);</span>
     }
 
     public &lt;T extends Relation&gt; T relate(Class&lt;T&gt; type, Thing from, String table, Thing to) {
-<span class="fc" id="L220">        return relate(from, table, to).get(type);</span>
+<span class="fc" id="L226">        return relate(from, table, to).get(type);</span>
     }
 
     public &lt;T&gt; Value relate(Thing from, String table, Thing to, T content) {
-<span class="fc" id="L224">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L225">        final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L226">        return new Value(valuePtr);</span>
+<span class="fc" id="L230">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L231">        final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());</span>
+<span class="fc" id="L232">        return new Value(valuePtr);</span>
     }
 
     public &lt;R extends Relation, T&gt; R relate(Class&lt;R&gt; type, Thing from, String table, Thing to, T content) {
-<span class="fc" id="L230">        return relate(from, table, to, content).get(type);</span>
+<span class="fc" id="L236">        return relate(from, table, to, content).get(type);</span>
     }
 
-    public &lt;T&gt; Value update(Thing thg, T content) {
-<span class="fc" id="L234">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L235">        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L236">        return new Value(valuePtr);</span>
+    public &lt;T&gt; Value update(Thing thg, UpType upType, T content) {
+<span class="fc" id="L240">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L241">        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());</span>
+<span class="fc" id="L242">        return new Value(valuePtr);</span>
     }
 
-    public &lt;T&gt; T update(Class&lt;T&gt; type, Thing thg, T content) {
-<span class="fc" id="L240">        return update(thg, content).get(type);</span>
+    public &lt;T&gt; T update(Class&lt;T&gt; type, Thing thg, UpType upType, T content) {
+<span class="fc" id="L246">        return update(thg, upType, content).get(type);</span>
     }
 
-    public &lt;T&gt; Iterator&lt;Value&gt; update(String targets, T content) {
-<span class="fc" id="L244">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L245">        return new ValueIterator(updateTargetsValues(getPtr(), targets, valueMut.getPtr()));</span>
+    public &lt;T&gt; Iterator&lt;Value&gt; update(String targets, UpType upType, T content) {
+<span class="fc" id="L250">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L251">        return new ValueIterator(updateTargetsValues(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
     }
 
-    public &lt;T&gt; Iterator&lt;T&gt; update(Class&lt;T&gt; type, String targets, T content) {
-<span class="fc" id="L249">        return new ValueObjectIterator&lt;&gt;(type, update(targets, content));</span>
+    public &lt;T&gt; Iterator&lt;T&gt; update(Class&lt;T&gt; type, String targets, UpType upType, T content) {
+<span class="fc" id="L255">        return new ValueObjectIterator&lt;&gt;(type, update(targets, upType, content));</span>
     }
 
-    public &lt;T&gt; Iterator&lt;Value&gt; updateSync(String targets, T content) {
-<span class="fc" id="L253">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L254">        return new SynchronizedValueIterator(updateTargetsValuesSync(getPtr(), targets, valueMut.getPtr()));</span>
+    public &lt;T&gt; Iterator&lt;Value&gt; updateSync(String targets, UpType upType, T content) {
+<span class="fc" id="L259">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L260">        return new SynchronizedValueIterator(updateTargetsValuesSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
     }
 
-    public &lt;T&gt; Iterator&lt;T&gt; updateSync(Class&lt;T&gt; type, String targets, T content) {
-<span class="fc" id="L258">        return new ValueObjectIterator&lt;&gt;(type, updateSync(targets, content));</span>
+    public &lt;T&gt; Iterator&lt;T&gt; updateSync(Class&lt;T&gt; type, String targets, UpType upType, T content) {
+<span class="fc" id="L264">        return new ValueObjectIterator&lt;&gt;(type, updateSync(targets, upType, content));</span>
+    }
+
+    public &lt;T&gt; Value upsert(Thing thg, UpType upType, T content) {
+<span class="fc" id="L268">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L269">        final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());</span>
+<span class="fc" id="L270">        return new Value(valuePtr);</span>
+    }
+
+    public &lt;T&gt; T upsert(Class&lt;T&gt; type, Thing thg, UpType upType, T content) {
+<span class="fc" id="L274">        return upsert(thg, upType, content).get(type);</span>
+    }
+
+    public &lt;T&gt; Iterator&lt;Value&gt; upsert(String targets, UpType upType, T content) {
+<span class="fc" id="L278">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L279">        return new ValueIterator(upsertTargetsValues(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+    }
+
+    public &lt;T&gt; Iterator&lt;T&gt; upsert(Class&lt;T&gt; type, String targets, UpType upType, T content) {
+<span class="fc" id="L283">        return new ValueObjectIterator&lt;&gt;(type, upsert(targets, upType, content));</span>
+    }
+
+    public &lt;T&gt; Iterator&lt;Value&gt; upsertSync(String targets, UpType upType, T content) {
+<span class="fc" id="L287">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L288">        return new SynchronizedValueIterator(upsertTargetsValuesSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+    }
+
+    public &lt;T&gt; Iterator&lt;T&gt; upsertSync(Class&lt;T&gt; type, String targets, UpType upType, T content) {
+<span class="fc" id="L292">        return new ValueObjectIterator&lt;&gt;(type, upsertSync(targets, upType, content));</span>
     }
 
     @SafeVarargs
     private final &lt;T&gt; long[] contents2longs(T... contents) {
-<span class="fc" id="L263">        final long[] ptrs = new long[contents.length];</span>
-<span class="fc" id="L264">        int index = 0;</span>
-<span class="fc bfc" id="L265" title="All 2 branches covered.">        for (final T c : contents) {</span>
-<span class="fc" id="L266">            ptrs[index++] = ValueBuilder.convert(c).getPtr();</span>
+<span class="fc" id="L297">        final long[] ptrs = new long[contents.length];</span>
+<span class="fc" id="L298">        int index = 0;</span>
+<span class="fc bfc" id="L299" title="All 2 branches covered.">        for (final T c : contents) {</span>
+<span class="fc" id="L300">            ptrs[index++] = ValueBuilder.convert(c).getPtr();</span>
         }
-<span class="fc" id="L268">        return ptrs;</span>
+<span class="fc" id="L302">        return ptrs;</span>
     }
 
     public Optional&lt;Value&gt; select(Thing thing) {
-<span class="fc" id="L272">        final long valuePtr = selectThing(getPtr(), thing.getPtr());</span>
-<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (valuePtr == 0) {</span>
-<span class="fc" id="L274">            return Optional.empty();</span>
+<span class="fc" id="L306">        final long valuePtr = selectThing(getPtr(), thing.getPtr());</span>
+<span class="fc bfc" id="L307" title="All 2 branches covered.">        if (valuePtr == 0) {</span>
+<span class="fc" id="L308">            return Optional.empty();</span>
         }
-<span class="fc" id="L276">        return Optional.of(new Value(valuePtr));</span>
+<span class="fc" id="L310">        return Optional.of(new Value(valuePtr));</span>
     }
 
     public &lt;T&gt; Optional&lt;T&gt; select(Class&lt;T&gt; type, Thing thing) {
-<span class="fc" id="L280">        return select(thing).map(v -&gt; v.get(type));</span>
+<span class="fc" id="L314">        return select(thing).map(v -&gt; v.get(type));</span>
     }
 
     public List&lt;Value&gt; select(Thing... things) {
-<span class="fc" id="L284">        final long[] thingsPtr = things2longs(things);</span>
-<span class="fc" id="L285">        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);</span>
-<span class="fc" id="L286">        try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
-<span class="fc" id="L287">            return s.mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L318">        final long[] thingsPtr = things2longs(things);</span>
+<span class="fc" id="L319">        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);</span>
+<span class="fc" id="L320">        try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
+<span class="fc" id="L321">            return s.mapToObj(Value::new).collect(Collectors.toList());</span>
         }
     }
 
     private long[] things2longs(Thing... things) {
-<span class="fc" id="L292">        final long[] ptrs = new long[things.length];</span>
-<span class="fc" id="L293">        int index = 0;</span>
-<span class="fc bfc" id="L294" title="All 2 branches covered.">        for (final Thing t : things) {</span>
-<span class="fc" id="L295">            ptrs[index++] = t.getPtr();</span>
+<span class="fc" id="L326">        final long[] ptrs = new long[things.length];</span>
+<span class="fc" id="L327">        int index = 0;</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">        for (final Thing t : things) {</span>
+<span class="fc" id="L329">            ptrs[index++] = t.getPtr();</span>
         }
-<span class="fc" id="L297">        return ptrs;</span>
+<span class="fc" id="L331">        return ptrs;</span>
     }
 
     public &lt;T&gt; List&lt;T&gt; select(Class&lt;T&gt; type, Thing... things) {
-<span class="fc" id="L301">        try (final Stream&lt;Value&gt; s = select(things).stream()) {</span>
-<span class="fc" id="L302">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L335">        try (final Stream&lt;Value&gt; s = select(things).stream()) {</span>
+<span class="fc" id="L336">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
     public Iterator&lt;Value&gt; select(String targets) {
-<span class="fc" id="L307">        return new ValueIterator(selectTargetsValues(getPtr(), targets));</span>
+<span class="fc" id="L341">        return new ValueIterator(selectTargetsValues(getPtr(), targets));</span>
     }
 
     public Iterator&lt;Value&gt; selectSync(String targets) {
-<span class="fc" id="L311">        return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));</span>
+<span class="fc" id="L345">        return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; select(Class&lt;T&gt; type, String targets) {
-<span class="fc" id="L315">        return new ValueObjectIterator&lt;&gt;(type, select(targets));</span>
+<span class="fc" id="L349">        return new ValueObjectIterator&lt;&gt;(type, select(targets));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; selectSync(Class&lt;T&gt; type, String targets) {
-<span class="fc" id="L319">        return new ValueObjectIterator&lt;&gt;(type, selectSync(targets));</span>
+<span class="fc" id="L353">        return new ValueObjectIterator&lt;&gt;(type, selectSync(targets));</span>
     }
 
     public void delete(Thing thing) {
-<span class="fc" id="L323">        deleteThing(getPtr(), thing.getPtr());</span>
-<span class="fc" id="L324">    }</span>
+<span class="fc" id="L357">        deleteThing(getPtr(), thing.getPtr());</span>
+<span class="fc" id="L358">    }</span>
 
     public void delete(Thing... things) {
-<span class="fc" id="L327">        final long[] thingsPtr = things2longs(things);</span>
-<span class="fc" id="L328">        deleteThings(getPtr(), thingsPtr);</span>
-<span class="fc" id="L329">    }</span>
+<span class="fc" id="L361">        final long[] thingsPtr = things2longs(things);</span>
+<span class="fc" id="L362">        deleteThings(getPtr(), thingsPtr);</span>
+<span class="fc" id="L363">    }</span>
 
     public void delete(String targets) {
-<span class="fc" id="L332">        deleteTargets(getPtr(), targets);</span>
-<span class="fc" id="L333">    }</span>
+<span class="fc" id="L366">        deleteTargets(getPtr(), targets);</span>
+<span class="fc" id="L367">    }</span>
 
     @Override
     public void close() {
-<span class="fc" id="L337">        deleteInstance();</span>
-<span class="fc" id="L338">    }</span>
+<span class="fc" id="L371">        deleteInstance();</span>
+<span class="fc" id="L372">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
