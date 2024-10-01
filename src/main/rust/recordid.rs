@@ -10,7 +10,7 @@ use crate::error::SurrealError;
 use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_newThingLongId<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     table: JString<'local>,
@@ -22,7 +22,7 @@ pub extern "system" fn Java_com_surrealdb_Thing_newThingLongId<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_getTable<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_getTable<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -36,7 +36,7 @@ pub extern "system" fn Java_com_surrealdb_Thing_getTable<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_getId<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_getId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -50,7 +50,7 @@ pub extern "system" fn Java_com_surrealdb_Thing_getId<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_equals<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_equals<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr1: jlong,
@@ -65,7 +65,7 @@ pub extern "system" fn Java_com_surrealdb_Thing_equals<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_hashCode<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_hashCode<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -81,7 +81,7 @@ pub extern "system" fn Java_com_surrealdb_Thing_hashCode<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Thing_toString<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_toString<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,

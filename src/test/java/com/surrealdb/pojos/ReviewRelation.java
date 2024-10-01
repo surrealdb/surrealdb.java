@@ -1,7 +1,7 @@
 package com.surrealdb.pojos;
 
+import com.surrealdb.RecordId;
 import com.surrealdb.Relation;
-import com.surrealdb.Thing;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public class ReviewRelation extends Relation {
     public ReviewRelation() {
     }
 
-    public ReviewRelation(Thing id, Thing in, Thing out, Integer rate, String comment) {
+    public ReviewRelation(RecordId id, RecordId in, RecordId out, Integer rate, String comment) {
         super(id, in, out);
         this.rate = rate;
         this.comment = comment;

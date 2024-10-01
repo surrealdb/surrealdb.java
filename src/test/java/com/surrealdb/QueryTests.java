@@ -306,7 +306,7 @@ public class QueryTests {
                 {
                     assertTrue(iterator.hasNext());
                     final Person p = iterator.next();
-                    assertEquals(new Thing("person", 1), p.id);
+                    assertEquals(new RecordId("person", 1), p.id);
                     assertEquals(1, p.category);
                     assertTrue(p.active);
                     assertEquals(Arrays.asList("CEO", "CTO"), p.tags);
@@ -317,7 +317,7 @@ public class QueryTests {
                 {
                     assertTrue(iterator.hasNext());
                     final Person p = iterator.next();
-                    assertEquals(new Thing("person", 2), p.id);
+                    assertEquals(new RecordId("person", 2), p.id);
                     assertEquals(2, p.category);
                     assertTrue(p.active);
                     assertEquals(Collections.singletonList("COO"), p.tags);

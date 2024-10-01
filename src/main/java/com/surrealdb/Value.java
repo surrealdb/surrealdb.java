@@ -163,8 +163,8 @@ public class Value extends Native {
         return isThing(getPtr());
     }
 
-    public Thing getThing() {
-        return new Thing(getThing(getPtr()));
+    public RecordId getThing() {
+        return new RecordId(getThing(getPtr()));
     }
 
     public boolean isBytes() {

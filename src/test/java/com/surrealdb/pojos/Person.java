@@ -1,13 +1,13 @@
 package com.surrealdb.pojos;
 
-import com.surrealdb.Thing;
+import com.surrealdb.RecordId;
 
 import java.util.List;
 import java.util.Objects;
 
 public class Person {
 
-    public Thing id;
+    public RecordId id;
     public String name;
     public List<String> tags;
     public long category;

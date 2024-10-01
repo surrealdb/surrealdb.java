@@ -80,7 +80,7 @@ public class CreateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // We create the records
-            final Value created = surreal.create(new Thing("person", 1), tobie);
+            final Value created = surreal.create(new RecordId("person", 1), tobie);
             // We check that the records are matching
             final Person person = created.get(Person.class);
             person.id = null;
@@ -94,7 +94,7 @@ public class CreateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // We create the records
-            final Person person = surreal.create(Person.class, new Thing("person", 1), tobie);
+            final Person person = surreal.create(Person.class, new RecordId("person", 1), tobie);
             // We check that the records are matching
             person.id = null;
             assertEquals(tobie, person);

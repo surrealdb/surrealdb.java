@@ -127,3 +127,11 @@ On Windows:
 cargo build
 ./gradlew.bat -i test
 ```
+
+### Planned Features
+
+- All Geometry types (actually only points)
+- Ranges
+- Future
+- Live queries
+- Open an issue for feature requests

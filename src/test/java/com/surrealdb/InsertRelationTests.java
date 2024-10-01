@@ -20,8 +20,8 @@ public class InsertRelationTests {
             // Create two records
             final List<Value> persons = surreal.create("person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = persons.get(0).get(Person.class).id;
-            final Thing jaime = persons.get(1).get(Person.class).id;
+            final RecordId tobie = persons.get(0).get(Person.class).id;
+            final RecordId jaime = persons.get(1).get(Person.class).id;
             // Relate records
             final InsertRelation insert = new InsertRelation(Id.from(1), tobie, jaime);
             final Value value = surreal.insertRelation("brother", insert);
@@ -40,8 +40,8 @@ public class InsertRelationTests {
             // Create two records
             final List<Value> persons = surreal.create("person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = persons.get(0).get(Person.class).id;
-            final Thing jaime = persons.get(1).get(Person.class).id;
+            final RecordId tobie = persons.get(0).get(Person.class).id;
+            final RecordId jaime = persons.get(1).get(Person.class).id;
             // Relate records
             final InsertRelation insert = new InsertRelation(Id.from(1), tobie, jaime);
             final InsertRelation relation = surreal.insertRelation(InsertRelation.class, "brother", insert);
@@ -58,8 +58,8 @@ public class InsertRelationTests {
             // Create two records
             final List<Value> persons = surreal.create("person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = persons.get(0).get(Person.class).id;
-            final Thing jaime = persons.get(1).get(Person.class).id;
+            final RecordId tobie = persons.get(0).get(Person.class).id;
+            final RecordId jaime = persons.get(1).get(Person.class).id;
             // Relate records
             final InsertRelation insert1 = new InsertRelation(Id.from("A"), tobie, jaime);
             final InsertRelation insert2 = new InsertRelation(Id.from("B"), jaime, tobie);
@@ -82,8 +82,8 @@ public class InsertRelationTests {
             // Create two records
             final List<Value> persons = surreal.create("person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = persons.get(0).get(Person.class).id;
-            final Thing jaime = persons.get(1).get(Person.class).id;
+            final RecordId tobie = persons.get(0).get(Person.class).id;
+            final RecordId jaime = persons.get(1).get(Person.class).id;
             // Relate records
             final InsertRelation insert1 = new InsertRelation(Id.from(1), tobie, jaime);
             final InsertRelation insert2 = new InsertRelation(Id.from(2), jaime, tobie);

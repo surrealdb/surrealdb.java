@@ -44,7 +44,7 @@ public class SelectTests implements AutoCloseable {
 
     @Test
     public void selectNonExistingObject() {
-        final Optional<Person> person = surreal.select(Person.class, new Thing("Dummy", 1));
+        final Optional<Person> person = surreal.select(Person.class, new RecordId("Dummy", 1));
         assertEquals(Optional.empty(), person);
     }
 

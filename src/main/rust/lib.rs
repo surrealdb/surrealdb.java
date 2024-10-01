@@ -25,7 +25,7 @@ mod response;
 mod surreal;
 mod syncentryiterator;
 mod syncvalueiterator;
-mod thing;
+mod recordid;
 mod value;
 mod valueiterator;
 mod valuemut;

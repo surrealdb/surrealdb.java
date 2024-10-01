@@ -20,8 +20,8 @@ public class RelateTests {
             // Create two records
             final List<Value> values = surreal.create("person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = values.get(0).get(Person.class).id;
-            final Thing jaime = values.get(1).get(Person.class).id;
+            final RecordId tobie = values.get(0).get(Person.class).id;
+            final RecordId jaime = values.get(1).get(Person.class).id;
             // Relate records
             final Value value = surreal.relate(tobie, "brother", jaime);
             // Get the relation:
@@ -41,8 +41,8 @@ public class RelateTests {
             // We create the records
             final List<Person> values = surreal.create(Person.class, "person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = values.get(0).id;
-            final Thing jaime = values.get(1).id;
+            final RecordId tobie = values.get(0).id;
+            final RecordId jaime = values.get(1).id;
             // Relate records
             final Relation relation = surreal.relate(Relation.class, tobie, "brother", jaime);
             // Assertion
@@ -60,8 +60,8 @@ public class RelateTests {
             // We create the records
             final List<Person> values = surreal.create(Person.class, "person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = values.get(0).id;
-            final Thing jaime = values.get(1).id;
+            final RecordId tobie = values.get(0).id;
+            final RecordId jaime = values.get(1).id;
             // Relate records
             final Value value = surreal.relate(tobie, "brother", jaime, review);
             // Get a relation instance
@@ -83,8 +83,8 @@ public class RelateTests {
             // We create the records
             final List<Person> values = surreal.create(Person.class, "person", tobie, jaime);
             // Extract the ids
-            final Thing tobie = values.get(0).id;
-            final Thing jaime = values.get(1).id;
+            final RecordId tobie = values.get(0).id;
+            final RecordId jaime = values.get(1).id;
             // Relate records
             final ReviewRelation relation = surreal.relate(ReviewRelation.class, tobie, "brother", jaime, review);
             // Assertion

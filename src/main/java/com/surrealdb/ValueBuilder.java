@@ -65,8 +65,8 @@ class ValueBuilder {
         if (object instanceof Id) {
             return ValueMut.createId((Id) object);
         }
-        if (object instanceof Thing) {
-            return ValueMut.createThing((Thing) object);
+        if (object instanceof RecordId) {
+            return ValueMut.createThing((RecordId) object);
         }
         final Field[] fields = object.getClass().getDeclaredFields();
         if (fields.length > 0) {

@@ -6,13 +6,13 @@ import java.util.Objects;
 public class InsertRelation {
 
     public Id id;
-    public Thing in;
-    public Thing out;
+    public RecordId in;
+    public RecordId out;
 
     public InsertRelation() {
     }
 
-    public InsertRelation(Id id, Thing in, Thing out) {
+    public InsertRelation(Id id, RecordId in, RecordId out) {
         this.id = id;
         this.in = in;
         this.out = out;

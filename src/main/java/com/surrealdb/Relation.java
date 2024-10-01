@@ -5,14 +5,14 @@ import java.util.Objects;
 
 public class Relation {
 
-    public Thing id;
-    public Thing in;
-    public Thing out;
+    public RecordId id;
+    public RecordId in;
+    public RecordId out;
 
     public Relation() {
     }
 
-    public Relation(Thing id, Thing in, Thing out) {
+    public Relation(RecordId id, RecordId in, RecordId out) {
         this.id = id;
         this.in = in;
         this.out = out;

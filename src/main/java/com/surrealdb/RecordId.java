@@ -1,17 +1,17 @@
 package com.surrealdb;
 
-public class Thing extends Native {
+public class RecordId extends Native {
 
 
-    Thing(long ptr) {
+    RecordId(long ptr) {
         super(ptr);
     }
 
-    public Thing(String table, long id) {
+    public RecordId(String table, long id) {
         super(newThingLongId(table, id));
     }
 
-    public Thing(String table, String id) {
+    public RecordId(String table, String id) {
         super(newThingStringId(table, id));
     }
 

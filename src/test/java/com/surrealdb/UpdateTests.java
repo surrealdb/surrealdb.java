@@ -16,7 +16,7 @@ public class UpdateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // Build an id
-            final Thing id = new Thing("person", 1);
+            final RecordId id = new RecordId("person", 1);
             // Let's create a person
             final Value created = surreal.create(id, tobie);
             // Update the person in SurrealDB
@@ -32,7 +32,7 @@ public class UpdateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // Build an id
-            final Thing id = new Thing("person", 1);
+            final RecordId id = new RecordId("person", 1);
             // Let's create a person
             final Person created = surreal.create(Person.class, id, tobie);
             // Update the person in SurrealDB
@@ -48,8 +48,8 @@ public class UpdateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // We create some records
-            surreal.create(new Thing("person", 1), tobie);
-            surreal.create(new Thing("person", 2), emmanuel);
+            surreal.create(new RecordId("person", 1), tobie);
+            surreal.create(new RecordId("person", 2), emmanuel);
             // We update the records
             final Iterator<Value> updated = surreal.update("person", UpType.CONTENT, jaime);
             // Check the updated values
@@ -70,8 +70,8 @@ public class UpdateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // We create some records
-            surreal.create(new Thing("person", 1), tobie);
-            surreal.create(new Thing("person", 2), emmanuel);
+            surreal.create(new RecordId("person", 1), tobie);
+            surreal.create(new RecordId("person", 2), emmanuel);
             // We update the records
             final Iterator<Value> updated = surreal.updateSync("person", UpType.CONTENT, jaime);
             // Check the updated values
@@ -92,8 +92,8 @@ public class UpdateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // We create some records
-            surreal.create(new Thing("person", 1), tobie);
-            surreal.create(new Thing("person", 2), emmanuel);
+            surreal.create(new RecordId("person", 1), tobie);
+            surreal.create(new RecordId("person", 2), emmanuel);
             // We update the records
             final Iterator<Person> updated = surreal.update(Person.class, "person", UpType.CONTENT, jaime);
             // Check the updated values
@@ -114,8 +114,8 @@ public class UpdateTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // We create some records
-            surreal.create(new Thing("person", 1), tobie);
-            surreal.create(new Thing("person", 2), emmanuel);
+            surreal.create(new RecordId("person", 1), tobie);
+            surreal.create(new RecordId("person", 2), emmanuel);
             // We update the records
             final Iterator<Person> updated = surreal.updateSync(Person.class, "person", UpType.CONTENT, jaime);
             // Check the updated values

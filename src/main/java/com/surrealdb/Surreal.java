@@ -135,13 +135,13 @@ public class Surreal extends Native implements AutoCloseable {
         return new Response(queryBind(getPtr(), sql, params));
     }
 
-    public <T> Value create(Thing thg, T content) {
+    public <T> Value create(RecordId thg, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> T create(Class<T> type, Thing thg, T content) {
+    public <T> T create(Class<T> type, RecordId thg, T content) {
         return create(thg, content).get(type);
     }
 
@@ -217,32 +217,32 @@ public class Surreal extends Native implements AutoCloseable {
         }
     }
 
-    public Value relate(Thing from, String table, Thing to) {
+    public Value relate(RecordId from, String table, RecordId to) {
         final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T extends Relation> T relate(Class<T> type, Thing from, String table, Thing to) {
+    public <T extends Relation> T relate(Class<T> type, RecordId from, String table, RecordId to) {
         return relate(from, table, to).get(type);
     }
 
-    public <T> Value relate(Thing from, String table, Thing to, T content) {
+    public <T> Value relate(RecordId from, String table, RecordId to, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <R extends Relation, T> R relate(Class<R> type, Thing from, String table, Thing to, T content) {
+    public <R extends Relation, T> R relate(Class<R> type, RecordId from, String table, RecordId to, T content) {
         return relate(from, table, to, content).get(type);
     }
 
-    public <T> Value update(Thing thg, UpType upType, T content) {
+    public <T> Value update(RecordId thg, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> T update(Class<T> type, Thing thg, UpType upType, T content) {
+    public <T> T update(Class<T> type, RecordId thg, UpType upType, T content) {
         return update(thg, upType, content).get(type);
     }
 
@@ -264,13 +264,13 @@ public class Surreal extends Native implements AutoCloseable {
         return new ValueObjectIterator<>(type, updateSync(targets, upType, content));
     }
 
-    public <T> Value upsert(Thing thg, UpType upType, T content) {
+    public <T> Value upsert(RecordId thg, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> T upsert(Class<T> type, Thing thg, UpType upType, T content) {
+    public <T> T upsert(Class<T> type, RecordId thg, UpType upType, T content) {
         return upsert(thg, upType, content).get(type);
     }
 
@@ -302,19 +302,19 @@ public class Surreal extends Native implements AutoCloseable {
         return ptrs;
     }
 
-    public Optional<Value> select(Thing thing) {
-        final long valuePtr = selectThing(getPtr(), thing.getPtr());
+    public Optional<Value> select(RecordId recordId) {
+        final long valuePtr = selectThing(getPtr(), recordId.getPtr());
         if (valuePtr == 0) {
             return Optional.empty();
         }
         return Optional.of(new Value(valuePtr));
     }
 
-    public <T> Optional<T> select(Class<T> type, Thing thing) {
-        return select(thing).map(v -> v.get(type));
+    public <T> Optional<T> select(Class<T> type, RecordId recordId) {
+        return select(recordId).map(v -> v.get(type));
     }
 
-    public List<Value> select(Thing... things) {
+    public List<Value> select(RecordId... things) {
         final long[] thingsPtr = things2longs(things);
         final long[] valuePtrs = selectThings(getPtr(), thingsPtr);
         try (final LongStream s = Arrays.stream(valuePtrs)) {
@@ -322,16 +322,16 @@ public class Surreal extends Native implements AutoCloseable {
         }
     }
 
-    private long[] things2longs(Thing... things) {
+    private long[] things2longs(RecordId... things) {
         final long[] ptrs = new long[things.length];
         int index = 0;
-        for (final Thing t : things) {
+        for (final RecordId t : things) {
             ptrs[index++] = t.getPtr();
         }
         return ptrs;
     }
 
-    public <T> List<T> select(Class<T> type, Thing... things) {
+    public <T> List<T> select(Class<T> type, RecordId... things) {
         try (final Stream<Value> s = select(things).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
@@ -353,11 +353,11 @@ public class Surreal extends Native implements AutoCloseable {
         return new ValueObjectIterator<>(type, selectSync(targets));
     }
 
-    public void delete(Thing thing) {
-        deleteThing(getPtr(), thing.getPtr());
+    public void delete(RecordId recordId) {
+        deleteThing(getPtr(), recordId.getPtr());
     }
 
-    public void delete(Thing... things) {
+    public void delete(RecordId... things) {
         final long[] thingsPtr = things2longs(things);
         deleteThings(getPtr(), thingsPtr);
     }
