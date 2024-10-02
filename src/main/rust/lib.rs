@@ -1,7 +1,9 @@
 use crate::error::SurrealError;
 #[cfg(debug_assertions)]
 use dashmap::DashMap;
+use jni::objects::{JObjectArray, JString};
 use jni::sys::jlong;
+use jni::JNIEnv;
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 use std::collections::btree_map::IntoIter as BIntoIter;
@@ -195,4 +197,21 @@ fn release_instance<T>(ptr: jlong) {
             let _ = Box::from_raw(ptr as *mut T);
         };
     }
+}
+
+// Function to read a jobjectArray of Strings into a Vec<String>
+fn read_string_array(env: &mut JNIEnv, array: JObjectArray) -> Result<Vec<String>, SurrealError> {
+    // Get the array length
+    let len = env.get_array_length(&array)?;
+    let mut res = Vec::with_capacity(len as usize);
+    for i in 0..len {
+        // Get the element at index i (as JObject)
+        let elem = env.get_object_array_element(&array, i)?;
+        // Cast JObject to JString and convert to Rust String
+        let s = JString::from(elem);
+        let s = env.get_string(&s)?;
+        let s = String::from(s);
+        res.push(s);
+    }
+    Ok(res)
 }

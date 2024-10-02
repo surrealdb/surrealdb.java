@@ -9,6 +9,16 @@ macro_rules! get_rust_string {
 }
 
 #[macro_export]
+macro_rules! get_rust_string_array {
+    ($env:expr, $strings:expr, $default_fn:expr) => {{
+        match $crate::read_string_array(&mut $env, $strings) {
+            Ok(r) => r,
+            Err(e) => return e.exception(&mut $env, $default_fn),
+        }
+    }};
+}
+
+#[macro_export]
 macro_rules! get_surreal_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance::<Surreal<Any>>($id, JniTypes::Surreal) {

@@ -43,7 +43,7 @@ public class UpdateTests {
     }
 
     @Test
-    void updateTableValues() {
+    void updateTableValue() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -65,7 +65,7 @@ public class UpdateTests {
     }
 
     @Test
-    void updateTableValuesSync() {
+    void updateTableValueSync() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");

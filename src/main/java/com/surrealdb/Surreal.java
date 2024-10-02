@@ -37,9 +37,9 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
 
-    private static native long createTargetsValue(long ptr, String targets, long valuePtr);
+    private static native long createTargetValue(long ptr, String target, long valuePtr);
 
-    private static native long[] createTargetsValues(long ptr, String targets, long[] valuePtrs);
+    private static native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
 
     private static native long insertTargetValue(long ptr, String target, long valuePtr);
 
@@ -85,7 +85,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native boolean deleteThings(long ptr, long[] things);
 
-    private static native boolean deleteTargets(long ptr, String targets);
+    private static native boolean deleteTarget(long ptr, String target);
 
 
     @Override
@@ -155,7 +155,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     public <T> Value create(String targets, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createTargetsValue(getPtr(), targets, valueMut.getPtr());
+        final long valuePtr = createTargetValue(getPtr(), targets, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -166,7 +166,7 @@ public class Surreal extends Native implements AutoCloseable {
     @SafeVarargs
     public final <T> List<Value> create(String targets, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
-        final long[] valuePtrs = createTargetsValues(getPtr(), targets, valueMutPtrs);
+        final long[] valuePtrs = createTargetValues(getPtr(), targets, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 
@@ -406,8 +406,8 @@ public class Surreal extends Native implements AutoCloseable {
         deleteThings(getPtr(), thingsPtr);
     }
 
-    public void delete(String targets) {
-        deleteTargets(getPtr(), targets);
+    public void delete(String target) {
+        deleteTarget(getPtr(), target);
     }
 
     @Override
