@@ -69,7 +69,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
 
-    private static native long upsertTargetValueSync(long ptr, String targets, int update, long valuePtr);
+    private static native long upsertTargetValueSync(long ptr, String target, int update, long valuePtr);
 
     private static native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
@@ -153,26 +153,26 @@ public class Surreal extends Native implements AutoCloseable {
 <span class="fc" id="L153">        return create(thg, content).get(type);</span>
     }
 
-    public &lt;T&gt; Value create(String targets, T content) {
+    public &lt;T&gt; Value create(String target, T content) {
 <span class="fc" id="L157">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L158">        final long valuePtr = createTargetValue(getPtr(), targets, valueMut.getPtr());</span>
+<span class="fc" id="L158">        final long valuePtr = createTargetValue(getPtr(), target, valueMut.getPtr());</span>
 <span class="fc" id="L159">        return new Value(valuePtr);</span>
     }
 
-    public &lt;T&gt; T create(Class&lt;T&gt; type, String targets, T content) {
-<span class="fc" id="L163">        return create(targets, content).get(type);</span>
+    public &lt;T&gt; T create(Class&lt;T&gt; type, String target, T content) {
+<span class="fc" id="L163">        return create(target, content).get(type);</span>
     }
 
     @SafeVarargs
-    public final &lt;T&gt; List&lt;Value&gt; create(String targets, T... contents) {
+    public final &lt;T&gt; List&lt;Value&gt; create(String target, T... contents) {
 <span class="fc" id="L168">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L169">        final long[] valuePtrs = createTargetValues(getPtr(), targets, valueMutPtrs);</span>
+<span class="fc" id="L169">        final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);</span>
 <span class="fc" id="L170">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
     @SafeVarargs
-    public final &lt;T&gt; List&lt;T&gt; create(Class&lt;T&gt; type, String targets, T... contents) {
-<span class="fc" id="L175">        try (final Stream&lt;Value&gt; s = create(targets, contents).stream()) {</span>
+    public final &lt;T&gt; List&lt;T&gt; create(Class&lt;T&gt; type, String target, T... contents) {
+<span class="fc" id="L175">        try (final Stream&lt;Value&gt; s = create(target, contents).stream()) {</span>
 <span class="fc" id="L176">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
