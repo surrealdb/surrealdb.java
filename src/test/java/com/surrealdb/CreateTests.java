@@ -9,6 +9,7 @@ import java.util.List;
 import static com.surrealdb.Helpers.jaime;
 import static com.surrealdb.Helpers.tobie;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CreateTests {
 
@@ -98,6 +99,19 @@ public class CreateTests {
             // We check that the records are matching
             person.id = null;
             assertEquals(tobie, person);
+        }
+    }
+
+    @Test
+    void createTableValueError() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            // Starts an embedded in memory instance
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            // Create the range of persons in Surreal
+            SurrealException e = assertThrows(SurrealException.class, () -> {
+                surreal.create("|person:10000|", tobie);
+            });
+            assertEquals(e.getMessage(), ("The expression is not a table: |person:10000|"), e::getMessage);
         }
     }
 
