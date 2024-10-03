@@ -69,7 +69,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
 
-    private static native long upsertTargetValueSync(long ptr, String targets, int update, long valuePtr);
+    private static native long upsertTargetValueSync(long ptr, String target, int update, long valuePtr);
 
     private static native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
@@ -153,26 +153,26 @@ public class Surreal extends Native implements AutoCloseable {
         return create(thg, content).get(type);
     }
 
-    public <T> Value create(String targets, T content) {
+    public <T> Value create(String target, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createTargetValue(getPtr(), targets, valueMut.getPtr());
+        final long valuePtr = createTargetValue(getPtr(), target, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
-    public <T> T create(Class<T> type, String targets, T content) {
-        return create(targets, content).get(type);
+    public <T> T create(Class<T> type, String target, T content) {
+        return create(target, content).get(type);
     }
 
     @SafeVarargs
-    public final <T> List<Value> create(String targets, T... contents) {
+    public final <T> List<Value> create(String target, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
-        final long[] valuePtrs = createTargetValues(getPtr(), targets, valueMutPtrs);
+        final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
         return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
     }
 
     @SafeVarargs
-    public final <T> List<T> create(Class<T> type, String targets, T... contents) {
-        try (final Stream<Value> s = create(targets, contents).stream()) {
+    public final <T> List<T> create(Class<T> type, String target, T... contents) {
+        try (final Stream<Value> s = create(target, contents).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
     }
