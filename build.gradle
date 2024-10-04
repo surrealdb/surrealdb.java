@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'java-library'
+    id 'maven-publish'
 }
 
 group 'com.surrealdb'
@@ -98,5 +99,27 @@ tasks.register('integrationTest', Test) {
         exceptionFormat = 'full'
         showCauses = true
         showStackTraces = true
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/surrealdb/surrealdb.java")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = project.group
+            artifactId = project.rootProject.name
+            version = project.version
+
+            artifact("build/libs/${project.rootProject.name}-${project.version}.jar")
+        }
     }
 }

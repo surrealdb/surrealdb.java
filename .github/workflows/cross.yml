@@ -330,6 +330,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+
       - name: Download JAR
         uses: actions/download-artifact@v4
         with:
@@ -343,3 +349,6 @@ jobs:
           files: |
             LICENSE
             build/libs/*.jar
+
+      - name: Publish Jar (Maven)
+        run: ./gradlew publish
