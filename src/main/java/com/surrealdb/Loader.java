@@ -84,7 +84,7 @@ class Loader {
         if (Targets == null) {
             throw new RuntimeException("Couldn't find Targets: " + TargetsPath);
         }
-        final Path tempDir = Files.createTempDirectory("surrealdb-jni");
+        final Path tempDir = Files.createTempDirectory("surrealdb");
 
         // Add a hook to delete the temporary files on shutdown
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

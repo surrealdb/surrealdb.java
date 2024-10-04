@@ -1,4 +1,4 @@
-# surrealdb-jni
+# surrealdb
 
 The official SurrealDB library for Java.
 

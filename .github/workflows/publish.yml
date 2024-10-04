@@ -1,0 +1,26 @@
+name: Publish package to GitHub Packages
+on:
+  release:
+    types: [ created ]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: surrealdb
+          path: build/libs
+
+      - name: Publish release package
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          files: |
+            LICENSE
+            build/libs/*.jar
