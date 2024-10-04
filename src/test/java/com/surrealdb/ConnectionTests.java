@@ -27,7 +27,7 @@ public class ConnectionTests {
         final Path tempDir = Files.createTempDirectory("surrealkv");
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("surrealkv://" + tempDir.toAbsolutePath()).useNs("test").useDb("test");
-            final Person created = surreal.create(Person.class, "person", Helpers.tobie).getFirst();
+            final Person created = surreal.create(Person.class, "person", Helpers.tobie).get(0);
             assertNotNull(created.id);
         }
     }

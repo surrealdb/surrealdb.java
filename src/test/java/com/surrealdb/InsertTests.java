@@ -18,7 +18,7 @@ public class InsertTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // Create the person in Surreal
-            final Value value = surreal.insert("person", tobie).getFirst();
+            final Value value = surreal.insert("person", tobie).get(0);
             // We convert the value to a Person
             final Person created = value.get(Person.class);
             // We remove the id
@@ -34,7 +34,7 @@ public class InsertTests {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             // Create the person in Surreal
-            final Person value = surreal.insert(Person.class, "person", jaime).getFirst();
+            final Person value = surreal.insert(Person.class, "person", jaime).get(0);
             // We remove the id
             value.id = null;
             // We check that it matches
