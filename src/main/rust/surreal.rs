@@ -254,38 +254,6 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValue<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    surreal_ptr: jlong,
-    target: JString<'local>,
-    value_ptr: jlong,
-) -> jlong {
-    // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
-    // Build the parameters
-    let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, || 0);
-    // Check the value is a table
-    let table = check_value_table!(&mut env, target, ||0);
-    // Get the value
-    let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
-    // Execute the query
-    let query = format!("CREATE {table} CONTENT $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
-    // Check the result
-    let mut response = check_query_result!(&mut env, res, || 0);
-    // There is only one statement
-    let mut result = take_one_result!(&mut env, response, || 0);
-    // There should be only one result
-    return_value_array_first!(result);
-    // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
-}
-
-#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -299,13 +267,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
     let target = get_rust_string!(&mut env, target, null_mut);
     // Parse the target
     let target = parse_value!(&mut env, &target, null_mut);
+    // Check the target is a table
+    let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
     let mut queries = Vec::with_capacity(value_ptrs.len());
     let mut params = BTreeMap::new();
     for (idx, value_ptr) in value_ptrs.iter().enumerate() {
-        queries.push(format!("CREATE {target} CONTENT $i{idx}"));
+        queries.push(format!("CREATE {table} CONTENT $i{idx}"));
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
         params.insert(format!("i{idx}"), value);
     }
@@ -337,38 +307,6 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValue<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    surreal_ptr: jlong,
-    target: JString<'local>,
-    value_ptr: jlong,
-) -> jlong {
-    // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
-    // Build the parameters
-    let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, || 0);
-    // Check the value is a table
-    let table = check_value_table!(&mut env, target, || 0);
-    // Get the value
-    let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
-    // Execute the query
-    let query = format!("INSERT INTO {table} $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
-    // Check the result
-    let mut response = check_query_result!(&mut env, res, || 0);
-    // There is only one statement
-    let mut result = take_one_result!(&mut env, response, || 0);
-    // There should be only one result
-    return_value_array_first!(result);
-    // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
-}
-
-#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -382,6 +320,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     let target = get_rust_string!(&mut env, target, null_mut);
     // Parse the target
     let target = parse_value!(&mut env, &target, null_mut);
+    // Check the target is a table
     let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);

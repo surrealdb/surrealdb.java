@@ -37,11 +37,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
 
-    private static native long createTargetValue(long ptr, String target, long valuePtr);
-
     private static native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
-
-    private static native long insertTargetValue(long ptr, String target, long valuePtr);
 
     private static native long[] insertTargetValues(long ptr, String target, long[] valuePtrs);
 
@@ -153,16 +149,6 @@ public class Surreal extends Native implements AutoCloseable {
         return create(thg, content).get(type);
     }
 
-    public <T> Value create(String target, T content) {
-        final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createTargetValue(getPtr(), target, valueMut.getPtr());
-        return new Value(valuePtr);
-    }
-
-    public <T> T create(Class<T> type, String target, T content) {
-        return create(target, content).get(type);
-    }
-
     @SafeVarargs
     public final <T> List<Value> create(String target, T... contents) {
         final long[] valueMutPtrs = contents2longs(contents);
@@ -175,16 +161,6 @@ public class Surreal extends Native implements AutoCloseable {
         try (final Stream<Value> s = create(target, contents).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
-    }
-
-    public <T> Value insert(String target, T content) {
-        final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = insertTargetValue(getPtr(), target, valueMut.getPtr());
-        return new Value(valuePtr);
-    }
-
-    public <T> T insert(Class<T> type, String target, T content) {
-        return insert(target, content).get(type);
     }
 
     @SafeVarargs

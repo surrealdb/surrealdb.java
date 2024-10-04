@@ -3,6 +3,7 @@ package com.surrealdb;
 import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class ExampleTests {
 
@@ -13,8 +14,10 @@ public class ExampleTests {
             driver.connect("memory");
             // namespace & database
             driver.useNs("test").useDb("test");
+            // Create a person
+            Person person = new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true);
             // Insert a record
-            Person tobie = driver.create(Person.class, "person", new Person("Founder & CEO", "Tobie", "Morgan Hitchcock", true));
+            List<Person> tobie = driver.create(Person.class, "person", person);
             // Read records
             Iterator<Person> people = driver.select(Person.class, "person");
             // Print them out
