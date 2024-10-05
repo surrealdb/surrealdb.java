@@ -1,0 +1,29 @@
+[package]
+name = "surrealdb"
+version = "0.2.0"
+authors = ["Emmanuel Keller <emmanuel.keller@surrealdb.com>"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/main/rust/lib.rs"
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+jni = "0.21.1"
+surrealdb = "2.0.3"
+serde = "1.0.210"
+rust_decimal = "1.36.0"
+tokio = "1.40.0"
+parking_lot = "0.12.3"
+once_cell = "1.20.1"
+chrono = "0.4.38"
+log = "0.4.22"
+dashmap = "6.1.0"
+
+[features]
+default = ["kv-mem", "kv-surrealkv"]
+kv-mem = ["surrealdb/kv-mem"]
+kv-surrealkv = ["surrealdb/kv-surrealkv"]

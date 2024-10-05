@@ -43,13 +43,8 @@ docker run --rm -p 8000:8000 surrealdb/surrealdb:latest start --user root --pass
 To run all tests manually, use the SurrealDB command-line from your terminal:
 
 ```bash
-gradle test
-```
-
-To build a production-ready SurrealDB binary, execute the following command:
-
-```bash
-gradle fatJar
+cargo build
+./gradlew test
 ```
 
 ## Scalability and Performance
