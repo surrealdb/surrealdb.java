@@ -342,13 +342,14 @@ jobs:
           name: surrealdb
           path: build/libs
 
+      - name: Publish Jar (Maven)
+        run: ./gradlew publish
+
       - name: Publish release package
         uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' && github.event.action == 'created'
         with:
           name: "Release ${{ github.ref_name }}"
           files: |
             LICENSE
             build/libs/*.jar
-
-      - name: Publish Jar (Maven)
-        run: ./gradlew publish
