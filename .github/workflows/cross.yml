@@ -322,7 +322,7 @@ jobs:
     needs:
       - aggregated-jar
       - integration-tests
-    if: github.event_name == 'release' && github.event.action == 'created'
+    #    if: github.event_name == 'release' && github.event.action == 'created'
     runs-on: ubuntu-latest
     permissions:
       contents: read
