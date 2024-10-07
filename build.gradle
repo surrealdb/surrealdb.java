@@ -3,6 +3,7 @@ plugins {
     id 'jacoco'
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
 
 group 'com.surrealdb'
@@ -64,6 +65,20 @@ javadoc {
     destinationDir = file("build/reports/javadoc")
 }
 
+tasks.register('javadocJar', Jar) {
+    archiveClassifier = 'javadoc'
+    from javadoc
+}
+
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
 tasks.register('createCombinedReport') {
     dependsOn jacocoTestReport
     dependsOn javadoc
@@ -102,6 +117,16 @@ tasks.register('integrationTest', Test) {
     }
 }
 
+project.afterEvaluate {
+    def key = System.getenv('SIGNING_KEY')
+    def _pass = System.getenv('SIGNING_KEY_PASS')
+
+    signing {
+        useInMemoryPgpKeys(key, _pass)
+        sign publishing.publications.mavenJava
+    }
+}
+
 publishing {
     repositories {
         maven {
@@ -112,22 +137,65 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
-//        maven {
-//            name = "OSSRH"
-//            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-//            credentials {
-//                username = System.getenv("MAVEN_USERNAME")
-//                password = System.getenv("MAVEN_PASSWORD")
-//            }
-//        }
+        maven {
+            name = "OSSRH"
+            def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
     }
+
     publications {
         mavenJava(MavenPublication) {
             groupId = project.group
             artifactId = project.rootProject.name
             version = project.version
 
+            artifact(javadocJar)
+            artifact(sourcesJar)
             artifact("build/libs/${project.rootProject.name}-${project.version}.jar")
+
+
+            pom {
+                name = 'SurrealDB Driver'
+                packaging = 'jar'
+                description = 'The driver for accessing a SurrealDB instance.'
+                url = 'https://surrealdb.com/docs/integration/libraries/java'
+
+                scm {
+                    connection = 'scm:git:git@github.com:surrealdb/surrealdb.java.git'
+                    url = 'https://github.com/surrealdb/surrealdb.java'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'tobiemh'
+                        name = 'Tobie Morgan Hitchcock'
+                        email = 'tobie@surrealdb.com'
+                    }
+                    developer {
+                        id = 'phughk'
+                        name = 'Hugh Kaznowski'
+                        email = 'hugh@surrealdb.com'
+                    }
+                    developer {
+                        id = 'ekeller'
+                        name = 'Emmanuel Keller'
+                        email = 'emmanuel.keller@surrealdb.com'
+                    }
+                }
+            }
         }
     }
 }
