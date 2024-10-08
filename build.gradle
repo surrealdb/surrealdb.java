@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.surrealdb'
-version '0.2-SNAPSHOT'
+version '0.2.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -31,7 +31,7 @@ configurations {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    integrationTestImplementation files("build/libs/surrealdb-0.2-SNAPSHOT.jar")
+    integrationTestImplementation files("build/libs/surrealdb-0.2.0-SNAPSHOT.jar")
 }
 
 jacoco {
@@ -190,7 +190,7 @@ publishing {
                         email = 'hugh@surrealdb.com'
                     }
                     developer {
-                        id = 'ekeller'
+                        id = 'emmanuel-keller'
                         name = 'Emmanuel Keller'
                         email = 'emmanuel.keller@surrealdb.com'
                     }
