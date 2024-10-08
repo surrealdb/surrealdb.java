@@ -33,7 +33,7 @@ ext {
 }
 
 dependencies {
-    implementation "com.surrealdb:surrealdb-driver:${surrealdbVersion}"
+    implementation "com.surrealdb:surrealdb:${surrealdbVersion}"
 }
 ```
 
@@ -43,7 +43,7 @@ Maven:
 
 <dependency>
     <groupId>com.surrealdb</groupId>
-    <artifactId>surrealdb-driver</artifactId>
+    <artifactId>surrealdb</artifactId>
     <version>0.2.0</version>
 </dependency>
 ```
