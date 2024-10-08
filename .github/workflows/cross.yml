@@ -280,7 +280,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb
-          path: build/libs/surrealdb-0.2-SNAPSHOT.jar
+          path: build/libs/surrealdb-0.2.0.jar
 
       - name: Linux Integration Test
         run: ./gradlew -i integrationTest
@@ -322,7 +322,7 @@ jobs:
     needs:
       - aggregated-jar
       - integration-tests
-    if: github.event_name == 'release' && github.event.action == 'created'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -342,13 +342,20 @@ jobs:
           name: surrealdb
           path: build/libs
 
+      - name: Publish Jar (Maven)
+        run: ./gradlew publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USER }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASS }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
+
       - name: Publish release package
         uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' && github.event.action == 'created'
         with:
           name: "Release ${{ github.ref_name }}"
           files: |
             LICENSE
             build/libs/*.jar
-
-      - name: Publish Jar (Maven)
-        run: ./gradlew publish
