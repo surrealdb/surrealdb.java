@@ -84,10 +84,6 @@ Maven:
 </dependency>
 ```
 
-```sh
-go get github.com/surrealdb/surrealdb.go
-```
-
 ## Getting started
 
 ```java
