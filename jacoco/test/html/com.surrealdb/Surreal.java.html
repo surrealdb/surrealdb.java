@@ -102,293 +102,510 @@ public class Surreal extends Native implements AutoCloseable {
     @Override
     final native boolean deleteInstance(long ptr);
 
+    /**
+     * Establishes a connection to the Surreal database using the provided connection string.
+     *
+     * @param connect the connection string used to establish the connection
+     * @return the current instance of the {@code Surreal} class
+     */
     public Surreal connect(String connect) {
-<span class="fc" id="L106">        connect(getPtr(), connect);</span>
-<span class="fc" id="L107">        return this;</span>
+<span class="fc" id="L112">        connect(getPtr(), connect);</span>
+<span class="fc" id="L113">        return this;</span>
     }
 
+    /**
+     * Attempts to sign in to the Surreal system using the provided credentials.
+     * The type of signin object determines the scope of the sign-in (Root, Namespace, or Database).
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealdb/security/authentication&quot;&gt;authentication documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param signin the credentials for signing in, which can be an instance of Root, Namespace, or Database
+     * @return a Token representing the session token after a successful sign-in
+     * @throws SurrealException if the signin type is unsupported
+     */
     public Token signin(Signin signin) {
-<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (signin instanceof Database) {</span>
-<span class="nc" id="L112">            final Database db = (Database) signin;</span>
-<span class="nc" id="L113">            return new Token(signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase()));</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">        } else if (signin instanceof Namespace) {</span>
-<span class="nc" id="L115">            final Namespace ns = (Namespace) signin;</span>
-<span class="nc" id="L116">            return new Token(signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace()));</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">        } else if (signin instanceof Root) {</span>
-<span class="nc" id="L118">            final Root r = (Root) signin;</span>
-<span class="nc" id="L119">            return new Token(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (signin instanceof Database) {</span>
+<span class="nc" id="L129">            final Database db = (Database) signin;</span>
+<span class="nc" id="L130">            return new Token(signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase()));</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        } else if (signin instanceof Namespace) {</span>
+<span class="nc" id="L132">            final Namespace ns = (Namespace) signin;</span>
+<span class="nc" id="L133">            return new Token(signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace()));</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        } else if (signin instanceof Root) {</span>
+<span class="nc" id="L135">            final Root r = (Root) signin;</span>
+<span class="nc" id="L136">            return new Token(signinRoot(getPtr(), r.getUsername(), r.getPassword()));</span>
         }
-<span class="nc" id="L121">        throw new SurrealException(&quot;Unsupported sign in&quot;);</span>
+<span class="nc" id="L138">        throw new SurrealException(&quot;Unsupported sign in&quot;);</span>
     }
 
+    /**
+     * Sets the namespace for the Surreal instance.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/use&quot;&gt;use statement documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param ns the namespace to use
+     * @return the current instance of the {@code Surreal} class
+     */
     public Surreal useNs(String ns) {
-<span class="fc" id="L125">        useNs(getPtr(), ns);</span>
-<span class="fc" id="L126">        return this;</span>
+<span class="fc" id="L151">        useNs(getPtr(), ns);</span>
+<span class="fc" id="L152">        return this;</span>
     }
 
+    /**
+     * Sets the database for the current instance of the Surreal class.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/use&quot;&gt;use statement documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param ns the database name to use
+     * @return the current instance of the {@code Surreal} class
+     */
     public Surreal useDb(String ns) {
-<span class="fc" id="L130">        useDb(getPtr(), ns);</span>
-<span class="fc" id="L131">        return this;</span>
+<span class="fc" id="L165">        useDb(getPtr(), ns);</span>
+<span class="fc" id="L166">        return this;</span>
     }
 
+    /**
+     * Executes a SurrealQL query on the database.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param sql the SurrealQL query to be executed
+     * @return a Response object containing the results of the query
+     */
     public Response query(String sql) {
-<span class="fc" id="L135">        return new Response(query(getPtr(), sql));</span>
+<span class="fc" id="L179">        return new Response(query(getPtr(), sql));</span>
     }
 
+    /**
+     * Executes a parameterized SurrealQL query on the database.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param sql    the SurrealQL query to be executed
+     * @param params a map containing parameter values to be bound to the SQL query
+     * @return a Response object containing the results of the query
+     */
     public Response queryBind(String sql, Map&lt;String, ?&gt; params) {
-<span class="nc" id="L139">        return new Response(queryBind(getPtr(), sql, params));</span>
+<span class="nc" id="L193">        return new Response(queryBind(getPtr(), sql, params));</span>
     }
 
+    /**
+     * Creates a record in the database with the given `RecordID` as the key and the provided content as the value.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/create&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;     the type of the content
+     * @param thg     the RecordId associated with the new record
+     * @param content the content of the created record
+     * @return a new Value object initialized with the provided RecordId and content
+     */
     public &lt;T&gt; Value create(RecordId thg, T content) {
-<span class="fc" id="L143">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L144">        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L145">        return new Value(valuePtr);</span>
+<span class="fc" id="L208">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L209">        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());</span>
+<span class="fc" id="L210">        return new Value(valuePtr);</span>
     }
 
+    /**
+     * Creates a record in the database with the given `RecordID` as the key and the provided content as the value.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/create&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param type    The class type of the object to create
+     * @param thg     The RecordId used with the new record
+     * @param content The content of the created record
+     * @return An instance of the specified type
+     */
     public &lt;T&gt; T create(Class&lt;T&gt; type, RecordId thg, T content) {
-<span class="fc" id="L149">        return create(thg, content).get(type);</span>
+<span class="fc" id="L225">        return create(thg, content).get(type);</span>
     }
 
+    /**
+     * Creates records in the database with the given table and the provided contents as the values.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/create&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;      the type of the contents
+     * @param target   the target for which the records are created
+     * @param contents the contents of the created records
+     * @return a list of Value objects created based on the target and contents
+     */
     @SafeVarargs
     public final &lt;T&gt; List&lt;Value&gt; create(String target, T... contents) {
-<span class="fc" id="L154">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L155">        final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L156">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L241">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L242">        final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L243">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
+    /**
+     * Creates records in the database with the given table and the provided contents as the values.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/create&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;      the type of objects to be created
+     * @param type     the class of the type to be created
+     * @param target   the target string used in the creation process
+     * @param contents the contents to be used to create the objects
+     * @return a list of objects of the specified type
+     */
     @SafeVarargs
     public final &lt;T&gt; List&lt;T&gt; create(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L161">        try (final Stream&lt;Value&gt; s = create(target, contents).stream()) {</span>
-<span class="fc" id="L162">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L260">        try (final Stream&lt;Value&gt; s = create(target, contents).stream()) {</span>
+<span class="fc" id="L261">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
+    /**
+     * Insert records in the database with the given table and the provided contents as the values.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/insert&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;      the type of the contents
+     * @param target   the target for which the records are inserted
+     * @param contents the contents of the inserted records
+     * @return a list of Value objects inserted based on the target and contents
+     */
     @SafeVarargs
     public final &lt;T&gt; List&lt;Value&gt; insert(String target, T... contents) {
-<span class="fc" id="L168">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L169">        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L170">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L278">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L279">        final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L280">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
+    /**
+     * Insert records in the database with the given table and the provided contents as the values.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/insert&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;      the type of objects to be inserted
+     * @param type     the class of the type to be inserted
+     * @param target   the target string used in the insertion process
+     * @param contents the contents to be used to insert the objects
+     * @return a list of objects of the specified type
+     */
     @SafeVarargs
     public final &lt;T&gt; List&lt;T&gt; insert(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L175">        try (final Stream&lt;Value&gt; s = insert(target, contents).stream()) {</span>
-<span class="fc" id="L176">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L297">        try (final Stream&lt;Value&gt; s = insert(target, contents).stream()) {</span>
+<span class="fc" id="L298">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
+    /**
+     * Inserts a relation to the specified table using the provided content.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/insert#insert-relation-tables&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param target  the table where the relation is to be inserted
+     * @param content the content to insert as the relation
+     * @param &lt;T&gt;     a type that extends InsertRelation
+     * @return a Value object representing the inserted relation
+     */
     public &lt;T extends InsertRelation&gt; Value insertRelation(String target, T content) {
-<span class="fc" id="L181">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L182">        final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());</span>
-<span class="fc" id="L183">        return new Value(valuePtr);</span>
+<span class="fc" id="L314">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L315">        final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());</span>
+<span class="fc" id="L316">        return new Value(valuePtr);</span>
     }
 
+    /**
+     * Inserts a relation of the specified type and table with the provided content.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/insert#insert-relation-tables&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;     the type of the relation that extends InsertRelation
+     * @param type    the class object of the type T
+     * @param target  the target identifier for the relation
+     * @param content the content to be inserted in the relation
+     * @return the inserted relation of type T
+     */
     public &lt;T extends InsertRelation&gt; T insertRelation(Class&lt;T&gt; type, String target, T content) {
-<span class="fc" id="L187">        return insertRelation(target, content).get(type);</span>
+<span class="fc" id="L332">        return insertRelation(target, content).get(type);</span>
     }
 
+    /**
+     * Inserts relations into the specified table with the provided contents.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/insert#insert-relation-tables&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param target   the table into which the relations will be inserted
+     * @param contents the contents of the relations to be inserted
+     * @param &lt;T&gt;      the type of the insert relation
+     * @return a list of values representing the result of the insert operation
+     */
     @SafeVarargs
     public final &lt;T extends InsertRelation&gt; List&lt;Value&gt; insertRelations(String target, T... contents) {
-<span class="fc" id="L192">        final long[] valueMutPtrs = contents2longs(contents);</span>
-<span class="fc" id="L193">        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L194">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L348">        final long[] valueMutPtrs = contents2longs(contents);</span>
+<span class="fc" id="L349">        final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L350">        return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
     }
 
+    /**
+     * Inserts multiple relations of a specified type into the target.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/insert#insert-relation-tables&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;      the type of InsertRelation
+     * @param type     the class type of the InsertRelation
+     * @param target   the table in which the relations are to be inserted
+     * @param contents the array of InsertRelation objects to be inserted
+     * @return a list of inserted relations of the specified type
+     */
     @SafeVarargs
     public final &lt;T extends InsertRelation&gt; List&lt;T&gt; insertRelations(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L199">        try (final Stream&lt;Value&gt; s = insertRelations(target, contents).stream()) {</span>
-<span class="fc" id="L200">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L367">        try (final Stream&lt;Value&gt; s = insertRelations(target, contents).stream()) {</span>
+<span class="fc" id="L368">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
+    /**
+     * Establishes a relation between two records identified by `from` and `to` within a specified table.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/relate&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param from  the record identifier from which the relation originates
+     * @param table the name of the table where the relation will be established
+     * @param to    the record identifier to which the relation points
+     * @return a new {@code Value} instance representing the relation
+     */
     public Value relate(RecordId from, String table, RecordId to) {
-<span class="fc" id="L205">        final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());</span>
-<span class="fc" id="L206">        return new Value(valuePtr);</span>
+<span class="fc" id="L384">        final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());</span>
+<span class="fc" id="L385">        return new Value(valuePtr);</span>
     }
 
+    /**
+     * Establishes a relationship between two records in a specified table and returns the specified type of Relation.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/relate&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;T&gt;  the type of Relation to return, which must extend the Relation class
+     * @param type the class object of type T, used to specify the type of the returned Relation
+     * @param from the RecordId representing the starting record of the relationship
+     **/
     public &lt;T extends Relation&gt; T relate(Class&lt;T&gt; type, RecordId from, String table, RecordId to) {
-<span class="fc" id="L210">        return relate(from, table, to).get(type);</span>
+<span class="fc" id="L399">        return relate(from, table, to).get(type);</span>
     }
 
+    /**
+     * Establishes a relationship between two records within a specified table,
+     * attaching the provided content to this relationship.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/relate&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param from    The record ID that the relationship starts from.
+     * @param table   The table in which the relationship is being created.
+     * @param to      The record ID that the relationship points to.
+     * @param content The content to attach to the relationship.
+     * @return A Value object representing the newly created relationship.
+     */
     public &lt;T&gt; Value relate(RecordId from, String table, RecordId to, T content) {
-<span class="fc" id="L214">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L215">        final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L216">        return new Value(valuePtr);</span>
+<span class="fc" id="L416">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L417">        final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());</span>
+<span class="fc" id="L418">        return new Value(valuePtr);</span>
     }
 
+    /**
+     * Establishes a relation between two records and retrieves it based on the specified relation type.
+     * &lt;p&gt;
+     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/relate&quot;&gt;SurrealQL documentation&lt;/a&gt;.
+     * &lt;p&gt;
+     *
+     * @param &lt;R&gt;     the type of the relation
+     * @param &lt;T&gt;     the type of the content associated with the relation
+     * @param type    the class of the relation type
+     * @param from    the record identifier of the source record
+     * @param table   the name of the table where the relation is to be established
+     * @param to      the record identifier of the target record
+     * @param content the content to be associated with the relation
+     * @return the established relation of the specified type
+     */
     public &lt;R extends Relation, T&gt; R relate(Class&lt;R&gt; type, RecordId from, String table, RecordId to, T content) {
-<span class="fc" id="L220">        return relate(from, table, to, content).get(type);</span>
+<span class="fc" id="L437">        return relate(from, table, to, content).get(type);</span>
     }
 
     public &lt;T&gt; Value update(RecordId thg, UpType upType, T content) {
-<span class="fc" id="L224">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L225">        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());</span>
-<span class="fc" id="L226">        return new Value(valuePtr);</span>
+<span class="fc" id="L441">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L442">        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());</span>
+<span class="fc" id="L443">        return new Value(valuePtr);</span>
     }
 
     public &lt;T&gt; T update(Class&lt;T&gt; type, RecordId thg, UpType upType, T content) {
-<span class="fc" id="L230">        return update(thg, upType, content).get(type);</span>
+<span class="fc" id="L447">        return update(thg, upType, content).get(type);</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; update(String target, UpType upType, T content) {
-<span class="fc" id="L234">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L235">        return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L451">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L452">        return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; update(String[] targets, UpType upType, T content) {
-<span class="nc" id="L239">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="nc" id="L240">        return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="nc" id="L456">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="nc" id="L457">        return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; update(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L244">        return new ValueObjectIterator&lt;&gt;(type, update(target, upType, content));</span>
+<span class="fc" id="L461">        return new ValueObjectIterator&lt;&gt;(type, update(target, upType, content));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; update(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L248">        return new ValueObjectIterator&lt;&gt;(type, update(targets, upType, content));</span>
+<span class="nc" id="L465">        return new ValueObjectIterator&lt;&gt;(type, update(targets, upType, content));</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; updateSync(String target, UpType upType, T content) {
-<span class="fc" id="L252">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L253">        return new SynchronizedValueIterator(updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L469">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L470">        return new SynchronizedValueIterator(updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; updateSync(String[] targets, UpType upType, T content) {
-<span class="nc" id="L257">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="nc" id="L258">        return new SynchronizedValueIterator(updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="nc" id="L474">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="nc" id="L475">        return new SynchronizedValueIterator(updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; updateSync(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L262">        return new ValueObjectIterator&lt;&gt;(type, updateSync(target, upType, content));</span>
+<span class="fc" id="L479">        return new ValueObjectIterator&lt;&gt;(type, updateSync(target, upType, content));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; updateSync(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L266">        return new ValueObjectIterator&lt;&gt;(type, updateSync(targets, upType, content));</span>
+<span class="nc" id="L483">        return new ValueObjectIterator&lt;&gt;(type, updateSync(targets, upType, content));</span>
     }
 
     public &lt;T&gt; Value upsert(RecordId thg, UpType upType, T content) {
-<span class="fc" id="L270">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L271">        final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());</span>
-<span class="fc" id="L272">        return new Value(valuePtr);</span>
+<span class="fc" id="L487">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L488">        final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());</span>
+<span class="fc" id="L489">        return new Value(valuePtr);</span>
     }
 
     public &lt;T&gt; T upsert(Class&lt;T&gt; type, RecordId thg, UpType upType, T content) {
-<span class="fc" id="L276">        return upsert(thg, upType, content).get(type);</span>
+<span class="fc" id="L493">        return upsert(thg, upType, content).get(type);</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; upsert(String target, UpType upType, T content) {
-<span class="fc" id="L280">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L281">        return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L497">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L498">        return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; upsert(String[] targets, UpType upType, T content) {
-<span class="nc" id="L285">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="nc" id="L286">        return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="nc" id="L502">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="nc" id="L503">        return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; upsert(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L290">        return new ValueObjectIterator&lt;&gt;(type, upsert(target, upType, content));</span>
+<span class="fc" id="L507">        return new ValueObjectIterator&lt;&gt;(type, upsert(target, upType, content));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; upsert(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L294">        return new ValueObjectIterator&lt;&gt;(type, upsert(targets, upType, content));</span>
+<span class="nc" id="L511">        return new ValueObjectIterator&lt;&gt;(type, upsert(targets, upType, content));</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; upsertSync(String target, UpType upType, T content) {
-<span class="fc" id="L298">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L299">        return new SynchronizedValueIterator(upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L515">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L516">        return new SynchronizedValueIterator(upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;Value&gt; upsertSync(String[] targets, UpType upType, T content) {
-<span class="nc" id="L303">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="nc" id="L304">        return new SynchronizedValueIterator(upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="nc" id="L520">        final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="nc" id="L521">        return new SynchronizedValueIterator(upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; upsertSync(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L308">        return new ValueObjectIterator&lt;&gt;(type, upsertSync(target, upType, content));</span>
+<span class="fc" id="L525">        return new ValueObjectIterator&lt;&gt;(type, upsertSync(target, upType, content));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; upsertSync(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L312">        return new ValueObjectIterator&lt;&gt;(type, upsertSync(targets, upType, content));</span>
+<span class="nc" id="L529">        return new ValueObjectIterator&lt;&gt;(type, upsertSync(targets, upType, content));</span>
     }
 
     @SafeVarargs
     private final &lt;T&gt; long[] contents2longs(T... contents) {
-<span class="fc" id="L317">        final long[] ptrs = new long[contents.length];</span>
-<span class="fc" id="L318">        int index = 0;</span>
-<span class="fc bfc" id="L319" title="All 2 branches covered.">        for (final T c : contents) {</span>
-<span class="fc" id="L320">            ptrs[index++] = ValueBuilder.convert(c).getPtr();</span>
+<span class="fc" id="L534">        final long[] ptrs = new long[contents.length];</span>
+<span class="fc" id="L535">        int index = 0;</span>
+<span class="fc bfc" id="L536" title="All 2 branches covered.">        for (final T c : contents) {</span>
+<span class="fc" id="L537">            ptrs[index++] = ValueBuilder.convert(c).getPtr();</span>
         }
-<span class="fc" id="L322">        return ptrs;</span>
+<span class="fc" id="L539">        return ptrs;</span>
     }
 
     public Optional&lt;Value&gt; select(RecordId recordId) {
-<span class="fc" id="L326">        final long valuePtr = selectThing(getPtr(), recordId.getPtr());</span>
-<span class="fc bfc" id="L327" title="All 2 branches covered.">        if (valuePtr == 0) {</span>
-<span class="fc" id="L328">            return Optional.empty();</span>
+<span class="fc" id="L543">        final long valuePtr = selectThing(getPtr(), recordId.getPtr());</span>
+<span class="fc bfc" id="L544" title="All 2 branches covered.">        if (valuePtr == 0) {</span>
+<span class="fc" id="L545">            return Optional.empty();</span>
         }
-<span class="fc" id="L330">        return Optional.of(new Value(valuePtr));</span>
+<span class="fc" id="L547">        return Optional.of(new Value(valuePtr));</span>
     }
 
     public &lt;T&gt; Optional&lt;T&gt; select(Class&lt;T&gt; type, RecordId recordId) {
-<span class="fc" id="L334">        return select(recordId).map(v -&gt; v.get(type));</span>
+<span class="fc" id="L551">        return select(recordId).map(v -&gt; v.get(type));</span>
     }
 
     public List&lt;Value&gt; select(RecordId... things) {
-<span class="fc" id="L338">        final long[] thingsPtr = things2longs(things);</span>
-<span class="fc" id="L339">        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);</span>
-<span class="fc" id="L340">        try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
-<span class="fc" id="L341">            return s.mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L555">        final long[] thingsPtr = things2longs(things);</span>
+<span class="fc" id="L556">        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);</span>
+<span class="fc" id="L557">        try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
+<span class="fc" id="L558">            return s.mapToObj(Value::new).collect(Collectors.toList());</span>
         }
     }
 
     private long[] things2longs(RecordId... things) {
-<span class="fc" id="L346">        final long[] ptrs = new long[things.length];</span>
-<span class="fc" id="L347">        int index = 0;</span>
-<span class="fc bfc" id="L348" title="All 2 branches covered.">        for (final RecordId t : things) {</span>
-<span class="fc" id="L349">            ptrs[index++] = t.getPtr();</span>
+<span class="fc" id="L563">        final long[] ptrs = new long[things.length];</span>
+<span class="fc" id="L564">        int index = 0;</span>
+<span class="fc bfc" id="L565" title="All 2 branches covered.">        for (final RecordId t : things) {</span>
+<span class="fc" id="L566">            ptrs[index++] = t.getPtr();</span>
         }
-<span class="fc" id="L351">        return ptrs;</span>
+<span class="fc" id="L568">        return ptrs;</span>
     }
 
     public &lt;T&gt; List&lt;T&gt; select(Class&lt;T&gt; type, RecordId... things) {
-<span class="fc" id="L355">        try (final Stream&lt;Value&gt; s = select(things).stream()) {</span>
-<span class="fc" id="L356">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L572">        try (final Stream&lt;Value&gt; s = select(things).stream()) {</span>
+<span class="fc" id="L573">            return s.map(v -&gt; v.get(type)).collect(Collectors.toList());</span>
         }
     }
 
     public Iterator&lt;Value&gt; select(String targets) {
-<span class="fc" id="L361">        return new ValueIterator(selectTargetsValues(getPtr(), targets));</span>
+<span class="fc" id="L578">        return new ValueIterator(selectTargetsValues(getPtr(), targets));</span>
     }
 
     public Iterator&lt;Value&gt; selectSync(String targets) {
-<span class="fc" id="L365">        return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));</span>
+<span class="fc" id="L582">        return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; select(Class&lt;T&gt; type, String targets) {
-<span class="fc" id="L369">        return new ValueObjectIterator&lt;&gt;(type, select(targets));</span>
+<span class="fc" id="L586">        return new ValueObjectIterator&lt;&gt;(type, select(targets));</span>
     }
 
     public &lt;T&gt; Iterator&lt;T&gt; selectSync(Class&lt;T&gt; type, String targets) {
-<span class="fc" id="L373">        return new ValueObjectIterator&lt;&gt;(type, selectSync(targets));</span>
+<span class="fc" id="L590">        return new ValueObjectIterator&lt;&gt;(type, selectSync(targets));</span>
     }
 
     public void delete(RecordId recordId) {
-<span class="fc" id="L377">        deleteThing(getPtr(), recordId.getPtr());</span>
-<span class="fc" id="L378">    }</span>
+<span class="fc" id="L594">        deleteThing(getPtr(), recordId.getPtr());</span>
+<span class="fc" id="L595">    }</span>
 
     public void delete(RecordId... things) {
-<span class="fc" id="L381">        final long[] thingsPtr = things2longs(things);</span>
-<span class="fc" id="L382">        deleteThings(getPtr(), thingsPtr);</span>
-<span class="fc" id="L383">    }</span>
+<span class="fc" id="L598">        final long[] thingsPtr = things2longs(things);</span>
+<span class="fc" id="L599">        deleteThings(getPtr(), thingsPtr);</span>
+<span class="fc" id="L600">    }</span>
 
     public void delete(String target) {
-<span class="fc" id="L386">        deleteTarget(getPtr(), target);</span>
-<span class="fc" id="L387">    }</span>
+<span class="fc" id="L603">        deleteTarget(getPtr(), target);</span>
+<span class="fc" id="L604">    }</span>
 
     @Override
     public void close() {
-<span class="fc" id="L391">        deleteInstance();</span>
-<span class="fc" id="L392">    }</span>
+<span class="fc" id="L608">        deleteInstance();</span>
+<span class="fc" id="L609">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
