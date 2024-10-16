@@ -7,12 +7,20 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+/**
+ * The {@code Surreal} class provides methods to interact with a Surreal database.
+ * It includes functionality to connect to the database, sign in with different scopes,
+ * set the namespace and database, execute queries, and perform CRUD operations on records.
+ */
 public class Surreal extends Native implements AutoCloseable {
 
     static {
         Loader.loadNative();
     }
 
+    /**
+     * Constructs a new Surreal object.
+     */
     public Surreal() {
         super(Surreal.newInstance());
     }
@@ -386,15 +394,18 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     /**
-     * Establishes a relationship between two records in a specified table and returns the specified type of Relation.
+     * Establishes and retrieves a relation of a specified type between two records.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.
      * <p>
      *
-     * @param <T>  the type of Relation to return, which must extend the Relation class
-     * @param type the class object of type T, used to specify the type of the returned Relation
-     * @param from the RecordId representing the starting record of the relationship
-     **/
+     * @param <T>   The type of the relation extending Relation.
+     * @param type  The class type of the relation.
+     * @param from  The starting record of the relation.
+     * @param table The name of the table that holds the relation.
+     * @param to    The ending record of the relation.
+     * @return The established relation of the specified type.
+     */
     public <T extends Relation> T relate(Class<T> type, RecordId from, String table, RecordId to) {
         return relate(from, table, to).get(type);
     }
@@ -404,8 +415,8 @@ public class Surreal extends Native implements AutoCloseable {
      * attaching the provided content to this relationship.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.
-     * <p>
      *
+     * @param <T>     the type of the content associated with the relation
      * @param from    The record ID that the relationship starts from.
      * @param table   The table in which the relationship is being created.
      * @param to      The record ID that the relationship points to.
@@ -422,7 +433,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Establishes a relation between two records and retrieves it based on the specified relation type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <R>     the type of the relation
      * @param <T>     the type of the content associated with the relation
@@ -441,7 +451,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates the value of a record with the specified content and update type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the content to be updated.
      * @param thg     The RecordId of the thing to be updated.
@@ -459,7 +468,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates a record of the specified type and returns the updated record.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param type    the class type of the record to be updated
      * @param thg     the identifier of the record to be updated
@@ -476,7 +484,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates the table with the given content based on the specified update type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     the type of the content to be used for the update
      * @param target  the table to be updated
@@ -493,7 +500,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates the specified tables with the given content.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param targets an array of strings representing the table identifiers to be updated
      * @param upType  the type of update operation to be performed
@@ -511,7 +517,6 @@ public class Surreal extends Native implements AutoCloseable {
      * for the updated values.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     the type of the content and the type parameter for the iterator
      * @param type    the class type of the content
@@ -529,7 +534,6 @@ public class Surreal extends Native implements AutoCloseable {
      * over the updated elements of the specified type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param type    The class type of the elements to be updated.
      * @param targets An array of table identifiers to be updated.
@@ -546,7 +550,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates the specified table with the provided content.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the content to be synchronized.
      * @param target  The table identifier to be updated.
@@ -563,8 +566,8 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates the tables using the provided content and update type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
+     * @param <T>     the type of the content being updated
      * @param targets an array of strings representing the tables to be updated
      * @param upType  an instance of {@code UpType} indicating the type of update to be performed
      * @param content the content to be used for the update, which will be converted to a {@code Value}
@@ -580,8 +583,8 @@ public class Surreal extends Native implements AutoCloseable {
      * The updated resource is then returned as a thread-safe iterator of the specified type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
+     * @param <T>     the type of the content being updated
      * @param type    the class type of the elements that the returned iterator will contain
      * @param target  the identifier of the table resource to be updated
      * @param upType  the type of update operation to be performed
@@ -596,7 +599,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates the provided tables with the provided content and returns an iterator for the updated values.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     the type of the content being updated
      * @param type    the class type of the content
@@ -613,7 +615,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Inserts a new record or updates an existing record with the given content.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the content.
      * @param thg     The record identifier.
@@ -631,7 +632,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Upserts a record and returns the updated or inserted entity.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the entity to be upserted.
      * @param type    The class type of the entity.
@@ -649,7 +649,6 @@ public class Surreal extends Native implements AutoCloseable {
      * The operation type is determined by the {@code UpType} enumeration.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the content to be upserted.
      * @param target  The target on which the upsert operation is to be performed.
@@ -666,7 +665,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Inserts or updates values in the given tables.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param targets The array of tables to upsert values.
      * @param upType  The type specifying the upserting strategy to use.
@@ -683,7 +681,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Inserts or updates a record of the specified type with the given content.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     the type of the object to be upserted.
      * @param type    the Class object representing the type of the object.
@@ -700,10 +697,9 @@ public class Surreal extends Native implements AutoCloseable {
      * Updates or inserts the provided content based on the specified tables and update type.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the content to upsert.
-     * @param type    The class representing the type <T>.
+     * @param type    the Class object representing the type of the object.
      * @param targets An array of target identifiers for the upsert operation.
      * @param upType  The type of the upsert operation specifying how to merge the content.
      * @param content The content to be upserted.
@@ -735,8 +731,8 @@ public class Surreal extends Native implements AutoCloseable {
      * Performs an upsert (update or insert) operation on the specified tables.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
+     * @param <T>     the type of the record to upsert
      * @param targets an array of target identifiers to perform the upsert operation on
      * @param upType  the type of upsert operation to perform
      * @param content the content to be upserted
@@ -751,7 +747,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Inserts or updates a record and returns an iterator over the result.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     the type of the record to upsert
      * @param type    the class representing the type of the record
@@ -768,7 +763,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Performs an upsert operation with the specified content on the given tables.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     The type of the content being upserted and returned iterator's elements.
      * @param type    The class type of the content.
@@ -795,7 +789,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Selects a record by its RecordId and retrieves the corresponding Value.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param recordId the unique identifier of the record to be selected
      * @return an Optional containing the Value if the record is found, or an empty Optional if not found
@@ -812,7 +805,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Selects an instance of the specified type from a record identified by the given RecordId.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>      the type of the instance to be selected
      * @param type     the class type of the instance to be selected
@@ -828,7 +820,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Selects values based on the provided RecordIds.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param things an array of RecordId objects to be used in the selection.
      * @return a list of Value objects corresponding to the selected RecordIds.
@@ -854,7 +845,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Selects and retrieves a list of objects of the specified type based on the given record IDs.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>    the type of objects to be retrieved
      * @param type   the Class object of the type to be retrieved
@@ -871,7 +861,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Selects and returns an iterator over the values corresponding to the given targets.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param targets A string representing the targets to be selected.
      * @return An iterator over the values corresponding to the specified targets.
@@ -884,7 +873,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Selects and returns a thread-safe iterator to traverse values associated with the given targets.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param targets The specified targets for which values need to be selected.
      * @return A thread-safe iterator to traverse the values associated with the specified targets.
@@ -913,7 +901,6 @@ public class Surreal extends Native implements AutoCloseable {
      * from the given targets.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
-     * <p>
      *
      * @param <T>     the type of objects to be iterated over
      * @param type    the class of the type of objects to be selected
@@ -928,7 +915,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Deletes a record identified by the provided RecordId.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
-     * <p>
      *
      * @param recordId the identifier of the record to be deleted
      */
@@ -940,7 +926,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Deletes the specified records.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
-     * <p>
      *
      * @param things An array of RecordId objects representing the records to be deleted.
      */
@@ -953,7 +938,6 @@ public class Surreal extends Native implements AutoCloseable {
      * Deletes the specified target.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
-     * <p>
      *
      * @param target the name of the target to be deleted
      */

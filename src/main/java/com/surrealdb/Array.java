@@ -2,6 +2,11 @@ package com.surrealdb;
 
 import java.util.Iterator;
 
+/**
+ * The Array class represents a native array structure and provides methods to
+ * interact with and retrieve values from the array.
+ * It implements the Iterable interface for Value type.
+ */
 public class Array extends Native implements Iterable<Value> {
 
 

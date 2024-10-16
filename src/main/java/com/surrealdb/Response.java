@@ -2,6 +2,9 @@ package com.surrealdb;
 
 import java.util.Objects;
 
+/**
+ * The Response class is a specialized wrapper for handling responses from SurrealDB.
+ */
 public class Response extends Native {
 
     Response(long ptr) {

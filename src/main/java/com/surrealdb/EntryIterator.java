@@ -3,6 +3,11 @@ package com.surrealdb;
 import java.util.Iterator;
 import java.util.Objects;
 
+/**
+ * EntryIterator is a specialized iterator for traversing entries.
+ * This class implements the Java Iterator interface to provide a seamless way to
+ * iterate over Entry objects.
+ */
 public class EntryIterator extends Native implements Iterator<Entry> {
 
     EntryIterator(long ptr) {
