@@ -3,40 +3,44 @@
 import java.lang.Object;
 import java.util.Objects;
 
+/**
+ * The Relation class represents a relationship between two records within a database.
+ * It holds the identifiers for the relationship itself and the two records it connects.
+ */
 public class Relation {
 
     public RecordId id;
     public RecordId in;
     public RecordId out;
 
-<span class="fc" id="L12">    public Relation() {</span>
-<span class="fc" id="L13">    }</span>
+<span class="fc" id="L16">    public Relation() {</span>
+<span class="fc" id="L17">    }</span>
 
-<span class="nc" id="L15">    public Relation(RecordId id, RecordId in, RecordId out) {</span>
-<span class="nc" id="L16">        this.id = id;</span>
-<span class="nc" id="L17">        this.in = in;</span>
-<span class="nc" id="L18">        this.out = out;</span>
-<span class="nc" id="L19">    }</span>
+<span class="nc" id="L19">    public Relation(RecordId id, RecordId in, RecordId out) {</span>
+<span class="nc" id="L20">        this.id = id;</span>
+<span class="nc" id="L21">        this.in = in;</span>
+<span class="nc" id="L22">        this.out = out;</span>
+<span class="nc" id="L23">    }</span>
 
     @Override
     public boolean equals(Object o) {
-<span class="nc bnc" id="L23" title="All 2 branches missed.">        if (this == o) return true;</span>
-<span class="nc bnc" id="L24" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
-<span class="nc" id="L25">        final Relation r = (Relation) o;</span>
-<span class="nc" id="L26">        return</span>
-<span class="nc bnc" id="L27" title="All 2 branches missed.">            Objects.equals(id, r.id) &amp;&amp;</span>
-<span class="nc bnc" id="L28" title="All 2 branches missed.">                Objects.equals(in, r.in) &amp;&amp;</span>
-<span class="nc bnc" id="L29" title="All 2 branches missed.">                Objects.deepEquals(out, r.out);</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L28" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L29">        final Relation r = (Relation) o;</span>
+<span class="nc" id="L30">        return</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            Objects.equals(id, r.id) &amp;&amp;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">                Objects.equals(in, r.in) &amp;&amp;</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">                Objects.deepEquals(out, r.out);</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L34">        return &quot;id: &quot; + id + &quot;, in: &quot; + in + &quot;, out: &quot; + out;</span>
+<span class="nc" id="L38">        return &quot;id: &quot; + id + &quot;, in: &quot; + in + &quot;, out: &quot; + out;</span>
     }
 
     @Override
     public int hashCode() {
-<span class="nc" id="L39">        return Objects.hash(id, in, out);</span>
+<span class="nc" id="L43">        return Objects.hash(id, in, out);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

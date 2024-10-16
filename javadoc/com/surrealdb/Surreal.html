@@ -97,6 +97,9 @@ loadScripts(document, 'script');</script>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">Surreal</span>
 <span class="extends-implements">extends <a href="Native.html" title="class in com.surrealdb">Native</a>
 implements <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></span></div>
+<div class="block">The <code>Surreal</code> class provides methods to interact with a Surreal database.
+ It includes functionality to connect to the database, sign in with different scopes,
+ set the namespace and database, execute queries, and perform CRUD operations on records.</div>
 </div>
 </section>
 <section class="summary">
@@ -110,7 +113,9 @@ implements <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">Surreal</a>()</code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Constructs a new Surreal object.</div>
+</div>
 </div>
 </section>
 </li>
@@ -127,7 +132,9 @@ implements <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#close()" class="member-name-link">close</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Closes and releases any resources associated with this instance.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#connect(java.lang.String)" class="member-name-link">connect</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;connect)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
@@ -161,13 +168,19 @@ implements <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#delete(com.surrealdb.RecordId)" class="member-name-link">delete</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Deletes a record identified by the provided RecordId.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#delete(com.surrealdb.RecordId...)" class="member-name-link">delete</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>...&nbsp;things)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Deletes the specified records.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#delete(java.lang.String)" class="member-name-link">delete</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Deletes the specified target.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final &lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#insert(java.lang.Class,java.lang.String,T...)" class="member-name-link">insert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
@@ -250,36 +263,53 @@ T&gt;<br>R</code></div>
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Establishes a relationship between two records in a specified table and returns the specified type of Relation.</div>
+<div class="block">Establishes and retrieves a relation of a specified type between two records.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#select(com.surrealdb.RecordId)" class="member-name-link">select</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects a record by its RecordId and retrieves the corresponding Value.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#select(com.surrealdb.RecordId...)" class="member-name-link">select</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>...&nbsp;things)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects values based on the provided RecordIds.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#select(java.lang.Class,com.surrealdb.RecordId)" class="member-name-link">select</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects an instance of the specified type from a record identified by the given RecordId.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#select(java.lang.Class,com.surrealdb.RecordId...)" class="member-name-link">select</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>...&nbsp;things)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects and retrieves a list of objects of the specified type based on the given record IDs.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#select(java.lang.Class,java.lang.String)" class="member-name-link">select</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects and retrieves an iterator of specified type for given targets.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#select(java.lang.String)" class="member-name-link">select</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects and returns an iterator over the values corresponding to the given targets.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectSync(java.lang.Class,java.lang.String)" class="member-name-link">selectSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects and returns a thread-safe iterator over a collection of objects of the specified type
+ from the given targets.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectSync(java.lang.String)" class="member-name-link">selectSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Selects and returns a thread-safe iterator to traverse values associated with the given targets.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signin(com.surrealdb.signin.Signin)" class="member-name-link">signin</a><wbr>(<a href="signin/Signin.html" title="interface in com.surrealdb.signin">Signin</a>&nbsp;signin)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
@@ -289,112 +319,155 @@ T&gt;<br>R</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(com.surrealdb.RecordId,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the value of a record with the specified content and update type.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;T</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(java.lang.Class,com.surrealdb.RecordId,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates a record of the specified type and returns the updated record.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the specified tables with the given content and returns an iterator
+ over the updated elements of the specified type.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(java.lang.Class,java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the specified table with the provided content and returns an iterator
+ for the updated values.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the specified tables with the given content.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the table with the given content based on the specified update type.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateSync(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">updateSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the provided tables with the provided content and returns an iterator for the updated values.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateSync(java.lang.Class,java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">updateSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the table with the provided content.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateSync(java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">updateSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the tables using the provided content and update type.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateSync(java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">updateSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the specified table with the provided content.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsert(com.surrealdb.RecordId,com.surrealdb.UpType,T)" class="member-name-link">upsert</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Inserts a new record or updates an existing record with the given content.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;T</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsert(java.lang.Class,com.surrealdb.RecordId,com.surrealdb.UpType,T)" class="member-name-link">upsert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Upserts a record and returns the updated or inserted entity.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsert(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">upsert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates or inserts the provided content based on the specified tables and update type.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsert(java.lang.Class,java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Inserts or updates a record of the specified type with the given content.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsert(java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">upsert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Inserts or updates values in the given tables.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsert(java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Performs an upsert operation on the specified table with the provided content.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsertSync(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">upsertSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Performs an upsert operation with the specified content on the given tables.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsertSync(java.lang.Class,java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsertSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Inserts or updates a record and returns an iterator over the result.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsertSync(java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">upsertSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Performs an upsert (update or insert) operation on the specified tables.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#upsertSync(java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsertSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Inserts or updates the table with the provided content and
+ returns a thread-safe iterator over the resulting values.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#useDb(java.lang.String)" class="member-name-link">useDb</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;ns)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
@@ -430,6 +503,7 @@ T&gt;<br>R</code></div>
 <h3>Surreal</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Surreal</span>()</div>
+<div class="block">Constructs a new Surreal object.</div>
 </div>
 </section>
 </li>
@@ -815,16 +889,20 @@ T&gt;<br>R</code></div>
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to)</span></div>
-<div class="block">Establishes a relationship between two records in a specified table and returns the specified type of Relation.
+<div class="block">Establishes and retrieves a relation of a specified type between two records.
  <p>
  For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.
  <p></div>
 <dl class="notes">
 <dt>Type Parameters:</dt>
-<dd><code>T</code> - the type of Relation to return, which must extend the Relation class</dd>
+<dd><code>T</code> - The type of the relation extending Relation.</dd>
 <dt>Parameters:</dt>
-<dd><code>type</code> - the class object of type T, used to specify the type of the returned Relation</dd>
-<dd><code>from</code> - the RecordId representing the starting record of the relationship</dd>
+<dd><code>type</code> - The class type of the relation.</dd>
+<dd><code>from</code> - The starting record of the relation.</dd>
+<dd><code>table</code> - The name of the table that holds the relation.</dd>
+<dd><code>to</code> - The ending record of the relation.</dd>
+<dt>Returns:</dt>
+<dd>The established relation of the specified type.</dd>
 </dl>
 </div>
 </section>
@@ -840,9 +918,10 @@ T&gt;<br>R</code></div>
 <div class="block">Establishes a relationship between two records within a specified table,
  attaching the provided content to this relationship.
  <p>
- For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.
- <p></div>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.</div>
 <dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content associated with the relation</dd>
 <dt>Parameters:</dt>
 <dd><code>from</code> - The record ID that the relationship starts from.</dd>
 <dd><code>table</code> - The table in which the relationship is being created.</dd>
@@ -866,8 +945,7 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  T&nbsp;content)</span></div>
 <div class="block">Establishes a relation between two records and retrieves it based on the specified relation type.
  <p>
- For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.
- <p></div>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/relate">SurrealQL documentation</a>.</div>
 <dl class="notes">
 <dt>Type Parameters:</dt>
 <dd><code>R</code> - the type of the relation</dd>
@@ -891,6 +969,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="Value.html" title="class in com.surrealdb">Value</a></span>&nbsp;<span class="element-name">update</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the value of a record with the specified content and update type.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content to be updated.</dd>
+<dt>Parameters:</dt>
+<dd><code>thg</code> - The RecordId of the thing to be updated.</dd>
+<dd><code>upType</code> - The type of update to be performed.</dd>
+<dd><code>content</code> - The new content to set for the specified record.</dd>
+<dt>Returns:</dt>
+<dd>A Value object representing the updated value.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -902,6 +993,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates a record of the specified type and returns the updated record.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the record</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class type of the record to be updated</dd>
+<dd><code>thg</code> - the identifier of the record to be updated</dd>
+<dd><code>upType</code> - the type of update operation to be performed</dd>
+<dd><code>content</code> - the new content to update the record with</dd>
+<dt>Returns:</dt>
+<dd>the updated record of the specified type</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -912,6 +1017,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">update</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the table with the given content based on the specified update type.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content to be used for the update</dd>
+<dt>Parameters:</dt>
+<dd><code>target</code> - the table to be updated</dd>
+<dd><code>upType</code> - the type of update operation to be performed</dd>
+<dd><code>content</code> - the content to update the target with</dd>
+<dt>Returns:</dt>
+<dd>an Iterator of Value objects reflecting the updated state of the target</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -922,6 +1040,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">update</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the specified tables with the given content.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content</dd>
+<dt>Parameters:</dt>
+<dd><code>targets</code> - an array of strings representing the table identifiers to be updated</dd>
+<dd><code>upType</code> - the type of update operation to be performed</dd>
+<dd><code>content</code> - the content to update the targets with; the content can be of any type</dd>
+<dt>Returns:</dt>
+<dd>an Iterator of Value objects representing the updated values</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -933,6 +1064,21 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the specified table with the provided content and returns an iterator
+ for the updated values.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content and the type parameter for the iterator</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class type of the content</dd>
+<dd><code>target</code> - the table to be updated</dd>
+<dd><code>upType</code> - the type of update operation to be performed</dd>
+<dd><code>content</code> - the content to update the target with</dd>
+<dt>Returns:</dt>
+<dd>an iterator over the updated values</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -944,6 +1090,21 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the specified tables with the given content and returns an iterator
+ over the updated elements of the specified type.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the elements being updated.</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - The class type of the elements to be updated.</dd>
+<dd><code>targets</code> - An array of table identifiers to be updated.</dd>
+<dd><code>upType</code> - The type of update operation to be performed.</dd>
+<dd><code>content</code> - The content to update the targets with.</dd>
+<dt>Returns:</dt>
+<dd>An iterator over the updated elements of the specified type.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -954,6 +1115,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">updateSync</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the specified table with the provided content.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content to be synchronized.</dd>
+<dt>Parameters:</dt>
+<dd><code>target</code> - The table identifier to be updated.</dd>
+<dd><code>upType</code> - The type of update to be performed, represented by an UpType object.</dd>
+<dd><code>content</code> - The content to update the target with.</dd>
+<dt>Returns:</dt>
+<dd>A thread-safe Iterator of Value objects that reflects the updated state.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -964,6 +1138,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">updateSync</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the tables using the provided content and update type.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content being updated</dd>
+<dt>Parameters:</dt>
+<dd><code>targets</code> - an array of strings representing the tables to be updated</dd>
+<dd><code>upType</code> - an instance of <code>UpType</code> indicating the type of update to be performed</dd>
+<dd><code>content</code> - the content to be used for the update, which will be converted to a <code>Value</code></dd>
+<dt>Returns:</dt>
+<dd>a thread-safe iterator over the updated <code>Value</code> objects</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -975,6 +1162,21 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the table with the provided content.
+ The updated resource is then returned as a thread-safe iterator of the specified type.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content being updated</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class type of the elements that the returned iterator will contain</dd>
+<dd><code>target</code> - the identifier of the table resource to be updated</dd>
+<dd><code>upType</code> - the type of update operation to be performed</dd>
+<dd><code>content</code> - the data to update the target resource with</dd>
+<dt>Returns:</dt>
+<dd>a thread-safe iterator of the specified type containing the updated resource</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -986,6 +1188,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates the provided tables with the provided content and returns an iterator for the updated values.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content being updated</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class type of the content</dd>
+<dd><code>targets</code> - an array of target identifiers to be updated</dd>
+<dd><code>upType</code> - the type of update to be performed</dd>
+<dd><code>content</code> - the content to be used for the update</dd>
+<dt>Returns:</dt>
+<dd>a thread-safe iterator for the updated values</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -996,6 +1212,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="Value.html" title="class in com.surrealdb">Value</a></span>&nbsp;<span class="element-name">upsert</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Inserts a new record or updates an existing record with the given content.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content.</dd>
+<dt>Parameters:</dt>
+<dd><code>thg</code> - The record identifier.</dd>
+<dd><code>upType</code> - The update type specifying how to handle the upsert.</dd>
+<dd><code>content</code> - The content to be inserted or updated.</dd>
+<dt>Returns:</dt>
+<dd>The resulting value after the upsert operation.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1007,6 +1236,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;thg,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Upserts a record and returns the updated or inserted entity.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the entity to be upserted.</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - The class type of the entity.</dd>
+<dd><code>thg</code> - The record identifier.</dd>
+<dd><code>upType</code> - The type of the update.</dd>
+<dd><code>content</code> - The content of the entity to be upserted.</dd>
+<dt>Returns:</dt>
+<dd>The upserted entity of the specified type.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1017,6 +1260,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">upsert</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Performs an upsert operation on the specified table with the provided content.
+ The operation type is determined by the <code>UpType</code> enumeration.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content to be upserted.</dd>
+<dt>Parameters:</dt>
+<dd><code>target</code> - The target on which the upsert operation is to be performed.</dd>
+<dd><code>upType</code> - The type of upsert operation to be executed.</dd>
+<dd><code>content</code> - The content to be upserted.</dd>
+<dt>Returns:</dt>
+<dd>An iterator over the values resulting from the upsert operation.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1027,6 +1284,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">upsert</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Inserts or updates values in the given tables.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content to upsert.</dd>
+<dt>Parameters:</dt>
+<dd><code>targets</code> - The array of tables to upsert values.</dd>
+<dd><code>upType</code> - The type specifying the upserting strategy to use.</dd>
+<dd><code>content</code> - The content to be inserted or updated.</dd>
+<dt>Returns:</dt>
+<dd>An iterator over the upserted values.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1038,6 +1308,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Inserts or updates a record of the specified type with the given content.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the object to be upserted.</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the Class object representing the type of the object.</dd>
+<dd><code>target</code> - the table identifier where the records should be upserted.</dd>
+<dd><code>upType</code> - the type of upsert operation to perform.</dd>
+<dd><code>content</code> - the content of the object to be upserted.</dd>
+<dt>Returns:</dt>
+<dd>an iterator of the type <code>T</code> containing the results of the upsert operation.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1049,6 +1333,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Updates or inserts the provided content based on the specified tables and update type.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content to upsert.</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the Class object representing the type of the object.</dd>
+<dd><code>targets</code> - An array of target identifiers for the upsert operation.</dd>
+<dd><code>upType</code> - The type of the upsert operation specifying how to merge the content.</dd>
+<dd><code>content</code> - The content to be upserted.</dd>
+<dt>Returns:</dt>
+<dd>An iterator over the result of the upsert operation.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1059,6 +1357,21 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">upsertSync</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Inserts or updates the table with the provided content and
+ returns a thread-safe iterator over the resulting values.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+ <p></div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the content to be upserted</dd>
+<dt>Parameters:</dt>
+<dd><code>target</code> - the target identifier where the content will be upserted</dd>
+<dd><code>upType</code> - the type of upsert operation</dd>
+<dd><code>content</code> - the content to be upserted</dd>
+<dt>Returns:</dt>
+<dd>a thread-safe iterator over the resulting values after the upsert operation</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1069,6 +1382,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">upsertSync</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Performs an upsert (update or insert) operation on the specified tables.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the record to upsert</dd>
+<dt>Parameters:</dt>
+<dd><code>targets</code> - an array of target identifiers to perform the upsert operation on</dd>
+<dd><code>upType</code> - the type of upsert operation to perform</dd>
+<dd><code>content</code> - the content to be upserted</dd>
+<dt>Returns:</dt>
+<dd>a thread-safe Iterator of the resulting values from the upsert operation</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1080,6 +1406,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Inserts or updates a record and returns an iterator over the result.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the record to upsert</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class representing the type of the record</dd>
+<dd><code>target</code> - the target location for the upsert operation</dd>
+<dd><code>upType</code> - the type of the upsert operation</dd>
+<dd><code>content</code> - the content of the record to be upserted</dd>
+<dt>Returns:</dt>
+<dd>a thread-safe iterator over the upserted record</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1091,6 +1431,20 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;targets,
  <a href="UpType.html" title="enum class in com.surrealdb">UpType</a>&nbsp;upType,
  T&nbsp;content)</span></div>
+<div class="block">Performs an upsert operation with the specified content on the given tables.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of the content being upserted and returned iterator's elements.</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - The class type of the content.</dd>
+<dd><code>targets</code> - The array of table identifiers on which to perform the upsert operation.</dd>
+<dd><code>upType</code> - The type of upsert operation to be performed.</dd>
+<dd><code>content</code> - The content to be upserted.</dd>
+<dt>Returns:</dt>
+<dd>A thread-safe iterator over the upserted content of the specified type.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1099,6 +1453,15 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>select</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">select</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</span></div>
+<div class="block">Selects a record by its RecordId and retrieves the corresponding Value.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>recordId</code> - the unique identifier of the record to be selected</dd>
+<dt>Returns:</dt>
+<dd>an Optional containing the Value if the record is found, or an empty Optional if not found</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1108,6 +1471,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;T&gt;</span>&nbsp;<span class="element-name">select</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</span></div>
+<div class="block">Selects an instance of the specified type from a record identified by the given RecordId.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of the instance to be selected</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class type of the instance to be selected</dd>
+<dd><code>recordId</code> - the unique identifier of the record from which to select the instance</dd>
+<dt>Returns:</dt>
+<dd>an Optional containing the selected instance of the specified type if present,
+ otherwise an empty Optional</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1116,6 +1492,15 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>select</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">select</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>...&nbsp;things)</span></div>
+<div class="block">Selects values based on the provided RecordIds.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>things</code> - an array of RecordId objects to be used in the selection.</dd>
+<dt>Returns:</dt>
+<dd>a list of Value objects corresponding to the selected RecordIds.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1125,6 +1510,18 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;T&gt;</span>&nbsp;<span class="element-name">select</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>...&nbsp;things)</span></div>
+<div class="block">Selects and retrieves a list of objects of the specified type based on the given record IDs.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of objects to be retrieved</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the Class object of the type to be retrieved</dd>
+<dd><code>things</code> - an array of RecordId instances identifying the records to be selected</dd>
+<dt>Returns:</dt>
+<dd>a list of objects of the specified type corresponding to the given record IDs</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1133,6 +1530,15 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>select</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">select</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</span></div>
+<div class="block">Selects and returns an iterator over the values corresponding to the given targets.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>targets</code> - A string representing the targets to be selected.</dd>
+<dt>Returns:</dt>
+<dd>An iterator over the values corresponding to the specified targets.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1141,6 +1547,15 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>selectSync</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">selectSync</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</span></div>
+<div class="block">Selects and returns a thread-safe iterator to traverse values associated with the given targets.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>targets</code> - The specified targets for which values need to be selected.</dd>
+<dt>Returns:</dt>
+<dd>A thread-safe iterator to traverse the values associated with the specified targets.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1150,6 +1565,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;T&gt;</span>&nbsp;<span class="element-name">select</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</span></div>
+<div class="block">Selects and retrieves an iterator of specified type for given targets.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+ <p></div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - The type of objects to be selected.</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - The class type of the objects to be selected.</dd>
+<dd><code>targets</code> - A string specifying the targets to select from.</dd>
+<dt>Returns:</dt>
+<dd>An iterator of the specified type for the selected targets.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1159,6 +1587,19 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a>&lt;T&gt;</span>&nbsp;<span class="element-name">selectSync</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;targets)</span></div>
+<div class="block">Selects and returns a thread-safe iterator over a collection of objects of the specified type
+ from the given targets.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type of objects to be iterated over</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class of the type of objects to be selected</dd>
+<dd><code>targets</code> - the targets from which to select objects</dd>
+<dt>Returns:</dt>
+<dd>a thread-safe iterator over a collection of objects of the specified type</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1167,6 +1608,13 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>delete</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">delete</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</span></div>
+<div class="block">Deletes a record identified by the provided RecordId.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>recordId</code> - the identifier of the record to be deleted</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1175,6 +1623,13 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>delete</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">delete</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>...&nbsp;things)</span></div>
+<div class="block">Deletes the specified records.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>things</code> - An array of RecordId objects representing the records to be deleted.</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1183,6 +1638,13 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>delete</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">delete</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target)</span></div>
+<div class="block">Deletes the specified target.
+ <p>
+ For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>target</code> - the name of the target to be deleted</dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1191,6 +1653,9 @@ T&gt;</span>&nbsp;<span class="return-type">R</span>&nbsp;<span class="element-n
 <h3>close</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">close</span>()</div>
+<div class="block">Closes and releases any resources associated with this instance.
+ This method is typically called when the instance is no longer needed.
+ The underlying resources are safely cleaned up.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/AutoCloseable.html#close()" title="class or interface in java.lang" class="external-link">close</a></code>&nbsp;in interface&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></code></dd>
