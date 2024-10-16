@@ -2,7 +2,6 @@ package com.surrealdb.integration;
 
 import com.surrealdb.Surreal;
 import com.surrealdb.SurrealException;
-import com.surrealdb.signin.Root;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ public class IntegrationTest {
         final Path tempDir = Files.createTempDirectory("surrealkv");
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("surrealkv://" + tempDir.toAbsolutePath()).useNs("test").useDb("test");
-            surreal.signin(new Root("test", "test"));
         }
     }
 

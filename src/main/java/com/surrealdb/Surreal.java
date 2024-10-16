@@ -437,94 +437,346 @@ public class Surreal extends Native implements AutoCloseable {
         return relate(from, table, to, content).get(type);
     }
 
+    /**
+     * Updates the value of a record with the specified content and update type.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the content to be updated.
+     * @param thg     The RecordId of the thing to be updated.
+     * @param upType  The type of update to be performed.
+     * @param content The new content to set for the specified record.
+     * @return A Value object representing the updated value.
+     */
     public <T> Value update(RecordId thg, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
+    /**
+     * Updates a record of the specified type and returns the updated record.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param type    the class type of the record to be updated
+     * @param thg     the identifier of the record to be updated
+     * @param upType  the type of update operation to be performed
+     * @param content the new content to update the record with
+     * @param <T>     the type of the record
+     * @return the updated record of the specified type
+     */
     public <T> T update(Class<T> type, RecordId thg, UpType upType, T content) {
         return update(thg, upType, content).get(type);
     }
 
+    /**
+     * Updates the table with the given content based on the specified update type.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of the content to be used for the update
+     * @param target  the table to be updated
+     * @param upType  the type of update operation to be performed
+     * @param content the content to update the target with
+     * @return an Iterator of Value objects reflecting the updated state of the target
+     */
     public <T> Iterator<Value> update(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Updates the specified tables with the given content.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param targets an array of strings representing the table identifiers to be updated
+     * @param upType  the type of update operation to be performed
+     * @param content the content to update the targets with; the content can be of any type
+     * @param <T>     the type of the content
+     * @return an Iterator of Value objects representing the updated values
+     */
     public <T> Iterator<Value> update(String[] targets, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Updates the specified table with the provided content and returns an iterator
+     * for the updated values.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of the content and the type parameter for the iterator
+     * @param type    the class type of the content
+     * @param target  the table to be updated
+     * @param upType  the type of update operation to be performed
+     * @param content the content to update the target with
+     * @return an iterator over the updated values
+     */
     public <T> Iterator<T> update(Class<T> type, String target, UpType upType, T content) {
         return new ValueObjectIterator<>(type, update(target, upType, content));
     }
 
+    /**
+     * Updates the specified tables with the given content and returns an iterator
+     * over the updated elements of the specified type.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param type    The class type of the elements to be updated.
+     * @param targets An array of table identifiers to be updated.
+     * @param upType  The type of update operation to be performed.
+     * @param content The content to update the targets with.
+     * @param <T>     The type of the elements being updated.
+     * @return An iterator over the updated elements of the specified type.
+     */
     public <T> Iterator<T> update(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, update(targets, upType, content));
     }
 
+    /**
+     * Updates the specified table with the provided content.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the content to be synchronized.
+     * @param target  The table identifier to be updated.
+     * @param upType  The type of update to be performed, represented by an UpType object.
+     * @param content The content to update the target with.
+     * @return A thread-safe Iterator of Value objects that reflects the updated state.
+     */
     public <T> Iterator<Value> updateSync(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new SynchronizedValueIterator(updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Updates the tables using the provided content and update type.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param targets an array of strings representing the tables to be updated
+     * @param upType  an instance of {@code UpType} indicating the type of update to be performed
+     * @param content the content to be used for the update, which will be converted to a {@code Value}
+     * @return a thread-safe iterator over the updated {@code Value} objects
+     */
     public <T> Iterator<Value> updateSync(String[] targets, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new SynchronizedValueIterator(updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Updates the table with the provided content.
+     * The updated resource is then returned as a thread-safe iterator of the specified type.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param type    the class type of the elements that the returned iterator will contain
+     * @param target  the identifier of the table resource to be updated
+     * @param upType  the type of update operation to be performed
+     * @param content the data to update the target resource with
+     * @return a thread-safe iterator of the specified type containing the updated resource
+     */
     public <T> Iterator<T> updateSync(Class<T> type, String target, UpType upType, T content) {
         return new ValueObjectIterator<>(type, updateSync(target, upType, content));
     }
 
+    /**
+     * Updates the provided tables with the provided content and returns an iterator for the updated values.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of the content being updated
+     * @param type    the class type of the content
+     * @param targets an array of target identifiers to be updated
+     * @param upType  the type of update to be performed
+     * @param content the content to be used for the update
+     * @return a thread-safe iterator for the updated values
+     */
     public <T> Iterator<T> updateSync(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, updateSync(targets, upType, content));
     }
 
+    /**
+     * Inserts a new record or updates an existing record with the given content.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the content.
+     * @param thg     The record identifier.
+     * @param upType  The update type specifying how to handle the upsert.
+     * @param content The content to be inserted or updated.
+     * @return The resulting value after the upsert operation.
+     */
     public <T> Value upsert(RecordId thg, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
+    /**
+     * Upserts a record and returns the updated or inserted entity.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the entity to be upserted.
+     * @param type    The class type of the entity.
+     * @param thg     The record identifier.
+     * @param upType  The type of the update.
+     * @param content The content of the entity to be upserted.
+     * @return The upserted entity of the specified type.
+     */
     public <T> T upsert(Class<T> type, RecordId thg, UpType upType, T content) {
         return upsert(thg, upType, content).get(type);
     }
 
+    /**
+     * Performs an upsert operation on the specified table with the provided content.
+     * The operation type is determined by the {@code UpType} enumeration.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the content to be upserted.
+     * @param target  The target on which the upsert operation is to be performed.
+     * @param upType  The type of upsert operation to be executed.
+     * @param content The content to be upserted.
+     * @return An iterator over the values resulting from the upsert operation.
+     */
     public <T> Iterator<Value> upsert(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Inserts or updates values in the given tables.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param targets The array of tables to upsert values.
+     * @param upType  The type specifying the upserting strategy to use.
+     * @param content The content to be inserted or updated.
+     * @param <T>     The type of the content to upsert.
+     * @return An iterator over the upserted values.
+     */
     public <T> Iterator<Value> upsert(String[] targets, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Inserts or updates a record of the specified type with the given content.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of the object to be upserted.
+     * @param type    the Class object representing the type of the object.
+     * @param target  the table identifier where the records should be upserted.
+     * @param upType  the type of upsert operation to perform.
+     * @param content the content of the object to be upserted.
+     * @return an iterator of the type {@code T} containing the results of the upsert operation.
+     */
     public <T> Iterator<T> upsert(Class<T> type, String target, UpType upType, T content) {
         return new ValueObjectIterator<>(type, upsert(target, upType, content));
     }
 
+    /**
+     * Updates or inserts the provided content based on the specified tables and update type.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the content to upsert.
+     * @param type    The class representing the type <T>.
+     * @param targets An array of target identifiers for the upsert operation.
+     * @param upType  The type of the upsert operation specifying how to merge the content.
+     * @param content The content to be upserted.
+     * @return An iterator over the result of the upsert operation.
+     */
     public <T> Iterator<T> upsert(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, upsert(targets, upType, content));
     }
 
+    /**
+     * Inserts or updates the table with the provided content and
+     * returns a thread-safe iterator over the resulting values.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of the content to be upserted
+     * @param target  the target identifier where the content will be upserted
+     * @param upType  the type of upsert operation
+     * @param content the content to be upserted
+     * @return a thread-safe iterator over the resulting values after the upsert operation
+     */
     public <T> Iterator<Value> upsertSync(String target, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new SynchronizedValueIterator(upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Performs an upsert (update or insert) operation on the specified tables.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param targets an array of target identifiers to perform the upsert operation on
+     * @param upType  the type of upsert operation to perform
+     * @param content the content to be upserted
+     * @return a thread-safe Iterator of the resulting values from the upsert operation
+     */
     public <T> Iterator<Value> upsertSync(String[] targets, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         return new SynchronizedValueIterator(upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
     }
 
+    /**
+     * Inserts or updates a record and returns an iterator over the result.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of the record to upsert
+     * @param type    the class representing the type of the record
+     * @param target  the target location for the upsert operation
+     * @param upType  the type of the upsert operation
+     * @param content the content of the record to be upserted
+     * @return a thread-safe iterator over the upserted record
+     */
     public <T> Iterator<T> upsertSync(Class<T> type, String target, UpType upType, T content) {
         return new ValueObjectIterator<>(type, upsertSync(target, upType, content));
     }
 
+    /**
+     * Performs an upsert operation with the specified content on the given tables.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of the content being upserted and returned iterator's elements.
+     * @param type    The class type of the content.
+     * @param targets The array of table identifiers on which to perform the upsert operation.
+     * @param upType  The type of upsert operation to be performed.
+     * @param content The content to be upserted.
+     * @return A thread-safe iterator over the upserted content of the specified type.
+     */
     public <T> Iterator<T> upsertSync(Class<T> type, String[] targets, UpType upType, T content) {
         return new ValueObjectIterator<>(type, upsertSync(targets, upType, content));
     }
@@ -539,6 +791,15 @@ public class Surreal extends Native implements AutoCloseable {
         return ptrs;
     }
 
+    /**
+     * Selects a record by its RecordId and retrieves the corresponding Value.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param recordId the unique identifier of the record to be selected
+     * @return an Optional containing the Value if the record is found, or an empty Optional if not found
+     */
     public Optional<Value> select(RecordId recordId) {
         final long valuePtr = selectThing(getPtr(), recordId.getPtr());
         if (valuePtr == 0) {
@@ -547,10 +808,31 @@ public class Surreal extends Native implements AutoCloseable {
         return Optional.of(new Value(valuePtr));
     }
 
+    /**
+     * Selects an instance of the specified type from a record identified by the given RecordId.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>      the type of the instance to be selected
+     * @param type     the class type of the instance to be selected
+     * @param recordId the unique identifier of the record from which to select the instance
+     * @return an Optional containing the selected instance of the specified type if present,
+     * otherwise an empty Optional
+     */
     public <T> Optional<T> select(Class<T> type, RecordId recordId) {
         return select(recordId).map(v -> v.get(type));
     }
 
+    /**
+     * Selects values based on the provided RecordIds.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param things an array of RecordId objects to be used in the selection.
+     * @return a list of Value objects corresponding to the selected RecordIds.
+     */
     public List<Value> select(RecordId... things) {
         final long[] thingsPtr = things2longs(things);
         final long[] valuePtrs = selectThings(getPtr(), thingsPtr);
@@ -568,41 +850,122 @@ public class Surreal extends Native implements AutoCloseable {
         return ptrs;
     }
 
+    /**
+     * Selects and retrieves a list of objects of the specified type based on the given record IDs.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>    the type of objects to be retrieved
+     * @param type   the Class object of the type to be retrieved
+     * @param things an array of RecordId instances identifying the records to be selected
+     * @return a list of objects of the specified type corresponding to the given record IDs
+     */
     public <T> List<T> select(Class<T> type, RecordId... things) {
         try (final Stream<Value> s = select(things).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
     }
 
+    /**
+     * Selects and returns an iterator over the values corresponding to the given targets.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param targets A string representing the targets to be selected.
+     * @return An iterator over the values corresponding to the specified targets.
+     */
     public Iterator<Value> select(String targets) {
         return new ValueIterator(selectTargetsValues(getPtr(), targets));
     }
 
+    /**
+     * Selects and returns a thread-safe iterator to traverse values associated with the given targets.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param targets The specified targets for which values need to be selected.
+     * @return A thread-safe iterator to traverse the values associated with the specified targets.
+     */
     public Iterator<Value> selectSync(String targets) {
         return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));
     }
 
+    /**
+     * Selects and retrieves an iterator of specified type for given targets.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     The type of objects to be selected.
+     * @param type    The class type of the objects to be selected.
+     * @param targets A string specifying the targets to select from.
+     * @return An iterator of the specified type for the selected targets.
+     */
     public <T> Iterator<T> select(Class<T> type, String targets) {
         return new ValueObjectIterator<>(type, select(targets));
     }
 
+    /**
+     * Selects and returns a thread-safe iterator over a collection of objects of the specified type
+     * from the given targets.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param <T>     the type of objects to be iterated over
+     * @param type    the class of the type of objects to be selected
+     * @param targets the targets from which to select objects
+     * @return a thread-safe iterator over a collection of objects of the specified type
+     */
     public <T> Iterator<T> selectSync(Class<T> type, String targets) {
         return new ValueObjectIterator<>(type, selectSync(targets));
     }
 
+    /**
+     * Deletes a record identified by the provided RecordId.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param recordId the identifier of the record to be deleted
+     */
     public void delete(RecordId recordId) {
         deleteThing(getPtr(), recordId.getPtr());
     }
 
+    /**
+     * Deletes the specified records.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param things An array of RecordId objects representing the records to be deleted.
+     */
     public void delete(RecordId... things) {
         final long[] thingsPtr = things2longs(things);
         deleteThings(getPtr(), thingsPtr);
     }
 
+    /**
+     * Deletes the specified target.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
+     * <p>
+     *
+     * @param target the name of the target to be deleted
+     */
     public void delete(String target) {
         deleteTarget(getPtr(), target);
     }
 
+    /**
+     * Closes and releases any resources associated with this instance.
+     * This method is typically called when the instance is no longer needed.
+     * The underlying resources are safely cleaned up.
+     */
     @Override
     public void close() {
         deleteInstance();
