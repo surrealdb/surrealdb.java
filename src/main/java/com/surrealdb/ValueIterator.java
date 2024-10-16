@@ -3,6 +3,18 @@ package com.surrealdb;
 import java.util.Iterator;
 import java.util.Objects;
 
+/**
+ * The ValueIterator class provides an iterator for the Value type, allowing iteration
+ * over a collection of Value objects, typically used within the context of array
+ * structures that extend the functionality provided by the library.
+ * <p>
+ * This class implements the Iterator interface for the
+ * Value type, enabling standard iteration mechanisms such as hasNext and next methods.
+ * <p>
+ * Methods:
+ * - hasNext(): Checks if there are more elements in the collection to iterate over.
+ * - next(): Returns the next Value in the iteration.
+ */
 public class ValueIterator extends Native implements Iterator<Value> {
 
     ValueIterator(long ptr) {
