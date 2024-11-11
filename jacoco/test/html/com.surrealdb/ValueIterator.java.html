@@ -3,23 +3,11 @@
 import java.util.Iterator;
 import java.util.Objects;
 
-/**
- * The ValueIterator class provides an iterator for the Value type, allowing iteration
- * over a collection of Value objects, typically used within the context of array
- * structures that extend the functionality provided by the library.
- * &lt;p&gt;
- * This class implements the Iterator interface for the
- * Value type, enabling standard iteration mechanisms such as hasNext and next methods.
- * &lt;p&gt;
- * Methods:
- * - hasNext(): Checks if there are more elements in the collection to iterate over.
- * - next(): Returns the next Value in the iteration.
- */
 public class ValueIterator extends Native implements Iterator&lt;Value&gt; {
 
     ValueIterator(long ptr) {
-<span class="fc" id="L21">        super(ptr);</span>
-<span class="fc" id="L22">    }</span>
+<span class="fc" id="L9">        super(ptr);</span>
+<span class="fc" id="L10">    }</span>
 
     private static native boolean hasNext(long ptr);
 
@@ -27,17 +15,17 @@ public class ValueIterator extends Native implements Iterator&lt;Value&gt; {
 
     @Override
     final String toString(long ptr) {
-<span class="nc" id="L30">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L18">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
     }
 
     @Override
     final int hashCode(long ptr) {
-<span class="nc" id="L35">        return Objects.hashCode(ptr);</span>
+<span class="nc" id="L23">        return Objects.hashCode(ptr);</span>
     }
 
     @Override
     final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L40" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
     }
 
     @Override
@@ -45,12 +33,12 @@ public class ValueIterator extends Native implements Iterator&lt;Value&gt; {
 
     @Override
     public boolean hasNext() {
-<span class="fc" id="L48">        return hasNext(getPtr());</span>
+<span class="fc" id="L36">        return hasNext(getPtr());</span>
     }
 
     @Override
     public Value next() {
-<span class="fc" id="L53">        return new Value(next(getPtr()));</span>
+<span class="fc" id="L41">        return new Value(next(getPtr()));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

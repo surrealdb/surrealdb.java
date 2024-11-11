@@ -2,14 +2,11 @@
 
 import java.util.Objects;
 
-/**
- * The Response class is a specialized wrapper for handling responses from SurrealDB.
- */
 public class Response extends Native {
 
     Response(long ptr) {
-<span class="fc" id="L11">        super(ptr);</span>
-<span class="fc" id="L12">    }</span>
+<span class="fc" id="L8">        super(ptr);</span>
+<span class="fc" id="L9">    }</span>
 
     @Override
     final native boolean deleteInstance(long ptr);
@@ -17,22 +14,22 @@ public class Response extends Native {
     private native long take(long ptr, int num);
 
     public Value take(int num) {
-<span class="fc" id="L20">        return new Value(take(getPtr(), num));</span>
+<span class="fc" id="L17">        return new Value(take(getPtr(), num));</span>
     }
 
     @Override
     final String toString(long ptr) {
-<span class="nc" id="L25">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L22">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
     }
 
     @Override
     final int hashCode(long ptr) {
-<span class="nc" id="L30">        return Objects.hashCode(ptr);</span>
+<span class="nc" id="L27">        return Objects.hashCode(ptr);</span>
     }
 
     @Override
     final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L35" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
     }
 
 }

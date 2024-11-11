@@ -3,53 +3,40 @@
 import java.lang.Object;
 import java.util.Objects;
 
-/**
- * The InsertRelation class represents a relationship between entities in a graph database.
- * It is primarily used to insert relations into a table using SurrealDB.
- * &lt;p&gt;
- * This class encapsulates the identifiers for the relation, including the IDs for the entities that
- * participate in the relationship. Specifically, it includes the following fields:
- * &lt;ul&gt;
- * &lt;li&gt;id: The unique identifier for the relation&lt;/li&gt;
- * &lt;li&gt;in: The RecordId of the incoming node in the relation&lt;/li&gt;
- * &lt;li&gt;out: The RecordId of the outgoing node in the relation&lt;/li&gt;
- * &lt;/ul&gt;
- * &lt;p&gt;
- */
 public class InsertRelation {
 
     public Id id;
     public RecordId in;
     public RecordId out;
 
-<span class="fc" id="L25">    public InsertRelation() {</span>
-<span class="fc" id="L26">    }</span>
+<span class="fc" id="L12">    public InsertRelation() {</span>
+<span class="fc" id="L13">    }</span>
 
-<span class="fc" id="L28">    public InsertRelation(Id id, RecordId in, RecordId out) {</span>
-<span class="fc" id="L29">        this.id = id;</span>
-<span class="fc" id="L30">        this.in = in;</span>
-<span class="fc" id="L31">        this.out = out;</span>
-<span class="fc" id="L32">    }</span>
+<span class="fc" id="L15">    public InsertRelation(Id id, RecordId in, RecordId out) {</span>
+<span class="fc" id="L16">        this.id = id;</span>
+<span class="fc" id="L17">        this.in = in;</span>
+<span class="fc" id="L18">        this.out = out;</span>
+<span class="fc" id="L19">    }</span>
 
     @Override
     public boolean equals(Object o) {
-<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (this == o) return true;</span>
-<span class="pc bpc" id="L37" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
-<span class="fc" id="L38">        final InsertRelation r = (InsertRelation) o;</span>
-<span class="fc" id="L39">        return</span>
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">            Objects.equals(id, r.id) &amp;&amp;</span>
-<span class="pc bpc" id="L41" title="1 of 2 branches missed.">                Objects.equals(in, r.in) &amp;&amp;</span>
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">                Objects.deepEquals(out, r.out);</span>
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L24" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L25">        final InsertRelation r = (InsertRelation) o;</span>
+<span class="fc" id="L26">        return</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">            Objects.equals(id, r.id) &amp;&amp;</span>
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">                Objects.equals(in, r.in) &amp;&amp;</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">                Objects.deepEquals(out, r.out);</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L47">        return &quot;id: &quot; + id + &quot;, in: &quot; + in + &quot;, out: &quot; + out;</span>
+<span class="nc" id="L34">        return &quot;id: &quot; + id + &quot;, in: &quot; + in + &quot;, out: &quot; + out;</span>
     }
 
     @Override
     public int hashCode() {
-<span class="nc" id="L52">        return Objects.hash(id, in, out);</span>
+<span class="nc" id="L39">        return Objects.hash(id, in, out);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

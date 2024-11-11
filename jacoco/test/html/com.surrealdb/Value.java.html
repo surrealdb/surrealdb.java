@@ -7,17 +7,11 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-/**
- * The Value class represents a general-purpose wrapper for different types of values.
- * It provides various methods to
- * interact with and retrieve values such as arrays, objects, strings,
- * numbers, and more.
- */
 public class Value extends Native {
 
     Value(long ptr) {
-<span class="fc" id="L19">        super(ptr);</span>
-<span class="fc" id="L20">    }</span>
+<span class="fc" id="L13">        super(ptr);</span>
+<span class="fc" id="L14">    }</span>
 
     private static native String toPrettyString(long ptr);
 
@@ -90,126 +84,126 @@ public class Value extends Native {
     final native boolean deleteInstance(long ptr);
 
     public String toPrettyString() {
-<span class="fc" id="L93">        return toPrettyString(getPtr());</span>
+<span class="fc" id="L87">        return toPrettyString(getPtr());</span>
     }
 
     public boolean isArray() {
-<span class="fc" id="L97">        return isArray(getPtr());</span>
+<span class="fc" id="L91">        return isArray(getPtr());</span>
     }
 
     public Array getArray() {
-<span class="fc" id="L101">        return new Array(getArray(getPtr()));</span>
+<span class="fc" id="L95">        return new Array(getArray(getPtr()));</span>
     }
 
     public boolean isObject() {
-<span class="fc" id="L105">        return isObject(getPtr());</span>
+<span class="fc" id="L99">        return isObject(getPtr());</span>
     }
 
     public Object getObject() {
-<span class="fc" id="L109">        return new Object(getObject(getPtr()));</span>
+<span class="fc" id="L103">        return new Object(getObject(getPtr()));</span>
     }
 
     public boolean isBoolean() {
-<span class="fc" id="L113">        return isBoolean(getPtr());</span>
+<span class="fc" id="L107">        return isBoolean(getPtr());</span>
     }
 
     public boolean getBoolean() {
-<span class="fc" id="L117">        return getBoolean(getPtr());</span>
+<span class="fc" id="L111">        return getBoolean(getPtr());</span>
     }
 
     public boolean isDouble() {
-<span class="fc" id="L121">        return isDouble(getPtr());</span>
+<span class="fc" id="L115">        return isDouble(getPtr());</span>
     }
 
     public double getDouble() {
-<span class="fc" id="L125">        return getDouble(getPtr());</span>
+<span class="fc" id="L119">        return getDouble(getPtr());</span>
     }
 
     public boolean isLong() {
-<span class="fc" id="L129">        return isLong(getPtr());</span>
+<span class="fc" id="L123">        return isLong(getPtr());</span>
     }
 
     public long getLong() {
-<span class="fc" id="L133">        return getLong(getPtr());</span>
+<span class="fc" id="L127">        return getLong(getPtr());</span>
     }
 
     public boolean isBigdecimal() {
-<span class="fc" id="L137">        return isBigDecimal(getPtr());</span>
+<span class="fc" id="L131">        return isBigDecimal(getPtr());</span>
     }
 
     public BigDecimal getBigDecimal() {
-<span class="fc" id="L141">        return new BigDecimal(getBigDecimal(getPtr()));</span>
+<span class="fc" id="L135">        return new BigDecimal(getBigDecimal(getPtr()));</span>
     }
 
     public boolean isNull() {
-<span class="nc" id="L145">        return isNull(getPtr());</span>
+<span class="nc" id="L139">        return isNull(getPtr());</span>
     }
 
     public boolean isNone() {
-<span class="fc" id="L149">        return isNone(getPtr());</span>
+<span class="fc" id="L143">        return isNone(getPtr());</span>
     }
 
     public boolean isString() {
-<span class="fc" id="L153">        return isString(getPtr());</span>
+<span class="fc" id="L147">        return isString(getPtr());</span>
     }
 
     public String getString() {
-<span class="fc" id="L157">        return getString(getPtr());</span>
+<span class="fc" id="L151">        return getString(getPtr());</span>
     }
 
     public boolean isUuid() {
-<span class="fc" id="L161">        return isUuid(getPtr());</span>
+<span class="fc" id="L155">        return isUuid(getPtr());</span>
     }
 
     public UUID getUuid() {
-<span class="fc" id="L165">        return UUID.fromString(getUuid(getPtr()));</span>
+<span class="fc" id="L159">        return UUID.fromString(getUuid(getPtr()));</span>
     }
 
     public boolean isThing() {
-<span class="fc" id="L169">        return isThing(getPtr());</span>
+<span class="fc" id="L163">        return isThing(getPtr());</span>
     }
 
     public RecordId getThing() {
-<span class="fc" id="L173">        return new RecordId(getThing(getPtr()));</span>
+<span class="fc" id="L167">        return new RecordId(getThing(getPtr()));</span>
     }
 
     public boolean isBytes() {
-<span class="fc" id="L177">        return isBytes(getPtr());</span>
+<span class="fc" id="L171">        return isBytes(getPtr());</span>
     }
 
     public byte[] getBytes() {
-<span class="nc" id="L181">        return getBytes(getPtr());</span>
+<span class="nc" id="L175">        return getBytes(getPtr());</span>
     }
 
     public boolean isGeometry() {
-<span class="fc" id="L185">        return isGeometry(getPtr());</span>
+<span class="fc" id="L179">        return isGeometry(getPtr());</span>
     }
 
     public Geometry getGeometry() {
-<span class="fc" id="L189">        return new Geometry(getGeometry(getPtr()));</span>
+<span class="fc" id="L183">        return new Geometry(getGeometry(getPtr()));</span>
     }
 
     public boolean isDateTime() {
-<span class="fc" id="L193">        return isDateTime(getPtr());</span>
+<span class="fc" id="L187">        return isDateTime(getPtr());</span>
     }
 
     public ZonedDateTime getDateTime() {
-<span class="fc" id="L197">        final long[] timestamps = getDateTime(getPtr());</span>
-<span class="fc" id="L198">        final Instant instant = Instant.ofEpochSecond(timestamps[0], timestamps[1]);</span>
-<span class="fc" id="L199">        return ZonedDateTime.ofInstant(instant, ZoneId.of(&quot;UTC&quot;));</span>
+<span class="fc" id="L191">        final long[] timestamps = getDateTime(getPtr());</span>
+<span class="fc" id="L192">        final Instant instant = Instant.ofEpochSecond(timestamps[0], timestamps[1]);</span>
+<span class="fc" id="L193">        return ZonedDateTime.ofInstant(instant, ZoneId.of(&quot;UTC&quot;));</span>
     }
 
     public boolean isDuration() {
-<span class="fc" id="L203">        return isDuration(getPtr());</span>
+<span class="fc" id="L197">        return isDuration(getPtr());</span>
     }
 
     public Duration getDuration() {
-<span class="fc" id="L207">        final long durationMillis = getDuration(getPtr());</span>
-<span class="fc" id="L208">        return Duration.ofMillis(durationMillis);</span>
+<span class="fc" id="L201">        final long durationMillis = getDuration(getPtr());</span>
+<span class="fc" id="L202">        return Duration.ofMillis(durationMillis);</span>
     }
 
     public &lt;T&gt; T get(Class&lt;T&gt; type) {
-<span class="fc" id="L212">        return new ValueClassConverter&lt;&gt;(type).convert(this);</span>
+<span class="fc" id="L206">        return new ValueClassConverter&lt;&gt;(type).convert(this);</span>
     }
 }
 

@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Entry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">Entry.java</span></div><h1>Entry.java</h1><pre class="source lang-java linenums">package com.surrealdb;
 
-/**
- * Entry represents a key-value pair entry in a native data structure.
- * &lt;p&gt;
- * Entry provides methods to retrieve the key and value associated with the entry.
- */
 public class Entry extends Native {
 
     Entry(long ptr) {
-<span class="fc" id="L11">        super(ptr);</span>
-<span class="fc" id="L12">    }</span>
+<span class="fc" id="L6">        super(ptr);</span>
+<span class="fc" id="L7">    }</span>
 
     private static native String getKey(long ptr);
 
@@ -28,11 +23,11 @@ public class Entry extends Native {
     final native boolean deleteInstance(long ptr);
 
     public String getKey() {
-<span class="fc" id="L31">        return getKey(getPtr());</span>
+<span class="fc" id="L26">        return getKey(getPtr());</span>
     }
 
     public Value getValue() {
-<span class="fc" id="L35">        return new Value(getValue(getPtr()));</span>
+<span class="fc" id="L30">        return new Value(getValue(getPtr()));</span>
     }
 
 }

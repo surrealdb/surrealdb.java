@@ -2,15 +2,11 @@
 
 import java.util.Iterator;
 
-/**
- * The Object class implements the Iterable interface for Entry objects.
- * It provides methods for object manipulation and interaction.
- */
 public class Object extends Native implements Iterable&lt;Entry&gt; {
 
     Object(long ptr) {
-<span class="fc" id="L12">        super(ptr);</span>
-<span class="fc" id="L13">    }</span>
+<span class="fc" id="L8">        super(ptr);</span>
+<span class="fc" id="L9">    }</span>
 
     private static native String toPrettyString(long ptr);
 
@@ -35,24 +31,24 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
     final native boolean deleteInstance(long ptr);
 
     final public String toPrettyString() {
-<span class="nc" id="L38">        return toPrettyString(getPtr());</span>
+<span class="nc" id="L34">        return toPrettyString(getPtr());</span>
     }
 
     final public Value get(String key) {
-<span class="fc" id="L42">        return new Value(get(getPtr(), key));</span>
+<span class="fc" id="L38">        return new Value(get(getPtr(), key));</span>
     }
 
     final public int len() {
-<span class="fc" id="L46">        return len(getPtr());</span>
+<span class="fc" id="L42">        return len(getPtr());</span>
     }
 
     @Override
     final public Iterator&lt;Entry&gt; iterator() {
-<span class="fc" id="L51">        return new EntryIterator(iterator(getPtr()));</span>
+<span class="fc" id="L47">        return new EntryIterator(iterator(getPtr()));</span>
     }
 
     final public Iterator&lt;Entry&gt; synchronizedIterator() {
-<span class="fc" id="L55">        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
+<span class="fc" id="L51">        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
     }
 
 }

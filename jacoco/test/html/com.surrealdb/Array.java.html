@@ -2,17 +2,12 @@
 
 import java.util.Iterator;
 
-/**
- * The Array class represents a native array structure and provides methods to
- * interact with and retrieve values from the array.
- * It implements the Iterable interface for Value type.
- */
 public class Array extends Native implements Iterable&lt;Value&gt; {
 
 
     Array(long ptr) {
-<span class="fc" id="L14">        super(ptr);</span>
-<span class="fc" id="L15">    }</span>
+<span class="fc" id="L9">        super(ptr);</span>
+<span class="fc" id="L10">    }</span>
 
     private static native String toPrettyString(long ptr);
 
@@ -34,15 +29,15 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
     final native boolean equals(long ptr1, long ptr2);
 
     final public String toPrettyString() {
-<span class="fc" id="L37">        return toPrettyString(getPtr());</span>
+<span class="fc" id="L32">        return toPrettyString(getPtr());</span>
     }
 
     final public Value get(int idx) {
-<span class="fc" id="L41">        return new Value(get(getPtr(), idx));</span>
+<span class="fc" id="L36">        return new Value(get(getPtr(), idx));</span>
     }
 
     final public int len() {
-<span class="fc" id="L45">        return len(getPtr());</span>
+<span class="fc" id="L40">        return len(getPtr());</span>
     }
 
     @Override
@@ -50,19 +45,19 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 
     @Override
     final public Iterator&lt;Value&gt; iterator() {
-<span class="fc" id="L53">        return new ValueIterator(iterator(getPtr()));</span>
+<span class="fc" id="L48">        return new ValueIterator(iterator(getPtr()));</span>
     }
 
     final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
-<span class="fc" id="L57">        return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
+<span class="fc" id="L52">        return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
     }
 
     final public Iterator&lt;Value&gt; synchronizedIterator() {
-<span class="fc" id="L61">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
+<span class="fc" id="L56">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
     }
 
     final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
-<span class="nc" id="L65">        return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
+<span class="nc" id="L60">        return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
     }
 }
 
