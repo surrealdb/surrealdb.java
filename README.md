@@ -90,6 +90,7 @@ Maven:
 package org.example;
 
 import com.surrealdb.Surreal;
+import com.surrealdb.RecordId;
 
 import java.util.Iterator;
 
@@ -113,7 +114,7 @@ public class Example {
     }
 
     static class Person {
-        String id;
+        RecordId id;
         String title;
         String firstName;
         String lastName;

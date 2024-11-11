@@ -22,6 +22,19 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_newThingStringId<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    id: JString<'local>,
+) -> jlong {
+    let table = get_rust_string!(&mut env, table, || 0);
+    let id = get_rust_string!(&mut env, id, || 0);
+    let value = Value::Thing(Thing::from((table, Id::String(id))));
+    JniTypes::new_value(value.into())
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_RecordId_getTable<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
