@@ -90,6 +90,20 @@ public class CreateTests {
     }
 
     @Test
+    void createThingValueWithStringId() {
+        try (final Surreal surreal = new Surreal()) {
+            // Starts an embedded in memory instance
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            // We create the records
+            final Value created = surreal.create(new RecordId("person", "p1"), tobie);
+            // We check that the records are matching
+            final Person person = created.get(Person.class);
+            person.id = null;
+            assertEquals(tobie, person);
+        }
+    }
+
+    @Test
     void createThingObject() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance

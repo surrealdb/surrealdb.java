@@ -1,6 +1,42 @@
-# surrealdb
+<br>
 
-The official SurrealDB library for Java.
+<p align="center">
+    <img width=120 src="https://raw.githubusercontent.com/surrealdb/icons/main/surreal.svg" />
+    &nbsp;
+    <img width=120 src="https://raw.githubusercontent.com/surrealdb/icons/main/java.svg" />
+</p>
+
+<h3 align="center">The official SurrealDB SDK for Java</h3>
+
+<br>
+
+<p align="center">
+    <a href="https://github.com/surrealdb/surrealdb.java"><img src="https://img.shields.io/badge/status-beta-ff00bb.svg?style=flat-square"></a>
+    &nbsp;
+    <a href="https://surrealdb.com/docs/integration/libraries/java"><img src="https://img.shields.io/badge/docs-view-44cc11.svg?style=flat-square"></a>
+    &nbsp;
+    <a href="https://pkg.go.dev/github.com/surrealdb/surrealdb.java"><img src="https://img.shields.io/maven-central/v/com.surrealdb/surrealdb?style=flat-square&label=maven&color=f58219"></a>
+    &nbsp;
+    <a href="https://github.com/surrealdb/surrealdb.java"><img src="https://img.shields.io/badge/java-8+-f58219.svg?style=flat-square"></a>
+</p>
+
+<p align="center">
+    <a href="https://surrealdb.com/discord"><img src="https://img.shields.io/discord/902568124350599239?label=discord&style=flat-square&color=5a66f6"></a>
+    &nbsp;
+    <a href="https://twitter.com/surrealdb"><img src="https://img.shields.io/badge/twitter-follow_us-1d9bf0.svg?style=flat-square"></a>
+    &nbsp;
+    <a href="https://www.linkedin.com/company/surrealdb/"><img src="https://img.shields.io/badge/linkedin-connect_with_us-0a66c2.svg?style=flat-square"></a>
+    &nbsp;
+    <a href="https://www.youtube.com/channel/UCjf2teVEuYVvvVC-gFZNq6w"><img src="https://img.shields.io/badge/youtube-subscribe-fc1c1c.svg?style=flat-square"></a>
+</p>
+
+# surrealdb.java
+
+The official SurrealDB SDK for Java.
+
+## Documentation
+
+View the SDK documentation [here](https://surrealdb.com/docs/integration/libraries/java).
 
 ### Features
 
@@ -19,11 +55,11 @@ The official SurrealDB library for Java.
     - Android (Linux INTEL) x86_64
 - Zero dependencies
 
-### Minimum Requirements
+## Minimum requirements
 
 - Java 8
 
-### Installation
+## How to install
 
 Gradle:
 
@@ -48,12 +84,13 @@ Maven:
 </dependency>
 ```
 
-### Quick Start
+## Getting started
 
 ```java
 package org.example;
 
 import com.surrealdb.Surreal;
+import com.surrealdb.RecordId;
 
 import java.util.Iterator;
 
@@ -77,7 +114,7 @@ public class Example {
     }
 
     static class Person {
-        String id;
+        RecordId id;
         String title;
         String firstName;
         String lastName;
