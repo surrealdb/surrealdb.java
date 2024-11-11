@@ -166,11 +166,11 @@ public class Surreal extends Native implements AutoCloseable {
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/use">use statement documentation</a>.
      * <p>
      *
-     * @param ns the database name to use
+     * @param db the database name to use
      * @return the current instance of the {@code Surreal} class
      */
-    public Surreal useDb(String ns) {
-        useDb(getPtr(), ns);
+    public Surreal useDb(String db) {
+        useDb(getPtr(), db);
         return this;
     }
 
