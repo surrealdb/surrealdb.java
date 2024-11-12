@@ -8,6 +8,8 @@ public class Response extends Native {
         super(ptr);
     }
 
+    private static native int size(long ptr);
+
     @Override
     final native boolean deleteInstance(long ptr);
 
@@ -15,6 +17,14 @@ public class Response extends Native {
 
     public Value take(int num) {
         return new Value(take(getPtr(), num));
+    }
+
+    public <T> T take(Class<T> type, int num) {
+        return take(num).get(type);
+    }
+
+    public int size() {
+        return size(getPtr());
     }
 
     @Override
