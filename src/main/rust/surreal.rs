@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::error::SurrealError;
 use crate::{check_query_result, check_value_table, convert_up_type, get_long_array, get_rust_string, get_rust_string_array, get_surreal_instance, get_value_instance, get_value_mut_instance, new_jlong_array, new_string, parse_value, release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter, return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME};
-use jni::objects::{JClass, JLongArray, JObjectArray, JString};
+use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString};
 use jni::sys::{jboolean, jint, jlong, jlongArray, jstring};
 use jni::JNIEnv;
 use parking_lot::Mutex;
@@ -192,6 +192,26 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     ptr: jlong,
     query: JString<'local>,
 ) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    // Retrieve the query
+    let query: String = match env.get_string(&query) {
+        Ok(s) => s.into(),
+        Err(_) => return 0,
+    };
+    // Execute the query
+    let res = surrealdb_query::<()>(&surreal, &query, None);
+    // Check the result
+    let res = check_query_result!(&mut env, res, || 0);
+    // Build a response instance
+    JniTypes::new_response(Arc::new(Mutex::new(res)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>, ptr: jlong,
+    query: JString<'local>, _params: JObject) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, ptr, || 0);
     // Retrieve the query
