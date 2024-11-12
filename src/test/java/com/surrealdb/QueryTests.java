@@ -344,4 +344,19 @@ public class QueryTests {
             }
         }
     }
+
+    @Test
+    void queryResponseSize() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "RETURN 'one'; RETURN 'two'; RETURN 'three'";
+                final Response response = surreal.query(sql);
+                {
+                    final int size = response.size();
+                    assertEquals(size, 3);
+                }
+            }
+        }
+    }
 }
