@@ -4,10 +4,7 @@ import com.surrealdb.pojos.Person;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,6 +58,25 @@ public class QueryTests {
                         final Value noneRow = selectArray.get(1);
                         assertTrue(noneRow.isNone());
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    void queryBind() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "CREATE person:1 SET name = $name;";
+                final Map<String, ?> params = Collections.singletonMap("name", "Tobie");
+                final Response response = surreal.queryBind(sql, params);
+                { // Check CREATE result
+                    final Value create = response.take(0);
+                    assertTrue(create.isArray());
+                    final Array createArray = create.getArray();
+                    assertEquals(createArray.len(), 1);
+                    assertEquals("[{ id: person:1, name: 'Tobie' }]", createArray.toString());
                 }
             }
         }
