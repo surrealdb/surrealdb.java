@@ -17,6 +17,10 @@ public class Response extends Native {
         return new Value(take(getPtr(), num));
     }
 
+    public <T> T take(Class<T> type, int num) {
+        return take(num).get(type);
+    }
+
     @Override
     final String toString(long ptr) {
         return getClass().getName() + "[ptr=" + ptr + "]";

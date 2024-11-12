@@ -329,4 +329,19 @@ public class QueryTests {
             }
         }
     }
+
+    @Test
+    void queryClass() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "CREATE ONLY person:1 SET name = 'Tobie';";
+                final Response response = surreal.query(sql);
+                {
+                    final Person create = response.take(Person.class, 0);
+                    assertEquals(create.name, "Tobie");
+                }
+            }
+        }
+    }
 }
