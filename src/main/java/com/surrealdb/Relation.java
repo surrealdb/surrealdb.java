@@ -3,6 +3,10 @@ package com.surrealdb;
 import java.lang.Object;
 import java.util.Objects;
 
+/**
+ * The Relation class represents a relationship between two records within a database.
+ * It holds the identifiers for the relationship itself and the two records it connects.
+ */
 public class Relation {
 
     public RecordId id;

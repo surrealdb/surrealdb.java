@@ -2,6 +2,10 @@ package com.surrealdb;
 
 import java.util.Iterator;
 
+/**
+ * The Object class implements the Iterable interface for Entry objects.
+ * It provides methods for object manipulation and interaction.
+ */
 public class Object extends Native implements Iterable<Entry> {
 
     Object(long ptr) {

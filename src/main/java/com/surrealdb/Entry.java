@@ -1,5 +1,10 @@
 package com.surrealdb;
 
+/**
+ * Entry represents a key-value pair entry in a native data structure.
+ * <p>
+ * Entry provides methods to retrieve the key and value associated with the entry.
+ */
 public class Entry extends Native {
 
     Entry(long ptr) {

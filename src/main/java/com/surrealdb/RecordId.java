@@ -1,5 +1,12 @@
 package com.surrealdb;
 
+/**
+ * The RecordId class represents a unique identifier for a record in a database.
+ * <p>
+ * It provides methods to create and manipulate record IDs using either a table
+ * name and a long ID or a table name and a string ID. Additionally, it allows
+ * retrieval of the table associated with the ID and the ID itself.
+ */
 public class RecordId extends Native {
 
 

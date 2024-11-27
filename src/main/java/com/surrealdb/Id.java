@@ -1,5 +1,8 @@
 package com.surrealdb;
 
+/**
+ * The Id class represents a unique identifier that can be either a long value or a string.
+ */
 public class Id extends Native {
 
     Id(long ptr) {
