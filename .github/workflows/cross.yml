@@ -280,7 +280,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb
-          path: build/libs/surrealdb-0.2.1-SNAPSHOT.jar
+          path: build/libs/surrealdb-0.2.2-SNAPSHOT.jar
 
       - name: Linux Integration Test
         run: ./gradlew -i integrationTest
@@ -353,7 +353,7 @@ jobs:
 
       - name: Publish release package
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'release' && github.event.action == 'created'
+#        if: github.event_name == 'release' && github.event.action == 'created'
         with:
           name: "Release ${{ github.ref_name }}"
           files: |
