@@ -3,11 +3,16 @@
 import java.util.Iterator;
 import java.util.Objects;
 
+/**
+ * EntryIterator is a specialized iterator for traversing entries.
+ * This class implements the Java Iterator interface to provide a seamless way to
+ * iterate over Entry objects.
+ */
 public class EntryIterator extends Native implements Iterator&lt;Entry&gt; {
 
     EntryIterator(long ptr) {
-<span class="fc" id="L9">        super(ptr);</span>
-<span class="fc" id="L10">    }</span>
+<span class="fc" id="L14">        super(ptr);</span>
+<span class="fc" id="L15">    }</span>
 
     private static native boolean hasNext(long ptr);
 
@@ -15,17 +20,17 @@ public class EntryIterator extends Native implements Iterator&lt;Entry&gt; {
 
     @Override
     final String toString(long ptr) {
-<span class="nc" id="L18">        return &quot;EntryIterator[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L23">        return &quot;EntryIterator[ptr=&quot; + ptr + &quot;]&quot;;</span>
     }
 
     @Override
     final int hashCode(long ptr) {
-<span class="nc" id="L23">        return Objects.hashCode(ptr);</span>
+<span class="nc" id="L28">        return Objects.hashCode(ptr);</span>
     }
 
     @Override
     final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L28" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
     }
 
     @Override
@@ -33,12 +38,12 @@ public class EntryIterator extends Native implements Iterator&lt;Entry&gt; {
 
     @Override
     public boolean hasNext() {
-<span class="fc" id="L36">        return hasNext(getPtr());</span>
+<span class="fc" id="L41">        return hasNext(getPtr());</span>
     }
 
     @Override
     public Entry next() {
-<span class="fc" id="L41">        return new Entry(next(getPtr()));</span>
+<span class="fc" id="L46">        return new Entry(next(getPtr()));</span>
     }
 
 
