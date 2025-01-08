@@ -33,3 +33,13 @@ pub extern "system" fn Java_com_surrealdb_Response_take<'local>(
     };
     create_instance(Arc::new(value), JniTypes::Value)
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Response_size<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jint {
+    let response = get_response_instance!(&mut env, ptr, || 0);
+    return response.lock().num_statements() as jint;
+}
