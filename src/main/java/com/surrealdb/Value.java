@@ -7,6 +7,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+/**
+ * The Value class represents a general-purpose wrapper for different types of values.
+ * It provides various methods to
+ * interact with and retrieve values such as arrays, objects, strings,
+ * numbers, and more.
+ */
 public class Value extends Native {
 
     Value(long ptr) {

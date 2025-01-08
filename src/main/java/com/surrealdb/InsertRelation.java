@@ -3,6 +3,19 @@ package com.surrealdb;
 import java.lang.Object;
 import java.util.Objects;
 
+/**
+ * The InsertRelation class represents a relationship between entities in a graph database.
+ * It is primarily used to insert relations into a table using SurrealDB.
+ * <p>
+ * This class encapsulates the identifiers for the relation, including the IDs for the entities that
+ * participate in the relationship. Specifically, it includes the following fields:
+ * <ul>
+ * <li>id: The unique identifier for the relation</li>
+ * <li>in: The RecordId of the incoming node in the relation</li>
+ * <li>out: The RecordId of the outgoing node in the relation</li>
+ * </ul>
+ * <p>
+ */
 public class InsertRelation {
 
     public Id id;

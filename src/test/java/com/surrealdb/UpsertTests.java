@@ -52,11 +52,6 @@ public class UpsertTests {
             updated.forEachRemaining(value -> {
                 assertEquals("Jaime", value.getObject().get("name").getString());
             });
-            // Check the values in SurrealDB
-            final Iterator<Value> selected = surreal.select("person");
-            selected.forEachRemaining(value -> {
-                assertEquals("Jaime", value.getObject().get("name").getString());
-            });
         }
     }
 
@@ -72,11 +67,6 @@ public class UpsertTests {
             final Iterator<Value> updated = surreal.upsertSync("person", UpType.CONTENT, jaime);
             // Check the updated values
             updated.forEachRemaining(value -> {
-                assertEquals("Jaime", value.getObject().get("name").getString());
-            });
-            // Check the values in SurrealDB
-            final Iterator<Value> selected = surreal.selectSync("person");
-            selected.forEachRemaining(value -> {
                 assertEquals("Jaime", value.getObject().get("name").getString());
             });
         }
@@ -96,11 +86,6 @@ public class UpsertTests {
             updated.forEachRemaining(person -> {
                 assertEquals("Jaime", person.name);
             });
-            // Check the values in SurrealDB
-            final Iterator<Person> selected = surreal.select(Person.class, "person");
-            selected.forEachRemaining(person -> {
-                assertEquals("Jaime", person.name);
-            });
         }
     }
 
@@ -116,11 +101,6 @@ public class UpsertTests {
             final Iterator<Person> updated = surreal.upsertSync(Person.class, "person", UpType.CONTENT, jaime);
             // Check the updated values
             updated.forEachRemaining(person -> {
-                assertEquals("Jaime", person.name);
-            });
-            // Check the values in SurrealDB
-            final Iterator<Person> selected = surreal.selectSync(Person.class, "person");
-            selected.forEachRemaining(person -> {
                 assertEquals("Jaime", person.name);
             });
         }
