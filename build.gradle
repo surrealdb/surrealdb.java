@@ -61,10 +61,6 @@ jacocoTestCoverageVerification {
     }
 }
 
-javadoc {
-    destinationDir = file("build/reports/javadoc")
-}
-
 tasks.register('javadocJar', Jar) {
     archiveClassifier = 'javadoc'
     from javadoc
@@ -84,6 +80,17 @@ tasks.register('createCombinedReport') {
     dependsOn javadoc
 
     doLast {
+        // Copy the javadoc
+        def javadocSource = file("build/docs/javadoc")
+        def javadocDestination = file("build/reports/javadoc")
+        // Ensure destination exists and copy
+        delete javadocDestination  // Clean old docs if present
+        mkdir javadocDestination
+        copy {
+            from javadocSource
+            into javadocDestination
+        }
+
         def indexFile = file("build/reports/index.html")
         indexFile.text = """
             <!DOCTYPE html>
