@@ -322,7 +322,7 @@ jobs:
     needs:
       - aggregated-jar
       - integration-tests
-#    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -353,7 +353,7 @@ jobs:
 
       - name: Publish release package
         uses: softprops/action-gh-release@v2
-#        if: github.event_name == 'release' && github.event.action == 'created'
+        if: github.event_name == 'release' && github.event.action == 'created'
         with:
           name: "Release ${{ github.ref_name }}"
           files: |

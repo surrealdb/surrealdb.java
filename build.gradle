@@ -16,6 +16,8 @@ repositories {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 sourceSets {
@@ -59,16 +61,6 @@ jacocoTestCoverageVerification {
             }
         }
     }
-}
-
-tasks.register('javadocJar', Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
-
-tasks.register('sourcesJar', Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
 }
 
 artifacts {
@@ -162,10 +154,7 @@ publishing {
             artifactId = project.rootProject.name
             version = project.version
 
-            artifact(javadocJar)
-            artifact(sourcesJar)
-            artifact("build/libs/${project.rootProject.name}-${project.version}.jar")
-
+            from components.java
 
             pom {
                 name = 'SurrealDB Driver'
