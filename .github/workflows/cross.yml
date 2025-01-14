@@ -322,7 +322,7 @@ jobs:
     needs:
       - aggregated-jar
       - integration-tests
-#    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read

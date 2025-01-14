@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.1] - 2025-01-XX
+## [0.2.1] - 2025-01-14
 
 - Upgrade to SurrealDB 2.1.4
 - Fixed UnsatisfiedLinkError in public RecordId(String table, String id) [#93](https://github.com/surrealdb/surrealdb.java/pull/93)
