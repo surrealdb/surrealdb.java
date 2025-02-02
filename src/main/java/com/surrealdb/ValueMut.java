@@ -5,7 +5,7 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-class ValueMut extends Native {
+public class ValueMut extends Native {
 
     private ValueMut(long ptr) {
         super(ptr);

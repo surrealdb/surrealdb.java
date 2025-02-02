@@ -1,6 +1,6 @@
 package com.surrealdb;
 
-class EntryMut extends Native {
+public class EntryMut extends Native {
 
     private EntryMut(long ptr) {
         super(ptr);
