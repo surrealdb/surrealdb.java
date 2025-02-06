@@ -3,7 +3,7 @@ use std::ptr::null_mut;
 use std::sync::Arc;
 
 use jni::objects::{AsJArrayRaw, JClass};
-use jni::sys::{jboolean, jbyte, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
+use jni::sys::{jboolean, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
 use jni::JNIEnv;
 use surrealdb::sql::{Number, Value};
 
@@ -110,17 +110,10 @@ pub extern "system" fn Java_com_surrealdb_Value_getBytes<'local>(
 ) -> jbyteArray {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Bytes(bytes) = value.as_ref() {
-        let array = match env.new_byte_array(bytes.len() as i32) {
-            Ok(arr) => arr,
-            Err(_) => return null_mut(),
-        };
-        let jbytes: Vec<jbyte> = bytes.iter().map(|b| b.clone() as jbyte).collect();
-
-        match env.set_byte_array_region(&array, 0, &jbytes) {
-            Ok(_) => (),
-            Err(_) => return null_mut(),
+        match env.byte_array_from_slice(bytes) {
+            Ok(a) => a.as_jarray_raw(),
+            Err(_) => null_mut(),
         }
-        array.as_jarray_raw()
     } else {
         SurrealError::NullPointerException("Bytes").exception(&mut env, null_mut)
     }
@@ -409,5 +402,5 @@ pub extern "system" fn Java_com_surrealdb_Value_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    return v1.equal(v2.as_ref()) as jboolean;
+    v1.equal(v2.as_ref()) as jboolean
 }
