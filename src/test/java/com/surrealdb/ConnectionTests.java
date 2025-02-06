@@ -41,7 +41,7 @@ public class ConnectionTests {
                 final Value value = response.take(0);
                 assertTrue(value.isObject());
                 final Object object = value.getObject();
-                assertEquals(object.len(), 4);
+                assertEquals(object.len(), 5);
                 {
                     final Value v = object.get("accesses");
                     assertTrue(v.isObject());
@@ -64,6 +64,10 @@ public class ConnectionTests {
                     final Value v = object.get("nodes");
                     assertTrue(v.isObject());
                     assertEquals(v.getObject().len(), 1);
+                }
+                {
+                    final Value v = object.get("system");
+                    assertTrue(v.isObject());
                 }
             }
         }
