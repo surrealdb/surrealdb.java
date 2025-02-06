@@ -359,4 +359,19 @@ public class QueryTests {
             }
         }
     }
+
+    @Test
+    void queryBytes() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "return <bytes>\"hello world\"";
+                final Response response = surreal.query(sql);
+                {
+                    final byte[] bytes = response.take(0).getBytes();
+                    assertArrayEquals("hello world".getBytes(), bytes);
+                }
+            }
+        }
+    }
 }

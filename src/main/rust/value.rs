@@ -2,8 +2,8 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::objects::JClass;
-use jni::sys::{jboolean, jdouble, jint, jlong, jlongArray, jstring};
+use jni::objects::{AsJArrayRaw, JClass};
+use jni::sys::{jboolean, jbyte, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
 use jni::JNIEnv;
 use surrealdb::sql::{Number, Value};
 
@@ -100,6 +100,30 @@ pub extern "system" fn Java_com_surrealdb_Value_isBytes<'local>(
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
     value.is_bytes() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getBytes<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jbyteArray {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Bytes(bytes) = value.as_ref() {
+        let array = match env.new_byte_array(bytes.len() as i32) {
+            Ok(arr) => arr,
+            Err(_) => return null_mut(),
+        };
+        let jbytes: Vec<jbyte> = bytes.iter().map(|b| b.clone() as jbyte).collect();
+
+        match env.set_byte_array_region(&array, 0, &jbytes) {
+            Ok(_) => (),
+            Err(_) => return null_mut(),
+        }
+        array.as_jarray_raw()
+    } else {
+        SurrealError::NullPointerException("Bytes").exception(&mut env, null_mut)
+    }
 }
 
 #[no_mangle]
