@@ -195,10 +195,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, ptr, || 0);
     // Retrieve the query
-    let query: String = match env.get_string(&query) {
-        Ok(s) => s.into(),
-        Err(_) => return 0,
-    };
+    let query = get_rust_string!(&mut env,&query, || 0);
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -219,14 +216,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryWithValue<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, ptr, || 0);
     // Retrieve the query
-    let query: String = match env.get_string(&query) {
-        Ok(s) => s.into(),
-        Err(_) => return 0,
-    };
-    let keys = match java_string_array_to_rust(&mut env, params_keys) {
-        Ok(i) => i,
-        Err(_) => return 0,
-    };
+    let query = get_rust_string!(&mut env,&query, || 0);
+    let keys = get_rust_string_array!(&mut env, params_keys, || 0);
     let value_ptrs = get_long_array!(&mut env, &params_values, || 0);
     let mut parems_map = BTreeMap::<String,&Value>::new();
     for (key,value_ptr) in keys.into_iter().zip(value_ptrs) {
@@ -238,24 +229,6 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryWithValue<'local>(
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     JniTypes::new_response(Arc::new(Mutex::new(res)))
-}
-
-fn java_string_array_to_rust(env: &mut JNIEnv, array: JObjectArray) -> Result<Vec<String>,jni::errors::Error> {
-    let length = env.get_array_length(&array)?;
-    let mut vec = Vec::with_capacity(length as usize);
-
-    for i in 0..length {
-        let element = env.get_object_array_element(&array, i)?;
-        if element.is_null() {
-            vec.push(String::from("null"));
-        } else {
-            let j_string: JString = element.into();
-            let rust_str = env.get_string(&j_string)?.into();
-            vec.push(rust_str);
-        }
-    }
-
-    Ok(vec)
 }
 
 fn surrealdb_query<T>(
