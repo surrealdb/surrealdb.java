@@ -41,9 +41,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long query(long ptr, String sql);
 
-    private static native long queryBind(long ptr, String sql, Map<String, ?> params);
-
-    private static native long queryWithValue(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+    private static native long queryBind(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
     private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
 
@@ -200,16 +198,17 @@ public class Surreal extends Native implements AutoCloseable {
      * @return a Response object containing the results of the query
      */
     public Response queryBind(String sql, Map<String, ?> params) {
-        return new Response(queryBind(getPtr(), sql, params));
-    }
-
-    public Response queryWithValue(String sql, Map<String, ValueMut> params) {
-        String[] keys = params.keySet().toArray(new String[0]);
+        Map<String, ValueMut> valueMutMap = params.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry ->ValueBuilder.convert(entry.getValue())
+            ));
+        String[] keys = valueMutMap.keySet().toArray(new String[0]);
         long[] values = new long[keys.length];
         for (int i = 0; i < keys.length; i++) {
-            values[i] = params.get(keys[i]).getPtr();
+            values[i] = valueMutMap.get(keys[i]).getPtr();
         }
-        return new Response(queryWithValue(getPtr(), sql,keys, values ));
+        return new Response(queryBind(getPtr(), sql,keys, values ));
     }
 
     /**
