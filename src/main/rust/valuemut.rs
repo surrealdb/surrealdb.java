@@ -17,6 +17,22 @@ use crate::{
 };
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newNone<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+) -> jlong {
+    create_instance(Value::None,JniTypes::ValueMut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newNull<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+) -> jlong {
+    create_instance(Value::Null,JniTypes::ValueMut)
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
