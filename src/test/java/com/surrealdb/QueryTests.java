@@ -393,4 +393,26 @@ public class QueryTests {
             }
         }
     }
+
+    @Test
+    void queryWithValueMut() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final HashMap<String,ValueMut> map = new HashMap<>();
+                map.put("null", ValueMut.createNull());
+                map.put("none", ValueMut.createNone());
+                final String sql = "RETURN $null;RETURN $none";
+                final Response response = surreal.queryBind(sql,map);
+                {
+                    final int size = response.size();
+                    assertEquals(2, size);
+                    final Value res1 = response.take(0);
+                    assertTrue(res1.isNull());
+                    final Value res2 = response.take(1);
+                    assertTrue(res2.isNone());
+                }
+            }
+        }
+    }
 }

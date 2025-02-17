@@ -19,6 +19,9 @@ class ValueBuilder {
         if (object == null) {
             return null;
         }
+        if (object instanceof ValueMut) {
+            return (ValueMut) object;
+        }
         if (object instanceof String) {
             return ValueMut.createString((String) object);
         }
