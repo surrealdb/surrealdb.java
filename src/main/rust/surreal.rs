@@ -195,13 +195,37 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, ptr, || 0);
     // Retrieve the query
-    let query: String = match env.get_string(&query) {
-        Ok(s) => s.into(),
-        Err(_) => return 0,
-    };
+    let query = get_rust_string!(&mut env,&query, || 0);
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
+    let res = check_query_result!(&mut env, res, || 0);
+    // Build a response instance
+    JniTypes::new_response(Arc::new(Mutex::new(res)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    query: JString<'local>,
+    params_keys: JObjectArray<'local>,
+    params_values: JLongArray<'local>,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    // Retrieve the query
+    let query = get_rust_string!(&mut env,&query, || 0);
+    let keys = get_rust_string_array!(&mut env, params_keys, || 0);
+    let value_ptrs = get_long_array!(&mut env, &params_values, || 0);
+    let mut params_map = BTreeMap::<String,&Value>::new();
+    for (key,value_ptr) in keys.into_iter().zip(value_ptrs) {
+        let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+        params_map.insert(key, value);
+    }
+    
+    let res = surrealdb_query::<&Value>(&surreal, &query, Some(params_map));
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     JniTypes::new_response(Arc::new(Mutex::new(res)))

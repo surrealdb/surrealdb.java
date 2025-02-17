@@ -4,10 +4,7 @@ import com.surrealdb.pojos.Person;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -370,6 +367,28 @@ public class QueryTests {
                 {
                     final byte[] bytes = response.take(0).getBytes();
                     assertArrayEquals("hello world".getBytes(), bytes);
+                }
+            }
+        }
+    }
+
+    @Test
+    void queryBind() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final HashMap<String,String> map = new HashMap<>();
+                map.put("value", "hello");
+                map.put("value2", "world");
+                final String sql = "RETURN $value;RETURN $value2";
+                final Response response = surreal.queryBind(sql,map);
+                {
+                    final int size = response.size();
+                    assertEquals(2, size);
+                    final String res1 = response.take(0).getString();
+                    assertEquals("hello", res1);
+                    final String res2 = response.take(1).getString();
+                    assertEquals("world", res2);
                 }
             }
         }
