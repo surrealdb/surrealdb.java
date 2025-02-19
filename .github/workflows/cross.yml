@@ -280,7 +280,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb
-          path: build/libs/surrealdb-0.2.2-SNAPSHOT.jar
+          path: build/libs/surrealdb-1.0.0-SNAPSHOT.jar
 
       - name: Linux Integration Test
         run: ./gradlew -i integrationTest
