@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb"
-version = "0.2.2"
+version = "1.0.0"
 authors = ["Emmanuel Keller <emmanuel.keller@surrealdb.com>"]
 edition = "2021"
 
@@ -13,7 +13,7 @@ opt-level = 3
 
 [dependencies]
 jni = "0.21.1"
-surrealdb = { git = "https://github.com/surrealdb/surrealdb.git" }
+surrealdb = "2.2.1"
 serde = "1.0.217"
 rust_decimal = "1.36.0"
 tokio = "1.43.0"
