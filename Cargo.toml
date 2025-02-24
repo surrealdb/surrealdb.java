@@ -23,9 +23,8 @@ chrono = "0.4.39"
 dashmap = "6.1.0"
 
 [features]
-default = ["rustls", "native-tls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "http", "jwks"]
+default = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "http", "jwks"]
 rustls = ["surrealdb/rustls"]
-native-tls = ["surrealdb/native-tls"]
 jwks = ["surrealdb/jwks"]
 http = ["surrealdb/http"]
 kv-mem = ["surrealdb/kv-mem"]
