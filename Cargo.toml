@@ -23,6 +23,8 @@ chrono = "0.4.39"
 dashmap = "6.1.0"
 
 [features]
-default = ["kv-mem", "kv-surrealkv"]
+default = ["kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http"]
 kv-mem = ["surrealdb/kv-mem"]
 kv-surrealkv = ["surrealdb/kv-surrealkv"]
+protocol-ws = ["surrealdb/protocol-ws"]
+protocol-http = ["surrealdb/protocol-http"]
