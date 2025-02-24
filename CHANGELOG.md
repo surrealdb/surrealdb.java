@@ -3,6 +3,7 @@
 ## [1.0.0] - 2025-02-XX
 
 - Upgrade to SurrealDB SDK 2.2.1
+- Enable remote HTTP connections [#110](https://github.com/surrealdb/surrealdb.java/pull/110)
 - Implements queryBind [#106](https://github.com/surrealdb/surrealdb.java/pull/106) [#90](https://github.com/surrealdb/surrealdb.java/issues/90)
 - Implements getBytes [#103](https://github.com/surrealdb/surrealdb.java/pull/103)
 

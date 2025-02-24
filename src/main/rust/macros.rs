@@ -326,8 +326,11 @@ macro_rules! check_value_table {
             surrealdb::sql::Value::Strand(_) => $val,
             surrealdb::sql::Value::Idiom(i) if i.len() == 1 => $val,
             _ => {
-                return $crate::SurrealError::SurrealDBJni(format!("The expression is not a table: {}", $val))
-                    .exception($env, $default_fn);
+                return $crate::SurrealError::SurrealDBJni(format!(
+                    "The expression is not a table: {}",
+                    $val
+                ))
+                .exception($env, $default_fn);
             }
         }
     };
