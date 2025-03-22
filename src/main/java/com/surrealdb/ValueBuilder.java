@@ -6,10 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -60,6 +57,17 @@ class ValueBuilder {
             // Create a ValueMut for each element of the collection
             final List<ValueMut> values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());
             return ValueMut.createArray(values);
+        }
+        if (object instanceof Map) {
+            final Map<?, ?> map = (Map<?, ?>) object;
+            final List<EntryMut> entries = new ArrayList<>(map.size());
+            // Create a ValueMut for each value of the map
+            for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                final String key = entry.getKey().toString();
+                final ValueMut value = convert(entry.getValue());
+                entries.add(EntryMut.newEntry(key, value));
+            }
+            return ValueMut.createObject(entries);
         }
         if (object instanceof Optional) {
             final Optional<?> optional = (Optional<?>) object;
