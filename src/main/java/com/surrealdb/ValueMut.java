@@ -33,9 +33,13 @@ public class ValueMut extends Native {
 
     private static native long newThing(long ptr);
 
-    private static native long newArray(long[] ptrs);
+    private static native long newArray(long ptr);
 
-    private static native long newObject(long[] ptrs);
+    private static native long newArrayOf(long[] ptrs);
+
+    private static native long newObject(long ptr);
+
+    private static native long newObjectOf(long[] ptrs);
 
     public static ValueMut createNone() {
         return new ValueMut(newNone());
@@ -81,6 +85,10 @@ public class ValueMut extends Native {
         return new ValueMut(newThing(recordId.getPtr()));
     }
 
+    public static ValueMut createArray(Array array) {
+        return new ValueMut(newArray(array.getPtr()));
+    }
+
     public static ValueMut createArray(List<ValueMut> values) {
         final long[] ptrs = new long[values.size()];
         int idx = 0;
@@ -88,10 +96,14 @@ public class ValueMut extends Native {
         for (final ValueMut value : values) {
             ptrs[idx++] = value.getPtr();
         }
-        final ValueMut value = new ValueMut(newArray(ptrs));
+        final ValueMut value = new ValueMut(newArrayOf(ptrs));
         // The Values have been moved
         values.forEach(Native::moved);
         return value;
+    }
+
+    public static ValueMut createObject(Object object) {
+        return new ValueMut(newObject(object.getPtr()));
     }
 
     public static ValueMut createObject(List<EntryMut> entries) {
@@ -101,7 +113,7 @@ public class ValueMut extends Native {
         for (final EntryMut entry : entries) {
             ptrs[idx++] = entry.getPtr();
         }
-        final ValueMut value = new ValueMut(newObject(ptrs));
+        final ValueMut value = new ValueMut(newObjectOf(ptrs));
         // The Entries have been moved
         entries.forEach(Native::moved);
         return value;

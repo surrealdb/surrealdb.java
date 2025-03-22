@@ -79,6 +79,12 @@ class ValueBuilder {
         if (object instanceof RecordId) {
             return ValueMut.createThing((RecordId) object);
         }
+        if (object instanceof Array) {
+            return ValueMut.createArray((Array) object);
+        }
+        if (object instanceof Object) {
+            return ValueMut.createObject((Object) object);
+        }
         final Field[] fields = object.getClass().getDeclaredFields();
         if (fields.length > 0) {
             final List<EntryMut> entries = new ArrayList<>(fields.length);

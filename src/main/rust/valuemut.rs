@@ -146,6 +146,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
 pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if matches!(value.as_ref(), Value::Array(_)) {
+        return JniTypes::new_value_mut(value.as_ref().clone());
+    }
+    SurrealError::NullPointerException("Array").exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newArrayOf<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
     ptrs: JLongArray<'local>,
 ) -> jlong {
     let ptrs = get_long_array!(&mut env, &ptrs, || 0);
@@ -160,6 +173,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if matches!(value.as_ref(), Value::Object(_)) {
+        return JniTypes::new_value_mut(value.as_ref().clone());
+    }
+    SurrealError::NullPointerException("Object").exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newObjectOf<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptrs: JLongArray<'local>,
