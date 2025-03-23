@@ -1,10 +1,11 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
+use std::str::FromStr;
 
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::sql::{Id, Thing, Value};
+use surrealdb::sql::{Id, Thing, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
@@ -32,6 +33,23 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingStringId<'local>(
     let id = get_rust_string!(&mut env, id, || 0);
     let value = Value::Thing(Thing::from((table, Id::String(id))));
     JniTypes::new_value(value.into())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_newThingUuidId<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    id: JString<'local>,
+) -> jlong {
+    let table = get_rust_string!(&mut env, table, || 0);
+    let id = get_rust_string!(&mut env, id, || 0);
+    if let Ok(uuid) = Uuid::from_str(&id) {
+        let value = Value::Thing(Thing::from((table, Id::Uuid(uuid))));
+        JniTypes::new_value(value.into())
+    } else {
+        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    }
 }
 
 #[no_mangle]

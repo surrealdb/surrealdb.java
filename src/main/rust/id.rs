@@ -1,10 +1,11 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
+use std::str::FromStr;
 
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::sql::{Id, Thing, Value};
+use surrealdb::sql::{Id, Thing, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
@@ -28,6 +29,21 @@ pub extern "system" fn Java_com_surrealdb_Id_newStringId<'local>(
     let id = get_rust_string!(&mut env, id, || 0);
     let value = Value::Thing(Thing::from(("", Id::String(id))));
     JniTypes::new_value(value.into())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Id_newUuidId<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    id: JString<'local>,
+) -> jlong {
+    let id = get_rust_string!(&mut env, id, || 0);
+    if let Ok(uuid) = Uuid::from_str(&id) {
+        let value = Value::Thing(Thing::from(("", Id::Uuid(uuid))));
+        JniTypes::new_value(value.into())
+    } else {
+        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    }
 }
 
 #[no_mangle]
@@ -91,6 +107,39 @@ pub extern "system" fn Java_com_surrealdb_Id_getString<'local>(
     if let Value::Thing(o) = value.as_ref() {
         if let Id::String(s) = &o.id {
             return new_string!(&mut env, s, null_mut);
+        }
+    }
+    SurrealError::NullPointerException("Id").exception(&mut env, null_mut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Id_isUuid<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    if let Value::Thing(o) = value.as_ref() {
+        if let Id::Uuid(_) = &o.id {
+            true as jboolean
+        } else {
+            false as jboolean
+        }
+    } else {
+        SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Id_getUuid<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Thing(o) = value.as_ref() {
+        if let Id::Uuid(uuid) = &o.id {
+            return new_string!(&mut env, uuid.0.to_string(), null_mut);
         }
     }
     SurrealError::NullPointerException("Id").exception(&mut env, null_mut)

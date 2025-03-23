@@ -1,5 +1,7 @@
 package com.surrealdb;
 
+import java.util.UUID;
+
 /**
  * The RecordId class represents a unique identifier for a record in a database.
  * <p>
@@ -22,9 +24,15 @@ public class RecordId extends Native {
         super(newThingStringId(table, id));
     }
 
+    public RecordId(String table, UUID id) {
+        super(newThingUuidId(table, id.toString()));
+    }
+
     private static native long newThingLongId(String table, long id);
 
     private static native long newThingStringId(String table, String id);
+
+    private static native long newThingUuidId(String table, String id);
 
     private static native String getTable(long ptr);
 
