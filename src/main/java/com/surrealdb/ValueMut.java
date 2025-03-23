@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class ValueMut extends Native {
 
@@ -28,6 +29,8 @@ public class ValueMut extends Native {
     private static native long newDuration(long l);
 
     private static native long newDatetime(long seconds, long nanos);
+
+    private static native long newUuid(String s);
 
     private static native long newId(long ptr);
 
@@ -75,6 +78,10 @@ public class ValueMut extends Native {
 
     public static ValueMut createDatetime(ZonedDateTime d) {
         return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));
+    }
+
+    public static ValueMut createUuid(UUID uuid) {
+        return new ValueMut(newUuid(uuid.toString()));
     }
 
     public static ValueMut createId(Id id) {

@@ -76,6 +76,9 @@ class ValueBuilder {
         if (object instanceof Id) {
             return ValueMut.createId((Id) object);
         }
+        if (object instanceof UUID) {
+            return ValueMut.createUuid((UUID) object);
+        }
         if (object instanceof RecordId) {
             return ValueMut.createThing((RecordId) object);
         }
