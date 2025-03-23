@@ -14,7 +14,7 @@ class ValueBuilder {
 
     private static <T> ValueMut convertObject(final T object) throws IllegalAccessException {
         if (object == null) {
-            return null;
+            return ValueMut.createNull();
         }
         if (object instanceof ValueMut) {
             return (ValueMut) object;
@@ -93,9 +93,9 @@ class ValueBuilder {
                     continue;
                 }
                 final String name = field.getName();
-                final ValueMut value = convert(field.get(object));
+                final java.lang.Object value = field.get(object);
                 if (value != null) {
-                    entries.add(EntryMut.newEntry(name, value));
+                    entries.add(EntryMut.newEntry(name, convert(value)));
                 }
             }
             return ValueMut.createObject(entries);
