@@ -24,14 +24,14 @@ public class QueryTests {
                     final Value create = response.take(0);
                     assertTrue(create.isArray());
                     final Array createArray = create.getArray();
-                    assertEquals(createArray.len(), 1);
+                    assertEquals(1, createArray.len());
                     assertEquals("[{ id: person:1, name: 'Tobie' }]", createArray.toString());
                 }
                 { // Check SELECT result
                     final Value select = response.take(1);
                     assertTrue(select.isArray());
                     final Array selectArray = select.getArray();
-                    assertEquals(selectArray.len(), 1);
+                    assertEquals(1, selectArray.len());
                     assertEquals("[\n" +
                         "\t{\n" +
                         "\t\tid: person:1,\n" +
@@ -75,12 +75,12 @@ public class QueryTests {
                 final Value create = response.take(0);
                 assertTrue(create.isArray());
                 final Array createArray = create.getArray();
-                assertEquals(createArray.len(), 1);
+                assertEquals(1, createArray.len());
                 assertEquals("[{ active: true, category: 1, id: person:1, name: 'Tobie', score: 5f }]", createArray.toString());
                 final Value select = response.take(1);
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
-                assertEquals(selectArray.len(), 1);
+                assertEquals(1, selectArray.len());
                 assertEquals("[\n" +
                     "\t{\n" +
                     "\t\tactive: true,\n" +
@@ -132,12 +132,12 @@ public class QueryTests {
                 final Value create = response.take(0);
                 assertTrue(create.isArray());
                 final Array createArray = create.getArray();
-                assertEquals(createArray.len(), 1);
+                assertEquals(1, createArray.len());
                 assertEquals("[{ id: person:1, uuid: u'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", createArray.toString());
                 final Value select = response.take(1);
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
-                assertEquals(selectArray.len(), 1);
+                assertEquals(1, selectArray.len());
                 assertEquals("[\n" +
                     "\t{\n" +
                     "\t\tid: person:1,\n" +
@@ -167,12 +167,12 @@ public class QueryTests {
                 final Value create = response.take(0);
                 assertTrue(create.isArray());
                 final Array createArray = create.getArray();
-                assertEquals(createArray.len(), 1);
+                assertEquals(1, createArray.len());
                 assertEquals("[{ id: person:1, pt: (-0.118092, 51.509865) }]", createArray.toString());
                 final Value select = response.take(1);
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
-                assertEquals(selectArray.len(), 1);
+                assertEquals(1, selectArray.len());
                 assertEquals("[\n" +
                     "\t{\n" +
                     "\t\tid: person:1,\n" +
@@ -202,12 +202,12 @@ public class QueryTests {
                 final Value create = response.take(0);
                 assertTrue(create.isArray());
                 final Array createArray = create.getArray();
-                assertEquals(createArray.len(), 1);
+                assertEquals(1, createArray.len());
                 assertEquals("[{ id: person:1, tags: ['CEO', 'CTO'] }]", createArray.toString());
                 final Value select = response.take(1);
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
-                assertEquals(selectArray.len(), 1);
+                assertEquals(1, selectArray.len());
                 assertEquals("[\n" +
                     "\t{\n" +
                     "\t\tid: person:1,\n" +
@@ -336,7 +336,7 @@ public class QueryTests {
                 final Response response = surreal.query(sql);
                 {
                     final Person create = response.take(Person.class, 0);
-                    assertEquals(create.name, "Tobie");
+                    assertEquals("Tobie", create.name);
                 }
             }
         }
@@ -351,7 +351,7 @@ public class QueryTests {
                 final Response response = surreal.query(sql);
                 {
                     final int size = response.size();
-                    assertEquals(size, 3);
+                    assertEquals(3, size);
                 }
             }
         }
@@ -389,6 +389,51 @@ public class QueryTests {
                     assertEquals("hello", res1);
                     final String res2 = response.take(1).getString();
                     assertEquals("world", res2);
+                }
+            }
+        }
+    }
+
+    @Test
+    void queryBindValues() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                // Create Array and Object
+                final String sql1 = "RETURN [1, 2, 3];RETURN { foo: 'bar' }";
+                final Response response1 = surreal.query(sql1);
+                final HashMap<String, java.lang.Object> map = new HashMap<>();
+                map.put("string", "hello_world");
+                map.put("long", 25565L);
+                map.put("list", Collections.singletonList("item1"));
+                map.put("map", Collections.singletonMap("foo", "bar"));
+                map.put("array", response1.take(0).getArray());
+                map.put("object", response1.take(1).getObject());
+                map.put("null", null);
+                map.put("uuid", UUID.fromString("f8e238f2-e734-47b8-9a16-476b291bd78a"));
+                final String sql2 = "RETURN [$string, $long, $list, $map, $array, $object, $null, $uuid]";
+                final Response response2 = surreal.queryBind(sql2,map);
+                {
+                    final Array results = response2.take(0).getArray();
+                    assertEquals(8, results.len());
+                    final String res1 = results.get(0).getString();
+                    assertEquals("hello_world", res1);
+                    final long res2 = results.get(1).getLong();
+                    assertEquals(25565L, res2);
+                    final Array res3 = results.get(2).getArray();
+                    assertEquals(1, res3.len());
+                    assertEquals("item1", res3.get(0).getString());
+                    final Object res4 = results.get(3).getObject();
+                    assertEquals(1, res4.len());
+                    assertEquals("bar", res4.get("foo").getString());
+                    final Array res5 = results.get(4).getArray();
+                    assertEquals("[1, 2, 3]", res5.toString());
+                    final Object res6 = results.get(5).getObject();
+                    assertEquals("{ foo: 'bar' }", res6.toString());
+                    final Value res7 = results.get(6);
+                    assertTrue(res7.isNull());
+                    final UUID res8 = results.get(7).getUuid();
+                    assertEquals("f8e238f2-e734-47b8-9a16-476b291bd78a", res8.toString());
                 }
             }
         }
