@@ -1,4 +1,4 @@
-name: Cross-Compile
+name: Cross-Compile Only
 
 on:
   workflow_dispatch:
