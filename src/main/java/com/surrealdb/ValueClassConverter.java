@@ -16,6 +16,8 @@ class ValueClassConverter<T> {
     }
 
     private static java.lang.Object convertSingleValue(final Value value) {
+        if (value.isNull())
+            return null;
         if (value.isBoolean())
             return value.getBoolean();
         if (value.isDouble())
@@ -42,7 +44,9 @@ class ValueClassConverter<T> {
     }
 
     private static <T> void setSingleValue(final Field field, final Class<?> type, final T target, final Value value) throws IllegalAccessException {
-        if (value.isBoolean()) {
+        if (value.isNull()) {
+            field.set(target, null);
+        } else if (value.isBoolean()) {
             field.setBoolean(target, value.getBoolean());
         } else if (value.isDouble()) {
             final double d = value.getDouble();
