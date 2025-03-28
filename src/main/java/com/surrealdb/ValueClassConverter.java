@@ -152,7 +152,7 @@ class ValueClassConverter<T> {
 
     private static <T, V> void setFieldSingleValue(Field field, Class<?> type, T target, Value value) throws ReflectiveOperationException {
         if (Optional.class.equals(type)) {
-            field.set(target, convertSingleValue(value));
+            field.set(target, Optional.of(convertSingleValue(value)));
         } else {
             setSingleValue(field, type, target, value);
         }
