@@ -172,6 +172,14 @@ class ValueClassConverter<T> {
 
     final T convert(final Value value) {
         try {
+            if (value.isNone() || value.isNull()) {
+                return null;
+            }
+
+            if (!value.isObject()) {
+                throw new SurrealException("Unexpected value: " + value);
+            }
+
             return convert(clazz, value.getObject());
         } catch (ReflectiveOperationException e) {
             throw new SurrealException("Failed to create instance of " + clazz.getName(), e);
