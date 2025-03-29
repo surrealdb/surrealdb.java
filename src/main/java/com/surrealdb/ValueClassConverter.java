@@ -117,7 +117,7 @@ class ValueClassConverter<T> {
         for (final Entry entry : source) {
             try {
                 final String key = entry.getKey();
-                final Field field = clazz.getField(key);
+                final Field field = getInheritedDeclaredField(clazz, key);
                 final Value value = entry.getValue();
                 field.setAccessible(true);
                 final Class<?> type = field.getType();
@@ -194,6 +194,17 @@ class ValueClassConverter<T> {
             }
         }
         return null;
+    }
+
+    static Field getInheritedDeclaredField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        while (clazz != null) {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException("Field '" + fieldName + "' not found in class hierarchy.");
     }
 
     final T convert(final Value value) {
