@@ -175,6 +175,8 @@ class ValueClassConverter<T> {
             } else {
                 field.set(target, Optional.of(converted));
             }
+        } else if(Value.class.equals(type)) {
+            field.set(target, value);
         } else {
             setSingleValue(field, type, target, value);
         }

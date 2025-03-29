@@ -1,12 +1,12 @@
 package com.surrealdb;
 
 import com.surrealdb.pojos.Dates;
+import com.surrealdb.pojos.Partial;
 import com.surrealdb.pojos.Person;
 import com.surrealdb.pojos.Stats;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
-import java.time.Duration;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -148,7 +148,7 @@ public class QueryTests {
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             {
-                final String sql = "CREATE ONLY stats:1 SET statistics.archery = 100, statistics.golf = 70, statistics.running = 120, sessions.example = { duration: 2h, dateTime: d\"2023-07-03T07:18:52Z\"  };";
+                final String sql = "CREATE ONLY stats:1 SET statistics.archery = 100, statistics.golf = 70, statistics.running = 120, sessions.example = { duration: 2h, dateTime: d\"2023-07-03T07:18:52Z\"  }, something = true;";
                 final Response response = surreal.query(sql);
                 final Stats stats = response.take(Stats.class, 0);
                 assertEquals(100L, stats.statistics.get("archery"));
@@ -452,6 +452,19 @@ public class QueryTests {
                     final Value res2 = response.take(1);
                     assertTrue(res2.isNone());
                 }
+            }
+        }
+    }
+
+    @Test
+    void queryValue() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "RETURN { inner: true }";
+                final Response response = surreal.query(sql);
+                final Partial partial = response.take(Partial.class, 0);
+                assertTrue(partial.inner.getBoolean());
             }
         }
     }
