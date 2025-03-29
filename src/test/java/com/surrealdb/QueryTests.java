@@ -129,13 +129,13 @@ public class QueryTests {
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             {
-                final String sql = "SELECT * FROM ONLY person:tobie";
+                final String sql = "SELECT * FROM ONLY person:unknown";
                 final Response response = surreal.query(sql);
-                { // Value API
+                {
                     final Value value = response.take(0);
                     assertTrue(value.isNone());
                 }
-                { // Class API
+                {
                     final Person person = response.take(Person.class, 0);
                     assertNull(person);
                 }

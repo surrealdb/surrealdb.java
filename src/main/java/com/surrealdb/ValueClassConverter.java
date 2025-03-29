@@ -137,6 +137,7 @@ class ValueClassConverter<T> {
                         for (final Entry mapEntry : value.getObject()) {
                             final String entryKey = mapEntry.getKey();
                             final Value entryValue = mapEntry.getValue();
+                            // todo - array support
                             if (entryValue.isObject()) {
                                 map.put(entryKey, convert(subType, entryValue.getObject()));
                             } else {
@@ -197,13 +198,11 @@ class ValueClassConverter<T> {
 
     final T convert(final Value value) {
         try {
-            if (value.isNone() || value.isNull()) {
+            if (value.isNone() || value.isNull())
                 return null;
-            }
 
-            if (!value.isObject()) {
+            if (!value.isObject())
                 throw new SurrealException("Unexpected value: " + value);
-            }
 
             return convert(clazz, value.getObject());
         } catch (ReflectiveOperationException e) {
