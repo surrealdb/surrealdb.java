@@ -117,11 +117,15 @@ class ValueClassConverter<T> {
         for (final Entry entry : source) {
             try {
                 final String key = entry.getKey();
-                final Field field = getInheritedDeclaredField(clazz, key);
                 final Value value = entry.getValue();
-                field.setAccessible(true);
+                final Field field = getInheritedDeclaredField(clazz, key);
                 final Class<?> type = field.getType();
-                if (value.isArray()) {
+
+                field.setAccessible(true);
+
+                if (Value.class.equals(type)) {
+                    field.set(target, value);
+                } else if (value.isArray()) {
                     final List<java.lang.Object> arrayList = new ArrayList<>();
                     for (final Value elementValue : value.getArray()) {
                         arrayList.add(convertArrayValue(field, elementValue));
@@ -175,8 +179,6 @@ class ValueClassConverter<T> {
             } else {
                 field.set(target, Optional.of(converted));
             }
-        } else if(Value.class.equals(type)) {
-            field.set(target, value);
         } else {
             setSingleValue(field, type, target, value);
         }
