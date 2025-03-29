@@ -168,7 +168,12 @@ class ValueClassConverter<T> {
 
     private static <T, V> void setFieldSingleValue(Field field, Class<?> type, T target, Value value) throws ReflectiveOperationException {
         if (Optional.class.equals(type)) {
-            field.set(target, Optional.of(convertSingleValue(value)));
+            final java.lang.Object converted = convertSingleValue(value);
+            if (converted == null) {
+                field.set(target, Optional.empty());
+            } else {
+                field.set(target, Optional.of(converted));
+            }
         } else {
             setSingleValue(field, type, target, value);
         }
