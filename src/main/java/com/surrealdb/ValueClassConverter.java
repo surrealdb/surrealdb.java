@@ -3,9 +3,7 @@ package com.surrealdb;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 class ValueClassConverter<T> {
 
@@ -98,7 +96,7 @@ class ValueClassConverter<T> {
 
     private static java.lang.Object convertArrayValue(final Field field, final Value value) throws ReflectiveOperationException {
         if (value.isObject()) {
-            final Class<?> subType = getGenericType(field);
+            final Class<?> subType = getGenericType(field, 0);
             if (subType == null) {
                 throw new SurrealException("Unsupported field type: " + field);
             }
@@ -130,8 +128,26 @@ class ValueClassConverter<T> {
                     }
                     setFieldObject(field, type, target, arrayList);
                 } else if (value.isObject()) {
-                    java.lang.Object o = convert(type, value.getObject());
-                    setFieldObject(field, type, target, o);
+                    if (Map.class.isAssignableFrom(type)) {
+                        final Map<String, java.lang.Object> map = new HashMap<>();
+                        final Class<?> subType = getGenericType(field, 1);
+                        if (subType == null) {
+                            throw new SurrealException("Unsupported field type: " + field);
+                        }
+                        for (final Entry mapEntry : value.getObject()) {
+                            final String entryKey = mapEntry.getKey();
+                            final Value entryValue = mapEntry.getValue();
+                            if (entryValue.isObject()) {
+                                map.put(entryKey, convert(subType, entryValue.getObject()));
+                            } else {
+                                map.put(entryKey, convertSingleValue(entryValue));
+                            }
+                        }
+                        setFieldObject(field, type, target, map);
+                    } else {
+                        java.lang.Object o = convert(type, value.getObject());
+                        setFieldObject(field, type, target, o);
+                    }
                 } else {
                     setFieldSingleValue(field, type, target, value);
                 }
@@ -158,7 +174,7 @@ class ValueClassConverter<T> {
         }
     }
 
-    static Class<?> getGenericType(final Field field) {
+    static Class<?> getGenericType(final Field field, final int index) {
         // Check if the field is parameterized
         if (field.getGenericType() instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
@@ -166,9 +182,9 @@ class ValueClassConverter<T> {
             // Get the actual type arguments (generics)
             final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
 
-            if (actualTypeArguments.length > 0) {
+            if (actualTypeArguments.length > index) {
                 // Return the first type argument
-                return (Class<?>) actualTypeArguments[0];
+                return (Class<?>) actualTypeArguments[index];
             }
         }
         return null;

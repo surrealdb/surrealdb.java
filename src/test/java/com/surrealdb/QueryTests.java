@@ -1,9 +1,12 @@
 package com.surrealdb;
 
+import com.surrealdb.pojos.Dates;
 import com.surrealdb.pojos.Person;
+import com.surrealdb.pojos.Stats;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
+import java.time.Duration;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -117,6 +120,43 @@ public class QueryTests {
                     assertTrue(rowObject.get("score").isDouble());
                     assertEquals(5.0, rowObject.get("score").getDouble());
                 }
+            }
+        }
+    }
+
+    @Test
+    void queryNull() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "SELECT * FROM ONLY person:tobie";
+                final Response response = surreal.query(sql);
+                { // Value API
+                    final Value value = response.take(0);
+                    assertTrue(value.isNone());
+                }
+                { // Class API
+                    final Person person = response.take(Person.class, 0);
+                    assertNull(person);
+                }
+            }
+        }
+    }
+
+    @Test
+    void queryClassMap() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "CREATE ONLY stats:1 SET statistics.archery = 100, statistics.golf = 70, statistics.running = 120, sessions.example = { duration: 2h, dateTime: d\"2023-07-03T07:18:52Z\"  };";
+                final Response response = surreal.query(sql);
+                final Stats stats = response.take(Stats.class, 0);
+                assertEquals(100L, stats.statistics.get("archery"));
+                assertEquals(70L, stats.statistics.get("golf"));
+                assertEquals(120L, stats.statistics.get("running"));
+                final Dates sessions = stats.sessions.get("example");
+                assertEquals(2, sessions.duration.toHours());
+                assertEquals("2023-07-03T07:18:52Z[UTC]", sessions.dateTime.toString());
             }
         }
     }
