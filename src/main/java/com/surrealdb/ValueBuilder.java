@@ -92,9 +92,11 @@ class ValueBuilder {
         if (fields.length > 0) {
             final List<EntryMut> entries = new ArrayList<>(fields.length);
             for (final Field field : fields) {
-                if (Modifier.isStatic(field.getModifiers())) {
+                int mods = field.getModifiers();
+                if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {
                     continue;
                 }
+                field.setAccessible(true);
                 final String name = field.getName();
                 final java.lang.Object value = field.get(object);
                 if (value != null) {
