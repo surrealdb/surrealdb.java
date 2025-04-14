@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -70,6 +71,18 @@ class ValueBuilder {
         }
         if (object instanceof RecordId) {
             return ValueMut.createThing((RecordId) object);
+        }
+        if (object instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) object;
+            final List<EntryMut> entries = new ArrayList<>(map.size());
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                final String name = String.valueOf(entry.getKey());
+                final ValueMut value = convert(entry.getValue());
+                if (value != null) {
+                    entries.add(EntryMut.newEntry(name, value));
+                }
+            }
+            return ValueMut.createObject(entries);
         }
         final Field[] fields = object.getClass().getDeclaredFields();
         if (fields.length > 0) {
