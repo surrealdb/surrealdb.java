@@ -3,9 +3,7 @@ package com.surrealdb;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 class ValueClassConverter<T> {
 
@@ -16,6 +14,8 @@ class ValueClassConverter<T> {
     }
 
     private static java.lang.Object convertSingleValue(final Value value) {
+        if (value.isNull())
+            return null;
         if (value.isBoolean())
             return value.getBoolean();
         if (value.isDouble())
@@ -42,7 +42,9 @@ class ValueClassConverter<T> {
     }
 
     private static <T> void setSingleValue(final Field field, final Class<?> type, final T target, final Value value) throws IllegalAccessException {
-        if (value.isBoolean()) {
+        if (value.isNull()) {
+            field.set(target, null);
+        } else if (value.isBoolean()) {
             field.setBoolean(target, value.getBoolean());
         } else if (value.isDouble()) {
             final double d = value.getDouble();
@@ -94,7 +96,7 @@ class ValueClassConverter<T> {
 
     private static java.lang.Object convertArrayValue(final Field field, final Value value) throws ReflectiveOperationException {
         if (value.isObject()) {
-            final Class<?> subType = getGenericType(field);
+            final Class<?> subType = getGenericType(field, 0);
             if (subType == null) {
                 throw new SurrealException("Unsupported field type: " + field);
             }
@@ -115,19 +117,42 @@ class ValueClassConverter<T> {
         for (final Entry entry : source) {
             try {
                 final String key = entry.getKey();
-                final Field field = clazz.getField(key);
                 final Value value = entry.getValue();
-                field.setAccessible(true);
+                final Field field = getInheritedDeclaredField(clazz, key);
                 final Class<?> type = field.getType();
-                if (value.isArray()) {
+
+                field.setAccessible(true);
+
+                if (Value.class.equals(type)) {
+                    field.set(target, value);
+                } else if (value.isArray()) {
                     final List<java.lang.Object> arrayList = new ArrayList<>();
                     for (final Value elementValue : value.getArray()) {
                         arrayList.add(convertArrayValue(field, elementValue));
                     }
                     setFieldObject(field, type, target, arrayList);
                 } else if (value.isObject()) {
-                    java.lang.Object o = convert(type, value.getObject());
-                    setFieldObject(field, type, target, o);
+                    if (Map.class.isAssignableFrom(type)) {
+                        final Map<String, java.lang.Object> map = new HashMap<>();
+                        final Class<?> subType = getGenericType(field, 1);
+                        if (subType == null) {
+                            throw new SurrealException("Unsupported field type: " + field);
+                        }
+                        for (final Entry mapEntry : value.getObject()) {
+                            final String entryKey = mapEntry.getKey();
+                            final Value entryValue = mapEntry.getValue();
+                            // todo - array support
+                            if (entryValue.isObject()) {
+                                map.put(entryKey, convert(subType, entryValue.getObject()));
+                            } else {
+                                map.put(entryKey, convertSingleValue(entryValue));
+                            }
+                        }
+                        setFieldObject(field, type, target, map);
+                    } else {
+                        java.lang.Object o = convert(type, value.getObject());
+                        setFieldObject(field, type, target, o);
+                    }
                 } else {
                     setFieldSingleValue(field, type, target, value);
                 }
@@ -148,13 +173,18 @@ class ValueClassConverter<T> {
 
     private static <T, V> void setFieldSingleValue(Field field, Class<?> type, T target, Value value) throws ReflectiveOperationException {
         if (Optional.class.equals(type)) {
-            field.set(target, convertSingleValue(value));
+            final java.lang.Object converted = convertSingleValue(value);
+            if (converted == null) {
+                field.set(target, Optional.empty());
+            } else {
+                field.set(target, Optional.of(converted));
+            }
         } else {
             setSingleValue(field, type, target, value);
         }
     }
 
-    static Class<?> getGenericType(final Field field) {
+    static Class<?> getGenericType(final Field field, final int index) {
         // Check if the field is parameterized
         if (field.getGenericType() instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
@@ -162,16 +192,33 @@ class ValueClassConverter<T> {
             // Get the actual type arguments (generics)
             final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
 
-            if (actualTypeArguments.length > 0) {
+            if (actualTypeArguments.length > index) {
                 // Return the first type argument
-                return (Class<?>) actualTypeArguments[0];
+                return (Class<?>) actualTypeArguments[index];
             }
         }
         return null;
     }
 
+    static Field getInheritedDeclaredField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        while (clazz != null) {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException("Field '" + fieldName + "' not found in class hierarchy.");
+    }
+
     final T convert(final Value value) {
         try {
+            if (value.isNone() || value.isNull())
+                return null;
+
+            if (!value.isObject())
+                throw new SurrealException("Unexpected value: " + value);
+
             return convert(clazz, value.getObject());
         } catch (ReflectiveOperationException e) {
             throw new SurrealException("Failed to create instance of " + clazz.getName(), e);

@@ -1,6 +1,9 @@
 package com.surrealdb;
 
+import com.surrealdb.pojos.Dates;
+import com.surrealdb.pojos.Partial;
 import com.surrealdb.pojos.Person;
+import com.surrealdb.pojos.Stats;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
@@ -117,6 +120,43 @@ public class QueryTests {
                     assertTrue(rowObject.get("score").isDouble());
                     assertEquals(5.0, rowObject.get("score").getDouble());
                 }
+            }
+        }
+    }
+
+    @Test
+    void queryNull() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "SELECT * FROM ONLY person:unknown";
+                final Response response = surreal.query(sql);
+                {
+                    final Value value = response.take(0);
+                    assertTrue(value.isNone());
+                }
+                {
+                    final Person person = response.take(Person.class, 0);
+                    assertNull(person);
+                }
+            }
+        }
+    }
+
+    @Test
+    void queryClassMap() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "CREATE ONLY stats:1 SET statistics.archery = 100, statistics.golf = 70, statistics.running = 120, sessions.example = { duration: 2h, dateTime: d\"2023-07-03T07:18:52Z\"  }, something = true;";
+                final Response response = surreal.query(sql);
+                final Stats stats = response.take(Stats.class, 0);
+                assertEquals(100L, stats.statistics.get("archery"));
+                assertEquals(70L, stats.statistics.get("golf"));
+                assertEquals(120L, stats.statistics.get("running"));
+                final Dates sessions = stats.sessions.get("example");
+                assertEquals(2, sessions.duration.toHours());
+                assertEquals("2023-07-03T07:18:52Z[UTC]", sessions.dateTime.toString());
             }
         }
     }
@@ -457,6 +497,19 @@ public class QueryTests {
                     final Value res2 = response.take(1);
                     assertTrue(res2.isNone());
                 }
+            }
+        }
+    }
+
+    @Test
+    void queryValue() throws SurrealException {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            {
+                final String sql = "RETURN { inner: true }";
+                final Response response = surreal.query(sql);
+                final Partial partial = response.take(Partial.class, 0);
+                assertTrue(partial.inner.getBoolean());
             }
         }
     }

@@ -27,7 +27,7 @@ public class ExampleTests {
     }
 
     static class Person {
-        String id;
+        RecordId id;
         String title;
         String firstName;
         String lastName;
