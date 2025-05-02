@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class ValueMut extends Native {
 
     private ValueMut(long ptr) {
-<span class="fc" id="L11">        super(ptr);</span>
-<span class="fc" id="L12">    }</span>
+<span class="fc" id="L12">        super(ptr);</span>
+<span class="fc" id="L13">    }</span>
 
     private static native long newNone();
 
@@ -29,82 +30,100 @@ public class ValueMut extends Native {
 
     private static native long newDatetime(long seconds, long nanos);
 
+    private static native long newUuid(String s);
+
     private static native long newId(long ptr);
 
     private static native long newThing(long ptr);
 
-    private static native long newArray(long[] ptrs);
+    private static native long newArray(long ptr);
 
-    private static native long newObject(long[] ptrs);
+    private static native long newArrayOf(long[] ptrs);
+
+    private static native long newObject(long ptr);
+
+    private static native long newObjectOf(long[] ptrs);
 
     public static ValueMut createNone() {
-<span class="fc" id="L41">        return new ValueMut(newNone());</span>
+<span class="fc" id="L48">        return new ValueMut(newNone());</span>
     }
 
     public static ValueMut createNull() {
-<span class="fc" id="L45">        return new ValueMut(newNull());</span>
+<span class="fc" id="L52">        return new ValueMut(newNull());</span>
     }
 
     public static ValueMut createString(String s) {
-<span class="fc" id="L49">        return new ValueMut(newString(s));</span>
+<span class="fc" id="L56">        return new ValueMut(newString(s));</span>
     }
 
     public static ValueMut createBoolean(boolean b) {
-<span class="fc" id="L53">        return new ValueMut(newBoolean(b));</span>
+<span class="fc" id="L60">        return new ValueMut(newBoolean(b));</span>
     }
 
     public static ValueMut createDouble(double d) {
-<span class="fc" id="L57">        return new ValueMut(newDouble(d));</span>
+<span class="fc" id="L64">        return new ValueMut(newDouble(d));</span>
     }
 
     public static ValueMut createLong(long l) {
-<span class="fc" id="L61">        return new ValueMut(newLong(l));</span>
+<span class="fc" id="L68">        return new ValueMut(newLong(l));</span>
     }
 
     public static ValueMut createBigDecimal(BigDecimal d) {
-<span class="fc" id="L65">        return new ValueMut(newDecimal(d.toString()));</span>
+<span class="fc" id="L72">        return new ValueMut(newDecimal(d.toString()));</span>
     }
 
     public static ValueMut createDuration(Duration d) {
-<span class="fc" id="L69">        return new ValueMut(newDuration(d.toMillis()));</span>
+<span class="fc" id="L76">        return new ValueMut(newDuration(d.toMillis()));</span>
     }
 
     public static ValueMut createDatetime(ZonedDateTime d) {
-<span class="fc" id="L73">        return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));</span>
+<span class="fc" id="L80">        return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));</span>
+    }
+
+    public static ValueMut createUuid(UUID uuid) {
+<span class="fc" id="L84">        return new ValueMut(newUuid(uuid.toString()));</span>
     }
 
     public static ValueMut createId(Id id) {
-<span class="fc" id="L77">        return new ValueMut(newId(id.getPtr()));</span>
+<span class="fc" id="L88">        return new ValueMut(newId(id.getPtr()));</span>
     }
 
     public static ValueMut createThing(RecordId recordId) {
-<span class="fc" id="L81">        return new ValueMut(newThing(recordId.getPtr()));</span>
+<span class="fc" id="L92">        return new ValueMut(newThing(recordId.getPtr()));</span>
+    }
+
+    public static ValueMut createArray(Array array) {
+<span class="fc" id="L96">        return new ValueMut(newArray(array.getPtr()));</span>
     }
 
     public static ValueMut createArray(List&lt;ValueMut&gt; values) {
-<span class="fc" id="L85">        final long[] ptrs = new long[values.size()];</span>
-<span class="fc" id="L86">        int idx = 0;</span>
+<span class="fc" id="L100">        final long[] ptrs = new long[values.size()];</span>
+<span class="fc" id="L101">        int idx = 0;</span>
         // Retrieve the PTR for each element
-<span class="fc bfc" id="L88" title="All 2 branches covered.">        for (final ValueMut value : values) {</span>
-<span class="fc" id="L89">            ptrs[idx++] = value.getPtr();</span>
-<span class="fc" id="L90">        }</span>
-<span class="fc" id="L91">        final ValueMut value = new ValueMut(newArray(ptrs));</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (final ValueMut value : values) {</span>
+<span class="fc" id="L104">            ptrs[idx++] = value.getPtr();</span>
+<span class="fc" id="L105">        }</span>
+<span class="fc" id="L106">        final ValueMut value = new ValueMut(newArrayOf(ptrs));</span>
         // The Values have been moved
-<span class="fc" id="L93">        values.forEach(Native::moved);</span>
-<span class="fc" id="L94">        return value;</span>
+<span class="fc" id="L108">        values.forEach(Native::moved);</span>
+<span class="fc" id="L109">        return value;</span>
+    }
+
+    public static ValueMut createObject(Object object) {
+<span class="fc" id="L113">        return new ValueMut(newObject(object.getPtr()));</span>
     }
 
     public static ValueMut createObject(List&lt;EntryMut&gt; entries) {
-<span class="fc" id="L98">        final long[] ptrs = new long[entries.size()];</span>
-<span class="fc" id="L99">        int idx = 0;</span>
+<span class="fc" id="L117">        final long[] ptrs = new long[entries.size()];</span>
+<span class="fc" id="L118">        int idx = 0;</span>
         // Retrieve the PTR for each element
-<span class="fc bfc" id="L101" title="All 2 branches covered.">        for (final EntryMut entry : entries) {</span>
-<span class="fc" id="L102">            ptrs[idx++] = entry.getPtr();</span>
-<span class="fc" id="L103">        }</span>
-<span class="fc" id="L104">        final ValueMut value = new ValueMut(newObject(ptrs));</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        for (final EntryMut entry : entries) {</span>
+<span class="fc" id="L121">            ptrs[idx++] = entry.getPtr();</span>
+<span class="fc" id="L122">        }</span>
+<span class="fc" id="L123">        final ValueMut value = new ValueMut(newObjectOf(ptrs));</span>
         // The Entries have been moved
-<span class="fc" id="L106">        entries.forEach(Native::moved);</span>
-<span class="fc" id="L107">        return value;</span>
+<span class="fc" id="L125">        entries.forEach(Native::moved);</span>
+<span class="fc" id="L126">        return value;</span>
     }
 
     @Override
