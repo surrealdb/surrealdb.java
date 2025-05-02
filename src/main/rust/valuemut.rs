@@ -8,7 +8,7 @@ use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::JNIEnv;
 use rust_decimal::Decimal;
-use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Value};
+use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{
@@ -21,7 +21,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newNone<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) -> jlong {
-    create_instance(Value::None,JniTypes::ValueMut)
+    create_instance(Value::None, JniTypes::ValueMut)
 }
 
 #[no_mangle]
@@ -29,7 +29,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newNull<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) -> jlong {
-    create_instance(Value::Null,JniTypes::ValueMut)
+    create_instance(Value::Null, JniTypes::ValueMut)
 }
 
 #[no_mangle]
@@ -130,6 +130,20 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newUuid<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    s: JString<'local>,
+) -> jlong {
+    let s = get_rust_string!(&mut env, s, || 0);
+    if let Ok(uuid) = Uuid::from_str(&s) {
+        let value = Value::Uuid(uuid);
+        return create_instance(value, JniTypes::ValueMut);
+    }
+    SurrealError::NullPointerException("Uuid").exception(&mut env, || 0)
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -146,6 +160,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
 pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if matches!(value.as_ref(), Value::Array(_)) {
+        return JniTypes::new_value_mut(value.as_ref().clone());
+    }
+    SurrealError::NullPointerException("Array").exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newArrayOf<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
     ptrs: JLongArray<'local>,
 ) -> jlong {
     let ptrs = get_long_array!(&mut env, &ptrs, || 0);
@@ -160,6 +187,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newObject<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if matches!(value.as_ref(), Value::Object(_)) {
+        return JniTypes::new_value_mut(value.as_ref().clone());
+    }
+    SurrealError::NullPointerException("Object").exception(&mut env, || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newObjectOf<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptrs: JLongArray<'local>,

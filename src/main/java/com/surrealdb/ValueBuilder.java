@@ -6,10 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -17,7 +14,7 @@ class ValueBuilder {
 
     private static <T> ValueMut convertObject(final T object) throws IllegalAccessException {
         if (object == null) {
-            return null;
+            return ValueMut.createNull();
         }
         if (object instanceof ValueMut) {
             return (ValueMut) object;
@@ -61,6 +58,17 @@ class ValueBuilder {
             final List<ValueMut> values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());
             return ValueMut.createArray(values);
         }
+        if (object instanceof Map) {
+            final Map<?, ?> map = (Map<?, ?>) object;
+            final List<EntryMut> entries = new ArrayList<>(map.size());
+            // Create a ValueMut for each value of the map
+            for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                final String key = entry.getKey().toString();
+                final ValueMut value = convert(entry.getValue());
+                entries.add(EntryMut.newEntry(key, value));
+            }
+            return ValueMut.createObject(entries);
+        }
         if (object instanceof Optional) {
             final Optional<?> optional = (Optional<?>) object;
             return optional.map(ValueBuilder::convert).orElse(null);
@@ -68,20 +76,31 @@ class ValueBuilder {
         if (object instanceof Id) {
             return ValueMut.createId((Id) object);
         }
+        if (object instanceof UUID) {
+            return ValueMut.createUuid((UUID) object);
+        }
         if (object instanceof RecordId) {
             return ValueMut.createThing((RecordId) object);
+        }
+        if (object instanceof Array) {
+            return ValueMut.createArray((Array) object);
+        }
+        if (object instanceof Object) {
+            return ValueMut.createObject((Object) object);
         }
         final Field[] fields = object.getClass().getDeclaredFields();
         if (fields.length > 0) {
             final List<EntryMut> entries = new ArrayList<>(fields.length);
             for (final Field field : fields) {
-                if (Modifier.isStatic(field.getModifiers())) {
+                int mods = field.getModifiers();
+                if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {
                     continue;
                 }
+                field.setAccessible(true);
                 final String name = field.getName();
-                final ValueMut value = convert(field.get(object));
+                final java.lang.Object value = field.get(object);
                 if (value != null) {
-                    entries.add(EntryMut.newEntry(name, value));
+                    entries.add(EntryMut.newEntry(name, convert(value)));
                 }
             }
             return ValueMut.createObject(entries);

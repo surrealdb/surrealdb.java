@@ -1,5 +1,7 @@
 package com.surrealdb;
 
+import java.util.UUID;
+
 /**
  * The Id class represents a unique identifier that can be either a long value or a string.
  */
@@ -17,9 +19,15 @@ public class Id extends Native {
         return new Id(newStringId(id));
     }
 
+    public static Id from(UUID id) {
+        return new Id(newUuidId(id.toString()));
+    }
+
     private static native long newLongId(long id);
 
     private static native long newStringId(String id);
+
+    private static native long newUuidId(String id);
 
     private static native boolean isLong(long ptr);
 
@@ -28,6 +36,10 @@ public class Id extends Native {
     private static native boolean isString(long ptr);
 
     private static native String getString(long ptr);
+
+    private static native boolean isUuid(long ptr);
+
+    private static native String getUuid(long ptr);
 
     private static native boolean isArray(long ptr);
 
@@ -63,6 +75,14 @@ public class Id extends Native {
 
     final public String getString() {
         return getString(getPtr());
+    }
+
+    final public boolean isUuid() {
+        return isUuid(getPtr());
+    }
+
+    final public UUID getUuid() {
+        return UUID.fromString(getUuid(getPtr()));
     }
 
     final public boolean isArray() {
