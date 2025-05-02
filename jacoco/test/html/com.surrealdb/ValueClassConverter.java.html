@@ -3,25 +3,25 @@
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 class ValueClassConverter&lt;T&gt; {
 
     private final Class&lt;T&gt; clazz;
 
-<span class="fc" id="L14">    ValueClassConverter(Class&lt;T&gt; clazz) {</span>
-<span class="fc" id="L15">        this.clazz = clazz;</span>
-<span class="fc" id="L16">    }</span>
+<span class="fc" id="L12">    ValueClassConverter(Class&lt;T&gt; clazz) {</span>
+<span class="fc" id="L13">        this.clazz = clazz;</span>
+<span class="fc" id="L14">    }</span>
 
     private static java.lang.Object convertSingleValue(final Value value) {
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">        if (value.isNull())</span>
+<span class="nc" id="L18">            return null;</span>
 <span class="pc bpc" id="L19" title="1 of 2 branches missed.">        if (value.isBoolean())</span>
 <span class="nc" id="L20">            return value.getBoolean();</span>
 <span class="pc bpc" id="L21" title="1 of 2 branches missed.">        if (value.isDouble())</span>
 <span class="nc" id="L22">            return value.getDouble();</span>
-<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (value.isLong())</span>
-<span class="nc" id="L24">            return value.getLong();</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (value.isLong())</span>
+<span class="fc" id="L24">            return value.getLong();</span>
 <span class="pc bpc" id="L25" title="1 of 2 branches missed.">        if (value.isString())</span>
 <span class="fc" id="L26">            return value.getString();</span>
 <span class="nc bnc" id="L27" title="All 2 branches missed.">        if (value.isThing())</span>
@@ -42,139 +42,186 @@ class ValueClassConverter&lt;T&gt; {
     }
 
     private static &lt;T&gt; void setSingleValue(final Field field, final Class&lt;?&gt; type, final T target, final Value value) throws IllegalAccessException {
-<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (value.isBoolean()) {</span>
-<span class="fc" id="L46">            field.setBoolean(target, value.getBoolean());</span>
-<span class="fc bfc" id="L47" title="All 2 branches covered.">        } else if (value.isDouble()) {</span>
-<span class="fc" id="L48">            final double d = value.getDouble();</span>
-<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (type == Double.TYPE)</span>
-<span class="fc" id="L50">                field.setDouble(target, d);</span>
-<span class="fc bfc" id="L51" title="All 2 branches covered.">            else if (type == Float.TYPE)</span>
-<span class="fc" id="L52">                field.setFloat(target, (float) d);</span>
-<span class="fc bfc" id="L53" title="All 2 branches covered.">            else if (type == Float.class)</span>
-<span class="fc" id="L54">                field.set(target, (float) d);</span>
-<span class="fc" id="L55">            else field.set(target, d);</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">        } else if (value.isLong()) {</span>
-<span class="fc" id="L57">            final long l = value.getLong();</span>
-<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (type == Long.TYPE)</span>
-<span class="fc" id="L59">                field.setLong(target, l);</span>
-<span class="fc bfc" id="L60" title="All 2 branches covered.">            else if (type == Integer.TYPE)</span>
-<span class="fc" id="L61">                field.setInt(target, (int) l);</span>
-<span class="fc bfc" id="L62" title="All 2 branches covered.">            else if (type == Integer.class)</span>
-<span class="fc" id="L63">                field.set(target, (int) l);</span>
-<span class="fc bfc" id="L64" title="All 2 branches covered.">            else if (type == Short.TYPE)</span>
-<span class="fc" id="L65">                field.setShort(target, (short) l);</span>
-<span class="fc bfc" id="L66" title="All 2 branches covered.">            else if (type == Short.class)</span>
-<span class="fc" id="L67">                field.set(target, (short) l);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (value.isNull()) {</span>
+<span class="nc" id="L46">            field.set(target, null);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        } else if (value.isBoolean()) {</span>
+<span class="fc" id="L48">            field.setBoolean(target, value.getBoolean());</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        } else if (value.isDouble()) {</span>
+<span class="fc" id="L50">            final double d = value.getDouble();</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            if (type == Double.TYPE)</span>
+<span class="fc" id="L52">                field.setDouble(target, d);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            else if (type == Float.TYPE)</span>
+<span class="fc" id="L54">                field.setFloat(target, (float) d);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            else if (type == Float.class)</span>
+<span class="fc" id="L56">                field.set(target, (float) d);</span>
+<span class="fc" id="L57">            else field.set(target, d);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        } else if (value.isLong()) {</span>
+<span class="fc" id="L59">            final long l = value.getLong();</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            if (type == Long.TYPE)</span>
+<span class="fc" id="L61">                field.setLong(target, l);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            else if (type == Integer.TYPE)</span>
+<span class="fc" id="L63">                field.setInt(target, (int) l);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">            else if (type == Integer.class)</span>
+<span class="fc" id="L65">                field.set(target, (int) l);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            else if (type == Short.TYPE)</span>
+<span class="fc" id="L67">                field.setShort(target, (short) l);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">            else if (type == Short.class)</span>
+<span class="fc" id="L69">                field.set(target, (short) l);</span>
             else
-<span class="fc" id="L69">                field.set(target, l);</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">        } else if (value.isString()) {</span>
-<span class="fc" id="L71">            field.set(target, value.getString());</span>
-<span class="fc bfc" id="L72" title="All 2 branches covered.">        } else if (value.isThing()) {</span>
-<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (field.getType() == Id.class) {</span>
-<span class="fc" id="L74">                field.set(target, value.getThing().getId());</span>
+<span class="fc" id="L71">                field.set(target, l);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        } else if (value.isString()) {</span>
+<span class="fc" id="L73">            field.set(target, value.getString());</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        } else if (value.isThing()) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            if (field.getType() == Id.class) {</span>
+<span class="fc" id="L76">                field.set(target, value.getThing().getId());</span>
             } else {
-<span class="fc" id="L76">                field.set(target, value.getThing());</span>
+<span class="fc" id="L78">                field.set(target, value.getThing());</span>
             }
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        } else if (value.isGeometry()) {</span>
-<span class="nc" id="L79">            field.set(target, value.getGeometry());</span>
-<span class="fc bfc" id="L80" title="All 2 branches covered.">        } else if (value.isBigdecimal()) {</span>
-<span class="fc" id="L81">            field.set(target, value.getBigDecimal());</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        } else if (value.isBytes()) {</span>
-<span class="nc" id="L83">            field.set(target, value.getBytes());</span>
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        } else if (value.isUuid()) {</span>
-<span class="nc" id="L85">            field.set(target, value.getUuid());</span>
-<span class="fc bfc" id="L86" title="All 2 branches covered.">        } else if (value.isDuration()) {</span>
-<span class="fc" id="L87">            field.set(target, value.getDuration());</span>
-<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        } else if (value.isDateTime()) {</span>
-<span class="fc" id="L89">            field.set(target, value.getDateTime());</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        } else if (value.isGeometry()) {</span>
+<span class="nc" id="L81">            field.set(target, value.getGeometry());</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        } else if (value.isBigdecimal()) {</span>
+<span class="fc" id="L83">            field.set(target, value.getBigDecimal());</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        } else if (value.isBytes()) {</span>
+<span class="nc" id="L85">            field.set(target, value.getBytes());</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        } else if (value.isUuid()) {</span>
+<span class="nc" id="L87">            field.set(target, value.getUuid());</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        } else if (value.isDuration()) {</span>
+<span class="fc" id="L89">            field.set(target, value.getDuration());</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        } else if (value.isDateTime()) {</span>
+<span class="fc" id="L91">            field.set(target, value.getDateTime());</span>
         } else {
-<span class="nc" id="L91">            throw new SurrealException(&quot;Unsupported value: &quot; + value);</span>
+<span class="nc" id="L93">            throw new SurrealException(&quot;Unsupported value: &quot; + value);</span>
         }
-<span class="fc" id="L93">    }</span>
+<span class="fc" id="L95">    }</span>
 
     private static java.lang.Object convertArrayValue(final Field field, final Value value) throws ReflectiveOperationException {
-<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (value.isObject()) {</span>
-<span class="fc" id="L97">            final Class&lt;?&gt; subType = getGenericType(field);</span>
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">            if (subType == null) {</span>
-<span class="nc" id="L99">                throw new SurrealException(&quot;Unsupported field type: &quot; + field);</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (value.isObject()) {</span>
+<span class="fc" id="L99">            final Class&lt;?&gt; subType = getGenericType(field, 0);</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">            if (subType == null) {</span>
+<span class="nc" id="L101">                throw new SurrealException(&quot;Unsupported field type: &quot; + field);</span>
             }
-<span class="fc" id="L101">            return convert(subType, value.getObject());</span>
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        } else if (value.isArray()) {</span>
-<span class="nc" id="L103">            final List&lt;java.lang.Object&gt; arrayList = new ArrayList&lt;&gt;();</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">            for (final Value elementValue : value.getArray()) {</span>
-<span class="nc" id="L105">                arrayList.add(convertArrayValue(field, elementValue));</span>
-<span class="nc" id="L106">            }</span>
-<span class="nc" id="L107">            return arrayList;</span>
+<span class="fc" id="L103">            return convert(subType, value.getObject());</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        } else if (value.isArray()) {</span>
+<span class="nc" id="L105">            final List&lt;java.lang.Object&gt; arrayList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">            for (final Value elementValue : value.getArray()) {</span>
+<span class="nc" id="L107">                arrayList.add(convertArrayValue(field, elementValue));</span>
+<span class="nc" id="L108">            }</span>
+<span class="nc" id="L109">            return arrayList;</span>
         } else {
-<span class="fc" id="L109">            return convertSingleValue(value);</span>
+<span class="fc" id="L111">            return convertSingleValue(value);</span>
         }
     }
 
     private static &lt;T&gt; T convert(Class&lt;T&gt; clazz, Object source) throws ReflectiveOperationException {
-<span class="fc" id="L114">        final T target = clazz.getConstructor().newInstance();</span>
-<span class="fc bfc" id="L115" title="All 2 branches covered.">        for (final Entry entry : source) {</span>
+<span class="fc" id="L116">        final T target = clazz.getConstructor().newInstance();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (final Entry entry : source) {</span>
             try {
-<span class="fc" id="L117">                final String key = entry.getKey();</span>
-<span class="fc" id="L118">                final Field field = clazz.getField(key);</span>
-<span class="fc" id="L119">                final Value value = entry.getValue();</span>
-<span class="fc" id="L120">                field.setAccessible(true);</span>
-<span class="fc" id="L121">                final Class&lt;?&gt; type = field.getType();</span>
-<span class="fc bfc" id="L122" title="All 2 branches covered.">                if (value.isArray()) {</span>
-<span class="fc" id="L123">                    final List&lt;java.lang.Object&gt; arrayList = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L124" title="All 2 branches covered.">                    for (final Value elementValue : value.getArray()) {</span>
-<span class="fc" id="L125">                        arrayList.add(convertArrayValue(field, elementValue));</span>
-<span class="fc" id="L126">                    }</span>
-<span class="fc" id="L127">                    setFieldObject(field, type, target, arrayList);</span>
-<span class="fc bfc" id="L128" title="All 2 branches covered.">                } else if (value.isObject()) {</span>
-<span class="fc" id="L129">                    java.lang.Object o = convert(type, value.getObject());</span>
-<span class="fc" id="L130">                    setFieldObject(field, type, target, o);</span>
-<span class="fc" id="L131">                } else {</span>
-<span class="fc" id="L132">                    setFieldSingleValue(field, type, target, value);</span>
+<span class="fc" id="L119">                final String key = entry.getKey();</span>
+<span class="fc" id="L120">                final Value value = entry.getValue();</span>
+<span class="fc" id="L121">                final Field field = getInheritedDeclaredField(clazz, key);</span>
+<span class="fc" id="L122">                final Class&lt;?&gt; type = field.getType();</span>
+
+<span class="fc" id="L124">                field.setAccessible(true);</span>
+
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                if (Value.class.equals(type)) {</span>
+<span class="fc" id="L127">                    field.set(target, value);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                } else if (value.isArray()) {</span>
+<span class="fc" id="L129">                    final List&lt;java.lang.Object&gt; arrayList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">                    for (final Value elementValue : value.getArray()) {</span>
+<span class="fc" id="L131">                        arrayList.add(convertArrayValue(field, elementValue));</span>
+<span class="fc" id="L132">                    }</span>
+<span class="fc" id="L133">                    setFieldObject(field, type, target, arrayList);</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">                } else if (value.isObject()) {</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">                    if (Map.class.isAssignableFrom(type)) {</span>
+<span class="fc" id="L136">                        final Map&lt;String, java.lang.Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L137">                        final Class&lt;?&gt; subType = getGenericType(field, 1);</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">                        if (subType == null) {</span>
+<span class="nc" id="L139">                            throw new SurrealException(&quot;Unsupported field type: &quot; + field);</span>
+                        }
+<span class="fc bfc" id="L141" title="All 2 branches covered.">                        for (final Entry mapEntry : value.getObject()) {</span>
+<span class="fc" id="L142">                            final String entryKey = mapEntry.getKey();</span>
+<span class="fc" id="L143">                            final Value entryValue = mapEntry.getValue();</span>
+                            // todo - array support
+<span class="fc bfc" id="L145" title="All 2 branches covered.">                            if (entryValue.isObject()) {</span>
+<span class="fc" id="L146">                                map.put(entryKey, convert(subType, entryValue.getObject()));</span>
+                            } else {
+<span class="fc" id="L148">                                map.put(entryKey, convertSingleValue(entryValue));</span>
+                            }
+<span class="fc" id="L150">                        }</span>
+<span class="fc" id="L151">                        setFieldObject(field, type, target, map);</span>
+<span class="fc" id="L152">                    } else {</span>
+<span class="fc" id="L153">                        java.lang.Object o = convert(type, value.getObject());</span>
+<span class="fc" id="L154">                        setFieldObject(field, type, target, o);</span>
+<span class="fc" id="L155">                    }</span>
+                } else {
+<span class="fc" id="L157">                    setFieldSingleValue(field, type, target, value);</span>
                 }
-<span class="fc" id="L134">            } catch (NoSuchFieldException e) {</span>
+<span class="fc" id="L159">            } catch (NoSuchFieldException e) {</span>
                 // Safe to ignore
-<span class="fc" id="L136">            }</span>
-<span class="fc" id="L137">        }</span>
-<span class="fc" id="L138">        return target;</span>
+<span class="fc" id="L161">            }</span>
+<span class="fc" id="L162">        }</span>
+<span class="fc" id="L163">        return target;</span>
     }
 
     private static &lt;T, V&gt; void setFieldObject(Field field, Class&lt;?&gt; type, T target, V value) throws ReflectiveOperationException {
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
-<span class="nc" id="L143">            field.set(target, Optional.of(value));</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
+<span class="nc" id="L168">            field.set(target, Optional.of(value));</span>
         } else {
-<span class="fc" id="L145">            field.set(target, value);</span>
+<span class="fc" id="L170">            field.set(target, value);</span>
         }
-<span class="fc" id="L147">    }</span>
+<span class="fc" id="L172">    }</span>
 
     private static &lt;T, V&gt; void setFieldSingleValue(Field field, Class&lt;?&gt; type, T target, Value value) throws ReflectiveOperationException {
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
-<span class="nc" id="L151">            field.set(target, convertSingleValue(value));</span>
-        } else {
-<span class="fc" id="L153">            setSingleValue(field, type, target, value);</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
+<span class="nc" id="L176">            final java.lang.Object converted = convertSingleValue(value);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">            if (converted == null) {</span>
+<span class="nc" id="L178">                field.set(target, Optional.empty());</span>
+            } else {
+<span class="nc" id="L180">                field.set(target, Optional.of(converted));</span>
+            }
+<span class="nc" id="L182">        } else {</span>
+<span class="fc" id="L183">            setSingleValue(field, type, target, value);</span>
         }
-<span class="fc" id="L155">    }</span>
+<span class="fc" id="L185">    }</span>
 
-    static Class&lt;?&gt; getGenericType(final Field field) {
+    static Class&lt;?&gt; getGenericType(final Field field, final int index) {
         // Check if the field is parameterized
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">        if (field.getGenericType() instanceof ParameterizedType) {</span>
-<span class="fc" id="L160">            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">        if (field.getGenericType() instanceof ParameterizedType) {</span>
+<span class="fc" id="L190">            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();</span>
 
             // Get the actual type arguments (generics)
-<span class="fc" id="L163">            final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();</span>
+<span class="fc" id="L193">            final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();</span>
 
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">            if (actualTypeArguments.length &gt; 0) {</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">            if (actualTypeArguments.length &gt; index) {</span>
                 // Return the first type argument
-<span class="fc" id="L167">                return (Class&lt;?&gt;) actualTypeArguments[0];</span>
+<span class="fc" id="L197">                return (Class&lt;?&gt;) actualTypeArguments[index];</span>
             }
         }
-<span class="nc" id="L170">        return null;</span>
+<span class="nc" id="L200">        return null;</span>
+    }
+
+    static Field getInheritedDeclaredField(Class&lt;?&gt; clazz, String fieldName) throws NoSuchFieldException {
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        while (clazz != null) {</span>
+            try {
+<span class="fc" id="L206">                return clazz.getDeclaredField(fieldName);</span>
+<span class="fc" id="L207">            } catch (NoSuchFieldException e) {</span>
+<span class="fc" id="L208">                clazz = clazz.getSuperclass();</span>
+<span class="fc" id="L209">            }</span>
+        }
+<span class="fc" id="L211">        throw new NoSuchFieldException(&quot;Field '&quot; + fieldName + &quot;' not found in class hierarchy.&quot;);</span>
     }
 
     final T convert(final Value value) {
         try {
-<span class="fc" id="L175">            return convert(clazz, value.getObject());</span>
-<span class="nc" id="L176">        } catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L177">            throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
+<span class="pc bpc" id="L216" title="1 of 4 branches missed.">            if (value.isNone() || value.isNull())</span>
+<span class="fc" id="L217">                return null;</span>
+
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">            if (!value.isObject())</span>
+<span class="nc" id="L220">                throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
+
+<span class="fc" id="L222">            return convert(clazz, value.getObject());</span>
+<span class="nc" id="L223">        } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L224">            throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
         }
     }
 }
