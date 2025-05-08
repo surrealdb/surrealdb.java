@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.surrealdb'
-version '0.2.2-SNAPSHOT'
+version '1.0.0-beta.1'
 
 repositories {
     mavenCentral()
@@ -33,7 +33,7 @@ configurations {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    integrationTestImplementation files("build/libs/surrealdb-0.2.2-SNAPSHOT.jar")
+    integrationTestImplementation files("build/libs/surrealdb-1.0.0-beta.1.jar")
 }
 
 jacoco {

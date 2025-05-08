@@ -65,7 +65,7 @@ Gradle:
 
 ```groovy
 ext {
-    surrealdbVersion = "0.2.2-SNAPSHOT"
+    surrealdbVersion = "1.0.0-SNAPSHOT"
 }
 
 dependencies {
@@ -80,7 +80,7 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>surrealdb</artifactId>
-    <version>0.2.2-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -173,4 +173,5 @@ cargo build
 - Ranges
 - Future
 - Live queries
-- Open an issue for feature requests
+
+[Open an issue for feature requests](https://github.com/surrealdb/surrealdb.java/issues)
