@@ -26,3 +26,4 @@ hs_err_*.log
 
 # Ignore specific Gradle caches and logs
 .gradle/
+/native

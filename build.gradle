@@ -31,9 +31,54 @@ configurations {
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
+ext.nativeJar = file("native/surrealdb-${version}.jar")
+
+// Fail fast if an invalid path was provided (will run early in configuration)
+if (!nativeJar.exists()) {
+    throw new GradleException("Native JAR not found at '${nativeJar}'")
+}
+
+// ---------------------------------------------------------------------------
+// 2. Task that stages (copies) the external JAR into build/libs
+// ---------------------------------------------------------------------------
+tasks.register('stageNativeJar', Copy) {
+    description = 'Copies the externally built JAR (with native libs) into build/libs.'
+    group       = 'build'
+
+    from nativeJar
+    into "$buildDir/libs"
+    rename { "surrealdb-${version}.jar" }     // the file name expected by publish/sign
+}
+
+// ---------------------------------------------------------------------------
+// 3. Make sure every task that cares about the JAR sees the staged version.
+//    • jar is still executed (keeps components.java happy), but the copy task
+//      will overwrite its output afterwards.
+// ---------------------------------------------------------------------------
+tasks.named('jar') {
+    finalizedBy 'stageNativeJar'            // run jar first, then overwrite
+}
+
+// All publish-to-Maven tasks must wait for the staged JAR
+tasks.withType(PublishToMavenRepository).configureEach {
+    dependsOn 'stageNativeJar'
+}
+// Metadata / POM generation tasks must wait as well
+tasks.matching { it.name.startsWith('generate') && it.name.endsWith('Publication') }
+      .configureEach { dependsOn 'stageNativeJar' }
+
+// The generated signing task is created after evaluation; use task rules
+tasks.matching { it.name == 'signMavenJavaPublication' }.configureEach {
+    dependsOn 'stageNativeJar'
+}
+
+
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    integrationTestImplementation files("build/libs/surrealdb-1.0.0-beta.1.jar")
+    // point to the staged file, not a hard-coded path
+    integrationTestImplementation(
+            files(tasks.named('stageNativeJar').flatMap { it.outputs.files })
+    )
 }
 
 jacoco {
@@ -61,10 +106,6 @@ jacocoTestCoverageVerification {
             }
         }
     }
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
 }
 
 tasks.register('createCombinedReport') {

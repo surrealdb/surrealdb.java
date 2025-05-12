@@ -306,23 +306,23 @@ jobs:
       - name: Gradle
         run: chmod +x gradlew
 
-      - name: Create directory build/libs
-        run: mkdir -p build/libs
+      - name: Create directory native
+        run: mkdir -p native
 
       - name: Download JAR
         uses: actions/download-artifact@v4
         with:
-          name: surrealdb
-          path: build/libs
+          name: native
+          path: native
 
       - name: Tests
-        run: ./gradlew -i integrationTest
+          run: ./gradlew -i integrationTest
 
   publish:
     needs:
       - aggregated-jar
       - integration-tests
-    if: github.ref == 'refs/heads/main'
+#    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
