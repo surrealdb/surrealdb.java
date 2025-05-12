@@ -33,10 +33,25 @@ configurations {
 
 ext.nativeJar = file("native/surrealdb-${version}.jar")
 
-// Fail fast if an invalid path was provided (will run early in configuration)
-if (!nativeJar.exists()) {
-    throw new GradleException("Native JAR not found at '${nativeJar}'")
+// Fail fast, but only when the task graph contains a task that needs the file
+gradle.taskGraph.whenReady { graph ->
+    boolean needsNativeJar = graph.allTasks.any { t ->
+                t.name in ['stageNativeJar', 'publish', 'publishToMavenLocal'] ||
+                        (t.name.startsWith('generate') && t.name.endsWith('Publication'))
+            }
+
+    if (needsNativeJar) {
+
+        if (!nativeJar.exists()) {
+               throw new GradleException(
+                            "Native JAR not found at '${nativeJar}'. " +
+                                    "Build/copy it to native/ before running publishing tasks."
+               )
+           }
+    }
 }
+
+
 
 // ---------------------------------------------------------------------------
 // 2. Task that stages (copies) the external JAR into build/libs
