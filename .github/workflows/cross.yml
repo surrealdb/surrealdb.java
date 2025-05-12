@@ -312,11 +312,11 @@ jobs:
       - name: Download JAR
         uses: actions/download-artifact@v4
         with:
-          name: native
+          name: surrealdb
           path: native
 
       - name: Tests
-          run: ./gradlew -i integrationTest
+        run: ./gradlew -i integrationTest
 
   publish:
     needs:
