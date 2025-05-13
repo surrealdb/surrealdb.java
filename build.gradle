@@ -89,8 +89,10 @@ tasks.matching { it.name == 'signMavenJavaPublication' }.configureEach {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    // use the outputs of the Copy task; Gradle resolves them automatically
-    integrationTestImplementation(files(tasks.named('stageNativeJar')))
+    // classes produced by src/main/java
+    integrationTestImplementation sourceSets.main.output
+    // the staged, native-enabled JAR
+    integrationTestImplementation files("native/surrealdb-${version}.jar")
 }
 
 jacoco {
@@ -156,11 +158,13 @@ tasks.register('createCombinedReport') {
     }
 }
 
+
 tasks.register('integrationTest', Test) {
     dependsOn 'stageNativeJar'
     useJUnitPlatform()
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
+    // use target/release for a release build
     testLogging {
         showStandardStreams = true
         events "passed", "skipped", "failed", "standardOut", "standardError"
