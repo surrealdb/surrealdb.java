@@ -340,7 +340,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: surrealdb
-          path: build/libs
+          path: native
 
       - name: Publish Jar (Maven)
         run: ./gradlew publish
