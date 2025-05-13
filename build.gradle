@@ -36,9 +36,9 @@ ext.nativeJar = file("native/surrealdb-${version}.jar")
 // Fail fast, but only when the task graph contains a task that needs the file
 gradle.taskGraph.whenReady { graph ->
     boolean needsNativeJar = graph.allTasks.any { t ->
-                t.name in ['stageNativeJar', 'publish', 'publishToMavenLocal'] ||
-                        (t.name.startsWith('generate') && t.name.endsWith('Publication'))
-            }
+               t.name in ['publish', 'publishToMavenLocal'] || (t.name.startsWith('generate') && t.name.endsWith('Publication'))
+    }
+
 
     if (needsNativeJar) {
 
