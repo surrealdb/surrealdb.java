@@ -36,18 +36,17 @@ ext.nativeJar = file("native/surrealdb-${version}.jar")
 // Fail fast, but only when the task graph contains a task that needs the file
 gradle.taskGraph.whenReady { graph ->
     boolean needsNativeJar = graph.allTasks.any { t ->
-               t.name in ['publish', 'publishToMavenLocal'] || (t.name.startsWith('generate') && t.name.endsWith('Publication'))
+                t.name in ['publish', 'publishToMavenLocal'] ||
+                      (t.name.startsWith('generate') && t.name.endsWith('Publication'))
     }
 
 
-    if (needsNativeJar) {
 
-        if (!nativeJar.exists()) {
+    if (needsNativeJar && !nativeJar.exists()) {
                throw new GradleException(
                             "Native JAR not found at '${nativeJar}'. " +
                                     "Build/copy it to native/ before running publishing tasks."
                )
-           }
     }
 }
 
@@ -90,10 +89,8 @@ tasks.matching { it.name == 'signMavenJavaPublication' }.configureEach {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    // point to the staged file, not a hard-coded path
-    integrationTestImplementation(
-            files(tasks.named('stageNativeJar').flatMap { it.outputs.files })
-    )
+    // use the outputs of the Copy task; Gradle resolves them automatically
+    integrationTestImplementation(files(tasks.named('stageNativeJar')))
 }
 
 jacoco {
@@ -160,6 +157,7 @@ tasks.register('createCombinedReport') {
 }
 
 tasks.register('integrationTest', Test) {
+    dependsOn 'stageNativeJar'
     useJUnitPlatform()
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
