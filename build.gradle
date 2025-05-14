@@ -31,9 +31,68 @@ configurations {
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
+ext.nativeJar = file("native/surrealdb-${version}.jar")
+
+// Fail fast, but only when the task graph contains a task that needs the file
+gradle.taskGraph.whenReady { graph ->
+    boolean needsNativeJar = graph.allTasks.any { t ->
+                t.name in ['publish', 'publishToMavenLocal'] ||
+                      (t.name.startsWith('generate') && t.name.endsWith('Publication'))
+    }
+
+
+
+    if (needsNativeJar && !nativeJar.exists()) {
+               throw new GradleException(
+                            "Native JAR not found at '${nativeJar}'. " +
+                                    "Build/copy it to native/ before running publishing tasks."
+               )
+    }
+}
+
+
+
+// ---------------------------------------------------------------------------
+// 2. Task that stages (copies) the external JAR into build/libs
+// ---------------------------------------------------------------------------
+tasks.register('stageNativeJar', Copy) {
+    description = 'Copies the externally built JAR (with native libs) into build/libs.'
+    group       = 'build'
+
+    from nativeJar
+    into "$buildDir/libs"
+    rename { "surrealdb-${version}.jar" }     // the file name expected by publish/sign
+}
+
+// ---------------------------------------------------------------------------
+// 3. Make sure every task that cares about the JAR sees the staged version.
+//    • jar is still executed (keeps components.java happy), but the copy task
+//      will overwrite its output afterwards.
+// ---------------------------------------------------------------------------
+tasks.named('jar') {
+    finalizedBy 'stageNativeJar'            // run jar first, then overwrite
+}
+
+// All publish-to-Maven tasks must wait for the staged JAR
+tasks.withType(PublishToMavenRepository).configureEach {
+    dependsOn 'stageNativeJar'
+}
+// Metadata / POM generation tasks must wait as well
+tasks.matching { it.name.startsWith('generate') && it.name.endsWith('Publication') }
+      .configureEach { dependsOn 'stageNativeJar' }
+
+// The generated signing task is created after evaluation; use task rules
+tasks.matching { it.name == 'signMavenJavaPublication' }.configureEach {
+    dependsOn 'stageNativeJar'
+}
+
+
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    integrationTestImplementation files("build/libs/surrealdb-1.0.0-beta.1.jar")
+    // classes produced by src/main/java
+    integrationTestImplementation sourceSets.main.output
+    // the staged, native-enabled JAR
+    integrationTestImplementation files("native/surrealdb-${version}.jar")
 }
 
 jacoco {
@@ -61,10 +120,6 @@ jacocoTestCoverageVerification {
             }
         }
     }
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
 }
 
 tasks.register('createCombinedReport') {
@@ -103,10 +158,13 @@ tasks.register('createCombinedReport') {
     }
 }
 
+
 tasks.register('integrationTest', Test) {
+    dependsOn 'stageNativeJar'
     useJUnitPlatform()
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
+    // use target/release for a release build
     testLogging {
         showStandardStreams = true
         events "passed", "skipped", "failed", "standardOut", "standardError"
@@ -136,16 +194,16 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
-//        maven {
-//            name = "OSSRH"
-//            def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-//            def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-//            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-//            credentials {
-//                username = System.getenv("MAVEN_USERNAME")
-//                password = System.getenv("MAVEN_PASSWORD")
-//            }
-//        }
+        maven {
+            name = "OSSRH"
+            def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
     }
 
     publications {
