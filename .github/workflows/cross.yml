@@ -7,6 +7,12 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      run_optional_task:
+        description: 'Publish?'
+        required: false
+        default: 'false'
 
 jobs:
 
@@ -322,7 +328,7 @@ jobs:
     needs:
       - aggregated-jar
       - integration-tests
-#    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_optional_task == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -353,12 +359,3 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASS }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
-
-      - name: Publish release package
-        uses: softprops/action-gh-release@v2
-        if: github.event_name == 'release' && github.event.action == 'created'
-        with:
-          name: "Release ${{ github.ref_name }}"
-          files: |
-            LICENSE
-            build/libs/*.jar
