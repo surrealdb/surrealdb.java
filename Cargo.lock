@@ -3269,6 +3269,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 [[package]]
 name = "surrealdb"
 version = "3.0.0-alpha.11"
+source = "git+https://github.com/surrealdb/surrealdb.git?branch=emmanuel%2Fsurrealdb.java#61ead667f4f6fb5eab5d587de3adf3531fa60eb9"
 dependencies = [
  "arrayvec",
  "async-channel",
@@ -3310,6 +3311,7 @@ dependencies = [
 [[package]]
 name = "surrealdb-core"
 version = "3.0.0-alpha.11"
+source = "git+https://github.com/surrealdb/surrealdb.git?branch=emmanuel%2Fsurrealdb.java#61ead667f4f6fb5eab5d587de3adf3531fa60eb9"
 dependencies = [
  "addr",
  "affinitypool",
@@ -3442,6 +3444,7 @@ dependencies = [
 [[package]]
 name = "surrealdb-types"
 version = "3.0.0-alpha.11"
+source = "git+https://github.com/surrealdb/surrealdb.git?branch=emmanuel%2Fsurrealdb.java#61ead667f4f6fb5eab5d587de3adf3531fa60eb9"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3467,6 +3470,7 @@ dependencies = [
 [[package]]
 name = "surrealdb-types-derive"
 version = "3.0.0-alpha.11"
+source = "git+https://github.com/surrealdb/surrealdb.git?branch=emmanuel%2Fsurrealdb.java#61ead667f4f6fb5eab5d587de3adf3531fa60eb9"
 dependencies = [
  "proc-macro2",
  "quote",

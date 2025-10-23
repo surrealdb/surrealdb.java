@@ -13,11 +13,13 @@ opt-level = 3
 
 [dependencies]
 jni = "0.21.1"
-surrealdb = {path = "../surrealdb/crates/sdk"}
+#surrealdb = {path = "../surrealdb/crates/sdk"}
+#surrealdb = "3.0.0-alpha.11"
+surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", branch = "emmanuel/surrealdb.java" }
 serde = "1.0.218"
 rust_decimal = "1.39.0"
 tokio = "1.48.0"
-parking_lot = "0.12.3"
+parking_lot = "0.12.5"
 once_cell = "1.21.3"
 chrono = "0.4.42"
 dashmap = "6.1.0"
