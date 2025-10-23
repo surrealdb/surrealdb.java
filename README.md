@@ -65,7 +65,7 @@ Gradle:
 
 ```groovy
 ext {
-    surrealdbVersion = "1.0.0-beta.1"
+    surrealdbVersion = "3.0.0-beta.1"
 }
 
 dependencies {

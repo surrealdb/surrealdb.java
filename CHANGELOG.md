@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.0.0] - 2025-02-XX
+- Upgrade to SurrealDB SDK 3.0.0
+
 ## [1.0.0] - 2025-02-XX
 
 - Upgrade to SurrealDB SDK 2.2.1

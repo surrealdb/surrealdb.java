@@ -4,7 +4,7 @@ use std::ptr::null_mut;
 use jni::objects::JClass;
 use jni::sys::{jboolean, jdoubleArray, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::sql::{Geometry, Value};
+use surrealdb::types::{Geometry, Value};
 
 use crate::error::SurrealError;
 use crate::{get_value_instance, new_double_point, new_string};

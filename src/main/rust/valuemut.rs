@@ -8,7 +8,7 @@ use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::JNIEnv;
 use rust_decimal::Decimal;
-use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Uuid, Value};
+use surrealdb::types::{Array, Datetime, Duration, Number, Object, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{
@@ -39,7 +39,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
     s: JString<'local>,
 ) -> jlong {
     let s = get_rust_string!(&mut env, s, || 0);
-    let value = Value::Strand(Strand::from(s));
+    let value = Value::String(s);
     create_instance(value, JniTypes::ValueMut)
 }
 
@@ -123,7 +123,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if matches!(value.as_ref(), Value::Thing(_)) {
+    if matches!(value.as_ref(), Value::RecordId(_)) {
         return JniTypes::new_value_mut(value.as_ref().clone());
     }
     SurrealError::NullPointerException("ID").exception(&mut env, || 0)
@@ -150,7 +150,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if matches!(value.as_ref(), Value::Thing(_)) {
+    if matches!(value.as_ref(), Value::RecordId(_)) {
         return JniTypes::new_value_mut(value.as_ref().clone());
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
@@ -221,7 +221,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_toString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_mut_instance!(&mut env, ptr, null_mut);
-    new_string!(&mut env, value.to_string(), null_mut)
+    new_string!(&mut env, value.to_sql(), null_mut)
 }
 
 #[no_mangle]

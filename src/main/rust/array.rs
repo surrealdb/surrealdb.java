@@ -6,7 +6,7 @@ use jni::objects::JClass;
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
 use parking_lot::Mutex;
-use surrealdb::sql::Value;
+use surrealdb::types::{ToSql, Value};
 
 use crate::error::SurrealError;
 use crate::{get_value_instance, new_string, release_instance, JniTypes};
@@ -29,7 +29,8 @@ pub extern "system" fn Java_com_surrealdb_Array_toPrettyString<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if matches!(value.as_ref(), Value::Array(_)) {
-        let s = format!("{value:#}");
+        // TODO pretty print
+        let s = value.to_sql();
         new_string!(&mut env, s, null_mut)
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, null_mut)
@@ -74,7 +75,7 @@ pub extern "system" fn Java_com_surrealdb_Array_iterator<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Array(a) = value.as_ref() {
-        let iter = a.0.clone().into_iter();
+        let iter = a.clone().into_iter();
         JniTypes::new_array_iter(iter)
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, || 0)
@@ -89,7 +90,7 @@ pub extern "system" fn Java_com_surrealdb_Array_synchronizedIterator<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Array(a) = value.as_ref() {
-        let iter = a.0.clone().into_iter();
+        let iter = a.clone().into_iter();
         JniTypes::new_sync_array_iter(Mutex::new(iter).into())
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, || 0)
@@ -104,7 +105,7 @@ pub extern "system" fn Java_com_surrealdb_Array_toString<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if matches!(value.as_ref(), Value::Array(_)) {
-        new_string!(&mut env, value.to_string(), null_mut)
+        new_string!(&mut env, value.to_sql(), null_mut)
     } else {
         SurrealError::NullPointerException("Array").exception(&mut env, null_mut)
     }

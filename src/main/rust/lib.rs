@@ -10,8 +10,8 @@ use std::collections::btree_map::IntoIter as BIntoIter;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::vec::IntoIter;
-use surrealdb::sql::Value;
-use surrealdb::{Connection, Response, Surreal};
+use surrealdb::types::Value;
+use surrealdb::{Connection, IndexedResults, Surreal};
 use tokio::runtime::Runtime;
 
 mod array;
@@ -89,7 +89,7 @@ impl JniTypes {
         create_instance(i, Self::ObjectIter)
     }
 
-    fn new_response(res: Arc<Mutex<Response>>) -> jlong {
+    fn new_response(res: Arc<Mutex<IndexedResults>>) -> jlong {
         create_instance(res, Self::Response)
     }
 

@@ -1,14 +1,14 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 
-use jni::objects::{JClass, JString};
-use jni::sys::{jboolean, jint, jlong, jstring};
-use jni::JNIEnv;
-
 use crate::error::SurrealError;
 use crate::{
     get_entry_mut_instance, get_rust_string, new_string, take_value_mut_instance, JniTypes,
 };
+use jni::objects::{JClass, JString};
+use jni::sys::{jboolean, jint, jlong, jstring};
+use jni::JNIEnv;
+use surrealdb::types::ToSql;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_EntryMut_create<'local>(
@@ -29,7 +29,7 @@ pub extern "system" fn Java_com_surrealdb_EntryMut_toString<'local>(
     ptr: jlong,
 ) -> jstring {
     let (key, value) = get_entry_mut_instance!(&mut env, ptr, null_mut);
-    new_string!(&mut env, format!("({key},{value})"), null_mut)
+    new_string!(&mut env, format!("({key},{})", value.to_sql()), null_mut)
 }
 
 #[no_mangle]

@@ -5,7 +5,7 @@ use std::sync::Arc;
 use jni::objects::{AsJArrayRaw, JClass};
 use jni::sys::{jboolean, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
 use jni::JNIEnv;
-use surrealdb::sql::{Number, Value};
+use surrealdb::types::{Number, ToSql, Value};
 
 use crate::error::SurrealError;
 use crate::{get_value_instance, new_jlong_array, new_string, release_instance, JniTypes};
@@ -293,7 +293,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isString<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_strand() as jboolean
+    value.is_string() as jboolean
 }
 
 #[no_mangle]
@@ -303,8 +303,8 @@ pub extern "system" fn Java_com_surrealdb_Value_getString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Strand(s) = value.as_ref() {
-        new_string!(&mut env, &s.0, null_mut)
+    if let Value::String(s) = value.as_ref() {
+        new_string!(&mut env, s.clone(), null_mut)
     } else {
         SurrealError::NullPointerException("String").exception(&mut env, null_mut)
     }
@@ -317,7 +317,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isThing<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_thing() as jboolean
+    value.is_record() as jboolean
 }
 
 #[no_mangle]
@@ -327,7 +327,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(_) = value.as_ref() {
+    if let Value::RecordId(_) = value.as_ref() {
         JniTypes::new_value(value)
     } else {
         SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
@@ -365,7 +365,7 @@ pub extern "system" fn Java_com_surrealdb_Value_toString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    let s = value.to_string();
+    let s = value.to_sql();
     new_string!(&mut env, s, null_mut)
 }
 
@@ -376,7 +376,8 @@ pub extern "system" fn Java_com_surrealdb_Value_toPrettyString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    let s = format!("{value:#}");
+    // TODO: pretty print
+    let s = value.to_sql();
     new_string!(&mut env, s, null_mut)
 }
 
@@ -402,5 +403,5 @@ pub extern "system" fn Java_com_surrealdb_Value_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    v1.equal(v2.as_ref()) as jboolean
+    v1.eq(&v2) as jboolean
 }
