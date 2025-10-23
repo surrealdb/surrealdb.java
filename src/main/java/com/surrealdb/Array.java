@@ -46,7 +46,7 @@ public class Array extends Native implements Iterable<Value> {
     }
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     @Override
     final public Iterator<Value> iterator() {

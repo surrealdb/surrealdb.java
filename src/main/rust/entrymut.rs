@@ -3,12 +3,21 @@ use std::ptr::null_mut;
 
 use crate::error::SurrealError;
 use crate::{
-    get_entry_mut_instance, get_rust_string, new_string, take_value_mut_instance, JniTypes,
+    get_entry_mut_instance, get_rust_string, new_string, release_instance, take_value_mut_instance, JniTypes,
 };
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::types::ToSql;
+use surrealdb::types::{ToSql, Value};
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_EntryMut_deleteInstance<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) {
+    release_instance::<(String, Value)>(ptr);
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_EntryMut_create<'local>(

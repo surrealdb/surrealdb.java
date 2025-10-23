@@ -33,9 +33,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jboolean {
+) {
     release_instance::<Surreal<Any>>(ptr);
-    true as jboolean
 }
 
 #[no_mangle]
@@ -181,10 +180,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDb<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
     // Call use_db
-    let db: String = match env.get_string(&db) {
-        Ok(s) => s.into(),
-        Err(_) => return 0,
-    };
+    let db = get_rust_string!(&mut env, db, || false as jboolean);
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
         return SurrealError::from(err).exception(&mut env, || false as jboolean);
     }
@@ -550,7 +546,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     let mut res = take_one_result!(&mut env, res, || 0);
     // There should be only one result
     return_value_array_first!(res);
-    0
+    // Otherwise throw an error
+    return_unexpected_result!(&mut env, res.to_sql(), || 0)
 }
 
 #[no_mangle]

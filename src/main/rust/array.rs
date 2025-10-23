@@ -16,9 +16,8 @@ pub extern "system" fn Java_com_surrealdb_Array_deleteInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jboolean {
+) {
     release_instance::<Arc<Value>>(ptr);
-    true as jboolean
 }
 
 #[no_mangle]

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use jni::objects::JClass;
-use jni::sys::{jboolean, jint, jlong};
+use jni::sys::{jint, jlong};
 use jni::JNIEnv;
 use parking_lot::Mutex;
 use surrealdb::types::Value;
@@ -15,9 +15,8 @@ pub extern "system" fn Java_com_surrealdb_Response_deleteInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jboolean {
+) {
     release_instance::<Arc<Mutex<Result<IndexedResults>>>>(ptr);
-    true as jboolean
 }
 
 #[no_mangle]

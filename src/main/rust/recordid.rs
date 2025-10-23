@@ -8,7 +8,16 @@ use jni::JNIEnv;
 use surrealdb::types::{RecordId, RecordIdKey, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
-use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
+use crate::{get_rust_string, get_value_instance, new_string, release_instance, JniTypes};
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_deleteInstance<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) {
+    release_instance::<std::sync::Arc<Value>>(ptr);
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(

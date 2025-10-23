@@ -3309,6 +3309,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "surrealdb"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "dashmap",
+ "jni",
+ "once_cell",
+ "parking_lot",
+ "rust_decimal",
+ "serde",
+ "surrealdb 3.0.0-alpha.11",
+ "tokio",
+]
+
+[[package]]
 name = "surrealdb-core"
 version = "3.0.0-alpha.11"
 source = "git+https://github.com/surrealdb/surrealdb.git?branch=emmanuel%2Fsurrealdb.java#61ead667f4f6fb5eab5d587de3adf3531fa60eb9"
@@ -3401,21 +3416,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasmtimer",
  "ws_stream_wasm",
-]
-
-[[package]]
-name = "surrealdb-java"
-version = "3.0.0"
-dependencies = [
- "chrono",
- "dashmap",
- "jni",
- "once_cell",
- "parking_lot",
- "rust_decimal",
- "serde",
- "surrealdb",
- "tokio",
 ]
 
 [[package]]

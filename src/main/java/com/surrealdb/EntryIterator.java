@@ -34,7 +34,7 @@ public class EntryIterator extends Native implements Iterator<Entry> {
     }
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     @Override
     public boolean hasNext() {

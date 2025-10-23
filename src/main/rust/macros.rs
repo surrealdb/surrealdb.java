@@ -180,7 +180,9 @@ macro_rules! new_jlong_array {
             Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
         };
         // Set the values of the jlongArray
-        $env.set_long_array_region(&mut jarray, 0, $array).unwrap();
+        if let Err(e) = $env.set_long_array_region(&mut jarray, 0, $array) {
+            return $crate::SurrealError::from(e).exception($env, $default_fn);
+        }
         // Return the populated jlongArray
         jarray.into_raw()
     }};

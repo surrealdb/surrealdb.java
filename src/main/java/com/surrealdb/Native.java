@@ -15,7 +15,7 @@ public abstract class Native {
 
     abstract boolean equals(long ptr1, long ptr2);
 
-    abstract boolean deleteInstance(long ptr);
+    abstract void deleteInstance(long ptr);
 
     final long getPtr() {
         return this.ptr;
