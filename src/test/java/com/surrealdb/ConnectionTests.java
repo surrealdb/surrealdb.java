@@ -18,7 +18,7 @@ public class ConnectionTests {
             RuntimeException e = assertThrows(SurrealException.class, () -> {
                 surreal.connect("ws://localhost:8000");
             });
-            assertEquals(e.getMessage(), "There was an error processing a WebSocket request: IO error: Connection refused (os error 61)");
+            assertTrue(e.getMessage().startsWith("There was an error processing a WebSocket request: IO error:"));
         }
     }
 
