@@ -370,18 +370,6 @@ pub extern "system" fn Java_com_surrealdb_Value_toString<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_toPrettyString<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    // TODO: pretty print
-    let s = value.to_sql();
-    new_string!(&mut env, s, null_mut)
-}
-
-#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_hashCode<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,

@@ -46,19 +46,19 @@ public class ConnectionTests {
                     final Value v = object.get("accesses");
                     assertTrue(v.isObject());
                     assertEquals(v.getObject().len(), 0);
-                    assertEquals("{}", v.toPrettyString());
+                    assertEquals("{  }", v.toString());
                 }
                 {
                     final Value v = object.get("namespaces");
                     assertTrue(v.isObject());
-                    assertEquals("{  }", v.toString());
-                    assertEquals(v.getObject().len(), 0);
+                    assertEquals("{ test_ns: 'DEFINE NAMESPACE test_ns' }", v.toString());
+                    assertEquals(v.getObject().len(), 1);
                 }
                 {
                     final Value v = object.get("users");
                     assertTrue(v.isObject());
                     assertEquals(v.getObject().len(), 0);
-                    assertEquals("{}", v.toPrettyString());
+                    assertEquals("{  }", v.toString());
                 }
                 {
                     final Value v = object.get("nodes");

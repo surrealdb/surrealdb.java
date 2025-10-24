@@ -21,22 +21,6 @@ pub extern "system" fn Java_com_surrealdb_Array_deleteInstance<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Array_toPrettyString<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if matches!(value.as_ref(), Value::Array(_)) {
-        // TODO pretty print
-        let s = value.to_sql();
-        new_string!(&mut env, s, null_mut)
-    } else {
-        SurrealError::NullPointerException("Array").exception(&mut env, null_mut)
-    }
-}
-
-#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Array_len<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,

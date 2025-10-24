@@ -12,8 +12,6 @@ public class Object extends Native implements Iterable<Entry> {
         super(ptr);
     }
 
-    private static native String toPrettyString(long ptr);
-
     private static native long iterator(long ptr);
 
     private static native long synchronizedIterator(long ptr);
@@ -33,10 +31,6 @@ public class Object extends Native implements Iterable<Entry> {
 
     @Override
     final native void deleteInstance(long ptr);
-
-    final public String toPrettyString() {
-        return toPrettyString(getPtr());
-    }
 
     final public Value get(String key) {
         return new Value(get(getPtr(), key));

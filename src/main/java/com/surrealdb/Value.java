@@ -19,8 +19,6 @@ public class Value extends Native {
         super(ptr);
     }
 
-    private static native String toPrettyString(long ptr);
-
     private static native boolean isNone(long ptr);
 
     private static native boolean isNull(long ptr);
@@ -88,10 +86,6 @@ public class Value extends Native {
 
     @Override
     final native void deleteInstance(long ptr);
-
-    public String toPrettyString() {
-        return toPrettyString(getPtr());
-    }
 
     public boolean isArray() {
         return isArray(getPtr());

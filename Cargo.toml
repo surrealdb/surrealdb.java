@@ -15,7 +15,7 @@ opt-level = 3
 jni = "0.21.1"
 #surrealdb = {path = "../surrealdb/crates/sdk"}
 #surrealdb = "3.0.0-alpha.11"
-surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", branch = "emmanuel/surrealdb.java" }
+surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", branch = "emmanuel/surrealdb.java", default-features = false }
 serde = "1.0.218"
 rust_decimal = "1.39.0"
 tokio = "1.48.0"

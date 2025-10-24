@@ -14,8 +14,6 @@ public class Array extends Native implements Iterable<Value> {
         super(ptr);
     }
 
-    private static native String toPrettyString(long ptr);
-
     private static native long get(long ptr, int idx);
 
     private static native int len(long ptr);
@@ -32,10 +30,6 @@ public class Array extends Native implements Iterable<Value> {
 
     @Override
     final native boolean equals(long ptr1, long ptr2);
-
-    final public String toPrettyString() {
-        return toPrettyString(getPtr());
-    }
 
     final public Value get(int idx) {
         return new Value(get(getPtr(), idx));
