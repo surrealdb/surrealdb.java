@@ -123,8 +123,21 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if matches!(value.as_ref(), Value::RecordId(_)) {
-        return JniTypes::new_value_mut(value.as_ref().clone());
+    if let Value::RecordId(record_id) = value.as_ref() {
+        // Extract just the key part from the RecordId, not the whole RecordId with empty table
+        let key_value = match &record_id.key {
+            surrealdb::types::RecordIdKey::Number(n) => Value::Number(Number::Int(*n)),
+            surrealdb::types::RecordIdKey::String(s) => Value::String(s.clone()),
+            surrealdb::types::RecordIdKey::Uuid(u) => Value::Uuid(*u),
+            surrealdb::types::RecordIdKey::Array(a) => Value::Array(a.clone()),
+            surrealdb::types::RecordIdKey::Object(o) => Value::Object(o.clone()),
+            surrealdb::types::RecordIdKey::Range(_) => {
+                return SurrealError::SurrealDBJni(
+                    "Range-based IDs are not supported for Id serialization".to_string()
+                ).exception(&mut env, || 0);
+            }
+        };
+        return JniTypes::new_value_mut(key_value);
     }
     SurrealError::NullPointerException("ID").exception(&mut env, || 0)
 }
