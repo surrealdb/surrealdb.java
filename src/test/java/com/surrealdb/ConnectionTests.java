@@ -18,7 +18,7 @@ public class ConnectionTests {
             RuntimeException e = assertThrows(SurrealException.class, () -> {
                 surreal.connect("ws://localhost:8000");
             });
-            assertTrue(e.getMessage().startsWith("There was an error processing a WebSocket request: IO error:"));
+            assertTrue(e.getMessage().startsWith("There was an error processing a WebSocket request: IO error"));
         }
     }
 
