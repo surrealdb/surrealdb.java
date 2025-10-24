@@ -1,10 +1,11 @@
 [package]
-name = "surrealdb"
+name = "surrealdb-java"
 version = "3.0.0"
 authors = ["Emmanuel Keller <emmanuel.keller@surrealdb.com>"]
 edition = "2021"
 
 [lib]
+name = "surrealdb"
 crate-type = ["cdylib"]
 path = "src/main/rust/lib.rs"
 
