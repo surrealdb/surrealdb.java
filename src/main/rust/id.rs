@@ -5,7 +5,7 @@ use std::str::FromStr;
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::sql::{Id, Thing, Uuid, Value};
+use surrealdb::types::{RecordId, RecordIdKey, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
@@ -16,7 +16,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newLongId<'local>(
     _class: JClass<'local>,
     id: jlong,
 ) -> jlong {
-    let value = Value::Thing(Thing::from(("", Id::Number(id))));
+    let value = Value::RecordId(RecordId::new("", RecordIdKey::Number(id)));
     JniTypes::new_value(value.into())
 }
 
@@ -27,7 +27,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newStringId<'local>(
     id: JString<'local>,
 ) -> jlong {
     let id = get_rust_string!(&mut env, id, || 0);
-    let value = Value::Thing(Thing::from(("", Id::String(id))));
+    let value = Value::RecordId(RecordId::new("", RecordIdKey::String(id)));
     JniTypes::new_value(value.into())
 }
 
@@ -39,7 +39,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newUuidId<'local>(
 ) -> jlong {
     let id = get_rust_string!(&mut env, id, || 0);
     if let Ok(uuid) = Uuid::from_str(&id) {
-        let value = Value::Thing(Thing::from(("", Id::Uuid(uuid))));
+        let value = Value::RecordId(RecordId::new("", RecordIdKey::Uuid(uuid)));
         JniTypes::new_value(value.into())
     } else {
         SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
@@ -53,8 +53,8 @@ pub extern "system" fn Java_com_surrealdb_Id_isLong<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Number(_) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Number(_) = &o.key {
             true as jboolean
         } else {
             false as jboolean
@@ -71,8 +71,8 @@ pub extern "system" fn Java_com_surrealdb_Id_getLong<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Number(i) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Number(i) = &o.key {
             return *i as jlong;
         }
     }
@@ -86,8 +86,8 @@ pub extern "system" fn Java_com_surrealdb_Id_isString<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::String(_) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::String(_) = &o.key {
             true as jboolean
         } else {
             false as jboolean
@@ -104,8 +104,8 @@ pub extern "system" fn Java_com_surrealdb_Id_getString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::String(s) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::String(s) = &o.key {
             return new_string!(&mut env, s, null_mut);
         }
     }
@@ -119,8 +119,8 @@ pub extern "system" fn Java_com_surrealdb_Id_isUuid<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Uuid(_) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Uuid(_) = &o.key {
             true as jboolean
         } else {
             false as jboolean
@@ -137,8 +137,8 @@ pub extern "system" fn Java_com_surrealdb_Id_getUuid<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Uuid(uuid) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Uuid(uuid) = &o.key {
             return new_string!(&mut env, uuid.0.to_string(), null_mut);
         }
     }
@@ -152,8 +152,8 @@ pub extern "system" fn Java_com_surrealdb_Id_isObject<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Object(_) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Object(_) = &o.key {
             true as jboolean
         } else {
             false as jboolean
@@ -170,8 +170,8 @@ pub extern "system" fn Java_com_surrealdb_Id_getObject<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Object(o) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Object(o) = &o.key {
             //TODO avoid cloning?
             return JniTypes::new_value(Value::Object(o.clone()).into());
         }
@@ -186,8 +186,8 @@ pub extern "system" fn Java_com_surrealdb_Id_isArray<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Array(_) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Array(_) = &o.key {
             true as jboolean
         } else {
             false as jboolean
@@ -204,8 +204,8 @@ pub extern "system" fn Java_com_surrealdb_Id_getArray<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(o) = value.as_ref() {
-        if let Id::Array(a) = &o.id {
+    if let Value::RecordId(o) = value.as_ref() {
+        if let RecordIdKey::Array(a) = &o.key {
             //TODO no clone?
             return JniTypes::new_value(Value::Array(a.clone()).into());
         }
@@ -220,8 +220,8 @@ pub extern "system" fn Java_com_surrealdb_Id_toString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Thing(o) = value.as_ref() {
-        let s = o.id.to_string();
+    if let Value::RecordId(o) = value.as_ref() {
+        let s = o.key.to_sql();
         return new_string!(&mut env, s, null_mut);
     }
     SurrealError::NullPointerException("Id").exception(&mut env, null_mut)
@@ -234,9 +234,9 @@ pub extern "system" fn Java_com_surrealdb_Id_hashCode<'local>(
     ptr: jlong,
 ) -> jint {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(o) = value.as_ref() {
+    if let Value::RecordId(o) = value.as_ref() {
         let mut hasher = DefaultHasher::new();
-        o.id.hash(&mut hasher);
+        o.key.hash(&mut hasher);
         let hash64 = hasher.finish();
         return (hash64 & 0xFFFFFFFF) as jint;
     }
@@ -252,8 +252,8 @@ pub extern "system" fn Java_com_surrealdb_Id_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    if let (Value::Thing(t1), Value::Thing(t2)) = (v1.as_ref(), v2.as_ref()) {
-        return t1.id.eq(&t2.id) as jboolean;
+    if let (Value::RecordId(t1), Value::RecordId(t2)) = (v1.as_ref(), v2.as_ref()) {
+        return t1.key.eq(&t2.key) as jboolean;
     }
     SurrealError::NullPointerException("Id").exception(&mut env, || false as jboolean)
 }

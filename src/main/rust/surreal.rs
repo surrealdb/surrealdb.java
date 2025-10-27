@@ -4,9 +4,9 @@ use std::sync::Arc;
 
 use crate::error::SurrealError;
 use crate::{
-    check_query_result, check_value_table, convert_up_type, get_long_array, get_rust_string,
+    check_query_result, convert_up_type, get_long_array, get_rust_string,
     get_rust_string_array, get_surreal_instance, get_value_instance, get_value_mut_instance,
-    new_jlong_array, new_string, parse_value, release_instance, return_unexpected_result,
+    new_jlong_array, new_string, release_instance, return_unexpected_result,
     return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
     take_one_result, JniTypes, TOKIO_RUNTIME,
 };
@@ -17,8 +17,8 @@ use parking_lot::Mutex;
 use serde::Serialize;
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::{Database, Namespace, Root};
-use surrealdb::sql::Value;
-use surrealdb::{Error, Response, Surreal};
+use surrealdb::types::{SurrealValue, ToSql, Value};
+use surrealdb::{IndexedResults, Result, Surreal};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -33,9 +33,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jboolean {
+) {
     release_instance::<Surreal<Any>>(ptr);
-    true as jboolean
 }
 
 #[no_mangle]
@@ -71,8 +70,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
     match TOKIO_RUNTIME.block_on(async {
         surreal
             .signin(Root {
-                username: &username,
-                password: &password,
+                username,
+                password,
             })
             .await
     }) {
@@ -103,9 +102,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
     match TOKIO_RUNTIME.block_on(async {
         surreal
             .signin(Namespace {
-                username: &username,
-                password: &password,
-                namespace: &namespace,
+                username,
+                password,
+                namespace,
             })
             .await
     }) {
@@ -138,10 +137,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
     match TOKIO_RUNTIME.block_on(async {
         surreal
             .signin(Database {
-                username: &username,
-                password: &password,
-                namespace: &namespace,
-                database: &database,
+                username,
+                password,
+                namespace,
+                database,
             })
             .await
     }) {
@@ -181,10 +180,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDb<'local>(
     // Retrieve the Surreal instance
     let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
     // Call use_db
-    let db: String = match env.get_string(&db) {
-        Ok(s) => s.into(),
-        Err(_) => return 0,
-    };
+    let db = get_rust_string!(&mut env, db, || false as jboolean);
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
         return SurrealError::from(err).exception(&mut env, || false as jboolean);
     }
@@ -225,13 +221,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
     let query = get_rust_string!(&mut env, &query, || 0);
     let keys = get_rust_string_array!(&mut env, params_keys, || 0);
     let value_ptrs = get_long_array!(&mut env, &params_values, || 0);
-    let mut params_map = BTreeMap::<String, &Value>::new();
+    let mut params_map = BTreeMap::<String, Value>::new();
     for (key, value_ptr) in keys.into_iter().zip(value_ptrs) {
         let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
-        params_map.insert(key, value);
+        params_map.insert(key, value.clone());
     }
 
-    let res = surrealdb_query::<&Value>(&surreal, &query, Some(params_map));
+    let res = surrealdb_query::<Value>(&surreal, &query, Some(params_map));
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     JniTypes::new_response(Arc::new(Mutex::new(res)))
@@ -241,9 +237,9 @@ fn surrealdb_query<T>(
     surreal: &Surreal<Any>,
     query: &str,
     params: Option<BTreeMap<String, T>>,
-) -> Result<Response, Error>
+) -> Result<IndexedResults>
 where
-    T: Serialize + 'static,
+    T: SurrealValue + Serialize + 'static,
 {
     TOKIO_RUNTIME.block_on(async {
         let q = surreal.query(query);
@@ -270,8 +266,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("CREATE {thing} CONTENT $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
+    let query = format!("CREATE {} CONTENT $val", thing.to_sql());
+    let params = BTreeMap::from([("val".to_string(), value.clone())]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
@@ -280,7 +276,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -295,19 +291,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, null_mut);
-    // Check the target is a table
-    let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
     let mut queries = Vec::with_capacity(value_ptrs.len());
     let mut params = BTreeMap::new();
     for (idx, value_ptr) in value_ptrs.iter().enumerate() {
-        queries.push(format!("CREATE {table} CONTENT $i{idx}"));
+        queries.push(format!("CREATE {} CONTENT $i{idx}", target));
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
-        params.insert(format!("i{idx}"), value);
+        params.insert(format!("i{idx}"), value.clone());
     }
     let query = queries.join(";\n");
     // Execute the query
@@ -316,16 +308,16 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
     let mut res = check_query_result!(&mut env, res, null_mut);
     // Prepare the result
     let mut value_ptrs: Vec<jlong> = Vec::with_capacity(res.num_statements());
-    // Iterate overt the statement
+    // Iterate over the statement
     for i in 0..res.num_statements() {
-        let mut res = match res.take::<surrealdb::Value>(i) {
-            Ok(r) => r.into_inner(),
+        let mut res = match res.take::<Value>(i) {
+            Ok(r) => r,
             Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, null_mut),
         };
         // There should be only one result per statement
         if let Value::Array(ref mut a) = res {
             if a.len() != 1 {
-                return SurrealError::SurrealDBJni(format!("Unexpected result: {res}"))
+                return SurrealError::SurrealDBJni(format!("Unexpected result: {}", res.to_sql()))
                     .exception(&mut env, null_mut);
             }
             let val = a.remove(0);
@@ -348,19 +340,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, null_mut);
-    // Check the target is a table
-    let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
     let mut records = Vec::with_capacity(value_ptrs.len());
     for value_ptr in &value_ptrs {
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
-        records.push(value.to_string());
+        records.push(value.to_sql());
     }
-    let query = format!("INSERT INTO {table} [ {} ]", records.join(" , "));
+    let query = format!("INSERT INTO {} [ {} ]", target, records.join(" , "));
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -376,7 +364,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
         }
         new_jlong_array!(&mut env, &value_ptrs, null_mut)
     } else {
-        SurrealError::SurrealDBJni(format!("Unexpected result: {result}"))
+        SurrealError::SurrealDBJni(format!("Unexpected result: {}", result.to_sql()))
             .exception(&mut env, null_mut)
     }
 }
@@ -393,15 +381,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValue<'loc
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, || 0);
-    let table = check_value_table!(&mut env, target, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("INSERT RELATION INTO {table} $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let query = format!("INSERT RELATION INTO {} {}", target, value.to_sql());
+    let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -409,7 +393,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValue<'loc
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -424,18 +408,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, null_mut);
-    let table = check_value_table!(&mut env, target, null_mut);
     // Get the pointers
     let value_ptrs = get_long_array!(&mut env, &value_ptrs, null_mut);
     // Build the queries
     let mut records = Vec::with_capacity(value_ptrs.len());
     for value_ptr in &value_ptrs {
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
-        records.push(value.to_string());
+        records.push(value.to_sql());
     }
-    let query = format!("INSERT RELATION INTO {table} [ {} ]", records.join(" , "));
+    let query = format!("INSERT RELATION INTO {} [ {} ]", target, records.join(" , "));
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -451,7 +432,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
         }
         new_jlong_array!(&mut env, &value_ptrs, null_mut)
     } else {
-        SurrealError::SurrealDBJni(format!("Unexpected result: {result}"))
+        SurrealError::SurrealDBJni(format!("Unexpected result: {}", result.to_sql()))
             .exception(&mut env, null_mut)
     }
 }
@@ -469,14 +450,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, || 0);
-    let table = check_value_table!(&mut env, target, || 0);
     // Get from and to
     let from_value = get_value_instance!(&mut env, from_ptr, || 0);
     let to_value = get_value_instance!(&mut env, to_ptr, || 0);
     // Execute the query
-    let query = format!("RELATE $from->{table}->$to");
+    let query = format!("RELATE $from->{}->$to", target);
     let params = BTreeMap::from([
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),
@@ -489,7 +467,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -506,15 +484,12 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, || 0);
-    let table = check_value_table!(&mut env, target, || 0);
     // Get from and to
     let from_value = get_value_instance!(&mut env, from_ptr, || 0);
     let to_value = get_value_instance!(&mut env, to_ptr, || 0);
     let content_value = get_value_mut_instance!(&mut env, content_ptr, || 0);
     // Execute the query
-    let query = format!("RELATE $from->{table}->$to CONTENT {content_value}");
+    let query = format!("RELATE $from->{}->$to CONTENT {}", target, content_value.to_sql());
     let params = BTreeMap::from([
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),
@@ -527,7 +502,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -542,7 +517,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     // Extract the thing
     let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Execute the query
-    let query = format!("SELECT * FROM {thing}");
+    let query = format!("SELECT * FROM {}", thing.to_sql());
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
@@ -550,7 +525,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     let mut res = take_one_result!(&mut env, res, || 0);
     // There should be only one result
     return_value_array_first!(res);
-    0
+    // If the array is empty, return null (0) for Optional.empty()
+    if let Value::Array(ref a) = res {
+        if a.is_empty() {
+            return 0;
+        }
+    }
+    // Otherwise throw an error
+    return_unexpected_result!(&mut env, res.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -568,7 +550,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
     let mut things = Vec::with_capacity(thing_ptrs.len());
     for thing_ptr in thing_ptrs {
         let thing = get_value_instance!(&mut env, thing_ptr, null_mut);
-        things.push(thing.to_string());
+        things.push(thing.to_sql());
     }
     // Execute the query
     let query = format!("SELECT * FROM {}", things.join(","));
@@ -587,7 +569,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
         // Return the results
         new_jlong_array!(&mut env, &value_ptrs, null_mut)
     } else {
-        SurrealError::SurrealDBJni(format!("Unexpected result: {res}"))
+        SurrealError::SurrealDBJni(format!("Unexpected result: {}", res.to_sql()))
             .exception(&mut env, null_mut)
     }
 }
@@ -614,7 +596,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     // Return the iterator
     return_value_array_iter!(result);
     // Otherwise throw an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -639,7 +621,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     // Return tne sync iterator
     return_value_array_iter_sync!(result);
     // Otherwise throw an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -701,12 +683,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTarget<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
     // Get the targets
     let target = get_rust_string!(&mut env, target, || false as jboolean);
-    // Parse the targets
-    let target = parse_value!(&mut env, &target, || false as jboolean);
-    // Check the target is a table
-    let table = check_value_table!(&mut env, &target, || false as jboolean);
     // Prepare the query
-    let query = format!("DELETE FROM {table}");
+    let query = format!("DELETE FROM {}", target);
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -731,8 +709,8 @@ fn up_thing_value(
     // Check the up type
     let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("{up} {thing} {up_type} $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
+    let query = format!("{up} {} {up_type} $val", thing.to_sql());
+    let params = BTreeMap::from([("val".to_string(), value.clone())]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
@@ -741,7 +719,7 @@ fn up_thing_value(
     // There should be only one result
     return_value_array_first!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -780,17 +758,13 @@ fn up_target_value(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the targets
-    let target = parse_value!(&mut env, &target, || 0);
-    // Check the value is a table
-    let table = check_value_table!(&mut env, target, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Check the up type
     let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("{up} {table} {up_type} $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
+    let query = format!("{up} {} {up_type} $val", target);
+    let params = BTreeMap::from([("val".to_string(), value.clone())]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
@@ -799,7 +773,7 @@ fn up_target_value(
     // There should be only one result
     return_value_array_iter!(result);
     // Otherwise we return an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -838,17 +812,13 @@ fn up_target_value_sync<'local>(
     let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
-    // Parse the target
-    let target = parse_value!(&mut env, &target, || 0);
-    // Check the value is a table
-    let table = check_value_table!(&mut env, target, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Check the up type
     let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("{up} {table} {up_type} $val");
-    let params = BTreeMap::from([("val".to_string(), value)]);
+    let query = format!("{up} {} {up_type} $val", target);
+    let params = BTreeMap::from([("val".to_string(), value.clone())]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
@@ -857,7 +827,7 @@ fn up_target_value_sync<'local>(
     // Return tne sync iterator
     return_value_array_iter_sync!(result);
     // Otherwise throw an error
-    return_unexpected_result!(&mut env, result, || 0)
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 
 #[no_mangle]

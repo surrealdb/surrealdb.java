@@ -14,7 +14,7 @@ class SynchronizedEntryIterator extends Native implements Iterator<Entry> {
     private static native long next(long ptr);
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     @Override
     final public boolean hasNext() {

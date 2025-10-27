@@ -5,10 +5,19 @@ use std::str::FromStr;
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::sql::{Id, Thing, Uuid, Value};
+use surrealdb::types::{RecordId, RecordIdKey, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
-use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
+use crate::{get_rust_string, get_value_instance, new_string, release_instance, JniTypes};
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_deleteInstance<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) {
+    release_instance::<std::sync::Arc<Value>>(ptr);
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(
@@ -18,7 +27,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(
     id: jlong,
 ) -> jlong {
     let table = get_rust_string!(&mut env, table, || 0);
-    let value = Value::Thing(Thing::from((table, Id::Number(id))));
+    let value = Value::RecordId(RecordId::new(table, RecordIdKey::Number(id)));
     JniTypes::new_value(value.into())
 }
 
@@ -31,7 +40,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingStringId<'local>(
 ) -> jlong {
     let table = get_rust_string!(&mut env, table, || 0);
     let id = get_rust_string!(&mut env, id, || 0);
-    let value = Value::Thing(Thing::from((table, Id::String(id))));
+    let value = Value::RecordId(RecordId::new(table, RecordIdKey::String(id)));
     JniTypes::new_value(value.into())
 }
 
@@ -45,7 +54,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingUuidId<'local>(
     let table = get_rust_string!(&mut env, table, || 0);
     let id = get_rust_string!(&mut env, id, || 0);
     if let Ok(uuid) = Uuid::from_str(&id) {
-        let value = Value::Thing(Thing::from((table, Id::Uuid(uuid))));
+        let value = Value::RecordId(RecordId::new(table, RecordIdKey::Uuid(uuid)));
         JniTypes::new_value(value.into())
     } else {
         SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
@@ -59,8 +68,8 @@ pub extern "system" fn Java_com_surrealdb_RecordId_getTable<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Thing(o) = value.as_ref() {
-        new_string!(&mut env, &o.tb, null_mut)
+    if let Value::RecordId(o) = value.as_ref() {
+        new_string!(&mut env, o.table.to_sql(), null_mut)
     } else {
         SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
     }
@@ -73,7 +82,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_getId<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(_) = value.as_ref() {
+    if let Value::RecordId(_) = value.as_ref() {
         JniTypes::new_value(value)
     } else {
         SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
@@ -89,7 +98,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_equals<'local>(
 ) -> jboolean {
     let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
     let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    if let (Value::Thing(t1), Value::Thing(t2)) = (v1.as_ref(), v2.as_ref()) {
+    if let (Value::RecordId(t1), Value::RecordId(t2)) = (v1.as_ref(), v2.as_ref()) {
         return t1.eq(t2) as jboolean;
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
@@ -102,7 +111,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_hashCode<'local>(
     ptr: jlong,
 ) -> jint {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Thing(o) = value.as_ref() {
+    if let Value::RecordId(o) = value.as_ref() {
         let mut hasher = DefaultHasher::new();
         o.hash(&mut hasher);
         let hash64 = hasher.finish();
@@ -118,8 +127,8 @@ pub extern "system" fn Java_com_surrealdb_RecordId_toString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Thing(o) = value.as_ref() {
-        return new_string!(&mut env, o.to_string(), null_mut);
+    if let Value::RecordId(o) = value.as_ref() {
+        return new_string!(&mut env, o.to_sql(), null_mut);
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
 }

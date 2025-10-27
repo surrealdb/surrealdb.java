@@ -25,7 +25,7 @@ public class Entry extends Native {
     final native boolean equals(long ptr1, long ptr2);
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     public String getKey() {
         return getKey(getPtr());

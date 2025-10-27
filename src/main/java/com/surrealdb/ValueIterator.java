@@ -41,7 +41,7 @@ public class ValueIterator extends Native implements Iterator<Value> {
     }
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     @Override
     public boolean hasNext() {

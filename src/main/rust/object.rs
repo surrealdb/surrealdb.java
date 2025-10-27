@@ -6,7 +6,7 @@ use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
 use parking_lot::Mutex;
-use surrealdb::sql::Value;
+use surrealdb::types::{ToSql, Value};
 
 use crate::error::SurrealError;
 use crate::{get_rust_string, get_value_instance, new_string, release_instance, JniTypes};
@@ -16,24 +16,8 @@ pub extern "system" fn Java_com_surrealdb_Object_deleteInstance<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jboolean {
+) {
     release_instance::<Arc<Value>>(ptr);
-    true as jboolean
-}
-
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Object_toPrettyString<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if matches!(value.as_ref(), Value::Object(_)) {
-        let s = format!("{value:#}");
-        new_string!(&mut env, s, null_mut)
-    } else {
-        SurrealError::NullPointerException("Object").exception(&mut env, null_mut)
-    }
 }
 
 #[no_mangle]
@@ -76,7 +60,7 @@ pub extern "system" fn Java_com_surrealdb_Object_iterator<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Object(o) = value.as_ref() {
-        let iter = o.0.clone().into_iter();
+        let iter = o.clone().into_iter();
         JniTypes::new_object_iter(iter)
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, || 0)
@@ -91,7 +75,7 @@ pub extern "system" fn Java_com_surrealdb_Object_synchronizedIterator<'local>(
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
     if let Value::Object(o) = value.as_ref() {
-        let iter = o.0.clone().into_iter();
+        let iter = o.clone().into_iter();
         JniTypes::new_sync_object_iter(Arc::new(Mutex::new(iter)))
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, || 0)
@@ -106,7 +90,7 @@ pub extern "system" fn Java_com_surrealdb_Object_toString<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if matches!(value.as_ref(), Value::Object(_)) {
-        new_string!(&mut env, value.to_string(), null_mut)
+        new_string!(&mut env, value.to_sql(), null_mut)
     } else {
         SurrealError::NullPointerException("Object").exception(&mut env, null_mut)
     }

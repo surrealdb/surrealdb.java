@@ -35,12 +35,7 @@ public class QueryTests {
                     assertTrue(select.isArray());
                     final Array selectArray = select.getArray();
                     assertEquals(1, selectArray.len());
-                    assertEquals("[\n" +
-                        "\t{\n" +
-                        "\t\tid: person:1,\n" +
-                        "\t\tname: 'Tobie'\n" +
-                        "\t}\n" +
-                        "]", selectArray.toPrettyString());
+                    assertEquals("[{ id: person:1, name: 'Tobie' }]", selectArray.toString());
                     { // Retrieve the fist record
                         final Value row = selectArray.get(0);
                         assertTrue(row.isObject());
@@ -84,15 +79,7 @@ public class QueryTests {
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
                 assertEquals(1, selectArray.len());
-                assertEquals("[\n" +
-                    "\t{\n" +
-                    "\t\tactive: true,\n" +
-                    "\t\tcategory: 1,\n" +
-                    "\t\tid: person:1,\n" +
-                    "\t\tname: 'Tobie',\n" +
-                    "\t\tscore: 5f\n" +
-                    "\t}\n" +
-                    "]", selectArray.toPrettyString());
+                assertEquals("[{ active: true, category: 1, id: person:1, name: 'Tobie', score: 5f }]", selectArray.toString());
                 // Retrieve the fist record
                 final Value row = selectArray.get(0);
                 assertTrue(row.isObject());
@@ -178,12 +165,7 @@ public class QueryTests {
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
                 assertEquals(1, selectArray.len());
-                assertEquals("[\n" +
-                    "\t{\n" +
-                    "\t\tid: person:1,\n" +
-                    "\t\tuuid: u'f8e238f2-e734-47b8-9a16-476b291bd78a'\n" +
-                    "\t}\n" +
-                    "]", selectArray.toPrettyString());
+                assertEquals("[{ id: person:1, uuid: u'f8e238f2-e734-47b8-9a16-476b291bd78a' }]", selectArray.toString());
                 // Retrieve the fist record
                 final Value row = selectArray.get(0);
                 assertTrue(row.isObject());
@@ -213,12 +195,7 @@ public class QueryTests {
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
                 assertEquals(1, selectArray.len());
-                assertEquals("[\n" +
-                    "\t{\n" +
-                    "\t\tid: person:1,\n" +
-                    "\t\tpt: (-0.118092, 51.509865)\n" +
-                    "\t}\n" +
-                    "]", selectArray.toPrettyString());
+                assertEquals("[{ id: person:1, pt: (-0.118092, 51.509865) }]", selectArray.toString());
                 // Retrieve the fist record
                 final Value row = selectArray.get(0);
                 assertTrue(row.isObject());
@@ -248,15 +225,7 @@ public class QueryTests {
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
                 assertEquals(1, selectArray.len());
-                assertEquals("[\n" +
-                    "\t{\n" +
-                    "\t\tid: person:1,\n" +
-                    "\t\ttags: [\n" +
-                    "\t\t\t'CEO',\n" +
-                    "\t\t\t'CTO'\n" +
-                    "\t\t]\n" +
-                    "\t}\n" +
-                    "]", selectArray.toPrettyString());
+                assertEquals("[{ id: person:1, tags: ['CEO', 'CTO'] }]", selectArray.toString());
                 // Retrieve the fist record
                 final Value row = selectArray.get(0);
                 assertTrue(row.isObject());

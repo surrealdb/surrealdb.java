@@ -8,7 +8,7 @@ use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::JNIEnv;
 use rust_decimal::Decimal;
-use surrealdb::sql::{Array, Datetime, Duration, Number, Object, Strand, Uuid, Value};
+use surrealdb::types::{Array, Datetime, Duration, Number, Object, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{
@@ -39,7 +39,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newString<'local>(
     s: JString<'local>,
 ) -> jlong {
     let s = get_rust_string!(&mut env, s, || 0);
-    let value = Value::Strand(Strand::from(s));
+    let value = Value::String(s);
     create_instance(value, JniTypes::ValueMut)
 }
 
@@ -123,8 +123,21 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if matches!(value.as_ref(), Value::Thing(_)) {
-        return JniTypes::new_value_mut(value.as_ref().clone());
+    if let Value::RecordId(record_id) = value.as_ref() {
+        // Extract just the key part from the RecordId, not the whole RecordId with empty table
+        let key_value = match &record_id.key {
+            surrealdb::types::RecordIdKey::Number(n) => Value::Number(Number::Int(*n)),
+            surrealdb::types::RecordIdKey::String(s) => Value::String(s.clone()),
+            surrealdb::types::RecordIdKey::Uuid(u) => Value::Uuid(*u),
+            surrealdb::types::RecordIdKey::Array(a) => Value::Array(a.clone()),
+            surrealdb::types::RecordIdKey::Object(o) => Value::Object(o.clone()),
+            surrealdb::types::RecordIdKey::Range(_) => {
+                return SurrealError::SurrealDBJni(
+                    "Range-based IDs are not supported for Id serialization".to_string()
+                ).exception(&mut env, || 0);
+            }
+        };
+        return JniTypes::new_value_mut(key_value);
     }
     SurrealError::NullPointerException("ID").exception(&mut env, || 0)
 }
@@ -150,7 +163,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
     ptr: jlong,
 ) -> jlong {
     let value = get_value_instance!(&mut env, ptr, || 0);
-    if matches!(value.as_ref(), Value::Thing(_)) {
+    if matches!(value.as_ref(), Value::RecordId(_)) {
         return JniTypes::new_value_mut(value.as_ref().clone());
     }
     SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
@@ -221,7 +234,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_toString<'local>(
     ptr: jlong,
 ) -> jstring {
     let value = get_value_mut_instance!(&mut env, ptr, null_mut);
-    new_string!(&mut env, value.to_string(), null_mut)
+    new_string!(&mut env, value.to_sql(), null_mut)
 }
 
 #[no_mangle]

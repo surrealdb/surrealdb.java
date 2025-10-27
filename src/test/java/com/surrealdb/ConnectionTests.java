@@ -18,7 +18,7 @@ public class ConnectionTests {
             RuntimeException e = assertThrows(SurrealException.class, () -> {
                 surreal.connect("ws://localhost:8000");
             });
-            assertTrue(e.getMessage().startsWith("There was an error processing a remote WS request: IO error:"));
+            assertTrue(e.getMessage().startsWith("There was an error processing a WebSocket request: IO error"));
         }
     }
 
@@ -46,19 +46,19 @@ public class ConnectionTests {
                     final Value v = object.get("accesses");
                     assertTrue(v.isObject());
                     assertEquals(v.getObject().len(), 0);
-                    assertEquals("{}", v.toPrettyString());
+                    assertEquals("{  }", v.toString());
                 }
                 {
                     final Value v = object.get("namespaces");
                     assertTrue(v.isObject());
-                    assertEquals("{  }", v.toString());
-                    assertEquals(v.getObject().len(), 0);
+                    assertEquals("{ test_ns: 'DEFINE NAMESPACE test_ns' }", v.toString());
+                    assertEquals(v.getObject().len(), 1);
                 }
                 {
                     final Value v = object.get("users");
                     assertTrue(v.isObject());
                     assertEquals(v.getObject().len(), 0);
-                    assertEquals("{}", v.toPrettyString());
+                    assertEquals("{  }", v.toString());
                 }
                 {
                     final Value v = object.get("nodes");
