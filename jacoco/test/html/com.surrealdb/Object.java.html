@@ -12,8 +12,6 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
 <span class="fc" id="L12">        super(ptr);</span>
 <span class="fc" id="L13">    }</span>
 
-    private static native String toPrettyString(long ptr);
-
     private static native long iterator(long ptr);
 
     private static native long synchronizedIterator(long ptr);
@@ -32,27 +30,23 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
     final native boolean equals(long ptr1, long ptr2);
 
     @Override
-    final native boolean deleteInstance(long ptr);
-
-    final public String toPrettyString() {
-<span class="nc" id="L38">        return toPrettyString(getPtr());</span>
-    }
+    final native void deleteInstance(long ptr);
 
     final public Value get(String key) {
-<span class="fc" id="L42">        return new Value(get(getPtr(), key));</span>
+<span class="fc" id="L36">        return new Value(get(getPtr(), key));</span>
     }
 
     final public int len() {
-<span class="fc" id="L46">        return len(getPtr());</span>
+<span class="fc" id="L40">        return len(getPtr());</span>
     }
 
     @Override
     final public Iterator&lt;Entry&gt; iterator() {
-<span class="fc" id="L51">        return new EntryIterator(iterator(getPtr()));</span>
+<span class="fc" id="L45">        return new EntryIterator(iterator(getPtr()));</span>
     }
 
     final public Iterator&lt;Entry&gt; synchronizedIterator() {
-<span class="fc" id="L55">        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
+<span class="fc" id="L49">        return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
     }
 
 }

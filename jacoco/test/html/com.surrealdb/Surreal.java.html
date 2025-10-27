@@ -108,7 +108,7 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     /**
      * Establishes a connection to the Surreal database using the provided connection string.

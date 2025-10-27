@@ -14,7 +14,7 @@ public class Response extends Native {
     private static native int size(long ptr);
 
     @Override
-    final native boolean deleteInstance(long ptr);
+    final native void deleteInstance(long ptr);
 
     private native long take(long ptr, int num);
 
