@@ -43,6 +43,10 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
+    private static native long queryLive(long ptr, String sql);
+
+    private static native long queryBindLive(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+
     private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
 
     private static native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
@@ -209,6 +213,72 @@ public class Surreal extends Native implements AutoCloseable {
             values[i] = valueMutMap.get(keys[i]).getPtr();
         }
         return new Response(queryBind(getPtr(), sql,keys, values ));
+    }
+
+    /**
+     * Executes a LIVE SELECT query and returns a stream of notifications.
+     *
+     * @param sql the live SurrealQL query to execute
+     * @return a live query stream yielding notifications as {@link Value}
+     */
+    public LiveQueryStream<Value> queryLive(String sql) {
+        return new LiveQueryStream<>(Value.class, queryLive(getPtr(), sql));
+    }
+
+    /**
+     * Executes a parameterized LIVE SELECT query and returns a stream of notifications.
+     *
+     * @param sql the live SurrealQL query to execute
+     * @param params a map containing parameter values to be bound to the SQL query
+     * @return a live query stream yielding notifications as {@link Value}
+     */
+    public LiveQueryStream<Value> queryLive(String sql, Map<String, ?> params) {
+        Map<String, ValueMut> valueMutMap = params.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> ValueBuilder.convert(entry.getValue())
+            ));
+        String[] keys = valueMutMap.keySet().toArray(new String[0]);
+        long[] values = new long[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            values[i] = valueMutMap.get(keys[i]).getPtr();
+        }
+        return new LiveQueryStream<>(Value.class, queryBindLive(getPtr(), sql, keys, values));
+    }
+
+    /**
+     * Executes a LIVE SELECT query and returns a typed stream of notifications.
+     *
+     * @param type the class to deserialize each notification payload into
+     * @param sql the live SurrealQL query to execute
+     * @param <T> the desired payload type
+     * @return a live query stream yielding typed notifications
+     */
+    public <T> LiveQueryStream<T> queryLive(Class<T> type, String sql) {
+        return new LiveQueryStream<>(type, queryLive(getPtr(), sql));
+    }
+
+    /**
+     * Executes a parameterized LIVE SELECT query and returns a typed stream of notifications.
+     *
+     * @param type the class to deserialize each notification payload into
+     * @param sql the live SurrealQL query to execute
+     * @param params a map containing parameter values to be bound to the SQL query
+     * @param <T> the desired payload type
+     * @return a live query stream yielding typed notifications
+     */
+    public <T> LiveQueryStream<T> queryLive(Class<T> type, String sql, Map<String, ?> params) {
+        Map<String, ValueMut> valueMutMap = params.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> ValueBuilder.convert(entry.getValue())
+            ));
+        String[] keys = valueMutMap.keySet().toArray(new String[0]);
+        long[] values = new long[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            values[i] = valueMutMap.get(keys[i]).getPtr();
+        }
+        return new LiveQueryStream<>(type, queryBindLive(getPtr(), sql, keys, values));
     }
 
     /**

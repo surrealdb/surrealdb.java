@@ -207,6 +207,29 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_queryLive<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    query: JString<'local>,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    // Retrieve the query
+    let query = get_rust_string!(&mut env, &query, || 0);
+    // Execute the query
+    let res = surrealdb_query::<()>(&surreal, &query, None);
+    // Check the result
+    let mut res = check_query_result!(&mut env, res, || 0);
+    // Build the live stream across all live statements
+    let stream = match res.stream::<Value>(()) {
+        Ok(stream) => stream,
+        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
+    };
+    JniTypes::new_live_query_stream(Arc::new(Mutex::new(stream)))
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -231,6 +254,36 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     JniTypes::new_response(Arc::new(Mutex::new(res)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_queryBindLive<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    query: JString<'local>,
+    params_keys: JObjectArray<'local>,
+    params_values: JLongArray<'local>,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    // Retrieve the query
+    let query = get_rust_string!(&mut env, &query, || 0);
+    let keys = get_rust_string_array!(&mut env, params_keys, || 0);
+    let value_ptrs = get_long_array!(&mut env, &params_values, || 0);
+    let mut params_map = BTreeMap::<String, Value>::new();
+    for (key, value_ptr) in keys.into_iter().zip(value_ptrs) {
+        let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+        params_map.insert(key, value.clone());
+    }
+
+    let res = surrealdb_query::<Value>(&surreal, &query, Some(params_map));
+    let mut res = check_query_result!(&mut env, res, || 0);
+    let stream = match res.stream::<Value>(()) {
+        Ok(stream) => stream,
+        Err(e) => return SurrealError::SurrealDB(e).exception(&mut env, || 0),
+    };
+    JniTypes::new_live_query_stream(Arc::new(Mutex::new(stream)))
 }
 
 fn surrealdb_query<T>(

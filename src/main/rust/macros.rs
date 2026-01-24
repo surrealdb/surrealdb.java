@@ -147,6 +147,32 @@ macro_rules! get_sync_entry_iterator_instance {
 }
 
 #[macro_export]
+macro_rules! get_live_query_stream_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::get_instance::<
+            std::sync::Arc<parking_lot::Mutex<surrealdb::method::QueryStream<surrealdb::types::Value>>>,
+        >($id, $crate::JniTypes::LiveQueryStream)
+        {
+            Ok(s) => s.clone(),
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! get_notification_instance {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::get_instance::<surrealdb::Notification<surrealdb::types::Value>>(
+            $id,
+            $crate::JniTypes::Notification,
+        ) {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! new_string {
     ($env:expr, $str:expr, $default_fn:expr) => {
         match $env.new_string($str) {

@@ -25,6 +25,8 @@ mod macros;
 mod object;
 mod recordid;
 mod response;
+mod livequerystream;
+mod notification;
 mod surreal;
 mod syncentryiterator;
 mod syncvalueiterator;
@@ -50,6 +52,8 @@ enum JniTypes {
     ObjectIter,
     SyncObjectIter,
     Response,
+    LiveQueryStream,
+    Notification,
 }
 
 impl JniTypes {
@@ -89,9 +93,17 @@ impl JniTypes {
         create_instance(i, Self::ObjectIter)
     }
 
-    fn new_response(res: Arc<Mutex<IndexedResults>>) -> jlong {
+        fn new_response(res: Arc<Mutex<IndexedResults>>) -> jlong {
         create_instance(res, Self::Response)
     }
+    
+        fn new_live_query_stream(stream: Arc<Mutex<surrealdb::method::QueryStream<surrealdb::types::Value>>>) -> jlong {
+            create_instance(stream, Self::LiveQueryStream)
+        }
+    
+        fn new_notification(notification: surrealdb::Notification<surrealdb::types::Value>) -> jlong {
+            create_instance(notification, Self::Notification)
+        }
 
     fn as_str(&self) -> &'static str {
         match self {
@@ -105,6 +117,8 @@ impl JniTypes {
             JniTypes::ObjectIter => "ObjectIterator",
             JniTypes::SyncObjectIter => "SynchronizedObjectIterator",
             JniTypes::Response => "Response",
+            JniTypes::LiveQueryStream => "LiveQueryStream",
+            JniTypes::Notification => "Notification",
         }
     }
 }
