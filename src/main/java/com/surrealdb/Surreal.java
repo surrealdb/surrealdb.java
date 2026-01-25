@@ -91,6 +91,10 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native boolean deleteTarget(long ptr, String target);
 
+    private static native boolean exportFile(long ptr, String path);
+
+    private static native boolean importFile(long ptr, String path);
+
 
     @Override
     final String toString(long ptr) {
@@ -953,6 +957,92 @@ public class Surreal extends Native implements AutoCloseable {
      */
     public void delete(String target) {
         deleteTarget(getPtr(), target);
+    }
+
+    /**
+     * Exports the current database to a file.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/sdk/rust/methods/export">export documentation</a>.
+     * <p>
+     *
+     * @param path the file path to export to
+     * @return the current instance of the {@code Surreal} class
+     * @throws SurrealException if the export fails
+     */
+    public Surreal export(String path) {
+        exportFile(getPtr(), path);
+        return this;
+    }
+
+    /**
+     * Exports the current database to a file.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/sdk/rust/methods/export">export documentation</a>.
+     * <p>
+     *
+     * @param path the path to export to
+     * @return the current instance of the {@code Surreal} class
+     * @throws SurrealException if the export fails
+     */
+    public Surreal export(java.nio.file.Path path) {
+        return export(path.toAbsolutePath().toString());
+    }
+
+    /**
+     * Exports the current database to a file.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/sdk/rust/methods/export">export documentation</a>.
+     * <p>
+     *
+     * @param file the file to export to
+     * @return the current instance of the {@code Surreal} class
+     * @throws SurrealException if the export fails
+     */
+    public Surreal export(java.io.File file) {
+        return export(file.getAbsolutePath());
+    }
+
+    /**
+     * Imports data from a file into the current database.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/sdk/rust/methods/import">import documentation</a>.
+     * <p>
+     *
+     * @param path the file path to import from
+     * @return the current instance of the {@code Surreal} class
+     * @throws SurrealException if the import fails
+     */
+    public Surreal importData(String path) {
+        importFile(getPtr(), path);
+        return this;
+    }
+
+    /**
+     * Imports data from a file into the current database.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/sdk/rust/methods/import">import documentation</a>.
+     * <p>
+     *
+     * @param path the path to import from
+     * @return the current instance of the {@code Surreal} class
+     * @throws SurrealException if the import fails
+     */
+    public Surreal importData(java.nio.file.Path path) {
+        return importData(path.toAbsolutePath().toString());
+    }
+
+    /**
+     * Imports data from a file into the current database.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/sdk/rust/methods/import">import documentation</a>.
+     * <p>
+     *
+     * @param file the file to import from
+     * @return the current instance of the {@code Surreal} class
+     * @throws SurrealException if the import fails
+     */
+    public Surreal importData(java.io.File file) {
+        return importData(file.getAbsolutePath());
     }
 
     /**

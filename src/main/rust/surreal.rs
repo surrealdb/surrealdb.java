@@ -853,3 +853,33 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetValueSync<'local>(
 ) -> jlong {
     up_target_value_sync(env, surreal_ptr, target, up_type, value_ptr, "upsert")
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_exportFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    path: JString<'local>,
+) -> jboolean {
+    let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
+    let path = get_rust_string!(&mut env, path, || false as jboolean);
+    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.export(&path).await }) {
+        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+    }
+    true as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_importFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    path: JString<'local>,
+) -> jboolean {
+    let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
+    let path = get_rust_string!(&mut env, path, || false as jboolean);
+    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.import(&path).await }) {
+        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+    }
+    true as jboolean
+}
