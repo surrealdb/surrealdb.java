@@ -166,62 +166,75 @@ class ValueClassConverter&lt;T&gt; {
     private static &lt;T, V&gt; void setFieldObject(Field field, Class&lt;?&gt; type, T target, V value) throws ReflectiveOperationException {
 <span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
 <span class="nc" id="L168">            field.set(target, Optional.of(value));</span>
-        } else {
-<span class="fc" id="L170">            field.set(target, value);</span>
-        }
-<span class="fc" id="L172">    }</span>
-
-    private static &lt;T, V&gt; void setFieldSingleValue(Field field, Class&lt;?&gt; type, T target, Value value) throws ReflectiveOperationException {
-<span class="pc bpc" id="L175" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
-<span class="nc" id="L176">            final java.lang.Object converted = convertSingleValue(value);</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">            if (converted == null) {</span>
-<span class="nc" id="L178">                field.set(target, Optional.empty());</span>
-            } else {
-<span class="nc" id="L180">                field.set(target, Optional.of(converted));</span>
+<span class="pc bpc" id="L169" title="1 of 4 branches missed.">        } else if (type == byte[].class &amp;&amp; value instanceof List) {</span>
+            // Special handling for byte[] fields
+<span class="fc" id="L171">            final List&lt;?&gt; list = (List&lt;?&gt;) value;</span>
+<span class="fc" id="L172">            final byte[] bytes = new byte[list.size()];</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">            for (int i = 0; i &lt; list.size(); i++) {</span>
+<span class="fc" id="L174">                final java.lang.Object element = list.get(i);</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">                if (element instanceof Number) {</span>
+<span class="fc" id="L176">                    bytes[i] = ((Number) element).byteValue();</span>
+                } else {
+<span class="nc" id="L178">                    throw new SurrealException(&quot;Cannot convert &quot; + element.getClass() + &quot; to byte&quot;);</span>
+                }
             }
-<span class="nc" id="L182">        } else {</span>
-<span class="fc" id="L183">            setSingleValue(field, type, target, value);</span>
+<span class="fc" id="L181">            field.set(target, bytes);</span>
+<span class="fc" id="L182">        } else {</span>
+<span class="fc" id="L183">            field.set(target, value);</span>
         }
 <span class="fc" id="L185">    }</span>
 
+    private static &lt;T, V&gt; void setFieldSingleValue(Field field, Class&lt;?&gt; type, T target, Value value) throws ReflectiveOperationException {
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        if (Optional.class.equals(type)) {</span>
+<span class="nc" id="L189">            final java.lang.Object converted = convertSingleValue(value);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            if (converted == null) {</span>
+<span class="nc" id="L191">                field.set(target, Optional.empty());</span>
+            } else {
+<span class="nc" id="L193">                field.set(target, Optional.of(converted));</span>
+            }
+<span class="nc" id="L195">        } else {</span>
+<span class="fc" id="L196">            setSingleValue(field, type, target, value);</span>
+        }
+<span class="fc" id="L198">    }</span>
+
     static Class&lt;?&gt; getGenericType(final Field field, final int index) {
         // Check if the field is parameterized
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">        if (field.getGenericType() instanceof ParameterizedType) {</span>
-<span class="fc" id="L190">            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        if (field.getGenericType() instanceof ParameterizedType) {</span>
+<span class="fc" id="L203">            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();</span>
 
             // Get the actual type arguments (generics)
-<span class="fc" id="L193">            final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();</span>
+<span class="fc" id="L206">            final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();</span>
 
-<span class="pc bpc" id="L195" title="1 of 2 branches missed.">            if (actualTypeArguments.length &gt; index) {</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">            if (actualTypeArguments.length &gt; index) {</span>
                 // Return the first type argument
-<span class="fc" id="L197">                return (Class&lt;?&gt;) actualTypeArguments[index];</span>
+<span class="fc" id="L210">                return (Class&lt;?&gt;) actualTypeArguments[index];</span>
             }
         }
-<span class="nc" id="L200">        return null;</span>
+<span class="nc" id="L213">        return null;</span>
     }
 
     static Field getInheritedDeclaredField(Class&lt;?&gt; clazz, String fieldName) throws NoSuchFieldException {
-<span class="fc bfc" id="L204" title="All 2 branches covered.">        while (clazz != null) {</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        while (clazz != null) {</span>
             try {
-<span class="fc" id="L206">                return clazz.getDeclaredField(fieldName);</span>
-<span class="fc" id="L207">            } catch (NoSuchFieldException e) {</span>
-<span class="fc" id="L208">                clazz = clazz.getSuperclass();</span>
-<span class="fc" id="L209">            }</span>
+<span class="fc" id="L219">                return clazz.getDeclaredField(fieldName);</span>
+<span class="fc" id="L220">            } catch (NoSuchFieldException e) {</span>
+<span class="fc" id="L221">                clazz = clazz.getSuperclass();</span>
+<span class="fc" id="L222">            }</span>
         }
-<span class="fc" id="L211">        throw new NoSuchFieldException(&quot;Field '&quot; + fieldName + &quot;' not found in class hierarchy.&quot;);</span>
+<span class="fc" id="L224">        throw new NoSuchFieldException(&quot;Field '&quot; + fieldName + &quot;' not found in class hierarchy.&quot;);</span>
     }
 
     final T convert(final Value value) {
         try {
-<span class="pc bpc" id="L216" title="1 of 4 branches missed.">            if (value.isNone() || value.isNull())</span>
-<span class="fc" id="L217">                return null;</span>
+<span class="pc bpc" id="L229" title="1 of 4 branches missed.">            if (value.isNone() || value.isNull())</span>
+<span class="fc" id="L230">                return null;</span>
 
-<span class="pc bpc" id="L219" title="1 of 2 branches missed.">            if (!value.isObject())</span>
-<span class="nc" id="L220">                throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">            if (!value.isObject())</span>
+<span class="nc" id="L233">                throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
 
-<span class="fc" id="L222">            return convert(clazz, value.getObject());</span>
-<span class="nc" id="L223">        } catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L224">            throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
+<span class="fc" id="L235">            return convert(clazz, value.getObject());</span>
+<span class="nc" id="L236">        } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L237">            throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
         }
     }
 }

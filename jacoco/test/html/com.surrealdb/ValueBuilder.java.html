@@ -82,37 +82,45 @@ import java.util.stream.Collectors;
 <span class="fc bfc" id="L82" title="All 2 branches covered.">        if (object instanceof RecordId) {</span>
 <span class="fc" id="L83">            return ValueMut.createThing((RecordId) object);</span>
         }
-<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (object instanceof Array) {</span>
-<span class="fc" id="L86">            return ValueMut.createArray((Array) object);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (object instanceof byte[]) {</span>
+<span class="fc" id="L86">            final byte[] bytes = (byte[]) object;</span>
+<span class="fc" id="L87">            final List&lt;ValueMut&gt; values = new ArrayList&lt;&gt;(bytes.length);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            for (final byte b : bytes) {</span>
+<span class="fc" id="L89">                values.add(ValueMut.createLong(b &amp; 0xFF));</span>
+            }
+<span class="fc" id="L91">            return ValueMut.createArray(values);</span>
         }
-<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (object instanceof Object) {</span>
-<span class="fc" id="L89">            return ValueMut.createObject((Object) object);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (object instanceof Array) {</span>
+<span class="fc" id="L94">            return ValueMut.createArray((Array) object);</span>
         }
-<span class="fc" id="L91">        final Field[] fields = object.getClass().getDeclaredFields();</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (fields.length &gt; 0) {</span>
-<span class="fc" id="L93">            final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
-<span class="fc bfc" id="L94" title="All 2 branches covered.">            for (final Field field : fields) {</span>
-<span class="fc" id="L95">                int mods = field.getModifiers();</span>
-<span class="pc bpc" id="L96" title="1 of 4 branches missed.">                if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
-<span class="nc" id="L97">                    continue;</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (object instanceof Object) {</span>
+<span class="fc" id="L97">            return ValueMut.createObject((Object) object);</span>
+        }
+<span class="fc" id="L99">        final Field[] fields = object.getClass().getDeclaredFields();</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (fields.length &gt; 0) {</span>
+<span class="fc" id="L101">            final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            for (final Field field : fields) {</span>
+<span class="fc" id="L103">                int mods = field.getModifiers();</span>
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">                if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
+<span class="nc" id="L105">                    continue;</span>
                 }
-<span class="fc" id="L99">                field.setAccessible(true);</span>
-<span class="fc" id="L100">                final String name = field.getName();</span>
-<span class="fc" id="L101">                final java.lang.Object value = field.get(object);</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">                if (value != null) {</span>
-<span class="fc" id="L103">                    entries.add(EntryMut.newEntry(name, convert(value)));</span>
+<span class="fc" id="L107">                field.setAccessible(true);</span>
+<span class="fc" id="L108">                final String name = field.getName();</span>
+<span class="fc" id="L109">                final java.lang.Object value = field.get(object);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">                if (value != null) {</span>
+<span class="fc" id="L111">                    entries.add(EntryMut.newEntry(name, convert(value)));</span>
                 }
             }
-<span class="fc" id="L106">            return ValueMut.createObject(entries);</span>
+<span class="fc" id="L114">            return ValueMut.createObject(entries);</span>
         }
-<span class="nc" id="L108">        throw new SurrealException(&quot;No field found: &quot; + object.getClass().getCanonicalName());</span>
+<span class="nc" id="L116">        throw new SurrealException(&quot;No field found: &quot; + object.getClass().getCanonicalName());</span>
     }
 
     static &lt;T&gt; ValueMut convert(final T object) {
         try {
-<span class="fc" id="L113">            return convertObject(object);</span>
-<span class="nc" id="L114">        } catch (IllegalAccessException e) {</span>
-<span class="nc" id="L115">            throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
+<span class="fc" id="L121">            return convertObject(object);</span>
+<span class="nc" id="L122">        } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L123">            throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
         }
     }
 
