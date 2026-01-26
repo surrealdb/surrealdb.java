@@ -1,5 +1,6 @@
 package com.surrealdb;
 
+import com.surrealdb.pojos.ByteData;
 import com.surrealdb.pojos.Dates;
 import com.surrealdb.pojos.Name;
 import com.surrealdb.pojos.Numbers;
@@ -10,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Iterator;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,6 +79,58 @@ public class TypeTests {
             assertEquals(created1.get(Name.class), name);
             assertEquals(created2.get(Name.class), name);
             assertEquals(created3.get(Name.class), name);
+        }
+    }
+
+    @Test
+    void testByteArray() {
+        try (final Surreal surreal = new Surreal()) {
+            // Starts an embedded in memory instance
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+
+            // Test 1: Create a new record with byte[] data from raw bytes
+            final ByteData byteData = new ByteData();
+            byteData.data = new byte[]{0x01, 0x02, 0x03, 0x04, 0x05};
+            // We ingest the record
+            final ByteData created = surreal.create(ByteData.class, "bytedata", byteData).get(0);
+            // We check that the records are matching
+            assertEquals(created, byteData);
+
+            // Test 2: Create a new record with byte[] data converted from string
+            final ByteData byteDataFromString = new ByteData();
+            final String testString = "Hello";
+            byteDataFromString.data = testString.getBytes();
+            // We ingest the record
+            final ByteData createdFromString = surreal.create(ByteData.class, "bytedata:string", byteDataFromString).get(0);
+            // We check that the records are matching
+            assertEquals(createdFromString, byteDataFromString);
+            // Verify we can convert the bytes back to string
+            final String retrievedString = new String(createdFromString.data);
+            assertEquals(retrievedString, testString);
+
+            // Test 3: Select from database and verify byte[] is properly handled
+            final Iterator<ByteData> selectedRecords = surreal.select(ByteData.class, "bytedata");
+            final ByteData selectedRecord = selectedRecords.next();
+            // Compare the byte[] data content
+            assertEquals(selectedRecord.data.length, byteData.data.length);
+            for (int i = 0; i < selectedRecord.data.length; i++) {
+                assertEquals(selectedRecord.data[i], byteData.data[i]);
+            }
+            // Verify the byte array content is correct
+            assertEquals(selectedRecord.data.length, 5);
+            assertEquals(selectedRecord.data[0], 0x01);
+            assertEquals(selectedRecord.data[4], 0x05);
+
+            // Test 4: Select the string-converted record and verify conversion back to string
+            final Iterator<ByteData> selectedStringRecords = surreal.select(ByteData.class, "bytedata:string");
+            final ByteData selectedStringRecord = selectedStringRecords.next();
+            // Compare the byte[] data content
+            assertEquals(selectedStringRecord.data.length, byteDataFromString.data.length);
+            for (int i = 0; i < selectedStringRecord.data.length; i++) {
+                assertEquals(selectedStringRecord.data[i], byteDataFromString.data[i]);
+            }
+            final String selectedRetrievedString = new String(selectedStringRecord.data);
+            assertEquals(selectedRetrievedString, testString);
         }
     }
 
