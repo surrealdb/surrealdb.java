@@ -7,8 +7,10 @@ use jni::JNIEnv;
 use parking_lot::Mutex;
 use surrealdb::method::QueryStream;
 use surrealdb::types::Value;
-
-use crate::{get_live_query_stream_instance, release_instance, JniTypes, TOKIO_RUNTIME};
+use tokio_stream::StreamExt;
+use crate::{
+    error::SurrealError, get_live_query_stream_instance, JniTypes, TOKIO_RUNTIME,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_LiveQueryStream_deleteInstance<'local>(
@@ -16,7 +18,17 @@ pub extern "system" fn Java_com_surrealdb_LiveQueryStream_deleteInstance<'local>
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<Arc<Mutex<QueryStream<Value>>>>(ptr);
+    if ptr == 0 {
+        return;
+    }
+    #[cfg(debug_assertions)]
+    crate::ALLOCATOR.remove(&ptr);
+
+    // Drop inside the Tokio runtime so kill() can spawn without panicking
+    let stream = unsafe { Box::from_raw(ptr as *mut Arc<Mutex<QueryStream<Value>>>) };
+    TOKIO_RUNTIME.block_on(async {
+        drop(stream);
+    });
 }
 
 #[no_mangle]
@@ -29,7 +41,8 @@ pub extern "system" fn Java_com_surrealdb_LiveQueryStream_next<'local>(
     let mut stream = stream.lock();
     let next = TOKIO_RUNTIME.block_on(async { stream.next().await });
     match next {
-        Some(notification) => JniTypes::new_notification(notification),
+        Some(Ok(notification)) => JniTypes::new_notification(notification),
+        Some(Err(err)) => SurrealError::from(err).exception(&mut env, || 0),
         None => 0,
     }
 }
@@ -49,7 +62,8 @@ pub extern "system" fn Java_com_surrealdb_LiveQueryStream_pollNext<'local>(
         tokio::time::timeout(duration, stream.next()).await
     });
     match result {
-        Ok(Some(notification)) => JniTypes::new_notification(notification),
+        Ok(Some(Ok(notification))) => JniTypes::new_notification(notification),
+        Ok(Some(Err(err))) => SurrealError::from(err).exception(&mut env, || 0),
         Ok(None) => 0,
         Err(_) => 0,
     }

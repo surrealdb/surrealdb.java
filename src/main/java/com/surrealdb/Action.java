@@ -6,7 +6,8 @@ package com.surrealdb;
 public enum Action {
     CREATE(0),
     UPDATE(1),
-    DELETE(2);
+    DELETE(2),
+    KILLED(3);
 
     private final int code;
 

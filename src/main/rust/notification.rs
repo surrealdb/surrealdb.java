@@ -3,7 +3,7 @@ use std::sync::Arc;
 use jni::objects::JClass;
 use jni::sys::{jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::Action;
+use surrealdb::types::Action;
 
 use crate::{get_notification_instance, new_string, release_instance, JniTypes};
 
@@ -23,7 +23,7 @@ pub extern "system" fn Java_com_surrealdb_Notification_getQueryId<'local>(
     ptr: jlong,
 ) -> jstring {
     let notification = get_notification_instance!(&mut env, ptr, || std::ptr::null_mut());
-    new_string!(&mut env, notification.query_id.to_string(), std::ptr::null_mut())
+    new_string!(&mut env, notification.query_id.to_string(), || std::ptr::null_mut())
 }
 
 #[no_mangle]
@@ -37,6 +37,7 @@ pub extern "system" fn Java_com_surrealdb_Notification_getActionCode<'local>(
         Action::Create => 0,
         Action::Update => 1,
         Action::Delete => 2,
+        Action::Killed => 3,
     }
 }
 
