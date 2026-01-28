@@ -166,6 +166,19 @@ class ValueClassConverter<T> {
     private static <T, V> void setFieldObject(Field field, Class<?> type, T target, V value) throws ReflectiveOperationException {
         if (Optional.class.equals(type)) {
             field.set(target, Optional.of(value));
+        } else if (type == byte[].class && value instanceof List) {
+            // Special handling for byte[] fields
+            final List<?> list = (List<?>) value;
+            final byte[] bytes = new byte[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                final java.lang.Object element = list.get(i);
+                if (element instanceof Number) {
+                    bytes[i] = ((Number) element).byteValue();
+                } else {
+                    throw new SurrealException("Cannot convert " + element.getClass() + " to byte");
+                }
+            }
+            field.set(target, bytes);
         } else {
             field.set(target, value);
         }

@@ -82,6 +82,14 @@ class ValueBuilder {
         if (object instanceof RecordId) {
             return ValueMut.createThing((RecordId) object);
         }
+        if (object instanceof byte[]) {
+            final byte[] bytes = (byte[]) object;
+            final List<ValueMut> values = new ArrayList<>(bytes.length);
+            for (final byte b : bytes) {
+                values.add(ValueMut.createLong(b & 0xFF));
+            }
+            return ValueMut.createArray(values);
+        }
         if (object instanceof Array) {
             return ValueMut.createArray((Array) object);
         }
