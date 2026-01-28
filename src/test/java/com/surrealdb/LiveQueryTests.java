@@ -18,7 +18,7 @@ public class LiveQueryTests {
             try (LiveQueryStream<Value> stream = surreal.queryLive("LIVE SELECT * FROM person")) {
                 // No notification should be pending yet.
                 Optional<Notification<Value>> none = stream.pollNext(Duration.ofMillis(10));
-                assertTrue(none.isEmpty());
+                assertFalse(none.isPresent());
 
                 surreal.query("CREATE person SET name = 'Ana'");
 
