@@ -5,7 +5,7 @@ package com.surrealdb.signin;
  * Use with {@link com.surrealdb.Surreal#signin(Credential)} to set the session to this token
  * without performing a new sign-in request.
  */
-public class Bearer implements Credential {
+public class BearerCredential implements Credential {
 
     private final String token;
 
@@ -14,7 +14,7 @@ public class Bearer implements Credential {
      *
      * @param token the access token (JWT) to use for authentication
      */
-    public Bearer(String token) {
+    public BearerCredential(String token) {
         this.token = token;
     }
 

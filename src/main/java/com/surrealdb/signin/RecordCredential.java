@@ -2,7 +2,7 @@ package com.surrealdb.signin;
 
 /**
  * Credentials for signing up or signing in as a record user (record access method).
- * Used with {@link com.surrealdb.Surreal#signup(Record)} and {@link com.surrealdb.Surreal#signin(Credential)}.
+ * Used with {@link com.surrealdb.Surreal#signup(RecordCredential)} and {@link com.surrealdb.Surreal#signin(Credential)}.
  * <p>
  * When {@code namespace} or {@code database} are null, the SDK uses the current session namespace/database
  * set via {@link com.surrealdb.Surreal#useNs(String)} and {@link com.surrealdb.Surreal#useDb(String)}
@@ -11,7 +11,7 @@ package com.surrealdb.signin;
  * The params object is serialized and sent as the signup/signin variables (e.g. email, password).
  * It must be a type that can be converted to a SurrealDB value (e.g. Map, POJO, or primitive).
  */
-public class Record implements Credential {
+public class RecordCredential implements Credential {
 
     private final String namespace;
     private final String database;
@@ -26,7 +26,7 @@ public class Record implements Credential {
      * @param access    access method name (as defined in DEFINE ACCESS)
      * @param params    signup/signin variables (e.g. map with "email", "password"); will be serialized
      */
-    public Record(String namespace, String database, String access, Object params) {
+    public RecordCredential(String namespace, String database, String access, Object params) {
         this.namespace = namespace;
         this.database = database;
         this.access = access;
@@ -41,7 +41,7 @@ public class Record implements Credential {
      * @param access access method name (as defined in DEFINE ACCESS)
      * @param params signup/signin variables (e.g. map with "email", "password"); will be serialized
      */
-    public Record(String access, Object params) {
+    public RecordCredential(String access, Object params) {
         this.namespace = null;
         this.database = null;
         this.access = access;

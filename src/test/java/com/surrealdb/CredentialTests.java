@@ -10,17 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-import com.surrealdb.signin.Bearer;
+import com.surrealdb.signin.BearerCredential;
 import com.surrealdb.signin.Credential;
-import com.surrealdb.signin.Database;
-import com.surrealdb.signin.Namespace;
-import com.surrealdb.signin.Record;
-import com.surrealdb.signin.Root;
+import com.surrealdb.signin.DatabaseCredential;
+import com.surrealdb.signin.NamespaceCredential;
+import com.surrealdb.signin.RecordCredential;
+import com.surrealdb.signin.RootCredential;
 import com.surrealdb.signin.Token;
 
 /**
- * Tests for Credential hierarchy, signin(Credential), signup(Record), optional ns/db for Record,
- * Bearer, and Token. Success-path auth (Root/Namespace/Database/Record/Bearer) may fail on memory
+ * Tests for Credential hierarchy, signin(Credential), signup(RecordCredential), optional ns/db for RecordCredential,
+ * BearerCredential, and Token. Success-path auth (RootCredential/NamespaceCredential/etc.) may fail on memory
  * backend; we assert either a valid Token or a SurrealException with a message.
  */
 public class CredentialTests {
@@ -30,7 +30,7 @@ public class CredentialTests {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             try {
-                Token token = surreal.signin(new Root("root", "root"));
+                Token token = surreal.signin(new RootCredential("root", "root"));
                 assertNotNull(token);
                 assertNotNull(token.getAccess());
                 assertEquals(token.getAccess(), token.getToken());
@@ -46,9 +46,9 @@ public class CredentialTests {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             try {
-                surreal.signin(new Root("root", "root"));
+                surreal.signin(new RootCredential("root", "root"));
                 surreal.query("DEFINE USER user_ns ON NAMESPACE PASSWORD 'pass'");
-                Token token = surreal.signin(new Namespace("user_ns", "pass", "test_ns"));
+                Token token = surreal.signin(new NamespaceCredential("user_ns", "pass", "test_ns"));
                 assertNotNull(token);
                 assertNotNull(token.getAccess());
             } catch (SurrealException e) {
@@ -62,9 +62,9 @@ public class CredentialTests {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             try {
-                surreal.signin(new Root("root", "root"));
+                surreal.signin(new RootCredential("root", "root"));
                 surreal.query("DEFINE USER user_db ON DATABASE PASSWORD 'pass'");
-                Token token = surreal.signin(new Database("user_db", "pass", "test_ns", "test_db"));
+                Token token = surreal.signin(new DatabaseCredential("user_db", "pass", "test_ns", "test_db"));
                 assertNotNull(token);
                 assertNotNull(token.getAccess());
             } catch (SurrealException e) {
@@ -79,13 +79,13 @@ public class CredentialTests {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             Token rootToken;
             try {
-                rootToken = surreal.signin(new Root("root", "root"));
+                rootToken = surreal.signin(new RootCredential("root", "root"));
             } catch (SurrealException e) {
                 // memory may not support root signin; skip Bearer test
                 return;
             }
             try (Surreal other = surreal.newSession()) {
-                Token bearerToken = other.signin(new Bearer(rootToken.getAccess()));
+                Token bearerToken = other.signin(new BearerCredential(rootToken.getAccess()));
                 assertNotNull(bearerToken);
                 assertEquals(rootToken.getAccess(), bearerToken.getAccess());
             }
@@ -96,7 +96,7 @@ public class CredentialTests {
     void signin_withRecord_withExplicitNsDb_dispatchesToNative() {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            Record record = new Record("test_ns", "test_db", "no_such_access", Map.of("email", "a@b.com", "pass", "p"));
+            RecordCredential record = new RecordCredential("test_ns", "test_db", "no_such_access", Map.of("email", "a@b.com", "pass", "p"));
             try {
                 surreal.signin(record);
             } catch (SurrealException e) {
@@ -110,7 +110,7 @@ public class CredentialTests {
     void signin_withRecordNullNsDbAndNoUseNs_throws() {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory");
-            Record record = new Record("some_access", Map.of("email", "a@b.com", "pass", "p"));
+            RecordCredential record = new RecordCredential("some_access", Map.of("email", "a@b.com", "pass", "p"));
             SurrealException e = assertThrows(SurrealException.class, () -> surreal.signin(record));
             assertTrue(e.getMessage().contains("namespace") || e.getMessage().contains("database"));
         }
@@ -120,14 +120,14 @@ public class CredentialTests {
     void signin_withRecord_usesSessionNsDbWhenOmitted() {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            Record record = new Record("my_access", Map.of("email", "a@b.com", "pass", "p"));
+            RecordCredential record = new RecordCredential("my_access", Map.of("email", "a@b.com", "pass", "p"));
             try {
                 surreal.signin(record);
             } catch (SurrealException e) {
                 // Should not be our "call useNs/useDb first" message; should be backend error (e.g. access not defined)
                 assertNotNull(e.getMessage());
                 assertTrue(
-                    !e.getMessage().contains("Record signin requires namespace"),
+                    !e.getMessage().contains("RecordCredential signin requires namespace"),
                     "Should have resolved ns/db from session: " + e.getMessage()
                 );
             }
@@ -148,7 +148,7 @@ public class CredentialTests {
     void signup_withExplicitNsDb_dispatchesToNative() {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            Record record = new Record("test_ns", "test_db", "no_such_access", Map.of("email", "a@b.com", "pass", "p"));
+            RecordCredential record = new RecordCredential("test_ns", "test_db", "no_such_access", Map.of("email", "a@b.com", "pass", "p"));
             try {
                 surreal.signup(record);
             } catch (SurrealException e) {
@@ -161,7 +161,7 @@ public class CredentialTests {
     void signup_withNullNsDbAndNoUseNs_throws() {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory");
-            Record record = new Record("some_access", Map.of("email", "a@b.com", "pass", "p"));
+            RecordCredential record = new RecordCredential("some_access", Map.of("email", "a@b.com", "pass", "p"));
             SurrealException e = assertThrows(SurrealException.class, () -> surreal.signup(record));
             assertTrue(e.getMessage().contains("namespace") || e.getMessage().contains("database"));
             assertTrue(e.getMessage().contains("useNs") || e.getMessage().contains("useDb"));
@@ -172,7 +172,7 @@ public class CredentialTests {
     void signup_withSessionNsDb_usesStoredValues() {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            Record record = new Record("no_such_access", Map.of("email", "a@b.com", "pass", "p"));
+            RecordCredential record = new RecordCredential("no_such_access", Map.of("email", "a@b.com", "pass", "p"));
             try {
                 surreal.signup(record);
             } catch (SurrealException e) {
@@ -184,7 +184,7 @@ public class CredentialTests {
 
     @Test
     void signup_withRecordFullConstructor_acceptsExplicitNsDb() {
-        Record r = new Record("ns", "db", "access", Map.of("a", 1));
+        RecordCredential r = new RecordCredential("ns", "db", "access", Map.of("a", 1));
         assertEquals("ns", r.getNamespace());
         assertEquals("db", r.getDatabase());
         assertEquals("access", r.getAccess());
@@ -193,7 +193,7 @@ public class CredentialTests {
 
     @Test
     void signup_withRecordShortConstructor_hasNullNsDb() {
-        Record r = new Record("access", Map.of("a", 1));
+        RecordCredential r = new RecordCredential("access", Map.of("a", 1));
         assertNull(r.getNamespace());
         assertNull(r.getDatabase());
         assertEquals("access", r.getAccess());
@@ -213,7 +213,7 @@ public class CredentialTests {
 
     @Test
     void bearer_holdsToken() {
-        Bearer b = new Bearer("my_jwt");
+        BearerCredential b = new BearerCredential("my_jwt");
         assertEquals("my_jwt", b.getToken());
     }
 
@@ -244,7 +244,7 @@ public class CredentialTests {
         try (Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             try {
-                Token token = surreal.signin((com.surrealdb.signin.Signin) new Root("root", "root"));
+                Token token = surreal.signin((com.surrealdb.signin.Signin) new RootCredential("root", "root"));
                 assertNotNull(token);
             } catch (SurrealException e) {
                 assertNotNull(e.getMessage());

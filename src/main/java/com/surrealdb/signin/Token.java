@@ -6,7 +6,7 @@ package com.surrealdb.signin;
  * When the server returns only a single JWT, it is exposed as the access token and refresh is null.
  *
  * @see com.surrealdb.Surreal#signin(Signin)
- * @see com.surrealdb.Surreal#signup(Record)
+ * @see com.surrealdb.Surreal#signup(RecordCredential)
  */
 public class Token {
 

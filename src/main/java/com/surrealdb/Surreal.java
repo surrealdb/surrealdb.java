@@ -10,12 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import com.surrealdb.signin.Bearer;
+import com.surrealdb.signin.BearerCredential;
 import com.surrealdb.signin.Credential;
-import com.surrealdb.signin.Database;
-import com.surrealdb.signin.Namespace;
-import com.surrealdb.signin.Record;
-import com.surrealdb.signin.Root;
+import com.surrealdb.signin.DatabaseCredential;
+import com.surrealdb.signin.NamespaceCredential;
+import com.surrealdb.signin.RecordCredential;
+import com.surrealdb.signin.RootCredential;
 import com.surrealdb.signin.Signin;
 import com.surrealdb.signin.Token;
 
@@ -161,36 +161,36 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     /**
-     * Signs in with the given credential. Supports Root, Namespace, Database, Record, and Bearer.
+     * Signs in with the given credential. Supports RootCredential, NamespaceCredential, DatabaseCredential, RecordCredential, and BearerCredential.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealdb/security/authentication">authentication documentation</a>.
      *
-     * @param credential the credentials (Root, Namespace, Database, Record, or Bearer)
+     * @param credential the credentials (RootCredential, NamespaceCredential, DatabaseCredential, RecordCredential, or BearerCredential)
      * @return a Token representing the session after a successful sign-in
-     * @throws SurrealException if the credential type is unsupported or Record ns/db cannot be resolved
+     * @throws SurrealException if the credential type is unsupported or RecordCredential ns/db cannot be resolved
      */
     public Token signin(Credential credential) {
-        if (credential instanceof Database) {
-            final Database db = (Database) credential;
+        if (credential instanceof DatabaseCredential) {
+            final DatabaseCredential db = (DatabaseCredential) credential;
             return signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase());
-        } else if (credential instanceof Namespace) {
-            final Namespace ns = (Namespace) credential;
+        } else if (credential instanceof NamespaceCredential) {
+            final NamespaceCredential ns = (NamespaceCredential) credential;
             return signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace());
-        } else if (credential instanceof Root) {
-            final Root r = (Root) credential;
+        } else if (credential instanceof RootCredential) {
+            final RootCredential r = (RootCredential) credential;
             return signinRoot(getPtr(), r.getUsername(), r.getPassword());
-        } else if (credential instanceof Record) {
-            final Record rec = (Record) credential;
+        } else if (credential instanceof RecordCredential) {
+            final RecordCredential rec = (RecordCredential) credential;
             String ns = rec.getNamespace() != null ? rec.getNamespace() : this.namespace;
             String db = rec.getDatabase() != null ? rec.getDatabase() : this.database;
             if (ns == null || db == null) {
                 throw new SurrealException(
-                    "Record signin requires namespace and database. Set them explicitly on Record or call useNs() and useDb() first.");
+                    "RecordCredential signin requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
             }
             final ValueMut paramsValue = ValueBuilder.convert(rec.getParams());
             return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
-        } else if (credential instanceof Bearer) {
-            Bearer bearer = (Bearer) credential;
+        } else if (credential instanceof BearerCredential) {
+            BearerCredential bearer = (BearerCredential) credential;
             authenticate(getPtr(), bearer.getToken());
             return new Token(bearer.getToken(), null);
         }
@@ -203,7 +203,7 @@ public class Surreal extends Native implements AutoCloseable {
      * @param signin the credentials for signing in
      * @return a Token representing the session token after a successful sign-in
      * @throws SurrealException if the signin type is unsupported
-     * @deprecated Use {@link #signin(Credential)} with Root, Namespace, Database, Record, or Bearer.
+     * @deprecated Use {@link #signin(Credential)} with RootCredential, NamespaceCredential, DatabaseCredential, RecordCredential, or BearerCredential.
      */
     @Deprecated
     public Token signin(Signin signin) {
@@ -218,12 +218,12 @@ public class Surreal extends Native implements AutoCloseable {
      * @return tokens (access and optional refresh) returned by the server
      * @throws SurrealException if namespace or database cannot be resolved (call useNs/useDb first when omitting)
      */
-    public Token signup(Record record) {
+    public Token signup(RecordCredential record) {
         String ns = record.getNamespace() != null ? record.getNamespace() : this.namespace;
         String db = record.getDatabase() != null ? record.getDatabase() : this.database;
         if (ns == null || db == null) {
             throw new SurrealException(
-                "Record signup requires namespace and database. Set them explicitly on Record or call useNs() and useDb() first.");
+                "RecordCredential signup requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
         }
         final ValueMut paramsValue = ValueBuilder.convert(record.getParams());
         return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
