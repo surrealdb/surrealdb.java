@@ -1,13 +1,16 @@
 package com.surrealdb;
 
-import com.surrealdb.pojos.Person;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.surrealdb.pojos.Person;
 
 public class ConnectionTests {
 
@@ -41,12 +44,20 @@ public class ConnectionTests {
                 final Value value = response.take(0);
                 assertTrue(value.isObject());
                 final Object object = value.getObject();
-                assertEquals(object.len(), 5);
+                assertEquals(object.len(), 7);
                 {
                     final Value v = object.get("accesses");
                     assertTrue(v.isObject());
                     assertEquals(v.getObject().len(), 0);
                     assertEquals("{  }", v.toString());
+                }
+                {
+                    final Value v = object.get("config");
+                    assertTrue(v.isObject());
+                }
+                {
+                    final Value v = object.get("defaults");
+                    assertTrue(v.isObject());
                 }
                 {
                     final Value v = object.get("namespaces");

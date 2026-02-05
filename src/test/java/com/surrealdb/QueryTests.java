@@ -1,16 +1,24 @@
 package com.surrealdb;
 
+import java.awt.geom.Point2D;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
 import com.surrealdb.pojos.Dates;
 import com.surrealdb.pojos.Partial;
 import com.surrealdb.pojos.Person;
 import com.surrealdb.pojos.Stats;
-import org.junit.jupiter.api.Test;
-
-import java.awt.geom.Point2D;
-import java.util.*;
-import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class QueryTests {
 
@@ -116,7 +124,7 @@ public class QueryTests {
         try (final Surreal surreal = new Surreal()) {
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
             {
-                final String sql = "SELECT * FROM ONLY person:unknown";
+                final String sql = "RETURN NONE";
                 final Response response = surreal.query(sql);
                 {
                     final Value value = response.take(0);
@@ -190,12 +198,12 @@ public class QueryTests {
                 assertTrue(create.isArray());
                 final Array createArray = create.getArray();
                 assertEquals(1, createArray.len());
-                assertEquals("[{ id: person:1, pt: (-0.118092, 51.509865) }]", createArray.toString());
+                assertEquals("[{ id: person:1, pt: (-0.118092f, 51.509865f) }]", createArray.toString());
                 final Value select = response.take(1);
                 assertTrue(select.isArray());
                 final Array selectArray = select.getArray();
                 assertEquals(1, selectArray.len());
-                assertEquals("[{ id: person:1, pt: (-0.118092, 51.509865) }]", selectArray.toString());
+                assertEquals("[{ id: person:1, pt: (-0.118092f, 51.509865f) }]", selectArray.toString());
                 // Retrieve the fist record
                 final Value row = selectArray.get(0);
                 assertTrue(row.isObject());

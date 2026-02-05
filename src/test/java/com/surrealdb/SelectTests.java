@@ -1,8 +1,5 @@
 package com.surrealdb;
 
-import com.surrealdb.pojos.Person;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +10,9 @@ import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.surrealdb.pojos.Person;
 
 public class SelectTests implements AutoCloseable {
 
@@ -44,7 +44,8 @@ public class SelectTests implements AutoCloseable {
 
     @Test
     public void selectNonExistingObject() {
-        final Optional<Person> person = surreal.select(Person.class, new RecordId("Dummy", 1));
+        surreal.query("DEFINE TABLE Dummy");
+        final Optional<Person> person = surreal.select(Person.class, new RecordId("Dummy", 2));
         assertEquals(Optional.empty(), person);
     }
 

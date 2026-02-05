@@ -352,7 +352,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Uuid(uuid) = value.as_ref() {
-        new_string!(&mut env, uuid.0.to_string(), null_mut)
+        new_string!(&mut env, uuid.to_string(), null_mut)
     } else {
         SurrealError::NullPointerException("Uuid").exception(&mut env, null_mut)
     }

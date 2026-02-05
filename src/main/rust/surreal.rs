@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::error::SurrealError;
 use crate::{
     check_query_result, convert_up_type, get_long_array, get_rust_string,
-    get_rust_string_array, get_surreal_instance, get_value_instance, get_value_mut_instance,
+    get_rust_string_array, get_surreal_ref, get_value_instance, get_value_mut_instance,
     new_jlong_array, new_string, release_instance, return_unexpected_result,
     return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
     take_one_result, JniTypes, TOKIO_RUNTIME,
@@ -44,7 +44,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     ptr: jlong,
     addr: JString<'local>,
 ) -> jboolean {
-    let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
     let addr = get_rust_string!(env, addr, || false as jboolean);
     // Connect
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(addr).await }) {
@@ -62,7 +62,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
     password: JString<'local>,
 ) -> jstring {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
     // Convert the parameters
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
@@ -76,7 +76,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
             .await
     }) {
         Ok(jwt) => {
-            let jwt = jwt.into_insecure_token();
+            let jwt = jwt.access.into_insecure_token();
             new_string!(&mut env, jwt, null_mut)
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -93,7 +93,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
     ns: JString<'local>,
 ) -> jstring {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
     // Convert the parameters
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
@@ -109,7 +109,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
             .await
     }) {
         Ok(jwt) => {
-            let jwt = jwt.into_insecure_token();
+            let jwt = jwt.access.into_insecure_token();
             new_string!(&mut env, jwt, null_mut)
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -127,7 +127,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
     db: JString<'local>,
 ) -> jstring {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
     // Convert the parameters
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
@@ -145,7 +145,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
             .await
     }) {
         Ok(jwt) => {
-            let jwt = jwt.into_insecure_token();
+            let jwt = jwt.access.into_insecure_token();
             new_string!(&mut env, jwt, null_mut)
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -159,8 +159,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     ptr: jlong,
     ns: JString<'local>,
 ) -> jboolean {
-    // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
+    // Retrieve the Surreal instance (ref, not clone - same session_id must be used across calls)
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
     // Convert the parameters
     let ns = get_rust_string!(&mut env, ns, || false as jboolean);
     // Call use_ns
@@ -177,11 +177,26 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDb<'local>(
     ptr: jlong,
     db: JString<'local>,
 ) -> jboolean {
-    // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, || false as jboolean);
-    // Call use_db
+    // Retrieve the Surreal instance (ref, not clone - same session_id must be used across calls)
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
     let db = get_rust_string!(&mut env, db, || false as jboolean);
+    // Call use_db    
     if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
+        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+    }
+    true.into()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_useDefaults<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
+    // Call use_defaults
+    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_defaults().await }) {
         return SurrealError::from(err).exception(&mut env, || false as jboolean);
     }
     true.into()
@@ -195,7 +210,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     query: JString<'local>,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, ptr, || 0);
     // Retrieve the query
     let query = get_rust_string!(&mut env, &query, || 0);
     // Execute the query
@@ -216,7 +231,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
     params_values: JLongArray<'local>,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, ptr, || 0);
     // Retrieve the query
     let query = get_rust_string!(&mut env, &query, || 0);
     let keys = get_rust_string_array!(&mut env, params_keys, || 0);
@@ -260,7 +275,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
     value_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Extract the thing
     let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Get the value
@@ -288,7 +303,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
     // Get the pointers
@@ -337,7 +352,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
     // Get the pointers
@@ -378,7 +393,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValue<'loc
     value_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
     // Get the value
@@ -405,7 +420,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, null_mut);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, null_mut);
     // Get the pointers
@@ -447,7 +462,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
     to_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
     // Get from and to
@@ -481,7 +496,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
     content_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
     // Get from and to
@@ -513,7 +528,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
     thing_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Extract the thing
     let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Execute the query
@@ -543,7 +558,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
     thing_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, null_mut);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, null_mut);
     // Get the thing pointers
     let thing_ptrs = get_long_array!(&mut env, &thing_ptrs, null_mut);
     // Extract the things
@@ -582,7 +597,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     targets: JObjectArray<'local>,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Get the targets
     let targets = get_rust_string_array!(&mut env, targets, || 0);
     // Prepare the query
@@ -607,7 +622,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     targets: JObjectArray<'local>,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Get the targets
     let targets = get_rust_string_array!(&mut env, targets, || 0);
     // Prepare the query
@@ -632,7 +647,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteThing<'local>(
     thing_ptr: jlong,
 ) -> jboolean {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || false as jboolean);
     // Build the parameters
     let thing = get_value_instance!(&mut env, thing_ptr, || false as jboolean);
     // Prepare the params
@@ -652,7 +667,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteThings<'local>(
     thing_ptrs: JLongArray<'local>,
 ) -> jboolean {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || false as jboolean);
     // Extract the things
     let thing_ptrs = get_long_array!(&mut env, &thing_ptrs, || false as jboolean);
     // Prepare the params
@@ -680,7 +695,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTarget<'local>(
     target: JString<'local>,
 ) -> jboolean {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || false as jboolean);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || false as jboolean);
     // Get the targets
     let target = get_rust_string!(&mut env, target, || false as jboolean);
     // Prepare the query
@@ -701,7 +716,7 @@ fn up_thing_value(
     up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Extract the thing
     let thing = get_value_instance!(&mut env, thing_ptr, || 0);
     // Get the value
@@ -755,7 +770,7 @@ fn up_target_value(
     up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
     // Get the value
@@ -809,7 +824,7 @@ fn up_target_value_sync<'local>(
     up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
-    let surreal = get_surreal_instance!(&mut env, surreal_ptr, || 0);
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
     // Build the parameters
     let target = get_rust_string!(&mut env, target, || 0);
     // Get the value

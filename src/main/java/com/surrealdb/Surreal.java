@@ -1,11 +1,20 @@
 package com.surrealdb;
 
-import com.surrealdb.signin.*;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import com.surrealdb.signin.Database;
+import com.surrealdb.signin.Namespace;
+import com.surrealdb.signin.Root;
+import com.surrealdb.signin.Signin;
+import com.surrealdb.signin.Token;
 
 /**
  * The {@code Surreal} class provides methods to interact with a Surreal database.
@@ -17,6 +26,9 @@ public class Surreal extends Native implements AutoCloseable {
     static {
         Loader.loadNative();
     }
+
+    // Last namespace set by useNs() / useNsDb(); used when useDb() is called so we send both in one USE (Rust SDK requires it).
+    private String namespace;
 
     /**
      * Constructs a new Surreal object.
@@ -38,6 +50,8 @@ public class Surreal extends Native implements AutoCloseable {
     private static native boolean useNs(long ptr, String ns);
 
     private static native boolean useDb(long ptr, String ns);
+
+    private static native boolean useDefaults(long ptr);
 
     private static native long query(long ptr, String sql);
 
@@ -118,6 +132,7 @@ public class Surreal extends Native implements AutoCloseable {
      */
     public Surreal connect(String connect) {
         connect(getPtr(), connect);
+        namespace = null;
         return this;
     }
 
@@ -171,6 +186,19 @@ public class Surreal extends Native implements AutoCloseable {
      */
     public Surreal useDb(String db) {
         useDb(getPtr(), db);
+        return this;
+    }
+
+    /**
+     * Sets the default namespace and database for the Surreal instance.
+     * <p>
+     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/use">use statement documentation</a>.
+     * <p>
+     *
+     * @return the current instance of the {@code Surreal} class
+     */
+    public Surreal useDefaults() {
+        useDefaults(getPtr());
         return this;
     }
 

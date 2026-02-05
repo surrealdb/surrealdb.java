@@ -139,7 +139,7 @@ pub extern "system" fn Java_com_surrealdb_Id_getUuid<'local>(
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::RecordId(o) = value.as_ref() {
         if let RecordIdKey::Uuid(uuid) = &o.key {
-            return new_string!(&mut env, uuid.0.to_string(), null_mut);
+            return new_string!(&mut env, uuid.to_string(), null_mut);
         }
     }
     SurrealError::NullPointerException("Id").exception(&mut env, null_mut)

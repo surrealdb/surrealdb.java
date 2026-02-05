@@ -28,6 +28,19 @@ macro_rules! get_surreal_instance {
     };
 }
 
+/// Returns a reference to the Surreal instance without cloning. Use this for all Surreal
+/// operations so that the same session_id is used across JNI calls. Cloning would create
+/// a new session that is dropped at the end of the call, losing namespace/database context.
+#[macro_export]
+macro_rules! get_surreal_ref {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::get_instance::<Surreal<Any>>($id, JniTypes::Surreal) {
+            Ok(s) => s,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
 #[macro_export]
 macro_rules! get_response_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
