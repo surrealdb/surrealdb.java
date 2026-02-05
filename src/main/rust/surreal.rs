@@ -5,20 +5,48 @@ use std::sync::Arc;
 use crate::error::SurrealError;
 use crate::{
     check_query_result, convert_up_type, get_long_array, get_rust_string,
-    get_rust_string_array, get_surreal_ref, get_value_instance, get_value_mut_instance,
-    new_jlong_array, new_string, release_instance, return_unexpected_result,
+    get_rust_string_array, get_surreal_ref, get_value_instance,
+    get_value_mut_instance, new_jlong_array, release_instance, return_unexpected_result,
     return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
     take_one_result, JniTypes, TOKIO_RUNTIME,
 };
-use jni::objects::{JClass, JLongArray, JObjectArray, JString};
-use jni::sys::{jboolean, jint, jlong, jlongArray, jstring};
+use jni::objects::{JClass, JObject, JLongArray, JObjectArray, JString, JValue};
+use jni::sys::{jboolean, jint, jlong, jlongArray, jobject};
 use jni::JNIEnv;
+use std::result::Result as StdResult;
 use parking_lot::Mutex;
 use serde::Serialize;
 use surrealdb::engine::any::Any;
-use surrealdb::opt::auth::{Database, Namespace, Root};
+use surrealdb::opt::auth::{Database, Namespace, Record as AuthRecord, Root};
 use surrealdb::types::{SurrealValue, ToSql, Value};
 use surrealdb::{IndexedResults, Result, Surreal};
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_beginTransaction<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let surreal = get_surreal_ref!(&mut env, ptr, || 0);
+    match TOKIO_RUNTIME.block_on(async {
+        surreal.clone().begin().await
+    }) {
+        Ok(txn) => JniTypes::new_transaction(txn),
+        Err(e) => SurrealError::from(e).exception(&mut env, || 0),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_cloneSession<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    match crate::clone_surreal_instance(ptr) {
+        Ok(new_ptr) => new_ptr,
+        Err(e) => e.exception(&mut env, || 0),
+    }
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_newInstance<'local>(
@@ -53,6 +81,51 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
     true as jboolean
 }
 
+fn new_token_object<'local>(
+    env: &mut JNIEnv<'local>,
+    access: String,
+    refresh: Option<String>,
+) -> StdResult<jobject, SurrealError> {
+    let token_class = env.find_class("com/surrealdb/signin/Token").map_err(SurrealError::from)?;
+    let access_jstr = env.new_string(access).map_err(SurrealError::from)?;
+    let refresh_jobj: JObject<'local> = match refresh {
+        Some(s) => env.new_string(s).map_err(SurrealError::from)?.into(),
+        None => JObject::null(),
+    };
+    let args = [
+        JValue::Object(access_jstr.as_ref()),
+        JValue::Object(refresh_jobj.as_ref()),
+    ];
+    let token_obj = env
+        .new_object(token_class, "(Ljava/lang/String;Ljava/lang/String;)V", &args)
+        .map_err(SurrealError::from)?;
+    Ok(token_obj.into_raw())
+}
+
+fn new_ns_db_object<'local>(
+    env: &mut JNIEnv<'local>,
+    namespace: Option<String>,
+    database: Option<String>,
+) -> StdResult<jobject, SurrealError> {
+    let ns_db_class = env.find_class("com/surrealdb/NsDb").map_err(SurrealError::from)?;
+    let ns_jobj: JObject<'local> = match namespace {
+        Some(s) => env.new_string(s).map_err(SurrealError::from)?.into(),
+        None => JObject::null(),
+    };
+    let db_jobj: JObject<'local> = match database {
+        Some(s) => env.new_string(s).map_err(SurrealError::from)?.into(),
+        None => JObject::null(),
+    };
+    let args = [
+        JValue::Object(ns_jobj.as_ref()),
+        JValue::Object(db_jobj.as_ref()),
+    ];
+    let ns_db_obj = env
+        .new_object(ns_db_class, "(Ljava/lang/String;Ljava/lang/String;)V", &args)
+        .map_err(SurrealError::from)?;
+    Ok(ns_db_obj.into_raw())
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
     mut env: JNIEnv<'local>,
@@ -60,13 +133,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
     ptr: jlong,
     username: JString<'local>,
     password: JString<'local>,
-) -> jstring {
-    // Retrieve the Surreal instance
+) -> jobject {
     let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
-    // Convert the parameters
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
-    // Signin
     match TOKIO_RUNTIME.block_on(async {
         surreal
             .signin(Root {
@@ -75,9 +145,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
             })
             .await
     }) {
-        Ok(jwt) => {
-            let jwt = jwt.access.into_insecure_token();
-            new_string!(&mut env, jwt, null_mut)
+        Ok(token) => {
+            let access = token.access.into_insecure_token();
+            let refresh = token.refresh.map(|r| r.into_insecure_token());
+            match new_token_object(&mut env, access, refresh) {
+                Ok(obj) => obj,
+                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
@@ -91,14 +165,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
     username: JString<'local>,
     password: JString<'local>,
     ns: JString<'local>,
-) -> jstring {
-    // Retrieve the Surreal instance
+) -> jobject {
     let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
-    // Convert the parameters
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
     let namespace = get_rust_string!(&mut env, ns, null_mut);
-    // Signin
     match TOKIO_RUNTIME.block_on(async {
         surreal
             .signin(Namespace {
@@ -108,9 +179,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
             })
             .await
     }) {
-        Ok(jwt) => {
-            let jwt = jwt.access.into_insecure_token();
-            new_string!(&mut env, jwt, null_mut)
+        Ok(token) => {
+            let access = token.access.into_insecure_token();
+            let refresh = token.refresh.map(|r| r.into_insecure_token());
+            match new_token_object(&mut env, access, refresh) {
+                Ok(obj) => obj,
+                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
@@ -125,15 +200,12 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
     password: JString<'local>,
     ns: JString<'local>,
     db: JString<'local>,
-) -> jstring {
-    // Retrieve the Surreal instance
+) -> jobject {
     let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
-    // Convert the parameters
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
     let namespace = get_rust_string!(&mut env, ns, null_mut);
     let database = get_rust_string!(&mut env, db, null_mut);
-    // Signin
     match TOKIO_RUNTIME.block_on(async {
         surreal
             .signin(Database {
@@ -144,12 +216,114 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
             })
             .await
     }) {
-        Ok(jwt) => {
-            let jwt = jwt.access.into_insecure_token();
-            new_string!(&mut env, jwt, null_mut)
+        Ok(token) => {
+            let access = token.access.into_insecure_token();
+            let refresh = token.refresh.map(|r| r.into_insecure_token());
+            match new_token_object(&mut env, access, refresh) {
+                Ok(obj) => obj,
+                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_signup<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    namespace: JString<'local>,
+    database: JString<'local>,
+    access: JString<'local>,
+    params_value_ptr: jlong,
+) -> jobject {
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
+    let namespace = get_rust_string!(&mut env, namespace, null_mut);
+    let database = get_rust_string!(&mut env, database, null_mut);
+    let access = get_rust_string!(&mut env, access, null_mut);
+    let params = get_value_mut_instance!(&mut env, params_value_ptr, null_mut).clone();
+    let record = AuthRecord {
+        namespace,
+        database,
+        access,
+        params,
+    };
+    match TOKIO_RUNTIME.block_on(async { surreal.signup(record).await }) {
+        Ok(token) => {
+            let access_str = token.access.into_insecure_token();
+            let refresh = token.refresh.map(|r| r.into_insecure_token());
+            match new_token_object(&mut env, access_str, refresh) {
+                Ok(obj) => obj,
+                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            }
+        }
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_signinRecord<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    namespace: JString<'local>,
+    database: JString<'local>,
+    access: JString<'local>,
+    params_value_ptr: jlong,
+) -> jobject {
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
+    let namespace = get_rust_string!(&mut env, namespace, null_mut);
+    let database = get_rust_string!(&mut env, database, null_mut);
+    let access = get_rust_string!(&mut env, access, null_mut);
+    let params = get_value_mut_instance!(&mut env, params_value_ptr, null_mut).clone();
+    let record = AuthRecord {
+        namespace,
+        database,
+        access,
+        params,
+    };
+    match TOKIO_RUNTIME.block_on(async { surreal.signin(record).await }) {
+        Ok(token) => {
+            let access_str = token.access.into_insecure_token();
+            let refresh = token.refresh.map(|r| r.into_insecure_token());
+            match new_token_object(&mut env, access_str, refresh) {
+                Ok(obj) => obj,
+                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            }
+        }
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_authenticate<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    token: JString<'local>,
+) -> jboolean {
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
+    let token_str = get_rust_string!(&mut env, token, || false as jboolean);
+    if let Err(err) = TOKIO_RUNTIME.block_on(async {
+        surreal.authenticate(token_str).await
+    }) {
+        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+    }
+    true as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
+    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.invalidate().await }) {
+        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+    }
+    true as jboolean
 }
 
 #[no_mangle]
@@ -158,16 +332,16 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     _class: JClass<'local>,
     ptr: jlong,
     ns: JString<'local>,
-) -> jboolean {
-    // Retrieve the Surreal instance (ref, not clone - same session_id must be used across calls)
-    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
-    // Convert the parameters
-    let ns = get_rust_string!(&mut env, ns, || false as jboolean);
-    // Call use_ns
-    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_ns(ns).await }) {
-        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+) -> jobject {
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
+    let ns = get_rust_string!(&mut env, ns, null_mut);
+    match TOKIO_RUNTIME.block_on(async { surreal.use_ns(ns).await }) {
+        Ok((namespace, database)) => match new_ns_db_object(&mut env, namespace, database) {
+            Ok(obj) => obj,
+            Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+        },
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
-    true.into()
 }
 
 #[no_mangle]
@@ -176,15 +350,16 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDb<'local>(
     _class: JClass<'local>,
     ptr: jlong,
     db: JString<'local>,
-) -> jboolean {
-    // Retrieve the Surreal instance (ref, not clone - same session_id must be used across calls)
-    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
-    let db = get_rust_string!(&mut env, db, || false as jboolean);
-    // Call use_db    
-    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
-        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+) -> jobject {
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
+    let db = get_rust_string!(&mut env, db, null_mut);
+    match TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
+        Ok((namespace, database)) => match new_ns_db_object(&mut env, namespace, database) {
+            Ok(obj) => obj,
+            Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+        },
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
-    true.into()
 }
 
 #[no_mangle]
@@ -192,14 +367,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDefaults<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jboolean {
-    // Retrieve the Surreal instance
-    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
-    // Call use_defaults
-    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.use_defaults().await }) {
-        return SurrealError::from(err).exception(&mut env, || false as jboolean);
+) -> jobject {
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
+    match TOKIO_RUNTIME.block_on(async { surreal.use_defaults().await }) {
+        Ok((namespace, database)) => match new_ns_db_object(&mut env, namespace, database) {
+            Ok(obj) => obj,
+            Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+        },
+        Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
-    true.into()
 }
 
 #[no_mangle]

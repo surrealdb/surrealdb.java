@@ -10,8 +10,11 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import com.surrealdb.signin.Bearer;
+import com.surrealdb.signin.Credential;
 import com.surrealdb.signin.Database;
 import com.surrealdb.signin.Namespace;
+import com.surrealdb.signin.Record;
 import com.surrealdb.signin.Root;
 import com.surrealdb.signin.Signin;
 import com.surrealdb.signin.Token;
@@ -27,8 +30,9 @@ public class Surreal extends Native implements AutoCloseable {
         Loader.loadNative();
     }
 
-    // Last namespace set by useNs() / useNsDb(); used when useDb() is called so we send both in one USE (Rust SDK requires it).
+    // Current namespace and database set by useNs() / useDb() / useDefaults() (from server return value).
     private String namespace;
+    private String database;
 
     /**
      * Constructs a new Surreal object.
@@ -37,21 +41,40 @@ public class Surreal extends Native implements AutoCloseable {
         super(Surreal.newInstance());
     }
 
+    /**
+     * Constructor for a Surreal instance backed by an existing native pointer (e.g. from {@link #newSession()}).
+     */
+    private Surreal(long ptr) {
+        super(ptr);
+        this.namespace = null;
+        this.database = null;
+    }
+
     private static native long newInstance();
+
+    private static native long cloneSession(long ptr);
 
     private static native boolean connect(long ptr, String connect);
 
-    private static native String signinRoot(long ptr, String username, String password);
+    private static native Token signinRoot(long ptr, String username, String password);
 
-    private static native String signinNamespace(long ptr, String username, String password, String ns);
+    private static native Token signinNamespace(long ptr, String username, String password, String ns);
 
-    private static native String signinDatabase(long ptr, String username, String password, String ns, String db);
+    private static native Token signinDatabase(long ptr, String username, String password, String ns, String db);
 
-    private static native boolean useNs(long ptr, String ns);
+    private static native Token signup(long ptr, String namespace, String database, String access, long paramsValuePtr);
 
-    private static native boolean useDb(long ptr, String ns);
+    private static native Token signinRecord(long ptr, String namespace, String database, String access, long paramsValuePtr);
 
-    private static native boolean useDefaults(long ptr);
+    private static native boolean authenticate(long ptr, String token);
+
+    private static native boolean invalidate(long ptr);
+
+    private static native NsDb useNs(long ptr, String ns);
+
+    private static native NsDb useDb(long ptr, String db);
+
+    private static native NsDb useDefaults(long ptr);
 
     private static native long query(long ptr, String sql);
 
@@ -133,73 +156,183 @@ public class Surreal extends Native implements AutoCloseable {
     public Surreal connect(String connect) {
         connect(getPtr(), connect);
         namespace = null;
+        database = null;
         return this;
     }
 
     /**
-     * Attempts to sign in to the Surreal system using the provided credentials.
-     * The type of signin object determines the scope of the sign-in (Root, Namespace, or Database).
+     * Signs in with the given credential. Supports Root, Namespace, Database, Record, and Bearer.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealdb/security/authentication">authentication documentation</a>.
-     * <p>
      *
-     * @param signin the credentials for signing in, which can be an instance of Root, Namespace, or Database
+     * @param credential the credentials (Root, Namespace, Database, Record, or Bearer)
+     * @return a Token representing the session after a successful sign-in
+     * @throws SurrealException if the credential type is unsupported or Record ns/db cannot be resolved
+     */
+    public Token signin(Credential credential) {
+        if (credential instanceof Database) {
+            final Database db = (Database) credential;
+            return signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase());
+        } else if (credential instanceof Namespace) {
+            final Namespace ns = (Namespace) credential;
+            return signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace());
+        } else if (credential instanceof Root) {
+            final Root r = (Root) credential;
+            return signinRoot(getPtr(), r.getUsername(), r.getPassword());
+        } else if (credential instanceof Record) {
+            final Record rec = (Record) credential;
+            String ns = rec.getNamespace() != null ? rec.getNamespace() : this.namespace;
+            String db = rec.getDatabase() != null ? rec.getDatabase() : this.database;
+            if (ns == null || db == null) {
+                throw new SurrealException(
+                    "Record signin requires namespace and database. Set them explicitly on Record or call useNs() and useDb() first.");
+            }
+            final ValueMut paramsValue = ValueBuilder.convert(rec.getParams());
+            return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
+        } else if (credential instanceof Bearer) {
+            Bearer bearer = (Bearer) credential;
+            authenticate(getPtr(), bearer.getToken());
+            return new Token(bearer.getToken(), null);
+        }
+        throw new SurrealException("Unsupported credential type: " + (credential != null ? credential.getClass().getName() : "null"));
+    }
+
+    /**
+     * Signs in with the given credentials (Root, Namespace, or Database).
+     *
+     * @param signin the credentials for signing in
      * @return a Token representing the session token after a successful sign-in
      * @throws SurrealException if the signin type is unsupported
+     * @deprecated Use {@link #signin(Credential)} with Root, Namespace, Database, Record, or Bearer.
      */
+    @Deprecated
     public Token signin(Signin signin) {
-        if (signin instanceof Database) {
-            final Database db = (Database) signin;
-            return new Token(signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase()));
-        } else if (signin instanceof Namespace) {
-            final Namespace ns = (Namespace) signin;
-            return new Token(signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace()));
-        } else if (signin instanceof Root) {
-            final Root r = (Root) signin;
-            return new Token(signinRoot(getPtr(), r.getUsername(), r.getPassword()));
-        }
-        throw new SurrealException("Unsupported sign in");
+        return signin((Credential) signin);
     }
 
     /**
-     * Sets the namespace for the Surreal instance.
-     * <p>
-     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/use">use statement documentation</a>.
-     * <p>
+     * Signs up a record user with the given record access credentials.
+     * When namespace or database are null on the record, the current session values from useNs/useDb are used.
+     *
+     * @param record record signup credentials (namespace, database, access, params; ns/db may be null to use session)
+     * @return tokens (access and optional refresh) returned by the server
+     * @throws SurrealException if namespace or database cannot be resolved (call useNs/useDb first when omitting)
+     */
+    public Token signup(Record record) {
+        String ns = record.getNamespace() != null ? record.getNamespace() : this.namespace;
+        String db = record.getDatabase() != null ? record.getDatabase() : this.database;
+        if (ns == null || db == null) {
+            throw new SurrealException(
+                "Record signup requires namespace and database. Set them explicitly on Record or call useNs() and useDb() first.");
+        }
+        final ValueMut paramsValue = ValueBuilder.convert(record.getParams());
+        return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
+    }
+
+    /**
+     * Authenticates the current connection with a JWT token (e.g. the access token from signin).
+     *
+     * @param token the access token string
+     * @return the current instance
+     */
+    public Surreal authenticate(String token) {
+        authenticate(getPtr(), token);
+        return this;
+    }
+
+    /**
+     * Invalidates the authentication for the current connection.
+     *
+     * @return the current instance
+     */
+    public Surreal invalidate() {
+        invalidate(getPtr());
+        return this;
+    }
+
+    /**
+     * Creates a new session that shares the same connection but has its own namespace, database,
+     * and authentication state. Use this for multi-session support.
+     *
+     * @return a new Surreal instance representing a separate session
+     */
+    public Surreal newSession() {
+        return new Surreal(cloneSession(getPtr()));
+    }
+
+    private static native long beginTransaction(long ptr);
+
+    /**
+     * Starts a client-side transaction. Use {@link Transaction#query(String)} for operations
+     * and {@link Transaction#commit()} or {@link Transaction#cancel()} to complete it.
+     *
+     * @return a new Transaction instance
+     */
+    public Transaction beginTransaction() {
+        return new Transaction(beginTransaction(getPtr()));
+    }
+
+    /**
+     * Sets the namespace for the Surreal instance. The current namespace and database from the server
+     * are stored; use {@link #getNamespace()} and {@link #getDatabase()} to read them.
      *
      * @param ns the namespace to use
-     * @return the current instance of the {@code Surreal} class
+     * @return this instance for chaining
      */
     public Surreal useNs(String ns) {
-        useNs(getPtr(), ns);
+        NsDb result = useNs(getPtr(), ns);
+        this.namespace = result.getNamespace();
+        this.database = result.getDatabase();
         return this;
     }
 
     /**
-     * Sets the database for the current instance of the Surreal class.
-     * <p>
-     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/use">use statement documentation</a>.
-     * <p>
+     * Sets the database for the current instance. The current namespace and database from the server
+     * are stored; use {@link #getNamespace()} and {@link #getDatabase()} to read them.
      *
      * @param db the database name to use
-     * @return the current instance of the {@code Surreal} class
+     * @return this instance for chaining
      */
     public Surreal useDb(String db) {
-        useDb(getPtr(), db);
+        NsDb result = useDb(getPtr(), db);
+        this.namespace = result.getNamespace();
+        this.database = result.getDatabase();
         return this;
     }
 
     /**
-     * Sets the default namespace and database for the Surreal instance.
-     * <p>
-     * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/use">use statement documentation</a>.
-     * <p>
+     * Sets the default namespace and database. The actual defaults from the server are stored;
+     * use {@link #getNamespace()} and {@link #getDatabase()} to read them.
      *
-     * @return the current instance of the {@code Surreal} class
+     * @return this instance for chaining
      */
     public Surreal useDefaults() {
-        useDefaults(getPtr());
+        NsDb result = useDefaults(getPtr());
+        this.namespace = result.getNamespace();
+        this.database = result.getDatabase();
         return this;
+    }
+
+    /**
+     * Returns the current namespace set by the last {@link #useNs(String)}, {@link #useDb(String)},
+     * or {@link #useDefaults()} call (from the server response). Null if none of those have been
+     * called since {@link #connect(String)} or for a new session.
+     *
+     * @return the current namespace, or null
+     */
+    public String getNamespace() {
+        return namespace;
+    }
+
+    /**
+     * Returns the current database set by the last {@link #useNs(String)}, {@link #useDb(String)},
+     * or {@link #useDefaults()} call (from the server response). Null if none of those have been
+     * called since {@link #connect(String)} or for a new session.
+     *
+     * @return the current database, or null
+     */
+    public String getDatabase() {
+        return database;
     }
 
     /**

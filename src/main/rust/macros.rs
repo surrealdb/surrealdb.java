@@ -41,6 +41,17 @@ macro_rules! get_surreal_ref {
     };
 }
 
+/// Returns a reference to the Transaction instance.
+#[macro_export]
+macro_rules! get_transaction_ref {
+    ($env:expr, $id:expr, $default_fn:expr) => {
+        match $crate::get_instance::<surrealdb::method::Transaction<Any>>($id, JniTypes::Transaction) {
+            Ok(t) => t,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
 #[macro_export]
 macro_rules! get_response_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {

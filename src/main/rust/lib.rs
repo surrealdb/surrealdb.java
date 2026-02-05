@@ -10,6 +10,8 @@ use std::collections::btree_map::IntoIter as BIntoIter;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::vec::IntoIter;
+use surrealdb::engine::any::Any;
+use surrealdb::method::Transaction;
 use surrealdb::types::Value;
 use surrealdb::{Connection, IndexedResults, Surreal};
 use tokio::runtime::Runtime;
@@ -26,6 +28,7 @@ mod object;
 mod recordid;
 mod response;
 mod surreal;
+mod transaction;
 mod syncentryiterator;
 mod syncvalueiterator;
 mod value;
@@ -41,6 +44,7 @@ type Allocations = DashMap<jlong, JniTypes>;
 #[derive(PartialEq)]
 enum JniTypes {
     Surreal,
+    Transaction,
     Value,
     ValueMut,
     ArrayIter,
@@ -55,6 +59,10 @@ enum JniTypes {
 impl JniTypes {
     fn new_surreal<C: Connection>(s: Surreal<C>) -> jlong {
         create_instance(s, Self::Surreal)
+    }
+
+    fn new_transaction<C: Connection>(t: Transaction<C>) -> jlong {
+        create_instance(t, Self::Transaction)
     }
 
     fn new_value(v: Arc<Value>) -> jlong {
@@ -96,6 +104,7 @@ impl JniTypes {
     fn as_str(&self) -> &'static str {
         match self {
             JniTypes::Surreal => "Surreal",
+            JniTypes::Transaction => "Transaction",
             JniTypes::Value => "Value",
             JniTypes::ValueMut => "MutableValue",
             JniTypes::ArrayIter => "ArrayIterator",
@@ -186,6 +195,14 @@ fn take_instance<T>(ptr: jlong, t: JniTypes) -> Result<T, SurrealError> {
     // Convert jlong to a Box<T>, effectively taking ownership of the instance
     let instance = unsafe { Box::from_raw(ptr as *mut T) };
     Ok(*instance)
+}
+
+/// Clones the Surreal instance at the given pointer and returns a new pointer to the clone.
+/// Used for multi-session support: each clone is a separate session sharing the same connection.
+pub(crate) fn clone_surreal_instance(ptr: jlong) -> Result<jlong, SurrealError> {
+    let s = get_instance::<Surreal<Any>>(ptr, JniTypes::Surreal)?;
+    let cloned = (*s).clone();
+    Ok(JniTypes::new_surreal(cloned))
 }
 
 fn release_instance<T>(ptr: jlong) {
