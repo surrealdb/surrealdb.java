@@ -16,7 +16,6 @@ import com.surrealdb.signin.DatabaseCredential;
 import com.surrealdb.signin.NamespaceCredential;
 import com.surrealdb.signin.RecordCredential;
 import com.surrealdb.signin.RootCredential;
-import com.surrealdb.signin.Signin;
 import com.surrealdb.signin.Token;
 
 /**
@@ -195,19 +194,6 @@ public class Surreal extends Native implements AutoCloseable {
             return new Token(bearer.getToken(), null);
         }
         throw new SurrealException("Unsupported credential type: " + (credential != null ? credential.getClass().getName() : "null"));
-    }
-
-    /**
-     * Signs in with the given credentials (Root, Namespace, or Database).
-     *
-     * @param signin the credentials for signing in
-     * @return a Token representing the session token after a successful sign-in
-     * @throws SurrealException if the signin type is unsupported
-     * @deprecated Use {@link #signin(Credential)} with RootCredential, NamespaceCredential, DatabaseCredential, RecordCredential, or BearerCredential.
-     */
-    @Deprecated
-    public Token signin(Signin signin) {
-        return signin((Credential) signin);
     }
 
     /**

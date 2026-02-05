@@ -239,16 +239,4 @@ public class CredentialTests {
         }
     }
 
-    @Test
-    void deprecatedSignin_withSigninDispatchesToSigninCredential() {
-        try (Surreal surreal = new Surreal()) {
-            surreal.connect("memory").useNs("test_ns").useDb("test_db");
-            try {
-                Token token = surreal.signin((com.surrealdb.signin.Signin) new RootCredential("root", "root"));
-                assertNotNull(token);
-            } catch (SurrealException e) {
-                assertNotNull(e.getMessage());
-            }
-        }
-    }
 }
