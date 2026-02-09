@@ -452,6 +452,34 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
     JniTypes::new_response(Arc::new(Mutex::new(res)))
 }
 
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    name: JString<'local>,
+    args_value_ptrs: JLongArray<'local>,
+) -> jlong {
+    let surreal = get_surreal_ref!(&mut env, ptr, || 0);
+    let name = get_rust_string!(&mut env, &name, || 0);
+    let value_ptrs = get_long_array!(&mut env, &args_value_ptrs, || 0);
+    let mut params_map = BTreeMap::<String, Value>::new();
+    let mut placeholders = Vec::with_capacity(value_ptrs.len());
+    for (i, value_ptr) in value_ptrs.iter().enumerate() {
+        let key = format!("{}", i);
+        placeholders.push(format!("${}", i));
+        let value = get_value_mut_instance!(&mut env, *value_ptr, || 0);
+        params_map.insert(key, value.clone());
+    }
+    let args_list = placeholders.join(", ");
+    let query = format!("RETURN {}({})", name, args_list);
+    let res = surrealdb_query::<Value>(&surreal, &query, Some(params_map));
+    let mut response = check_query_result!(&mut env, res, || 0);
+    let mut result = take_one_result!(&mut env, response, || 0);
+    return_value_array_first!(result);
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
+}
+
 fn surrealdb_query<T>(
     surreal: &Surreal<Any>,
     query: &str,

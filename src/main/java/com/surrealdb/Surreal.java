@@ -131,6 +131,8 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native boolean health(long ptr);
 
+    private static native long run(long ptr, String name, long[] argsValuePtrs);
+
 
     @Override
     final String toString(long ptr) {
@@ -181,6 +183,28 @@ public class Surreal extends Native implements AutoCloseable {
      */
     public boolean health() {
         return health(getPtr());
+    }
+
+    /**
+     * Runs a SurrealDB function by name with the given arguments (e.g. {@code array::add}, {@code math::mean}).
+     * Implemented via a SurrealQL RETURN query.
+     *
+     * @param name the function name (e.g. "array::add" or "array::add&lt;1.0.0&gt;" for a version)
+     * @param args the arguments to pass to the function (converted to Surreal values)
+     * @return the result Value
+     * @throws SurrealException if the run fails
+     */
+    public Value run(String name, Object... args) {
+        if (args == null || args.length == 0) {
+            return new Value(run(getPtr(), name, new long[0]));
+        }
+        ValueMut[] valueMuts = new ValueMut[args.length];
+        long[] ptrs = new long[args.length];
+        for (int i = 0; i < args.length; i++) {
+            valueMuts[i] = ValueBuilder.convert(args[i]);
+            ptrs[i] = valueMuts[i].getPtr();
+        }
+        return new Value(run(getPtr(), name, ptrs));
     }
 
     /**
