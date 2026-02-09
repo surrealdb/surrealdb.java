@@ -12,9 +12,11 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TypeTests {
 
@@ -79,6 +81,43 @@ public class TypeTests {
             assertEquals(created1.get(Name.class), name);
             assertEquals(created2.get(Name.class), name);
             assertEquals(created3.get(Name.class), name);
+        }
+    }
+
+    @Test
+    void testRecordIdWithArrayKey() {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            // Build array key from query result
+            Response r = surreal.query("RETURN [1, 2, 3]");
+            Value arrayValue = r.take(0);
+            assertTrue(arrayValue.isArray());
+            Array keyArray = arrayValue.getArray();
+            RecordId rid = new RecordId("with_array_key", keyArray);
+            final Name name = new Name("array", "key");
+            final Value created = surreal.create(rid, name);
+            assertEquals(created.get(Name.class), name);
+            Optional<Value> selected = surreal.select(rid);
+            assertTrue(selected.isPresent());
+            assertEquals(name.first, selected.get().get(Name.class).first);
+        }
+    }
+
+    @Test
+    void testRecordIdWithObjectKey() {
+        try (final Surreal surreal = new Surreal()) {
+            surreal.connect("memory").useNs("test_ns").useDb("test_db");
+            Response r = surreal.query("RETURN { a: 1, b: 'two' }");
+            Value objValue = r.take(0);
+            assertTrue(objValue.isObject());
+            Object keyObj = objValue.getObject();
+            RecordId rid = new RecordId("with_object_key", keyObj);
+            final Name name = new Name("object", "key");
+            final Value created = surreal.create(rid, name);
+            assertEquals(created.get(Name.class), name);
+            Optional<Value> selected = surreal.select(rid);
+            assertTrue(selected.isPresent());
+            assertEquals(name.first, selected.get().get(Name.class).first);
         }
     }
 

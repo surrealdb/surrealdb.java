@@ -208,7 +208,7 @@ public class Surreal extends Native implements AutoCloseable {
      * @return the result Value
      * @throws SurrealException if the run fails
      */
-    public Value run(String name, Object... args) {
+    public Value run(String name, java.lang.Object... args) {
         if (args == null || args.length == 0) {
             return new Value(run(getPtr(), name, new long[0]));
         }
