@@ -50,7 +50,7 @@ These exist in SurrealDB’s value model but are **not** exposed on `Value` / `V
 | **Ranges** | Supported (read). `Value.isRange()`, `Value.getRangeStart()` / `Value.getRangeEnd()` → `Optional<Value>`. Creation not yet exposed. |
 | **Record ID ranges** | Supported via `RecordIdRange` (table + optional start/end `Id`). `Surreal.select(RecordIdRange)`, `update(RecordIdRange, ...)`, `delete(RecordIdRange)`, `upsert(RecordIdRange, ...)`. Range-based IDs are not supported for single-record Id serialization in `valuemut.rs`. |
 | **Table** | Supported. `Value.isTable()`, `Value.getTable()` → table name string. `ValueMut.createTable(name)`. |
-| **Regex** | Supported. `Value.isRegex()`, `Value.getRegex()` → pattern string. `ValueMut.createRegex(pattern)`. |
+| **Regex** | Not supported. Regex semantics differ by language; not transferrable across the boundary (same as other SDKs). Encountering a regex value can result in a serialization error. |
 
 So currently **not** supported as first-class value types:
 
@@ -70,7 +70,7 @@ So currently **not** supported as first-class value types:
 - Durations ✅ (supported)  
 - Ranges ✅ (read: getRangeStart/getRangeEnd)  
 - Table ✅ (isTable/getTable, createTable)  
-- Regex ✅ (isRegex/getRegex, createRegex)  
+- Regex ❌ (not transferrable; serialization error if encountered)  
 - File ✅ (isFile/getFile→FileRef, createFile)  
 - Bytes ✅ (supported)  
 - Datetime ✅ (supported)  
@@ -95,6 +95,6 @@ So currently **not** supported as first-class value types:
 
 - **Fully supported:** null, none, boolean, int, float, decimal, string, record ID (Thing), object, array, duration, geometry, datetime, bytes, UUID.
 - **Record ID:** Read path supports string, int, object, array, and UUID-based IDs; **create** path only supports string, int, and UUID (no array/object record ID creation).
-- **Not supported as value types:** sets (as distinct from arrays). File, range (read), table, and regex are supported. Record ID ranges are supported for queries via `RecordIdRange`.
+- **Not supported as value types:** sets (as distinct from arrays), regex (not transferrable; serialization error if encountered). File, range (read), and table are supported. Record ID ranges are supported for queries via `RecordIdRange`.
 
 If you want, I can suggest concrete API changes (e.g. `RecordId(table, Id)` or new `Value`/`ValueMut` methods) for the missing types or record ID creation.

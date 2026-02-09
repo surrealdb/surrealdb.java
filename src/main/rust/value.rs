@@ -452,30 +452,6 @@ pub extern "system" fn Java_com_surrealdb_Value_getTable<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_isRegex<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    matches!(value.as_ref(), Value::Regex(_)) as jboolean
-}
-
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_getRegex<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Regex(re) = value.as_ref() {
-        new_string!(&mut env, re.regex().as_str().to_string(), null_mut)
-    } else {
-        SurrealError::NullPointerException("Regex").exception(&mut env, null_mut)
-    }
-}
-
-#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_toString<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,

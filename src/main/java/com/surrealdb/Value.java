@@ -90,10 +90,6 @@ public class Value extends Native {
 
     private static native String getTable(long ptr);
 
-    private static native boolean isRegex(long ptr);
-
-    private static native String getRegex(long ptr);
-
     @Override
     final native String toString(long ptr);
 
@@ -223,17 +219,6 @@ public class Value extends Native {
      */
     public String getTable() {
         return getTable(getPtr());
-    }
-
-    public boolean isRegex() {
-        return isRegex(getPtr());
-    }
-
-    /**
-     * Regex pattern when this value is a regex type (without delimiters).
-     */
-    public String getRegex() {
-        return getRegex(getPtr());
     }
 
     public boolean isBytes() {

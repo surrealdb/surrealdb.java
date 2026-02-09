@@ -9,7 +9,6 @@ use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::JNIEnv;
 use rust_decimal::Decimal;
 use surrealdb::types::{Array, Datetime, Duration, File, Number, Object, Table, ToSql, Uuid, Value};
-use surrealdb::types::Regex;
 
 use crate::error::SurrealError;
 use crate::{
@@ -250,19 +249,6 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newTable<'local>(
     let name = get_rust_string!(&mut env, name, || 0);
     let value = Value::Table(Table::new(name));
     JniTypes::new_value_mut(value)
-}
-
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_ValueMut_newRegex<'local>(
-    mut env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    pattern: JString<'local>,
-) -> jlong {
-    let pattern = get_rust_string!(&mut env, pattern, || 0);
-    match Regex::from_str(&pattern) {
-        Ok(re) => JniTypes::new_value_mut(Value::Regex(re)),
-        Err(e) => SurrealError::SurrealDBJni(e.to_string()).exception(&mut env, || 0),
-    }
 }
 
 #[no_mangle]

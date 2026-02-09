@@ -48,8 +48,6 @@ class ValueMut extends Native {
 
     private static native long newTable(String name);
 
-    private static native long newRegex(String pattern);
-
     public static ValueMut createNone() {
         return new ValueMut(newNone());
     }
@@ -138,10 +136,6 @@ class ValueMut extends Native {
 
     public static ValueMut createTable(String name) {
         return new ValueMut(newTable(name));
-    }
-
-    public static ValueMut createRegex(String pattern) {
-        return new ValueMut(newRegex(pattern));
     }
 
     @Override
