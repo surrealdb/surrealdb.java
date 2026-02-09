@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.surrealdb.pojos.Person;
@@ -27,7 +26,6 @@ public class LiveQueryTests {
 	}
 
 	@Test
-	@Disabled("Triggers SIGSEGV in native lib (concurrent_queue::pop) when closing stream while next() is blocking; native/JNI lifecycle bug")
 	void liveStreamNextCanBlockAndClose() throws Exception {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");
