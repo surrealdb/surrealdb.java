@@ -1,12 +1,12 @@
 package com.surrealdb;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.surrealdb.pojos.Person;
-
-import java.util.Optional;
 
 /**
  * Tests for live queries: {@link Surreal#selectLive(String)}, {@link LiveStream#next()}, {@link LiveStream#close()}.

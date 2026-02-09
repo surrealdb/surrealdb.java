@@ -1,11 +1,5 @@
 package com.surrealdb;
 
-import com.surrealdb.pojos.ByteData;
-import com.surrealdb.pojos.Dates;
-import com.surrealdb.pojos.Name;
-import com.surrealdb.pojos.Numbers;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -17,6 +11,12 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.surrealdb.pojos.ByteData;
+import com.surrealdb.pojos.Dates;
+import com.surrealdb.pojos.Name;
+import com.surrealdb.pojos.Numbers;
 
 public class TypeTests {
 

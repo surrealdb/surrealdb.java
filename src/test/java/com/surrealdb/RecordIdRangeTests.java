@@ -1,19 +1,18 @@
 package com.surrealdb;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-
-import com.surrealdb.pojos.Person;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
 import static com.surrealdb.Helpers.emmanuel;
 import static com.surrealdb.Helpers.jaime;
 import static com.surrealdb.Helpers.tobie;
+import com.surrealdb.pojos.Person;
 
 /**
  * Tests for {@link RecordIdRange} and Surreal select/update/delete/upsert by range.
