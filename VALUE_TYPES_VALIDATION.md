@@ -45,12 +45,12 @@ These exist in SurrealDB’s value model but are **not** exposed on `Value` / `V
 
 | SurrealDB type | Status in Java client |
 |----------------|------------------------|
-| **File (file pointers)** | Not supported. No `isFile()` / `getFile()` (or similar) on `Value`; no `ValueMut.createFile(...)`. |
+| **File (file pointers)** | Supported. `Value.isFile()`, `Value.getFile()` → `FileRef` (getBucket, getKey). `ValueMut.createFile(bucket, key)`. |
 | **Sets** | Not supported. Sets are distinct from arrays in SurrealDB; the client only has array support. Collections are mapped to arrays in `ValueBuilder`. |
-| **Ranges** | Not supported. No `isRange()` / `getRange()` or `ValueMut.createRange(...)`. |
+| **Ranges** | Supported (read). `Value.isRange()`, `Value.getRangeStart()` / `Value.getRangeEnd()` → `Optional<Value>`. Creation not yet exposed. |
 | **Record ID ranges** | Supported via `RecordIdRange` (table + optional start/end `Id`). `Surreal.select(RecordIdRange)`, `update(RecordIdRange, ...)`, `delete(RecordIdRange)`, `upsert(RecordIdRange, ...)`. Range-based IDs are not supported for single-record Id serialization in `valuemut.rs`. |
-| **Table** | Used only internally (e.g. in `check_value_table!` in Rust). Not exposed as a value type to Java (no `isTable()` / `getTable()` on `Value`). |
-| **Regex** | Not supported. No `isRegex()` / `getRegex()` or create path. |
+| **Table** | Supported. `Value.isTable()`, `Value.getTable()` → table name string. `ValueMut.createTable(name)`. |
+| **Regex** | Supported. `Value.isRegex()`, `Value.getRegex()` → pattern string. `ValueMut.createRegex(pattern)`. |
 
 So currently **not** supported as first-class value types:
 
@@ -68,9 +68,10 @@ So currently **not** supported as first-class value types:
 - Arrays ✅ (supported)  
 - Sets ❌ (only arrays; sets are not a separate value)  
 - Durations ✅ (supported)  
-- Ranges ❌  
-- Table ❌ (internal only)  
-- Regex ❌  
+- Ranges ✅ (read: getRangeStart/getRangeEnd)  
+- Table ✅ (isTable/getTable, createTable)  
+- Regex ✅ (isRegex/getRegex, createRegex)  
+- File ✅ (isFile/getFile→FileRef, createFile)  
 - Bytes ✅ (supported)  
 - Datetime ✅ (supported)  
 - UUID ✅ (supported)  
@@ -94,6 +95,6 @@ So currently **not** supported as first-class value types:
 
 - **Fully supported:** null, none, boolean, int, float, decimal, string, record ID (Thing), object, array, duration, geometry, datetime, bytes, UUID.
 - **Record ID:** Read path supports string, int, object, array, and UUID-based IDs; **create** path only supports string, int, and UUID (no array/object record ID creation).
-- **Not supported as value types:** file pointers, sets (as distinct from arrays), ranges (as a value type), table (as value), regex. Record ID ranges are supported for queries via `RecordIdRange`.
+- **Not supported as value types:** sets (as distinct from arrays). File, range (read), table, and regex are supported. Record ID ranges are supported for queries via `RecordIdRange`.
 
 If you want, I can suggest concrete API changes (e.g. `RecordId(table, Id)` or new `Value`/`ValueMut` methods) for the missing types or record ID creation.

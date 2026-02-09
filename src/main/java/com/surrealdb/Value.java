@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -74,6 +75,24 @@ public class Value extends Native {
     private static native boolean isRecordId(long ptr);
 
     private static native long getRecordId(long ptr);
+
+    private static native boolean isFile(long ptr);
+
+    private static native long getFile(long ptr);
+
+    private static native boolean isRange(long ptr);
+
+    private static native long getRangeStart(long ptr);
+
+    private static native long getRangeEnd(long ptr);
+
+    private static native boolean isTable(long ptr);
+
+    private static native String getTable(long ptr);
+
+    private static native boolean isRegex(long ptr);
+
+    private static native String getRegex(long ptr);
 
     @Override
     final native String toString(long ptr);
@@ -165,6 +184,56 @@ public class Value extends Native {
 
     public RecordId getRecordId() {
         return new RecordId(getRecordId(getPtr()));
+    }
+
+    public boolean isFile() {
+        return isFile(getPtr());
+    }
+
+    public FileRef getFile() {
+        return new FileRef(getFile(getPtr()));
+    }
+
+    public boolean isRange() {
+        return isRange(getPtr());
+    }
+
+    /**
+     * Start bound of the range (included or excluded), or empty if unbounded.
+     */
+    public Optional<Value> getRangeStart() {
+        final long p = getRangeStart(getPtr());
+        return p == 0 ? Optional.empty() : Optional.of(new Value(p));
+    }
+
+    /**
+     * End bound of the range (included or excluded), or empty if unbounded.
+     */
+    public Optional<Value> getRangeEnd() {
+        final long p = getRangeEnd(getPtr());
+        return p == 0 ? Optional.empty() : Optional.of(new Value(p));
+    }
+
+    public boolean isTable() {
+        return isTable(getPtr());
+    }
+
+    /**
+     * Table name when this value is a table type.
+     */
+    public String getTable() {
+        return getTable(getPtr());
+    }
+
+    public boolean isRegex() {
+        return isRegex(getPtr());
+    }
+
+    /**
+     * Regex pattern when this value is a regex type (without delimiters).
+     */
+    public String getRegex() {
+        return getRegex(getPtr());
     }
 
     public boolean isBytes() {

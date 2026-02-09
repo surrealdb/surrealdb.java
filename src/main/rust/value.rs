@@ -1,4 +1,5 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
+use std::ops::Bound;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
@@ -355,6 +356,122 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
         new_string!(&mut env, uuid.to_string(), null_mut)
     } else {
         SurrealError::NullPointerException("Uuid").exception(&mut env, null_mut)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_file() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if value.is_file() {
+        JniTypes::new_value(value)
+    } else {
+        SurrealError::NullPointerException("File").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isRange<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_range() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getRangeStart<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Range(r) = value.as_ref() {
+        match &r.start {
+            Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
+            Bound::Unbounded => 0,
+        }
+    } else {
+        SurrealError::NullPointerException("Range").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getRangeEnd<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Range(r) = value.as_ref() {
+        match &r.end {
+            Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
+            Bound::Unbounded => 0,
+        }
+    } else {
+        SurrealError::NullPointerException("Range").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isTable<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_table() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getTable<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Table(t) = value.as_ref() {
+        new_string!(&mut env, t.as_str().to_string(), null_mut)
+    } else {
+        SurrealError::NullPointerException("Table").exception(&mut env, null_mut)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isRegex<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    matches!(value.as_ref(), Value::Regex(_)) as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getRegex<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Regex(re) = value.as_ref() {
+        new_string!(&mut env, re.regex().as_str().to_string(), null_mut)
+    } else {
+        SurrealError::NullPointerException("Regex").exception(&mut env, null_mut)
     }
 }
 

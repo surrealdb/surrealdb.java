@@ -44,6 +44,12 @@ class ValueMut extends Native {
 
     private static native long newObjectOf(long[] ptrs);
 
+    private static native long newFile(String bucket, String key);
+
+    private static native long newTable(String name);
+
+    private static native long newRegex(String pattern);
+
     public static ValueMut createNone() {
         return new ValueMut(newNone());
     }
@@ -124,6 +130,18 @@ class ValueMut extends Native {
         // The Entries have been moved
         entries.forEach(Native::moved);
         return value;
+    }
+
+    public static ValueMut createFile(String bucket, String key) {
+        return new ValueMut(newFile(bucket, key));
+    }
+
+    public static ValueMut createTable(String name) {
+        return new ValueMut(newTable(name));
+    }
+
+    public static ValueMut createRegex(String pattern) {
+        return new ValueMut(newRegex(pattern));
     }
 
     @Override

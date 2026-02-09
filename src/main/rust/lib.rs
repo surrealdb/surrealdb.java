@@ -25,6 +25,7 @@ mod entry;
 mod entryiterator;
 mod entrymut;
 mod error;
+mod fileref;
 mod geometry;
 mod id;
 mod live;
