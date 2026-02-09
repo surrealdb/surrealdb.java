@@ -18,9 +18,10 @@ use std::result::Result as StdResult;
 use parking_lot::Mutex;
 use serde::Serialize;
 use futures::StreamExt;
+use std::ops::Bound;
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::{Database, Namespace, Record as AuthRecord, Root};
-use surrealdb::types::{SurrealValue, ToSql, Value};
+use surrealdb::types::{RecordId, RecordIdKey, RecordIdKeyRange, SurrealValue, ToSql, Value};
 use surrealdb::{IndexedResults, Result, Surreal};
 
 #[no_mangle]
@@ -982,6 +983,59 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIds<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIdRange<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    table: JString<'local>,
+    start_id_ptr: jlong,
+    end_id_ptr: jlong,
+) -> jlongArray {
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, null_mut);
+    let table_str = get_rust_string!(&mut env, table, null_mut);
+    let range_value = match build_range_value(&mut env, &table_str, start_id_ptr, end_id_ptr) {
+        Ok(v) => v,
+        Err(e) => return e.exception(&mut env, null_mut),
+    };
+    let params = BTreeMap::from([("_range".to_string(), range_value)]);
+    let res = surrealdb_query(&surreal, "SELECT * FROM $_range", Some(params));
+    let mut res = check_query_result!(&mut env, res, null_mut);
+    let res = take_one_result!(&mut env, res, null_mut);
+    if let Value::Array(a) = res {
+        let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
+        for value in a {
+            let value_ptr = JniTypes::new_value(Arc::new(value));
+            value_ptrs.push(value_ptr);
+        }
+        new_jlong_array!(&mut env, &value_ptrs, null_mut)
+    } else {
+        SurrealError::SurrealDBJni(format!("Unexpected result: {}", res.to_sql()))
+            .exception(&mut env, null_mut)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIdRange<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    table: JString<'local>,
+    start_id_ptr: jlong,
+    end_id_ptr: jlong,
+) -> jboolean {
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || false as jboolean);
+    let table_str = get_rust_string!(&mut env, table, || false as jboolean);
+    let range_value = match build_range_value(&mut env, &table_str, start_id_ptr, end_id_ptr) {
+        Ok(v) => v,
+        Err(e) => return e.exception(&mut env, || false as jboolean),
+    };
+    let params = BTreeMap::from([("_range".to_string(), range_value)]);
+    let res = surrealdb_query(&surreal, "DELETE $_range", Some(params));
+    check_query_result!(&mut env, res, || false as jboolean);
+    true as jboolean
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_deleteTarget<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -999,6 +1053,48 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTarget<'local>(
     // Check the result
     check_query_result!(&mut env, res, || false as jboolean);
     true as jboolean
+}
+
+/// Converts a Value (e.g. from an Id) to RecordIdKey for range bounds.
+fn value_to_record_id_key(value: &Value) -> std::result::Result<RecordIdKey, SurrealError> {
+    if let Value::RecordId(rid) = value {
+        Ok(rid.key.clone())
+    } else {
+        RecordIdKey::from_value(value.clone())
+            .map_err(|e| SurrealError::SurrealDBJni(e.to_string()))
+    }
+}
+
+/// Builds the range record id value for SELECT/DELETE/UPDATE/UPSERT $_range.
+fn build_range_value(
+    _env: &mut JNIEnv,
+    table: &str,
+    start_ptr: jlong,
+    end_ptr: jlong,
+) -> std::result::Result<Value, SurrealError> {
+    let start_bound = if start_ptr == 0 {
+        Bound::Unbounded
+    } else {
+        let value = crate::get_instance::<Arc<Value>>(start_ptr, crate::JniTypes::Value)?;
+        let key = value_to_record_id_key(value.as_ref())?;
+        Bound::Included(key)
+    };
+    let end_bound = if end_ptr == 0 {
+        Bound::Unbounded
+    } else {
+        let value = crate::get_instance::<Arc<Value>>(end_ptr, crate::JniTypes::Value)?;
+        let key = value_to_record_id_key(value.as_ref())?;
+        Bound::Included(key)
+    };
+    let range = RecordIdKeyRange {
+        start: start_bound,
+        end: end_bound,
+    };
+    let range_record_id = RecordId::new(
+        table.to_string(),
+        RecordIdKey::Range(Box::new(range)),
+    );
+    Ok(Value::RecordId(range_record_id))
 }
 
 fn up_record_id_value(
@@ -1053,6 +1149,67 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdValue<'local>(
     value_ptr: jlong,
 ) -> jlong {
     up_record_id_value(env, surreal_ptr, record_id_ptr, up_type, value_ptr, "upsert")
+}
+
+fn up_record_id_range_value(
+    mut env: JNIEnv,
+    surreal_ptr: jlong,
+    table: JString,
+    start_id_ptr: jlong,
+    end_id_ptr: jlong,
+    up_type: jint,
+    value_ptr: jlong,
+    up: &str,
+) -> jlong {
+    let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
+    let table_str = get_rust_string!(&mut env, table, || 0);
+    let range_value = match build_range_value(&mut env, &table_str, start_id_ptr, end_id_ptr) {
+        Ok(v) => v,
+        Err(e) => return e.exception(&mut env, || 0),
+    };
+    let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
+    let up_type = convert_up_type!(&mut env, up_type, || 0);
+    let mut params = BTreeMap::new();
+    params.insert("_range".to_string(), range_value);
+    params.insert("val".to_string(), value.clone());
+    let query = format!("{up} $_range {up_type} $val");
+    let res = surrealdb_query(&surreal, &query, Some(params));
+    let mut response = check_query_result!(&mut env, res, || 0);
+    let mut result: Value = take_one_result!(&mut env, response, || 0);
+    return_value_array_first!(result);
+    return_unexpected_result!(&mut env, result.to_sql(), || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdRangeValue<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    table: JString<'local>,
+    start_id_ptr: jlong,
+    end_id_ptr: jlong,
+    up_type: jint,
+    value_ptr: jlong,
+) -> jlong {
+    up_record_id_range_value(
+        env, surreal_ptr, table, start_id_ptr, end_id_ptr, up_type, value_ptr, "update",
+    )
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdRangeValue<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    surreal_ptr: jlong,
+    table: JString<'local>,
+    start_id_ptr: jlong,
+    end_id_ptr: jlong,
+    up_type: jint,
+    value_ptr: jlong,
+) -> jlong {
+    up_record_id_range_value(
+        env, surreal_ptr, table, start_id_ptr, end_id_ptr, up_type, value_ptr, "upsert",
+    )
 }
 
 fn up_target_value(

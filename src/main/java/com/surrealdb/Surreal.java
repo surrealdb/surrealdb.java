@@ -105,6 +105,10 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
+    private static native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update, long valuePtr);
+
+    private static native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update, long valuePtr);
+
     private static native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
     private static native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
@@ -117,6 +121,8 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long[] selectRecordIds(long ptr, long[] recordIds);
 
+    private static native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+
     private static native long selectTargetsValues(long ptr, String... targets);
 
     private static native long selectTargetsValuesSync(long ptr, String... targets);
@@ -124,6 +130,8 @@ public class Surreal extends Native implements AutoCloseable {
     private static native boolean deleteRecordId(long ptr, long recordId);
 
     private static native boolean deleteRecordIds(long ptr, long[] recordIds);
+
+    private static native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
 
     private static native boolean deleteTarget(long ptr, String target);
 
@@ -710,6 +718,22 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     /**
+     * Updates all records in the given record ID range with the given content.
+     *
+     * @param range   the table and optional start/end bounds
+     * @param upType  CONTENT, MERGE, etc.
+     * @param content the update content
+     * @return the first updated value (range updates return one result per updated record; this returns the first)
+     */
+    public <T> Value update(RecordIdRange range, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+        final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+        final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code, valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    /**
      * Updates a record of the specified type and returns the updated record.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
@@ -870,6 +894,22 @@ public class Surreal extends Native implements AutoCloseable {
     public <T> Value upsert(RecordId recordId, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
         final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
+        return new Value(valuePtr);
+    }
+
+    /**
+     * Upserts all records in the given record ID range with the given content.
+     *
+     * @param range   the table and optional start/end bounds
+     * @param upType  CONTENT, MERGE, etc.
+     * @param content the upsert content
+     * @return the first upserted value
+     */
+    public <T> Value upsert(RecordIdRange range, UpType upType, T content) {
+        final ValueMut valueMut = ValueBuilder.convert(content);
+        final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+        final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+        final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -1103,6 +1143,35 @@ public class Surreal extends Native implements AutoCloseable {
     }
 
     /**
+     * Selects all records in the given record ID range.
+     *
+     * @param range the table and optional start/end bounds (null = unbounded)
+     * @return list of values for records in the range
+     */
+    public List<Value> select(RecordIdRange range) {
+        final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+        final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+        final long[] valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+        try (final LongStream s = Arrays.stream(valuePtrs)) {
+            return s.mapToObj(Value::new).collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Selects records in the given range and maps them to the specified type.
+     *
+     * @param <T>   the type of objects to be retrieved
+     * @param type  the class of the type
+     * @param range the table and optional start/end bounds
+     * @return list of objects of the specified type
+     */
+    public <T> List<T> select(Class<T> type, RecordIdRange range) {
+        try (final Stream<Value> s = select(range).stream()) {
+            return s.map(v -> v.get(type)).collect(Collectors.toList());
+        }
+    }
+
+    /**
      * Selects and returns an iterator over the values corresponding to the given targets.
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
@@ -1177,6 +1246,17 @@ public class Surreal extends Native implements AutoCloseable {
     public void delete(RecordId... recordIds) {
         final long[] recordIdsPtr = recordIds2longs(recordIds);
         deleteRecordIds(getPtr(), recordIdsPtr);
+    }
+
+    /**
+     * Deletes all records in the given record ID range.
+     *
+     * @param range the table and optional start/end bounds
+     */
+    public void delete(RecordIdRange range) {
+        final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+        final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+        deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
     }
 
     /**

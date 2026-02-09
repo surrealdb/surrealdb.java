@@ -48,7 +48,7 @@ These exist in SurrealDB’s value model but are **not** exposed on `Value` / `V
 | **File (file pointers)** | Not supported. No `isFile()` / `getFile()` (or similar) on `Value`; no `ValueMut.createFile(...)`. |
 | **Sets** | Not supported. Sets are distinct from arrays in SurrealDB; the client only has array support. Collections are mapped to arrays in `ValueBuilder`. |
 | **Ranges** | Not supported. No `isRange()` / `getRange()` or `ValueMut.createRange(...)`. |
-| **Record ID ranges** | Not supported. In Rust, `RecordIdKey::Range` is explicitly rejected in `valuemut.rs` (“Range-based IDs are not supported for Id serialization”). No Java API for range-based record IDs. |
+| **Record ID ranges** | Supported via `RecordIdRange` (table + optional start/end `Id`). `Surreal.select(RecordIdRange)`, `update(RecordIdRange, ...)`, `delete(RecordIdRange)`, `upsert(RecordIdRange, ...)`. Range-based IDs are not supported for single-record Id serialization in `valuemut.rs`. |
 | **Table** | Used only internally (e.g. in `check_value_table!` in Rust). Not exposed as a value type to Java (no `isTable()` / `getTable()` on `Value`). |
 | **Regex** | Not supported. No `isRegex()` / `getRegex()` or create path. |
 
@@ -63,7 +63,7 @@ So currently **not** supported as first-class value types:
 - Boolean ✅ (supported)  
 - Null / None ✅ (supported as separate types)  
 - Record ID ✅ (supported; name “Thing”; array/object key creation missing)  
-- Record ID ranges ❌  
+- Record ID ranges ✅ (`RecordIdRange`, select/update/delete/upsert)  
 - Object ✅ (supported)  
 - Arrays ✅ (supported)  
 - Sets ❌ (only arrays; sets are not a separate value)  
@@ -94,6 +94,6 @@ So currently **not** supported as first-class value types:
 
 - **Fully supported:** null, none, boolean, int, float, decimal, string, record ID (Thing), object, array, duration, geometry, datetime, bytes, UUID.
 - **Record ID:** Read path supports string, int, object, array, and UUID-based IDs; **create** path only supports string, int, and UUID (no array/object record ID creation).
-- **Not supported as value types:** file pointers, sets (as distinct from arrays), ranges, record ID ranges, table (as value), regex.
+- **Not supported as value types:** file pointers, sets (as distinct from arrays), ranges (as a value type), table (as value), regex. Record ID ranges are supported for queries via `RecordIdRange`.
 
 If you want, I can suggest concrete API changes (e.g. `RecordId(table, Id)` or new `Value`/`ValueMut` methods) for the missing types or record ID creation.
