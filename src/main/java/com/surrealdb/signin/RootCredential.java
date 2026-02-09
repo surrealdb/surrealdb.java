@@ -6,19 +6,19 @@ package com.surrealdb.signin;
  */
 public class RootCredential implements Signin {
 
-    private final String username;
-    private final String password;
+	private final String username;
+	private final String password;
 
-    public RootCredential(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+	public RootCredential(String username, String password) {
+		this.username = username;
+		this.password = password;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public String getPassword() {
+		return password;
+	}
 }

@@ -11,71 +11,68 @@ import java.util.UUID;
  */
 public class RecordId extends Native {
 
+	RecordId(long ptr) {
+		super(ptr);
+	}
 
-    RecordId(long ptr) {
-        super(ptr);
-    }
+	public RecordId(String table, long id) {
+		super(newRecordIdWithLong(table, id));
+	}
 
-    public RecordId(String table, long id) {
-        super(newRecordIdWithLong(table, id));
-    }
+	public RecordId(String table, String id) {
+		super(newRecordIdWithString(table, id));
+	}
 
-    public RecordId(String table, String id) {
-        super(newRecordIdWithString(table, id));
-    }
+	public RecordId(String table, UUID id) {
+		super(newRecordIdWithUuid(table, id.toString()));
+	}
 
-    public RecordId(String table, UUID id) {
-        super(newRecordIdWithUuid(table, id.toString()));
-    }
+	/**
+	 * Creates a RecordId with an array key (e.g. composite keys for timeseries).
+	 */
+	public RecordId(String table, Array id) {
+		super(newRecordIdWithArray(table, id.getPtr()));
+	}
 
-    /**
-     * Creates a RecordId with an array key (e.g. composite keys for timeseries).
-     */
-    public RecordId(String table, Array id) {
-        super(newRecordIdWithArray(table, id.getPtr()));
-    }
+	/**
+	 * Creates a RecordId with an object key.
+	 */
+	public RecordId(String table, Object id) {
+		super(newRecordIdWithObject(table, id.getPtr()));
+	}
 
-    /**
-     * Creates a RecordId with an object key.
-     */
-    public RecordId(String table, Object id) {
-        super(newRecordIdWithObject(table, id.getPtr()));
-    }
+	private static native long newRecordIdWithLong(String table, long id);
 
-    private static native long newRecordIdWithLong(String table, long id);
+	private static native long newRecordIdWithString(String table, String id);
 
-    private static native long newRecordIdWithString(String table, String id);
+	private static native long newRecordIdWithUuid(String table, String id);
 
-    private static native long newRecordIdWithUuid(String table, String id);
+	private static native long newRecordIdWithArray(String table, long arrayPtr);
 
-    private static native long newRecordIdWithArray(String table, long arrayPtr);
+	private static native long newRecordIdWithObject(String table, long objectPtr);
 
-    private static native long newRecordIdWithObject(String table, long objectPtr);
+	private static native String getTable(long ptr);
 
-    private static native String getTable(long ptr);
+	private static native long getId(long ptr);
 
-    private static native long getId(long ptr);
+	@Override
+	final native String toString(long ptr);
 
-    @Override
-    final native String toString(long ptr);
+	@Override
+	final native int hashCode(long ptr);
 
-    @Override
-    final native int hashCode(long ptr);
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	@Override
+	final native void deleteInstance(long ptr);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	public String getTable() {
+		return getTable(getPtr());
+	}
 
-
-    public String getTable() {
-        return getTable(getPtr());
-    }
-
-    public Id getId() {
-        return new Id(getId(getPtr()));
-    }
+	public Id getId() {
+		return new Id(getId(getPtr()));
+	}
 
 }
-

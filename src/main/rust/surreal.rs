@@ -469,8 +469,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     let mut params_map = BTreeMap::<String, Value>::new();
     let mut placeholders = Vec::with_capacity(value_ptrs.len());
     for (i, value_ptr) in value_ptrs.iter().enumerate() {
-        let key = format!("{}", i);
-        placeholders.push(format!("${}", i));
+        let key = format!("arg{}", i);
+        placeholders.push(format!("${}", key));
         let value = get_value_mut_instance!(&mut env, *value_ptr, || 0);
         params_map.insert(key, value.clone());
     }
@@ -480,7 +480,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     let mut response = check_query_result!(&mut env, res, || 0);
     let mut result = take_one_result!(&mut env, response, || 0);
     return_value_array_first!(result);
-    return_unexpected_result!(&mut env, result.to_sql(), || 0)
+    // Single scalar result (e.g. RETURN fn::greet() returns the value directly, not [value])
+    JniTypes::new_value(Arc::new(result))
 }
 
 #[no_mangle]
@@ -528,7 +529,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_export<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_import<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_import_1<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -1177,6 +1178,13 @@ fn up_record_id_range_value(
     let mut response = check_query_result!(&mut env, res, || 0);
     let mut result: Value = take_one_result!(&mut env, response, || 0);
     return_value_array_first!(result);
+    // Range update/upsert can return [] or [one or more records]; return first or None
+    if let Value::Array(ref mut a) = result {
+        if a.is_empty() {
+            return JniTypes::new_value(Arc::new(Value::None));
+        }
+        return JniTypes::new_value(Arc::new(a.remove(0)));
+    }
     return_unexpected_result!(&mut env, result.to_sql(), || 0)
 }
 

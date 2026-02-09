@@ -1,16 +1,17 @@
 package com.surrealdb;
 
 /**
- * The SurrealException class is a custom RuntimeException used to signal exceptional conditions.
+ * The SurrealException class is a custom RuntimeException used to signal
+ * exceptional conditions.
  */
 public class SurrealException extends RuntimeException {
 
-    SurrealException(String message) {
-        super(message);
-    }
+	SurrealException(String message) {
+		super(message);
+	}
 
-    SurrealException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	SurrealException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }
