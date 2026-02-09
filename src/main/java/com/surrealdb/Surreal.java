@@ -127,6 +127,10 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native boolean deleteTarget(long ptr, String target);
 
+    private static native String version(long ptr);
+
+    private static native boolean health(long ptr);
+
 
     @Override
     final String toString(long ptr) {
@@ -157,6 +161,26 @@ public class Surreal extends Native implements AutoCloseable {
         namespace = null;
         database = null;
         return this;
+    }
+
+    /**
+     * Returns the server version (semantic version string, e.g. "1.0.0").
+     *
+     * @return the server version string
+     * @throws SurrealException if the request fails
+     */
+    public String version() {
+        return version(getPtr());
+    }
+
+    /**
+     * Performs a health check against the server.
+     *
+     * @return true if the server is healthy
+     * @throws SurrealException if the health check fails
+     */
+    public boolean health() {
+        return health(getPtr());
     }
 
     /**

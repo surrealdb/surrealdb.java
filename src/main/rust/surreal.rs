@@ -6,12 +6,12 @@ use crate::error::SurrealError;
 use crate::{
     check_query_result, convert_up_type, get_long_array, get_rust_string,
     get_rust_string_array, get_surreal_ref, get_value_instance,
-    get_value_mut_instance, new_jlong_array, release_instance, return_unexpected_result,
+    get_value_mut_instance, new_jlong_array, new_string, release_instance, return_unexpected_result,
     return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
     take_one_result, JniTypes, TOKIO_RUNTIME,
 };
 use jni::objects::{JClass, JObject, JLongArray, JObjectArray, JString, JValue};
-use jni::sys::{jboolean, jint, jlong, jlongArray, jobject};
+use jni::sys::{jboolean, jint, jlong, jlongArray, jobject, jstring};
 use jni::JNIEnv;
 use std::result::Result as StdResult;
 use parking_lot::Mutex;
@@ -79,6 +79,34 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         return SurrealError::from(err).exception(&mut env, || false as jboolean);
     }
     true as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_version<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
+    let version = match TOKIO_RUNTIME.block_on(async { surreal.clone().version().await }) {
+        Ok(v) => v.to_string(),
+        // Embedded / local: no server to ask; report library version (injected at build time)
+        Err(_) => env!("SURREALDB_VERSION").into(),
+    };
+    new_string!(&mut env, version, null_mut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_health<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
+    match TOKIO_RUNTIME.block_on(async { surreal.clone().health().await }) {
+        Ok(()) => true as jboolean,
+        Err(e) => SurrealError::from(e).exception(&mut env, || false as jboolean),
+    }
 }
 
 fn new_token_object<'local>(
