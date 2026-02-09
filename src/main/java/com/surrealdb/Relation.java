@@ -23,12 +23,12 @@ public class Relation {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
+	public boolean equals(java.lang.Object obj) {
+		if (this == obj)
 			return true;
-		if (o == null || getClass() != o.getClass())
+		if (!(obj instanceof Relation))
 			return false;
-		final Relation r = (Relation) o;
+		Relation r = (Relation) obj;
 		return Objects.equals(id, r.id) && Objects.equals(in, r.in) && Objects.deepEquals(out, r.out);
 	}
 

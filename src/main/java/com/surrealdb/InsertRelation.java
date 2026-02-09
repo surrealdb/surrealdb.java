@@ -33,12 +33,12 @@ public class InsertRelation {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
+	public boolean equals(java.lang.Object obj) {
+		if (this == obj)
 			return true;
-		if (o == null || getClass() != o.getClass())
+		if (!(obj instanceof InsertRelation))
 			return false;
-		final InsertRelation r = (InsertRelation) o;
+		InsertRelation r = (InsertRelation) obj;
 		return Objects.equals(id, r.id) && Objects.equals(in, r.in) && Objects.deepEquals(out, r.out);
 	}
 
