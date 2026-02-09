@@ -133,6 +133,10 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long run(long ptr, String name, long[] argsValuePtrs);
 
+    private static native boolean export(long ptr, String path);
+
+    private static native boolean import_(long ptr, String path);
+
 
     @Override
     final String toString(long ptr) {
@@ -205,6 +209,28 @@ public class Surreal extends Native implements AutoCloseable {
             ptrs[i] = valueMuts[i].getPtr();
         }
         return new Value(run(getPtr(), name, ptrs));
+    }
+
+    /**
+     * Exports the database to a file. Supported by HTTP and local engines; not by WebSocket.
+     *
+     * @param path file path to write the export
+     * @return true on success
+     * @throws SurrealException if export fails or backups are not supported
+     */
+    public boolean export(String path) {
+        return export(getPtr(), path);
+    }
+
+    /**
+     * Imports the database from a file. Supported by HTTP and local engines; not by WebSocket.
+     *
+     * @param path file path to read the import from
+     * @return true on success
+     * @throws SurrealException if import fails or backups are not supported
+     */
+    public boolean import_(String path) {
+        return import_(getPtr(), path);
     }
 
     /**

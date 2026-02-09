@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::path::Path;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
@@ -478,6 +479,38 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     let mut result = take_one_result!(&mut env, response, || 0);
     return_value_array_first!(result);
     return_unexpected_result!(&mut env, result.to_sql(), || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_export<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    path: JString<'local>,
+) -> jboolean {
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
+    let path = get_rust_string!(&mut env, &path, || false as jboolean);
+    let path = Path::new(&path).to_path_buf();
+    match TOKIO_RUNTIME.block_on(async { surreal.clone().export(path).await }) {
+        Ok(()) => true as jboolean,
+        Err(e) => SurrealError::from(e).exception(&mut env, || false as jboolean),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_import<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    path: JString<'local>,
+) -> jboolean {
+    let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
+    let path = get_rust_string!(&mut env, &path, || false as jboolean);
+    let path = Path::new(&path).to_path_buf();
+    match TOKIO_RUNTIME.block_on(async { surreal.clone().import(path).await }) {
+        Ok(()) => true as jboolean,
+        Err(e) => SurrealError::from(e).exception(&mut env, || false as jboolean),
+    }
 }
 
 fn surrealdb_query<T>(
