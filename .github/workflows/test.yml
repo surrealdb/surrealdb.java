@@ -43,6 +43,17 @@ jobs:
           RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build
 
+      - name: Start SurrealDB
+        uses: surrealdb/setup-surreal@v2
+        with:
+          surrealdb_version: v3.0.0-beta.3
+          surrealdb_port: 8000
+          surrealdb_auth: false
+          surrealdb_strict: false
+          surrealdb_log: info
+          surrealdb_additional_args: --allow-all
+          surrealdb_retry_count: 30
+
       - name: Test
         run: |
           chmod +x gradlew
