@@ -71,9 +71,9 @@ public class Value extends Native {
 
     private static native byte[] getBytes(long ptr);
 
-    private static native boolean isThing(long ptr);
+    private static native boolean isRecordId(long ptr);
 
-    private static native long getThing(long ptr);
+    private static native long getRecordId(long ptr);
 
     @Override
     final native String toString(long ptr);
@@ -127,7 +127,7 @@ public class Value extends Native {
         return getLong(getPtr());
     }
 
-    public boolean isBigdecimal() {
+    public boolean isBigDecimal() {
         return isBigDecimal(getPtr());
     }
 
@@ -159,12 +159,12 @@ public class Value extends Native {
         return UUID.fromString(getUuid(getPtr()));
     }
 
-    public boolean isThing() {
-        return isThing(getPtr());
+    public boolean isRecordId() {
+        return isRecordId(getPtr());
     }
 
-    public RecordId getThing() {
-        return new RecordId(getThing(getPtr()));
+    public RecordId getRecordId() {
+        return new RecordId(getRecordId(getPtr()));
     }
 
     public boolean isBytes() {

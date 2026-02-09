@@ -6,7 +6,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -80,7 +85,7 @@ class ValueBuilder {
             return ValueMut.createUuid((UUID) object);
         }
         if (object instanceof RecordId) {
-            return ValueMut.createThing((RecordId) object);
+            return ValueMut.createRecordId((RecordId) object);
         }
         if (object instanceof byte[]) {
             final byte[] bytes = (byte[]) object;

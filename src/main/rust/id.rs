@@ -42,7 +42,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newUuidId<'local>(
         let value = Value::RecordId(RecordId::new("", RecordIdKey::Uuid(uuid)));
         JniTypes::new_value(value.into())
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
     }
 }
 

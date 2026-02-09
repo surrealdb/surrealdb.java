@@ -79,7 +79,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long queryBind(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
-    private static native long createThingValue(long ptr, long thingPtr, long valuePtr);
+    private static native long createRecordIdValue(long ptr, long recordIdPtr, long valuePtr);
 
     private static native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
 
@@ -93,7 +93,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
-    private static native long updateThingValue(long ptr, long thingPtr, int update, long valuePtr);
+    private static native long updateRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
     private static native long updateTargetValue(long ptr, String target, int update, long valuePtr);
 
@@ -103,7 +103,7 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long updateTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
-    private static native long upsertThingValue(long ptr, long thingPtr, int update, long valuePtr);
+    private static native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
     private static native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
@@ -113,17 +113,17 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
-    private static native long selectThing(long ptr, long thing);
+    private static native long selectRecordId(long ptr, long recordId);
 
-    private static native long[] selectThings(long ptr, long[] things);
+    private static native long[] selectRecordIds(long ptr, long[] recordIds);
 
     private static native long selectTargetsValues(long ptr, String... targets);
 
     private static native long selectTargetsValuesSync(long ptr, String... targets);
 
-    private static native boolean deleteThing(long ptr, long thing);
+    private static native boolean deleteRecordId(long ptr, long recordId);
 
-    private static native boolean deleteThings(long ptr, long[] things);
+    private static native boolean deleteRecordIds(long ptr, long[] recordIds);
 
     private static native boolean deleteTarget(long ptr, String target);
 
@@ -365,13 +365,13 @@ public class Surreal extends Native implements AutoCloseable {
      * <p>
      *
      * @param <T>     the type of the content
-     * @param thg     the RecordId associated with the new record
-     * @param content the content of the created record
+     * @param recordId the RecordId associated with the new record
+     * @param content  the content of the created record
      * @return a new Value object initialized with the provided RecordId and content
      */
-    public <T> Value create(RecordId thg, T content) {
+    public <T> Value create(RecordId recordId, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = createThingValue(getPtr(), thg.getPtr(), valueMut.getPtr());
+        final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -381,13 +381,13 @@ public class Surreal extends Native implements AutoCloseable {
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/create">SurrealQL documentation</a>.
      * <p>
      *
-     * @param type    The class type of the object to create
-     * @param thg     The RecordId used with the new record
-     * @param content The content of the created record
+     * @param type      The class type of the object to create
+     * @param recordId  The RecordId used with the new record
+     * @param content   The content of the created record
      * @return An instance of the specified type
      */
-    public <T> T create(Class<T> type, RecordId thg, T content) {
-        return create(thg, content).get(type);
+    public <T> T create(Class<T> type, RecordId recordId, T content) {
+        return create(recordId, content).get(type);
     }
 
     /**
@@ -610,14 +610,14 @@ public class Surreal extends Native implements AutoCloseable {
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
      *
      * @param <T>     The type of the content to be updated.
-     * @param thg     The RecordId of the thing to be updated.
-     * @param upType  The type of update to be performed.
-     * @param content The new content to set for the specified record.
+     * @param recordId The RecordId of the record to be updated.
+     * @param upType   The type of update to be performed.
+     * @param content  The new content to set for the specified record.
      * @return A Value object representing the updated value.
      */
-    public <T> Value update(RecordId thg, UpType upType, T content) {
+    public <T> Value update(RecordId recordId, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = updateThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
+        final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -626,15 +626,15 @@ public class Surreal extends Native implements AutoCloseable {
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/update">SurrealQL documentation</a>.
      *
-     * @param type    the class type of the record to be updated
-     * @param thg     the identifier of the record to be updated
-     * @param upType  the type of update operation to be performed
-     * @param content the new content to update the record with
-     * @param <T>     the type of the record
+     * @param type      the class type of the record to be updated
+     * @param recordId  the identifier of the record to be updated
+     * @param upType    the type of update operation to be performed
+     * @param content   the new content to update the record with
+     * @param <T>       the type of the record
      * @return the updated record of the specified type
      */
-    public <T> T update(Class<T> type, RecordId thg, UpType upType, T content) {
-        return update(thg, upType, content).get(type);
+    public <T> T update(Class<T> type, RecordId recordId, UpType upType, T content) {
+        return update(recordId, upType, content).get(type);
     }
 
     /**
@@ -774,14 +774,14 @@ public class Surreal extends Native implements AutoCloseable {
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
      *
      * @param <T>     The type of the content.
-     * @param thg     The record identifier.
-     * @param upType  The update type specifying how to handle the upsert.
-     * @param content The content to be inserted or updated.
+     * @param recordId The record identifier.
+     * @param upType    The update type specifying how to handle the upsert.
+     * @param content   The content to be inserted or updated.
      * @return The resulting value after the upsert operation.
      */
-    public <T> Value upsert(RecordId thg, UpType upType, T content) {
+    public <T> Value upsert(RecordId recordId, UpType upType, T content) {
         final ValueMut valueMut = ValueBuilder.convert(content);
-        final long valuePtr = upsertThingValue(getPtr(), thg.getPtr(), upType.code, valueMut.getPtr());
+        final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
         return new Value(valuePtr);
     }
 
@@ -790,15 +790,15 @@ public class Surreal extends Native implements AutoCloseable {
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/upsert">SurrealQL documentation</a>.
      *
-     * @param <T>     The type of the entity to be upserted.
-     * @param type    The class type of the entity.
-     * @param thg     The record identifier.
-     * @param upType  The type of the update.
-     * @param content The content of the entity to be upserted.
+     * @param <T>       The type of the entity to be upserted.
+     * @param type      The class type of the entity.
+     * @param recordId  The record identifier.
+     * @param upType    The type of the update.
+     * @param content   The content of the entity to be upserted.
      * @return The upserted entity of the specified type.
      */
-    public <T> T upsert(Class<T> type, RecordId thg, UpType upType, T content) {
-        return upsert(thg, upType, content).get(type);
+    public <T> T upsert(Class<T> type, RecordId recordId, UpType upType, T content) {
+        return upsert(recordId, upType, content).get(type);
     }
 
     /**
@@ -951,7 +951,7 @@ public class Surreal extends Native implements AutoCloseable {
      * @return an Optional containing the Value if the record is found, or an empty Optional if not found
      */
     public Optional<Value> select(RecordId recordId) {
-        final long valuePtr = selectThing(getPtr(), recordId.getPtr());
+        final long valuePtr = selectRecordId(getPtr(), recordId.getPtr());
         if (valuePtr == 0) {
             return Optional.empty();
         }
@@ -978,22 +978,22 @@ public class Surreal extends Native implements AutoCloseable {
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
      *
-     * @param things an array of RecordId objects to be used in the selection.
+     * @param recordIds an array of RecordId objects to be used in the selection.
      * @return a list of Value objects corresponding to the selected RecordIds.
      */
-    public List<Value> select(RecordId... things) {
-        final long[] thingsPtr = things2longs(things);
-        final long[] valuePtrs = selectThings(getPtr(), thingsPtr);
+    public List<Value> select(RecordId... recordIds) {
+        final long[] recordIdsPtr = recordIds2longs(recordIds);
+        final long[] valuePtrs = selectRecordIds(getPtr(), recordIdsPtr);
         try (final LongStream s = Arrays.stream(valuePtrs)) {
             return s.mapToObj(Value::new).collect(Collectors.toList());
         }
     }
 
-    private long[] things2longs(RecordId... things) {
-        final long[] ptrs = new long[things.length];
+    private long[] recordIds2longs(RecordId... recordIds) {
+        final long[] ptrs = new long[recordIds.length];
         int index = 0;
-        for (final RecordId t : things) {
-            ptrs[index++] = t.getPtr();
+        for (final RecordId r : recordIds) {
+            ptrs[index++] = r.getPtr();
         }
         return ptrs;
     }
@@ -1003,13 +1003,13 @@ public class Surreal extends Native implements AutoCloseable {
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/select">SurrealQL documentation</a>.
      *
-     * @param <T>    the type of objects to be retrieved
-     * @param type   the Class object of the type to be retrieved
-     * @param things an array of RecordId instances identifying the records to be selected
+     * @param <T>        the type of objects to be retrieved
+     * @param type       the Class object of the type to be retrieved
+     * @param recordIds  an array of RecordId instances identifying the records to be selected
      * @return a list of objects of the specified type corresponding to the given record IDs
      */
-    public <T> List<T> select(Class<T> type, RecordId... things) {
-        try (final Stream<Value> s = select(things).stream()) {
+    public <T> List<T> select(Class<T> type, RecordId... recordIds) {
+        try (final Stream<Value> s = select(recordIds).stream()) {
             return s.map(v -> v.get(type)).collect(Collectors.toList());
         }
     }
@@ -1076,7 +1076,7 @@ public class Surreal extends Native implements AutoCloseable {
      * @param recordId the identifier of the record to be deleted
      */
     public void delete(RecordId recordId) {
-        deleteThing(getPtr(), recordId.getPtr());
+        deleteRecordId(getPtr(), recordId.getPtr());
     }
 
     /**
@@ -1084,11 +1084,11 @@ public class Surreal extends Native implements AutoCloseable {
      * <p>
      * For more details, check the <a href="https://surrealdb.com/docs/surrealql/statements/delete">SurrealQL documentation</a>.
      *
-     * @param things An array of RecordId objects representing the records to be deleted.
+     * @param recordIds An array of RecordId objects representing the records to be deleted.
      */
-    public void delete(RecordId... things) {
-        final long[] thingsPtr = things2longs(things);
-        deleteThings(getPtr(), thingsPtr);
+    public void delete(RecordId... recordIds) {
+        final long[] recordIdsPtr = recordIds2longs(recordIds);
+        deleteRecordIds(getPtr(), recordIdsPtr);
     }
 
     /**

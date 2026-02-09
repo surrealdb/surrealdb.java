@@ -17,22 +17,22 @@ public class RecordId extends Native {
     }
 
     public RecordId(String table, long id) {
-        super(newThingLongId(table, id));
+        super(newRecordIdWithLong(table, id));
     }
 
     public RecordId(String table, String id) {
-        super(newThingStringId(table, id));
+        super(newRecordIdWithString(table, id));
     }
 
     public RecordId(String table, UUID id) {
-        super(newThingUuidId(table, id.toString()));
+        super(newRecordIdWithUuid(table, id.toString()));
     }
 
-    private static native long newThingLongId(String table, long id);
+    private static native long newRecordIdWithLong(String table, long id);
 
-    private static native long newThingStringId(String table, String id);
+    private static native long newRecordIdWithString(String table, String id);
 
-    private static native long newThingUuidId(String table, String id);
+    private static native long newRecordIdWithUuid(String table, String id);
 
     private static native String getTable(long ptr);
 

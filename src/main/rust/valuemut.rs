@@ -157,7 +157,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newUuid<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
+pub extern "system" fn Java_com_surrealdb_ValueMut_newRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -166,7 +166,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
     if matches!(value.as_ref(), Value::RecordId(_)) {
         return JniTypes::new_value_mut(value.as_ref().clone());
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
 }
 
 #[no_mangle]

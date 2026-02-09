@@ -311,7 +311,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getString<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_isThing<'local>(
+pub extern "system" fn Java_com_surrealdb_Value_isRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -321,7 +321,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isThing<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
+pub extern "system" fn Java_com_surrealdb_Value_getRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -330,7 +330,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
     if let Value::RecordId(_) = value.as_ref() {
         JniTypes::new_value(value)
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
     }
 }
 

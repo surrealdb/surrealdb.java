@@ -3,7 +3,11 @@ package com.surrealdb;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 class ValueClassConverter<T> {
 
@@ -24,11 +28,11 @@ class ValueClassConverter<T> {
             return value.getLong();
         if (value.isString())
             return value.getString();
-        if (value.isThing())
-            return value.getThing();
+        if (value.isRecordId())
+            return value.getRecordId();
         if (value.isGeometry())
             return value.getGeometry();
-        if (value.isBigdecimal())
+        if (value.isBigDecimal())
             return value.getBigDecimal();
         if (value.isBytes())
             return value.getBytes();
@@ -71,15 +75,15 @@ class ValueClassConverter<T> {
                 field.set(target, l);
         } else if (value.isString()) {
             field.set(target, value.getString());
-        } else if (value.isThing()) {
+        } else if (value.isRecordId()) {
             if (field.getType() == Id.class) {
-                field.set(target, value.getThing().getId());
+                field.set(target, value.getRecordId().getId());
             } else {
-                field.set(target, value.getThing());
+                field.set(target, value.getRecordId());
             }
         } else if (value.isGeometry()) {
             field.set(target, value.getGeometry());
-        } else if (value.isBigdecimal()) {
+        } else if (value.isBigDecimal()) {
             field.set(target, value.getBigDecimal());
         } else if (value.isBytes()) {
             field.set(target, value.getBytes());

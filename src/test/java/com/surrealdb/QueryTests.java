@@ -49,11 +49,11 @@ public class QueryTests {
                         assertTrue(row.isObject());
                         final Object rowObject = row.getObject();
 
-                        { // Check thing field
-                            assertTrue(rowObject.get("id").isThing());
-                            assertEquals("person", rowObject.get("id").getThing().getTable());
-                            assertTrue(rowObject.get("id").getThing().getId().isLong());
-                            assertEquals(1, rowObject.get("id").getThing().getId().getLong());
+                        { // Check record id field
+                            assertTrue(rowObject.get("id").isRecordId());
+                            assertEquals("person", rowObject.get("id").getRecordId().getTable());
+                            assertTrue(rowObject.get("id").getRecordId().getId().isLong());
+                            assertEquals(1, rowObject.get("id").getRecordId().getId().getLong());
                         }
                         { // Check String field
                             assertTrue(rowObject.get("name").isString());
@@ -97,11 +97,11 @@ public class QueryTests {
                     assertTrue(rowObject.get("category").isLong());
                     assertEquals(1, rowObject.get("category").getLong());
                 }
-                { // Check thing field
-                    assertTrue(rowObject.get("id").isThing());
-                    assertEquals("person", rowObject.get("id").getThing().getTable());
-                    assertTrue(rowObject.get("id").getThing().getId().isLong());
-                    assertEquals(1, rowObject.get("id").getThing().getId().getLong());
+                { // Check record id field
+                    assertTrue(rowObject.get("id").isRecordId());
+                    assertEquals("person", rowObject.get("id").getRecordId().getTable());
+                    assertTrue(rowObject.get("id").getRecordId().getId().isLong());
+                    assertEquals(1, rowObject.get("id").getRecordId().getId().getLong());
                 }
                 { // Check boolean field
                     assertTrue(rowObject.get("active").isBoolean());

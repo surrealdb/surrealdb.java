@@ -1,15 +1,14 @@
 package com.surrealdb;
 
-import com.surrealdb.pojos.Person;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import static com.surrealdb.Helpers.jaime;
 import static com.surrealdb.Helpers.tobie;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.surrealdb.pojos.Person;
 
 public class CreateTests {
 
@@ -76,7 +75,7 @@ public class CreateTests {
     }
 
     @Test
-    void createThingValue() {
+    void createRecordIdValue() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -90,7 +89,7 @@ public class CreateTests {
     }
 
     @Test
-    void createThingValueWithStringId() {
+    void createRecordIdValueWithStringId() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -104,7 +103,7 @@ public class CreateTests {
     }
 
     @Test
-    void createThingObject() {
+    void createRecordIdObject() {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");

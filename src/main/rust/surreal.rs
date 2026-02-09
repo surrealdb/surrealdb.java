@@ -443,21 +443,21 @@ where
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_createThingValue<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_createRecordIdValue<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptr: jlong,
+    record_id_ptr: jlong,
     value_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
-    // Extract the thing
-    let thing = get_value_instance!(&mut env, thing_ptr, || 0);
+    // Extract the record id
+    let record_id = get_value_instance!(&mut env, record_id_ptr, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
-    let query = format!("CREATE {} CONTENT $val", thing.to_sql());
+    let query = format!("CREATE {} CONTENT $val", record_id.to_sql());
     let params = BTreeMap::from([("val".to_string(), value.clone())]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -697,18 +697,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptr: jlong,
+    record_id_ptr: jlong,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
-    // Extract the thing
-    let thing = get_value_instance!(&mut env, thing_ptr, || 0);
+    // Extract the record id
+    let record_id = get_value_instance!(&mut env, record_id_ptr, || 0);
     // Execute the query
-    let query = format!("SELECT * FROM {}", thing.to_sql());
+    let query = format!("SELECT * FROM {}", record_id.to_sql());
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
@@ -727,24 +727,24 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectThing<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_selectThings<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIds<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptrs: JLongArray<'local>,
+    record_id_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, surreal_ptr, null_mut);
-    // Get the thing pointers
-    let thing_ptrs = get_long_array!(&mut env, &thing_ptrs, null_mut);
-    // Extract the things
-    let mut things = Vec::with_capacity(thing_ptrs.len());
-    for thing_ptr in thing_ptrs {
-        let thing = get_value_instance!(&mut env, thing_ptr, null_mut);
-        things.push(thing.to_sql());
+    // Get the record id pointers
+    let record_id_ptrs = get_long_array!(&mut env, &record_id_ptrs, null_mut);
+    // Extract the record ids
+    let mut record_ids = Vec::with_capacity(record_id_ptrs.len());
+    for record_id_ptr in record_id_ptrs {
+        let record_id = get_value_instance!(&mut env, record_id_ptr, null_mut);
+        record_ids.push(record_id.to_sql());
     }
     // Execute the query
-    let query = format!("SELECT * FROM {}", things.join(","));
+    let query = format!("SELECT * FROM {}", record_ids.join(","));
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, null_mut);
@@ -816,18 +816,18 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_deleteThing<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptr: jlong,
+    record_id_ptr: jlong,
 ) -> jboolean {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, surreal_ptr, || false as jboolean);
     // Build the parameters
-    let thing = get_value_instance!(&mut env, thing_ptr, || false as jboolean);
+    let record_id = get_value_instance!(&mut env, record_id_ptr, || false as jboolean);
     // Prepare the params
-    let params = BTreeMap::from([("t".to_string(), thing)]);
+    let params = BTreeMap::from([("t".to_string(), record_id)]);
     // Execute the query
     let res = surrealdb_query(&surreal, "DELETE $t", Some(params));
     // Check the result
@@ -836,21 +836,21 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteThing<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_deleteThings<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIds<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptrs: JLongArray<'local>,
+    record_id_ptrs: JLongArray<'local>,
 ) -> jboolean {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, surreal_ptr, || false as jboolean);
-    // Extract the things
-    let thing_ptrs = get_long_array!(&mut env, &thing_ptrs, || false as jboolean);
+    // Extract the record ids
+    let record_id_ptrs = get_long_array!(&mut env, &record_id_ptrs, || false as jboolean);
     // Prepare the params
-    let mut targets = Vec::with_capacity(thing_ptrs.len());
+    let mut targets = Vec::with_capacity(record_id_ptrs.len());
     let mut params = BTreeMap::new();
-    for (idx, thing_ptr) in thing_ptrs.iter().enumerate() {
-        let value = get_value_instance!(&mut env, *thing_ptr, || false as jboolean);
+    for (idx, record_id_ptr) in record_id_ptrs.iter().enumerate() {
+        let value = get_value_instance!(&mut env, *record_id_ptr, || false as jboolean);
         params.insert(format!("t{idx}"), value);
         targets.push(format!("$t{idx}"));
     }
@@ -883,24 +883,24 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTarget<'local>(
     true as jboolean
 }
 
-fn up_thing_value(
+fn up_record_id_value(
     mut env: JNIEnv,
     surreal_ptr: jlong,
-    thing_ptr: jlong,
+    record_id_ptr: jlong,
     up_type: jint,
     value_ptr: jlong,
     up: &str,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, surreal_ptr, || 0);
-    // Extract the thing
-    let thing = get_value_instance!(&mut env, thing_ptr, || 0);
+    // Extract the record id
+    let record_id = get_value_instance!(&mut env, record_id_ptr, || 0);
     // Get the value
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Check the up type
     let up_type = convert_up_type!(&mut env, up_type, || 0);
     // Execute the query
-    let query = format!("{up} {} {up_type} $val", thing.to_sql());
+    let query = format!("{up} {} {up_type} $val", record_id.to_sql());
     let params = BTreeMap::from([("val".to_string(), value.clone())]);
     let res = surrealdb_query(&surreal, &query, Some(params));
     // Check the result
@@ -914,27 +914,27 @@ fn up_thing_value(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_updateThingValue<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdValue<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptr: jlong,
+    record_id_ptr: jlong,
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
-    up_thing_value(env, surreal_ptr, thing_ptr, up_type, value_ptr, "update")
+    up_record_id_value(env, surreal_ptr, record_id_ptr, up_type, value_ptr, "update")
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_upsertThingValue<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdValue<'local>(
     env: JNIEnv<'local>,
     _class: JClass<'local>,
     surreal_ptr: jlong,
-    thing_ptr: jlong,
+    record_id_ptr: jlong,
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
-    up_thing_value(env, surreal_ptr, thing_ptr, up_type, value_ptr, "upsert")
+    up_record_id_value(env, surreal_ptr, record_id_ptr, up_type, value_ptr, "upsert")
 }
 
 fn up_target_value(

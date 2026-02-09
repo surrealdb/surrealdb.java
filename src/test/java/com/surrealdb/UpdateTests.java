@@ -1,17 +1,19 @@
 package com.surrealdb;
 
-import com.surrealdb.pojos.Person;
-import org.junit.jupiter.api.Test;
-
 import java.util.Iterator;
 
-import static com.surrealdb.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static com.surrealdb.Helpers.emmanuel;
+import static com.surrealdb.Helpers.jaime;
+import static com.surrealdb.Helpers.tobie;
+import com.surrealdb.pojos.Person;
 
 public class UpdateTests {
 
     @Test
-    void updateThingValue() throws SurrealException {
+    void updateRecordIdValue() throws SurrealException {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");
@@ -27,7 +29,7 @@ public class UpdateTests {
     }
 
     @Test
-    void updateThingObject() throws SurrealException {
+    void updateRecordIdObject() throws SurrealException {
         try (final Surreal surreal = new Surreal()) {
             // Starts an embedded in memory instance
             surreal.connect("memory").useNs("test_ns").useDb("test_db");

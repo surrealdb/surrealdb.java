@@ -34,7 +34,7 @@ class ValueMut extends Native {
 
     private static native long newId(long ptr);
 
-    private static native long newThing(long ptr);
+    private static native long newRecordId(long ptr);
 
     private static native long newArray(long ptr);
 
@@ -88,8 +88,8 @@ class ValueMut extends Native {
         return new ValueMut(newId(id.getPtr()));
     }
 
-    public static ValueMut createThing(RecordId recordId) {
-        return new ValueMut(newThing(recordId.getPtr()));
+    public static ValueMut createRecordId(RecordId recordId) {
+        return new ValueMut(newRecordId(recordId.getPtr()));
     }
 
     public static ValueMut createArray(Array array) {
