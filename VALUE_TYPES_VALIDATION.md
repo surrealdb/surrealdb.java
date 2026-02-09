@@ -35,7 +35,7 @@ Validation against SurrealDB’s value model ([Values](https://surrealdb.com/doc
   - `isUuid()` / `getUuid()`
   - `isArray()` / `getArray()`
   - `isObject()` / `getObject()`
-- **Gap:** No way to *create* a `RecordId` (or equivalent) with **array** or **object** keys from Java. The Rust `RecordIdKey` supports `Array` and `Object`, but the Java `RecordId` constructors and `Id.from(...)` only support long, string, and UUID.
+- **Supported for creation:** `RecordId(table, long)`, `RecordId(table, String)`, `RecordId(table, UUID)`, `RecordId(table, Array)`, `RecordId(table, Object)`.
 
 ---
 
@@ -62,7 +62,7 @@ So currently **not** supported as first-class value types:
 - String ✅ (supported)  
 - Boolean ✅ (supported)  
 - Null / None ✅ (supported as separate types)  
-- Record ID ✅ (supported; name “Thing”; array/object key creation missing)  
+- Record ID ✅ (supported; name “Thing”; array/object keys via RecordId(table, Array) / RecordId(table, Object))  
 - Record ID ranges ✅ (`RecordIdRange`, select/update/delete/upsert)  
 - Object ✅ (supported)  
 - Arrays ✅ (supported)  
@@ -85,16 +85,10 @@ So currently **not** supported as first-class value types:
 
 ---
 
-## Minor issue
-
-- **Naming:** `Value.isBigDecimal()` uses a lowercase `d`; the native method is `isBigDecimal`. Consider renaming the public Java method to `isBigDecimal()` for consistency.
-
----
-
 ## Summary
 
-- **Fully supported:** null, none, boolean, int, float, decimal, string, record ID (Thing), object, array, duration, geometry, datetime, bytes, UUID.
-- **Record ID:** Read path supports string, int, object, array, and UUID-based IDs; **create** path only supports string, int, and UUID (no array/object record ID creation).
+- **Fully supported:** null, none, boolean, int, float, decimal, string, record ID, object, array, duration, geometry, datetime, bytes, UUID.
+- **Record ID:** Read and create paths support string, int, UUID, array, and object keys.
 - **Not supported as value types:** sets (as distinct from arrays), regex (not transferrable; serialization error if encountered). File, range (read), and table are supported. Record ID ranges are supported for queries via `RecordIdRange`.
 
 If you want, I can suggest concrete API changes (e.g. `RecordId(table, Id)` or new `Value`/`ValueMut` methods) for the missing types or record ID creation.
