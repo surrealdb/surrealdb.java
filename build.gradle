@@ -14,11 +14,22 @@ repositories {
     mavenCentral()
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-    withJavadocJar()
-    withSourcesJar()
+def toolchainVersion = findProperty('javaToolchainVersion') as String
+if (toolchainVersion != null && toolchainVersion != '') {
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(toolchainVersion.toInteger())
+        }
+        withJavadocJar()
+        withSourcesJar()
+    }
+} else {
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        withJavadocJar()
+        withSourcesJar()
+    }
 }
 
 sourceSets {
@@ -142,6 +153,8 @@ test {
     // Per-test timeout so a single test cannot hang the suite (may not interrupt native/JNI blocks)
     systemProperty 'junit.jupiter.execution.timeout.default', '15s'
     maxParallelForks = 1
+    // Fork per test class so a native crash in one does not kill the entire suite
+    forkEvery = 1
     // To pinpoint where the run gets stuck, uncomment and run with short timeout (e.g. ./test-with-timeout.sh 25):
     // beforeTest { d -> logger.lifecycle("[{}] START {} > {}", System.currentTimeMillis(), d.className, d.name) }
     // afterTest { d, r -> logger.lifecycle("[{}] END   {} > {} => {}", System.currentTimeMillis(), d.className, d.name, r.resultType) }
