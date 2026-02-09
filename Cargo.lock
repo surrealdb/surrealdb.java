@@ -3956,9 +3956,11 @@ dependencies = [
 name = "surrealdb-java"
 version = "3.0.0"
 dependencies = [
+ "async-channel",
  "cargo-lock",
  "chrono",
  "dashmap",
+ "futures",
  "jni",
  "once_cell",
  "parking_lot",

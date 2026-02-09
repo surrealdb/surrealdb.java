@@ -137,6 +137,8 @@ public class Surreal extends Native implements AutoCloseable {
 
     private static native boolean import_(long ptr, String path);
 
+    private static native long selectLive(long ptr, String table);
+
 
     @Override
     final String toString(long ptr) {
@@ -231,6 +233,18 @@ public class Surreal extends Native implements AutoCloseable {
      */
     public boolean import_(String path) {
         return import_(getPtr(), path);
+    }
+
+    /**
+     * Starts a live query on the given table. Returns a blocking stream of notifications (CREATE, UPDATE, DELETE).
+     * Call {@link LiveStream#next()} in a loop and {@link LiveStream#close()} when done.
+     *
+     * @param table table name to watch
+     * @return a LiveStream; must call {@link LiveStream#close()} when done
+     * @throws SurrealException if live queries are not supported or the request fails
+     */
+    public LiveStream selectLive(String table) {
+        return new LiveStream(selectLive(getPtr(), table));
     }
 
     /**

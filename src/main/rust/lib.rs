@@ -14,6 +14,10 @@ use surrealdb::engine::any::Any;
 use surrealdb::method::Transaction;
 use surrealdb::types::Value;
 use surrealdb::{Connection, IndexedResults, Surreal};
+
+/// Item type for the live query channel (Result<Notification<Value>>).
+pub(crate) type LiveNotificationResult =
+    std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
 use tokio::runtime::Runtime;
 
 mod array;
@@ -23,6 +27,7 @@ mod entrymut;
 mod error;
 mod geometry;
 mod id;
+mod live;
 mod macros;
 mod object;
 mod recordid;
@@ -54,6 +59,7 @@ enum JniTypes {
     ObjectIter,
     SyncObjectIter,
     Response,
+    LiveStream,
 }
 
 impl JniTypes {
@@ -101,6 +107,10 @@ impl JniTypes {
         create_instance(res, Self::Response)
     }
 
+    fn new_live_stream(rx: async_channel::Receiver<LiveNotificationResult>) -> jlong {
+        create_instance(rx, Self::LiveStream)
+    }
+
     fn as_str(&self) -> &'static str {
         match self {
             JniTypes::Surreal => "Surreal",
@@ -114,6 +124,7 @@ impl JniTypes {
             JniTypes::ObjectIter => "ObjectIterator",
             JniTypes::SyncObjectIter => "SynchronizedObjectIterator",
             JniTypes::Response => "Response",
+            JniTypes::LiveStream => "LiveStream",
         }
     }
 }

@@ -17,6 +17,7 @@ use jni::JNIEnv;
 use std::result::Result as StdResult;
 use parking_lot::Mutex;
 use serde::Serialize;
+use futures::StreamExt;
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::{Database, Namespace, Record as AuthRecord, Root};
 use surrealdb::types::{SurrealValue, ToSql, Value};
@@ -479,6 +480,34 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     let mut result = take_one_result!(&mut env, response, || 0);
     return_value_array_first!(result);
     return_unexpected_result!(&mut env, result.to_sql(), || 0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    table: JString<'local>,
+) -> jlong {
+    let surreal = get_surreal_ref!(&mut env, ptr, || 0);
+    let table = get_rust_string!(&mut env, &table, || 0);
+    let (tx, rx) = async_channel::unbounded();
+    let surreal_clone = surreal.clone();
+    std::thread::spawn(move || {
+        TOKIO_RUNTIME.block_on(async move {
+            let mut stream = match surreal_clone.select(table).live().await {
+                Ok(s) => s,
+                Err(e) => {
+                    let _ = tx.send(Err(e)).await;
+                    return;
+                }
+            };
+            while let Some(item) = stream.next().await {
+                let _ = tx.send(item).await;
+            }
+        });
+    });
+    JniTypes::new_live_stream(rx)
 }
 
 #[no_mangle]
