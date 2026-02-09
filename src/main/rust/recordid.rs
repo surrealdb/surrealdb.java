@@ -62,6 +62,42 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithUuid<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithArray<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    array_ptr: jlong,
+) -> jlong {
+    let table = get_rust_string!(&mut env, table, || 0);
+    let value = get_value_instance!(&mut env, array_ptr, || 0);
+    if let Value::Array(a) = value.as_ref() {
+        let key = RecordIdKey::Array(a.clone());
+        let value = Value::RecordId(RecordId::new(table, key));
+        JniTypes::new_value(value.into())
+    } else {
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithObject<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    object_ptr: jlong,
+) -> jlong {
+    let table = get_rust_string!(&mut env, table, || 0);
+    let value = get_value_instance!(&mut env, object_ptr, || 0);
+    if let Value::Object(o) = value.as_ref() {
+        let key = RecordIdKey::Object(o.clone());
+        let value = Value::RecordId(RecordId::new(table, key));
+        JniTypes::new_value(value.into())
+    } else {
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_RecordId_getTable<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,

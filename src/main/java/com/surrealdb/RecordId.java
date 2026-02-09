@@ -28,11 +28,29 @@ public class RecordId extends Native {
         super(newRecordIdWithUuid(table, id.toString()));
     }
 
+    /**
+     * Creates a RecordId with an array key (e.g. composite keys for timeseries).
+     */
+    public RecordId(String table, Array id) {
+        super(newRecordIdWithArray(table, id.getPtr()));
+    }
+
+    /**
+     * Creates a RecordId with an object key.
+     */
+    public RecordId(String table, Object id) {
+        super(newRecordIdWithObject(table, id.getPtr()));
+    }
+
     private static native long newRecordIdWithLong(String table, long id);
 
     private static native long newRecordIdWithString(String table, String id);
 
     private static native long newRecordIdWithUuid(String table, String id);
+
+    private static native long newRecordIdWithArray(String table, long arrayPtr);
+
+    private static native long newRecordIdWithObject(String table, long objectPtr);
 
     private static native String getTable(long ptr);
 
