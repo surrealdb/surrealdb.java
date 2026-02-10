@@ -15,11 +15,12 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) -> jobject {
-    let (_join_handle, _shutdown_tx, rx) =
+    let (mu, _join_handle, _shutdown_tx, rx) =
         match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
             Ok(r) => r,
             Err(e) => return e.exception(&mut env, || std::ptr::null_mut()),
         };
+    let _guard = mu.lock();
     let item = match TOKIO_RUNTIME.block_on(rx.recv()) {
         Ok(item) => item,
         Err(_) => return JObject::null().into_raw(), // channel closed
@@ -63,11 +64,12 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_releaseNative<'local>(
     if handle_ptr == 0 {
         return;
     }
-    if let Ok((join_handle, shutdown_tx, rx)) =
+    if let Ok((_mu, join_handle, shutdown_tx, rx)) =
         take_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream)
     {
+        let _guard = _mu.lock(); // block until no thread is in nextNative's recv()
         drop(shutdown_tx); // signal background thread to exit (it drops its sender)
-        let _ = join_handle.join(); // wait until no thread is in recv()
-        drop(rx); // now safe to drop receiver
+        let _ = join_handle.join(); // wait until background thread has dropped tx
+        drop(rx); // now safe to drop receiver (we hold the lock so no one is in recv())
     }
 }

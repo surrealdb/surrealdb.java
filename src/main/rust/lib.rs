@@ -19,9 +19,11 @@ use surrealdb::{Connection, IndexedResults, Surreal};
 pub(crate) type LiveNotificationResult =
     std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
 
-/// Stored as handle for live streams. On release we signal the background thread to exit
-/// (drop shutdown_tx), wait for it (join), then drop the receiver so no thread is in recv().
+/// Stored as handle for live streams. The mutex ensures we never drop the receiver while
+/// another thread is in recv(): nextNative holds the lock during recv(), releaseNative holds
+/// the lock during shutdown+join+drop.
 pub(crate) type LiveStreamChannel = (
+    parking_lot::Mutex<()>,
     std::thread::JoinHandle<()>,
     async_channel::Sender<()>, // shutdown: when dropped, background thread exits and drops its sender
     async_channel::Receiver<LiveNotificationResult>,

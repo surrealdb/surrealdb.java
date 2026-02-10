@@ -519,7 +519,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
             }
         });
     });
-    JniTypes::new_live_stream((join_handle, shutdown_tx, rx))
+    JniTypes::new_live_stream((parking_lot::Mutex::new(()), join_handle, shutdown_tx, rx))
 }
 
 #[no_mangle]
