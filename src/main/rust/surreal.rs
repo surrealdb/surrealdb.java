@@ -494,7 +494,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
     let surreal = get_surreal_ref!(&mut env, ptr, || 0);
     let table = get_rust_string!(&mut env, &table, || 0);
     let (tx, rx) = async_channel::unbounded();
-    let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(0);
+    let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(1);
     let tx_thread = tx.clone();
     let surreal_clone = surreal.clone();
     let join_handle = std::thread::spawn(move || {
