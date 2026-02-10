@@ -494,9 +494,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
     let surreal = get_surreal_ref!(&mut env, ptr, || 0);
     let table = get_rust_string!(&mut env, &table, || 0);
     let (tx, rx) = async_channel::unbounded();
+    let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(0);
     let tx_thread = tx.clone();
     let surreal_clone = surreal.clone();
-    std::thread::spawn(move || {
+    let join_handle = std::thread::spawn(move || {
         TOKIO_RUNTIME.block_on(async move {
             let mut stream = match surreal_clone.select(table).live().await {
                 Ok(s) => s,
@@ -505,12 +506,20 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
                     return;
                 }
             };
-            while let Some(item) = stream.next().await {
-                let _ = tx_thread.send(item).await;
+            loop {
+                tokio::select! {
+                    _ = shutdown_rx.recv() => break,
+                    item = stream.next() => match item {
+                        Some(i) => {
+                            let _ = tx_thread.send(i).await;
+                        }
+                        None => break,
+                    },
+                }
             }
         });
     });
-    JniTypes::new_live_stream((tx, rx))
+    JniTypes::new_live_stream((join_handle, shutdown_tx, rx))
 }
 
 #[no_mangle]

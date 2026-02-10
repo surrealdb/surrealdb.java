@@ -19,10 +19,11 @@ use surrealdb::{Connection, IndexedResults, Surreal};
 pub(crate) type LiveNotificationResult =
     std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
 
-/// Stored as handle for live streams. Sender is dropped first on release so any thread
-/// blocked in recv() sees the channel closed and returns before the receiver is dropped.
+/// Stored as handle for live streams. On release we signal the background thread to exit
+/// (drop shutdown_tx), wait for it (join), then drop the receiver so no thread is in recv().
 pub(crate) type LiveStreamChannel = (
-    async_channel::Sender<LiveNotificationResult>,
+    std::thread::JoinHandle<()>,
+    async_channel::Sender<()>, // shutdown: when dropped, background thread exits and drops its sender
     async_channel::Receiver<LiveNotificationResult>,
 );
 use tokio::runtime::Runtime;
@@ -204,12 +205,15 @@ fn get_instance_mut<T>(ptr: jlong, t: JniTypes) -> Result<&'static mut T, Surrea
     Ok(instance)
 }
 
-fn take_instance<T>(ptr: jlong, t: JniTypes) -> Result<T, SurrealError> {
+pub(crate) fn take_instance<T>(ptr: jlong, t: JniTypes) -> Result<T, SurrealError> {
     if ptr == 0 {
         return Err(SurrealError::NullPointerException(t.as_str()));
     }
     #[cfg(debug_assertions)]
-    check_allocation(ptr, t)?;
+    {
+        check_allocation(ptr, t)?;
+        ALLOCATOR.remove(&ptr);
+    }
 
     // Convert jlong to a Box<T>, effectively taking ownership of the instance
     let instance = unsafe { Box::from_raw(ptr as *mut T) };

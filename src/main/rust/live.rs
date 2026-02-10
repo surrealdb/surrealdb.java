@@ -5,7 +5,9 @@ use jni::sys::{jlong, jobject};
 use jni::JNIEnv;
 
 use crate::error::SurrealError;
-use crate::{get_instance, new_string, release_instance, JniTypes, LiveStreamChannel, TOKIO_RUNTIME};
+use crate::{
+    get_instance, new_string, take_instance, JniTypes, LiveStreamChannel, TOKIO_RUNTIME,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
@@ -13,10 +15,11 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) -> jobject {
-    let (_tx, rx) = match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
-        Ok(r) => r,
-        Err(e) => return e.exception(&mut env, || std::ptr::null_mut()),
-    };
+    let (_join_handle, _shutdown_tx, rx) =
+        match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
+            Ok(r) => r,
+            Err(e) => return e.exception(&mut env, || std::ptr::null_mut()),
+        };
     let item = match TOKIO_RUNTIME.block_on(rx.recv()) {
         Ok(item) => item,
         Err(_) => return JObject::null().into_raw(), // channel closed
@@ -56,7 +59,15 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_releaseNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) {
-    // Drop (Sender, Receiver): sender is dropped first, closing the channel so any thread
-    // blocked in recv() returns; then receiver is dropped safely.
-    release_instance::<LiveStreamChannel>(handle_ptr);
+    // Take ownership and shut down in order: signal thread to exit, wait for it, then drop receiver.
+    if handle_ptr == 0 {
+        return;
+    }
+    if let Ok((join_handle, shutdown_tx, rx)) =
+        take_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream)
+    {
+        drop(shutdown_tx); // signal background thread to exit (it drops its sender)
+        let _ = join_handle.join(); // wait until no thread is in recv()
+        drop(rx); // now safe to drop receiver
+    }
 }
