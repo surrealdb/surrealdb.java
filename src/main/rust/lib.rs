@@ -18,6 +18,13 @@ use surrealdb::{Connection, IndexedResults, Surreal};
 /// Item type for the live query channel (Result<Notification<Value>>).
 pub(crate) type LiveNotificationResult =
     std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
+
+/// Stored as handle for live streams. Sender is dropped first on release so any thread
+/// blocked in recv() sees the channel closed and returns before the receiver is dropped.
+pub(crate) type LiveStreamChannel = (
+    async_channel::Sender<LiveNotificationResult>,
+    async_channel::Receiver<LiveNotificationResult>,
+);
 use tokio::runtime::Runtime;
 
 mod array;
@@ -108,8 +115,8 @@ impl JniTypes {
         create_instance(res, Self::Response)
     }
 
-    fn new_live_stream(rx: async_channel::Receiver<LiveNotificationResult>) -> jlong {
-        create_instance(rx, Self::LiveStream)
+    fn new_live_stream(chan: LiveStreamChannel) -> jlong {
+        create_instance(chan, Self::LiveStream)
     }
 
     fn as_str(&self) -> &'static str {

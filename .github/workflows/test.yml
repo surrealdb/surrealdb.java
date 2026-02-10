@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: '--cfg surrealdb_unstable'
 
     strategy:
       fail-fast: false
@@ -39,8 +41,6 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build native lib
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build
 
       - name: Start SurrealDB

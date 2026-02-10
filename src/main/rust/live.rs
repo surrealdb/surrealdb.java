@@ -5,7 +5,7 @@ use jni::sys::{jlong, jobject};
 use jni::JNIEnv;
 
 use crate::error::SurrealError;
-use crate::{get_instance, new_string, release_instance, JniTypes, LiveNotificationResult, TOKIO_RUNTIME};
+use crate::{get_instance, new_string, release_instance, JniTypes, LiveStreamChannel, TOKIO_RUNTIME};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
@@ -13,10 +13,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) -> jobject {
-    let rx = match get_instance::<async_channel::Receiver<LiveNotificationResult>>(
-        handle_ptr,
-        JniTypes::LiveStream,
-    ) {
+    let (_tx, rx) = match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
         Ok(r) => r,
         Err(e) => return e.exception(&mut env, || std::ptr::null_mut()),
     };
@@ -59,5 +56,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_releaseNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) {
-    release_instance::<async_channel::Receiver<LiveNotificationResult>>(handle_ptr);
+    // Drop (Sender, Receiver): sender is dropped first, closing the channel so any thread
+    // blocked in recv() returns; then receiver is dropped safely.
+    release_instance::<LiveStreamChannel>(handle_ptr);
 }
