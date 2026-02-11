@@ -4,10 +4,10 @@ import java.util.Optional;
 
 /**
  * Blocking iterator over live query notifications. Call {@link #next()} in a
- * loop and {@link #close()} when done (or use try-with-resources if we add
- * AutoCloseable).
+ * loop and {@link #close()} when done. Implements {@link AutoCloseable} for
+ * use in try-with-resources.
  */
-public class LiveStream {
+public class LiveStream implements AutoCloseable {
 
 	static {
 		Loader.loadNative();
@@ -35,6 +35,7 @@ public class LiveStream {
 	/**
 	 * Releases the live query and stops receiving notifications. Idempotent.
 	 */
+	@Override
 	public void close() {
 		if (handle != 0) {
 			releaseNative(handle);

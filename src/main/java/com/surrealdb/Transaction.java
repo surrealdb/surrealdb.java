@@ -23,7 +23,8 @@ public class Transaction extends Native {
 
 	/**
 	 * Commits the transaction. After this call, the transaction is completed and
-	 * must not be used.
+	 * must not be used. On failure the native layer throws; the return value is
+	 * only true on success.
 	 */
 	public void commit() {
 		commit(getPtr());
@@ -32,7 +33,8 @@ public class Transaction extends Native {
 
 	/**
 	 * Cancels (rolls back) the transaction. After this call, the transaction is
-	 * completed and must not be used.
+	 * completed and must not be used. On failure the native layer throws; the
+	 * return value is only true on success.
 	 */
 	public void cancel() {
 		cancel(getPtr());

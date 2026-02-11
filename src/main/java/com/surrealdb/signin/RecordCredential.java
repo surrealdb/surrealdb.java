@@ -1,5 +1,7 @@
 package com.surrealdb.signin;
 
+import java.util.Objects;
+
 /**
  * Credentials for signing up or signing in as a record user (record access
  * method). Used with {@link com.surrealdb.Surreal#signup(RecordCredential)} and
@@ -14,7 +16,8 @@ package com.surrealdb.signin;
  * <p>
  * The params object is serialized and sent as the signup/signin variables (e.g.
  * email, password). It must be a type that can be converted to a SurrealDB
- * value (e.g. Map, POJO, or primitive).
+ * value (e.g. Map, POJO, or primitive). May be null; null is sent as SurrealDB
+ * null.
  */
 public class RecordCredential implements Credential {
 
@@ -39,7 +42,7 @@ public class RecordCredential implements Credential {
 	public RecordCredential(String namespace, String database, String access, Object params) {
 		this.namespace = namespace;
 		this.database = database;
-		this.access = access;
+		this.access = Objects.requireNonNull(access, "access");
 		this.params = params;
 	}
 
@@ -58,7 +61,7 @@ public class RecordCredential implements Credential {
 	public RecordCredential(String access, Object params) {
 		this.namespace = null;
 		this.database = null;
-		this.access = access;
+		this.access = Objects.requireNonNull(access, "access");
 		this.params = params;
 	}
 

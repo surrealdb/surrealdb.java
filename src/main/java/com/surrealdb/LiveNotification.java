@@ -25,7 +25,12 @@ public class LiveNotification {
 		return action;
 	}
 
-	/** The record value (content) for this notification. */
+	/**
+	 * The record value (content) for this notification. May be null when the
+	 * notification does not include record content (e.g. some server events).
+	 *
+	 * @return the record value, or null
+	 */
 	public Value getValue() {
 		return value;
 	}

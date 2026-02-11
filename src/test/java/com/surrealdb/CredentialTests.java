@@ -214,6 +214,16 @@ public class CredentialTests {
 	}
 
 	@Test
+	void recordCredential_nullAccess_throws() {
+		Throwable e1 = assertThrows(NullPointerException.class,
+				() -> new RecordCredential("ns", "db", null, params("email", "a@b.com", "pass", "p")));
+		assertNotNull(e1.getMessage());
+		Throwable e2 = assertThrows(NullPointerException.class,
+				() -> new RecordCredential(null, params("email", "a@b.com", "pass", "p")));
+		assertNotNull(e2.getMessage());
+	}
+
+	@Test
 	void token_hasAccessAndOptionalRefresh() {
 		Token t = new Token("access_jwt", null);
 		assertEquals("access_jwt", t.getAccess());
@@ -228,6 +238,12 @@ public class CredentialTests {
 	void bearer_holdsToken() {
 		BearerCredential b = new BearerCredential("my_jwt");
 		assertEquals("my_jwt", b.getToken());
+	}
+
+	@Test
+	void bearerCredential_nullToken_throws() {
+		Throwable e = assertThrows(NullPointerException.class, () -> new BearerCredential(null));
+		assertNotNull(e.getMessage());
 	}
 
 	@Test

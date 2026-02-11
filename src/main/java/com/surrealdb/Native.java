@@ -1,5 +1,11 @@
 package com.surrealdb;
 
+/**
+ * Base for types backed by a native pointer. Instances are only valid for the
+ * lifetime of the native resource (e.g. the parent {@link Value} or connection
+ * they were obtained from). Using an instance after the underlying resource
+ * has been released may cause undefined behavior or native errors.
+ */
 public abstract class Native {
 
 	// Unique internal ptr used by the native library to locate the SurrealDB

@@ -2,8 +2,10 @@ package com.surrealdb;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +37,21 @@ public class ExportImportTests {
 		} finally {
 			Files.deleteIfExists(file);
 			Files.deleteIfExists(dir);
+		}
+	}
+
+	@Test
+	void import_missingFile_returnsFalseOrThrows() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			Path missing = Paths.get("nonexistent_" + System.nanoTime() + ".surql");
+			try {
+				boolean imported = surreal.import_(missing.toString());
+				assertFalse(imported, "import of missing file should return false or throw");
+			} catch (SurrealException e) {
+				// expected when server throws instead of returning false
+				assertTrue(e.getMessage() != null && !e.getMessage().isEmpty());
+			}
 		}
 	}
 }

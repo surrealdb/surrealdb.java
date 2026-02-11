@@ -141,4 +141,36 @@ public class TransactionTests {
 			assertThrows(Throwable.class, () -> txn.query("INFO FOR DB"));
 		}
 	}
+
+	@Test
+	void transaction_doubleCommit_doesNotCrash() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			Transaction txn = surreal.beginTransaction();
+			txn.query("INFO FOR DB");
+			txn.commit();
+			// Second commit may throw (use-after-complete); must not crash JVM
+			try {
+				txn.commit();
+			} catch (Throwable expected) {
+				assertNotNull(expected);
+			}
+		}
+	}
+
+	@Test
+	void transaction_doubleCancel_doesNotCrash() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			Transaction txn = surreal.beginTransaction();
+			txn.query("INFO FOR DB");
+			txn.cancel();
+			// Second cancel may throw (use-after-complete); must not crash JVM
+			try {
+				txn.cancel();
+			} catch (Throwable expected) {
+				assertNotNull(expected);
+			}
+		}
+	}
 }

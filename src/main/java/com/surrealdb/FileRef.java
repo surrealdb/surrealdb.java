@@ -3,6 +3,9 @@ package com.surrealdb;
 /**
  * Reference to a file stored in a SurrealDB bucket. Obtained from
  * {@link Value#getFile()} when {@link Value#isFile()} is true.
+ * 
+ * Valid only for the lifetime of the {@link Value} it was obtained from; do
+ * not retain a reference after that Value is no longer in use.
  */
 public class FileRef extends Native {
 
