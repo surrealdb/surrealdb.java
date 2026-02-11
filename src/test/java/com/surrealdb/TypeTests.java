@@ -146,7 +146,8 @@ public class TypeTests {
 			assertEquals(retrievedString, testString);
 
 			// Test 3: Select from database by record id and verify byte[] is properly handled
-			final ByteData selectedRecord = surreal.select(ByteData.class, recordIdBytes).orElseThrow();
+			final ByteData selectedRecord = surreal.select(ByteData.class, recordIdBytes)
+					.orElseThrow(() -> new AssertionError("Expected record to be present"));
 			// Compare the byte[] data content
 			assertEquals(selectedRecord.data.length, byteData.data.length);
 			for (int i = 0; i < selectedRecord.data.length; i++) {
@@ -159,7 +160,8 @@ public class TypeTests {
 
 			// Test 4: Select the string-converted record by record id and verify conversion back to
 			// string
-			final ByteData selectedStringRecord = surreal.select(ByteData.class, recordIdString).orElseThrow();
+			final ByteData selectedStringRecord = surreal.select(ByteData.class, recordIdString)
+					.orElseThrow(() -> new AssertionError("Expected record to be present"));
 			// Compare the byte[] data content
 			assertEquals(selectedStringRecord.data.length, byteDataFromString.data.length);
 			for (int i = 0; i < selectedStringRecord.data.length; i++) {
