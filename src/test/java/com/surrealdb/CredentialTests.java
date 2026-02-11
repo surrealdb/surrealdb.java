@@ -1,5 +1,7 @@
 package com.surrealdb;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,6 +28,14 @@ import com.surrealdb.signin.Token;
  * message.
  */
 public class CredentialTests {
+
+	/** Java 8 compatible: Map.of("email", "a@b.com", "pass", "p") */
+	private static Map<String, String> params(String k1, String v1, String k2, String v2) {
+		Map<String, String> m = new HashMap<>();
+		m.put(k1, v1);
+		m.put(k2, v2);
+		return m;
+	}
 
 	@Test
 	void signin_withRoot_returnsTokenOrThrows() {
@@ -99,7 +109,7 @@ public class CredentialTests {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			RecordCredential record = new RecordCredential("test_ns", "test_db", "no_such_access",
-					Map.of("email", "a@b.com", "pass", "p"));
+					params("email", "a@b.com", "pass", "p"));
 			try {
 				surreal.signin(record);
 			} catch (SurrealException e) {
@@ -113,7 +123,7 @@ public class CredentialTests {
 	void signin_withRecordNullNsDbAndNoUseNs_throws() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory");
-			RecordCredential record = new RecordCredential("some_access", Map.of("email", "a@b.com", "pass", "p"));
+			RecordCredential record = new RecordCredential("some_access", params("email", "a@b.com", "pass", "p"));
 			SurrealException e = assertThrows(SurrealException.class, () -> surreal.signin(record));
 			assertTrue(e.getMessage().contains("namespace") || e.getMessage().contains("database"));
 		}
@@ -123,7 +133,7 @@ public class CredentialTests {
 	void signin_withRecord_usesSessionNsDbWhenOmitted() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
-			RecordCredential record = new RecordCredential("my_access", Map.of("email", "a@b.com", "pass", "p"));
+			RecordCredential record = new RecordCredential("my_access", params("email", "a@b.com", "pass", "p"));
 			try {
 				surreal.signin(record);
 			} catch (SurrealException e) {
@@ -151,7 +161,7 @@ public class CredentialTests {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			RecordCredential record = new RecordCredential("test_ns", "test_db", "no_such_access",
-					Map.of("email", "a@b.com", "pass", "p"));
+					params("email", "a@b.com", "pass", "p"));
 			try {
 				surreal.signup(record);
 			} catch (SurrealException e) {
@@ -164,7 +174,7 @@ public class CredentialTests {
 	void signup_withNullNsDbAndNoUseNs_throws() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory");
-			RecordCredential record = new RecordCredential("some_access", Map.of("email", "a@b.com", "pass", "p"));
+			RecordCredential record = new RecordCredential("some_access", params("email", "a@b.com", "pass", "p"));
 			SurrealException e = assertThrows(SurrealException.class, () -> surreal.signup(record));
 			assertTrue(e.getMessage().contains("namespace") || e.getMessage().contains("database"));
 			assertTrue(e.getMessage().contains("useNs") || e.getMessage().contains("useDb"));
@@ -175,7 +185,7 @@ public class CredentialTests {
 	void signup_withSessionNsDb_usesStoredValues() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
-			RecordCredential record = new RecordCredential("no_such_access", Map.of("email", "a@b.com", "pass", "p"));
+			RecordCredential record = new RecordCredential("no_such_access", params("email", "a@b.com", "pass", "p"));
 			try {
 				surreal.signup(record);
 			} catch (SurrealException e) {
@@ -187,20 +197,20 @@ public class CredentialTests {
 
 	@Test
 	void signup_withRecordFullConstructor_acceptsExplicitNsDb() {
-		RecordCredential r = new RecordCredential("ns", "db", "access", Map.of("a", 1));
+		RecordCredential r = new RecordCredential("ns", "db", "access", Collections.singletonMap("a", 1));
 		assertEquals("ns", r.getNamespace());
 		assertEquals("db", r.getDatabase());
 		assertEquals("access", r.getAccess());
-		assertEquals(Map.of("a", 1), r.getParams());
+		assertEquals(Collections.singletonMap("a", 1), r.getParams());
 	}
 
 	@Test
 	void signup_withRecordShortConstructor_hasNullNsDb() {
-		RecordCredential r = new RecordCredential("access", Map.of("a", 1));
+		RecordCredential r = new RecordCredential("access", Collections.singletonMap("a", 1));
 		assertNull(r.getNamespace());
 		assertNull(r.getDatabase());
 		assertEquals("access", r.getAccess());
-		assertEquals(Map.of("a", 1), r.getParams());
+		assertEquals(Collections.singletonMap("a", 1), r.getParams());
 	}
 
 	@Test

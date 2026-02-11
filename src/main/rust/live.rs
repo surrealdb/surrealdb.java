@@ -15,13 +15,18 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) -> jobject {
-    let (mu, _join_handle, _shutdown_tx, rx) =
+    let (recv_mutex, _join_handle_mux, _shutdown_tx_mux, rx_mux) =
         match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
             Ok(r) => r,
             Err(e) => return e.exception(&mut env, || std::ptr::null_mut()),
         };
-    let _guard = mu.lock();
-    let item = match TOKIO_RUNTIME.block_on(rx.recv()) {
+    let _recv_guard = recv_mutex.lock();
+    let rx_opt_guard = rx_mux.lock();
+    let rx_ref = match rx_opt_guard.as_ref() {
+        Some(rx) => rx,
+        None => return JObject::null().into_raw(), // already released
+    };
+    let item = match TOKIO_RUNTIME.block_on(rx_ref.recv()) {
         Ok(item) => item,
         Err(_) => return JObject::null().into_raw(), // channel closed
     };
@@ -60,16 +65,23 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_releaseNative<'local>(
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) {
-    // Take ownership and shut down in order: signal thread to exit, wait for it, then drop receiver.
     if handle_ptr == 0 {
         return;
     }
-    if let Ok((_mu, join_handle, shutdown_tx, rx)) =
-        take_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream)
-    {
-        let _guard = _mu.lock(); // block until no thread is in nextNative's recv()
-        drop(shutdown_tx); // signal background thread to exit (it drops its sender)
-        let _ = join_handle.join(); // wait until background thread has dropped tx
-        drop(rx); // now safe to drop receiver (we hold the lock so no one is in recv())
+    // Do NOT take_instance yet: another thread may be in nextNative (get_instance + recv).
+    // First close the channel via the stored sender, join the background thread, then acquire
+    // the recv mutex (so no thread is in recv()), then take_instance and drop the receiver.
+    let channel_ref = match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
+        Ok(r) => r,
+        Err(_) => return,
+    };
+    let (recv_mutex, join_handle_mux, shutdown_tx_mux, rx_mux) = channel_ref;
+    drop(shutdown_tx_mux.lock().take()); // drop sender so background thread exits and channel closes
+    if let Some(join_handle) = join_handle_mux.lock().take() {
+        let _ = join_handle.join();
     }
+    let _recv_guard = recv_mutex.lock(); // wait until any thread in nextNative has left recv()
+    let _rx = rx_mux.lock().take(); // take and drop receiver while holding recv_guard
+    drop(_recv_guard);
+    let _ = take_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream); // free the box
 }

@@ -519,7 +519,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
             }
         });
     });
-    JniTypes::new_live_stream((parking_lot::Mutex::new(()), join_handle, shutdown_tx, rx))
+    let recv_mutex = std::sync::Arc::new(parking_lot::Mutex::new(()));
+    JniTypes::new_live_stream((
+        recv_mutex,
+        parking_lot::Mutex::new(Some(join_handle)),
+        parking_lot::Mutex::new(Some(shutdown_tx)),
+        parking_lot::Mutex::new(Some(rx)),
+    ))
 }
 
 #[no_mangle]

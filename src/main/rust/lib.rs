@@ -19,14 +19,14 @@ use surrealdb::{Connection, IndexedResults, Surreal};
 pub(crate) type LiveNotificationResult =
     std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
 
-/// Stored as handle for live streams. The mutex ensures we never drop the receiver while
-/// another thread is in recv(): nextNative holds the lock during recv(), releaseNative holds
-/// the lock during shutdown+join+drop.
+/// Stored as handle for live streams. recv_mutex is held by nextNative during recv() so that
+/// releaseNative can wait for no thread in recv() before taking and dropping the receiver.
+/// join_handle, shutdown_tx and rx are in Mutex<Option<..>> so releaseNative can take/drop them via get_instance.
 pub(crate) type LiveStreamChannel = (
-    parking_lot::Mutex<()>,
-    std::thread::JoinHandle<()>,
-    async_channel::Sender<()>, // shutdown: when dropped, background thread exits and drops its sender
-    async_channel::Receiver<LiveNotificationResult>,
+    std::sync::Arc<parking_lot::Mutex<()>>, // held during recv()
+    parking_lot::Mutex<Option<std::thread::JoinHandle<()>>>,
+    parking_lot::Mutex<Option<async_channel::Sender<()>>>,
+    parking_lot::Mutex<Option<async_channel::Receiver<LiveNotificationResult>>>,
 );
 use tokio::runtime::Runtime;
 
