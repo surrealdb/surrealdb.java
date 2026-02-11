@@ -1,15 +1,15 @@
 package com.surrealdb.integration;
 
-import com.surrealdb.Surreal;
-import com.surrealdb.SurrealException;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.surrealdb.Surreal;
+import com.surrealdb.SurrealException;
 
 public class IntegrationTest {
 
@@ -29,7 +29,10 @@ public class IntegrationTest {
 	void connectSurrealKV() throws SurrealException, IOException {
 		final Path tempDir = Files.createTempDirectory("surrealkv");
 		try (final Surreal surreal = new Surreal()) {
-			surreal.connect("surrealkv://" + tempDir.toAbsolutePath()).useNs("test").useDb("test");
+			// Use forward slashes in the URL so the path is parsed correctly on all platforms (Windows
+			// paths with backslashes can be misinterpreted in connection strings).
+			String path = tempDir.toAbsolutePath().toString().replace('\\', '/');
+			surreal.connect("surrealkv://" + path).useNs("test").useDb("test");
 		}
 	}
 
