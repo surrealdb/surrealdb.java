@@ -29,6 +29,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_commit<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
+    // take_instance must be first: Transaction::commit(self) takes ownership. On commit failure we drop the txn (rollback).
     let txn = match take_instance::<Transaction<Any>>(ptr, JniTypes::Transaction) {
         Ok(t) => t,
         Err(e) => return e.exception(&mut env, || false as jboolean),
@@ -45,6 +46,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_cancel<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
+    // take_instance must be first: Transaction::cancel(self) takes ownership. On cancel failure we drop the txn.
     let txn = match take_instance::<Transaction<Any>>(ptr, JniTypes::Transaction) {
         Ok(t) => t,
         Err(e) => return e.exception(&mut env, || false as jboolean),
