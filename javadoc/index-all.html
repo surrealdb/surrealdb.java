@@ -29,6 +29,7 @@ loadScripts(document, 'script');</script>
 <li>Package</li>
 <li>Class</li>
 <li><a href="overview-tree.html">Tree</a></li>
+<li><a href="deprecated-list.html">Deprecated</a></li>
 <li class="nav-bar-cell1-rev">Index</li>
 <li><a href="help-doc.html#index">Help</a></li>
 </ul>
@@ -47,7 +48,7 @@ loadScripts(document, 'script');</script>
 <div class="header">
 <h1>Index</h1>
 </div>
-<a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:Q">Q</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="serialized-form.html">Serialized&nbsp;Form</a>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:Q">Q</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="serialized-form.html">Serialized&nbsp;Form</a>
 <h2 class="title" id="I:A">A</h2>
 <dl class="index">
 <dt><a href="com/surrealdb/Array.html" class="type-name-link" title="class in com.surrealdb">Array</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
@@ -55,9 +56,36 @@ loadScripts(document, 'script');</script>
 <div class="block">The Array class represents a native array structure and provides methods to
  interact with and retrieve values from the array.</div>
 </dd>
+<dt><a href="com/surrealdb/Surreal.html#authenticate(java.lang.String)" class="member-name-link">authenticate(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Authenticates the current connection with a JWT token (e.g.</div>
+</dd>
+</dl>
+<h2 class="title" id="I:B">B</h2>
+<dl class="index">
+<dt><a href="com/surrealdb/signin/BearerCredential.html" class="type-name-link" title="class in com.surrealdb.signin">BearerCredential</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
+<dd>
+<div class="block">Credential that authenticates the session with an existing access token (e.g.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/BearerCredential.html#%3Cinit%3E(java.lang.String)" class="member-name-link">BearerCredential(String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/BearerCredential.html" title="class in com.surrealdb.signin">BearerCredential</a></dt>
+<dd>
+<div class="block">Creates a bearer credential with the given access token.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#beginTransaction()" class="member-name-link">beginTransaction()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Starts a client-side transaction.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:C">C</h2>
 <dl class="index">
+<dt><a href="com/surrealdb/Transaction.html#cancel()" class="member-name-link">cancel()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Transaction.html" title="class in com.surrealdb">Transaction</a></dt>
+<dd>
+<div class="block">Cancels (rolls back) the transaction.</div>
+</dd>
+<dt><a href="com/surrealdb/LiveStream.html#close()" class="member-name-link">close()</a> - Method in class com.surrealdb.<a href="com/surrealdb/LiveStream.html" title="class in com.surrealdb">LiveStream</a></dt>
+<dd>
+<div class="block">Releases the live query and stops receiving notifications.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#close()" class="member-name-link">close()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Closes and releases any resources associated with this instance.</div>
@@ -66,9 +94,14 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a> - package com.surrealdb.signin</dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Transaction.html#commit()" class="member-name-link">commit()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Transaction.html" title="class in com.surrealdb">Transaction</a></dt>
+<dd>
+<div class="block">Commits the transaction.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#connect(java.lang.String)" class="member-name-link">connect(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Establishes a connection to the Surreal database using the provided connection string.</div>
+<div class="block">Establishes a connection to the Surreal database using the provided
+ connection string.</div>
 </dd>
 <dt><a href="com/surrealdb/UpType.html#CONTENT" class="member-name-link">CONTENT</a> - Enum constant in enum class com.surrealdb.<a href="com/surrealdb/UpType.html" title="enum class in com.surrealdb">UpType</a></dt>
 <dd>
@@ -76,19 +109,23 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#create(com.surrealdb.RecordId,T)" class="member-name-link">create(RecordId, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Creates a record in the database with the given `RecordID` as the key and the provided content as the value.</div>
+<div class="block">Creates a record in the database with the given `RecordID` as the key and the
+ provided content as the value.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#create(java.lang.Class,com.surrealdb.RecordId,T)" class="member-name-link">create(Class&lt;T&gt;, RecordId, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Creates a record in the database with the given `RecordID` as the key and the provided content as the value.</div>
+<div class="block">Creates a record in the database with the given `RecordID` as the key and the
+ provided content as the value.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#create(java.lang.Class,java.lang.String,T...)" class="member-name-link">create(Class&lt;T&gt;, String, T...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Creates records in the database with the given table and the provided contents as the values.</div>
+<div class="block">Creates records in the database with the given table and the provided
+ contents as the values.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#create(java.lang.String,T...)" class="member-name-link">create(String, T...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Creates records in the database with the given table and the provided contents as the values.</div>
+<div class="block">Creates records in the database with the given table and the provided
+ contents as the values.</div>
 </dd>
 <dt><a href="com/surrealdb/ValueMut.html#createArray(com.surrealdb.Array)" class="member-name-link">createArray(Array)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
@@ -104,6 +141,8 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createDuration(java.time.Duration)" class="member-name-link">createDuration(Duration)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/ValueMut.html#createFile(java.lang.String,java.lang.String)" class="member-name-link">createFile(String, String)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createId(com.surrealdb.Id)" class="member-name-link">createId(Id)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createLong(long)" class="member-name-link">createLong(long)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
@@ -116,20 +155,27 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createObject(java.util.List)" class="member-name-link">createObject(List&lt;EntryMut&gt;)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/ValueMut.html#createRecordId(com.surrealdb.RecordId)" class="member-name-link">createRecordId(RecordId)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createString(java.lang.String)" class="member-name-link">createString(String)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/ValueMut.html#createThing(com.surrealdb.RecordId)" class="member-name-link">createThing(RecordId)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
+<dt><a href="com/surrealdb/ValueMut.html#createTable(java.lang.String)" class="member-name-link">createTable(String)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createUuid(java.util.UUID)" class="member-name-link">createUuid(UUID)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/Credential.html" class="type-name-link" title="interface in com.surrealdb.signin">Credential</a> - Interface in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
+<dd>
+<div class="block">Base type for all authentication credentials used with
+ <a href="com/surrealdb/Surreal.html#signin(com.surrealdb.signin.Credential)"><code>Surreal.signin(Credential)</code></a>.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:D">D</h2>
 <dl class="index">
-<dt><a href="com/surrealdb/signin/Database.html" class="type-name-link" title="class in com.surrealdb.signin">Database</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
+<dt><a href="com/surrealdb/signin/DatabaseCredential.html" class="type-name-link" title="class in com.surrealdb.signin">DatabaseCredential</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
 <dd>
-<div class="block">The Database class represents a specific level of credentials for signing into a SurrealDB database.</div>
+<div class="block">Database-level credentials for signing into a SurrealDB database.</div>
 </dd>
-<dt><a href="com/surrealdb/signin/Database.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">Database(String, String, String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/Database.html" title="class in com.surrealdb.signin">Database</a></dt>
+<dt><a href="com/surrealdb/signin/DatabaseCredential.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">DatabaseCredential(String, String, String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/DatabaseCredential.html" title="class in com.surrealdb.signin">DatabaseCredential</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Surreal.html#delete(com.surrealdb.RecordId)" class="member-name-link">delete(RecordId)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -138,6 +184,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/surrealdb/Surreal.html#delete(com.surrealdb.RecordId...)" class="member-name-link">delete(RecordId...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Deletes the specified records.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#delete(com.surrealdb.RecordIdRange)" class="member-name-link">delete(RecordIdRange)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Deletes all records in the given record ID range.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#delete(java.lang.String)" class="member-name-link">delete(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -162,9 +212,17 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Relation.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Relation.html" title="class in com.surrealdb">Relation</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#export(java.lang.String)" class="member-name-link">export(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Exports the database to a file.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:F">F</h2>
 <dl class="index">
+<dt><a href="com/surrealdb/FileRef.html" class="type-name-link" title="class in com.surrealdb">FileRef</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">Reference to a file stored in a SurrealDB bucket.</div>
+</dd>
 <dt><a href="com/surrealdb/Native.html#finalize()" class="member-name-link">finalize()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Native.html" title="class in com.surrealdb">Native</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Id.html#from(long)" class="member-name-link">from(long)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
@@ -184,6 +242,16 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Object.html#get(java.lang.String)" class="member-name-link">get(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Object.html" title="class in com.surrealdb">Object</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/RecordCredential.html#getAccess()" class="member-name-link">getAccess()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/Token.html#getAccess()" class="member-name-link">getAccess()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Token.html" title="class in com.surrealdb.signin">Token</a></dt>
+<dd>
+<div class="block">Returns the access token (JWT) used for authenticating requests.</div>
+</dd>
+<dt><a href="com/surrealdb/LiveNotification.html#getAction()" class="member-name-link">getAction()</a> - Method in class com.surrealdb.<a href="com/surrealdb/LiveNotification.html" title="class in com.surrealdb">LiveNotification</a></dt>
+<dd>
+<div class="block">The action that caused this notification: "CREATE", "UPDATE", or "DELETE".</div>
+</dd>
 <dt><a href="com/surrealdb/Id.html#getArray()" class="member-name-link">getArray()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getArray()" class="member-name-link">getArray()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
@@ -192,15 +260,37 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getBoolean()" class="member-name-link">getBoolean()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/FileRef.html#getBucket()" class="member-name-link">getBucket()</a> - Method in class com.surrealdb.<a href="com/surrealdb/FileRef.html" title="class in com.surrealdb">FileRef</a></dt>
+<dd>
+<div class="block">Returns the bucket name.</div>
+</dd>
 <dt><a href="com/surrealdb/Value.html#getBytes()" class="member-name-link">getBytes()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/signin/Database.html#getDatabase()" class="member-name-link">getDatabase()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Database.html" title="class in com.surrealdb.signin">Database</a></dt>
+<dt><a href="com/surrealdb/NsDb.html#getDatabase()" class="member-name-link">getDatabase()</a> - Method in class com.surrealdb.<a href="com/surrealdb/NsDb.html" title="class in com.surrealdb">NsDb</a></dt>
+<dd>
+<div class="block">Returns the current database.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/DatabaseCredential.html#getDatabase()" class="member-name-link">getDatabase()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/DatabaseCredential.html" title="class in com.surrealdb.signin">DatabaseCredential</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/RecordCredential.html#getDatabase()" class="member-name-link">getDatabase()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#getDatabase()" class="member-name-link">getDatabase()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Returns the current database set by the last <a href="com/surrealdb/Surreal.html#useNs(java.lang.String)"><code>Surreal.useNs(String)</code></a>,
+ <a href="com/surrealdb/Surreal.html#useDb(java.lang.String)"><code>Surreal.useDb(String)</code></a>, or <a href="com/surrealdb/Surreal.html#useDefaults()"><code>Surreal.useDefaults()</code></a> call (from the server
+ response).</div>
+</dd>
 <dt><a href="com/surrealdb/Value.html#getDateTime()" class="member-name-link">getDateTime()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getDouble()" class="member-name-link">getDouble()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getDuration()" class="member-name-link">getDuration()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/RecordIdRange.html#getEnd()" class="member-name-link">getEnd()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
+<dd>
+<div class="block">Upper bound (inclusive), or <code>null</code> if unbounded.</div>
+</dd>
+<dt><a href="com/surrealdb/Value.html#getFile()" class="member-name-link">getFile()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getGeometry()" class="member-name-link">getGeometry()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
@@ -208,31 +298,81 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Entry.html#getKey()" class="member-name-link">getKey()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Entry.html" title="class in com.surrealdb">Entry</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/FileRef.html#getKey()" class="member-name-link">getKey()</a> - Method in class com.surrealdb.<a href="com/surrealdb/FileRef.html" title="class in com.surrealdb">FileRef</a></dt>
+<dd>
+<div class="block">Returns the file key (path within the bucket).</div>
+</dd>
 <dt><a href="com/surrealdb/Id.html#getLong()" class="member-name-link">getLong()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getLong()" class="member-name-link">getLong()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/signin/Namespace.html#getNamespace()" class="member-name-link">getNamespace()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Namespace.html" title="class in com.surrealdb.signin">Namespace</a></dt>
+<dt><a href="com/surrealdb/NsDb.html#getNamespace()" class="member-name-link">getNamespace()</a> - Method in class com.surrealdb.<a href="com/surrealdb/NsDb.html" title="class in com.surrealdb">NsDb</a></dt>
+<dd>
+<div class="block">Returns the current namespace.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/NamespaceCredential.html#getNamespace()" class="member-name-link">getNamespace()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/NamespaceCredential.html" title="class in com.surrealdb.signin">NamespaceCredential</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/RecordCredential.html#getNamespace()" class="member-name-link">getNamespace()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#getNamespace()" class="member-name-link">getNamespace()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Returns the current namespace set by the last <a href="com/surrealdb/Surreal.html#useNs(java.lang.String)"><code>Surreal.useNs(String)</code></a>,
+ <a href="com/surrealdb/Surreal.html#useDb(java.lang.String)"><code>Surreal.useDb(String)</code></a>, or <a href="com/surrealdb/Surreal.html#useDefaults()"><code>Surreal.useDefaults()</code></a> call (from the server
+ response).</div>
+</dd>
 <dt><a href="com/surrealdb/Id.html#getObject()" class="member-name-link">getObject()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getObject()" class="member-name-link">getObject()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/signin/Root.html#getPassword()" class="member-name-link">getPassword()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Root.html" title="class in com.surrealdb.signin">Root</a></dt>
+<dt><a href="com/surrealdb/signin/RecordCredential.html#getParams()" class="member-name-link">getParams()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/RootCredential.html#getPassword()" class="member-name-link">getPassword()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RootCredential.html" title="class in com.surrealdb.signin">RootCredential</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Geometry.html#getPoint()" class="member-name-link">getPoint()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/LiveNotification.html#getQueryId()" class="member-name-link">getQueryId()</a> - Method in class com.surrealdb.<a href="com/surrealdb/LiveNotification.html" title="class in com.surrealdb">LiveNotification</a></dt>
+<dd>
+<div class="block">The live query UUID this notification belongs to.</div>
+</dd>
+<dt><a href="com/surrealdb/Value.html#getRangeEnd()" class="member-name-link">getRangeEnd()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">End bound of the range (included or excluded), or empty if unbounded.</div>
+</dd>
+<dt><a href="com/surrealdb/Value.html#getRangeStart()" class="member-name-link">getRangeStart()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">Start bound of the range (included or excluded), or empty if unbounded.</div>
+</dd>
+<dt><a href="com/surrealdb/Value.html#getRecordId()" class="member-name-link">getRecordId()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/signin/Token.html#getRefresh()" class="member-name-link">getRefresh()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Token.html" title="class in com.surrealdb.signin">Token</a></dt>
+<dd>
+<div class="block">Returns the refresh token if the server provided one, otherwise null.</div>
+</dd>
+<dt><a href="com/surrealdb/RecordIdRange.html#getStart()" class="member-name-link">getStart()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
+<dd>
+<div class="block">Lower bound (inclusive), or <code>null</code> if unbounded.</div>
+</dd>
 <dt><a href="com/surrealdb/Id.html#getString()" class="member-name-link">getString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getString()" class="member-name-link">getString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/RecordId.html#getTable()" class="member-name-link">getTable()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/Value.html#getThing()" class="member-name-link">getThing()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dt><a href="com/surrealdb/RecordIdRange.html#getTable()" class="member-name-link">getTable()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Value.html#getTable()" class="member-name-link">getTable()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">Table name when this value is a table type.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/BearerCredential.html#getToken()" class="member-name-link">getToken()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/BearerCredential.html" title="class in com.surrealdb.signin">BearerCredential</a></dt>
+<dd>
+<div class="block">Returns the access token.</div>
+</dd>
 <dt><a href="com/surrealdb/signin/Token.html#getToken()" class="member-name-link">getToken()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Token.html" title="class in com.surrealdb.signin">Token</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/signin/Root.html#getUsername()" class="member-name-link">getUsername()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Root.html" title="class in com.surrealdb.signin">Root</a></dt>
+<dd>
+<div class="block">Returns the access token.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/RootCredential.html#getUsername()" class="member-name-link">getUsername()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RootCredential.html" title="class in com.surrealdb.signin">RootCredential</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Id.html#getUuid()" class="member-name-link">getUuid()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
@@ -240,6 +380,10 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Entry.html#getValue()" class="member-name-link">getValue()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Entry.html" title="class in com.surrealdb">Entry</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/LiveNotification.html#getValue()" class="member-name-link">getValue()</a> - Method in class com.surrealdb.<a href="com/surrealdb/LiveNotification.html" title="class in com.surrealdb">LiveNotification</a></dt>
+<dd>
+<div class="block">The record value (content) for this notification.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:H">H</h2>
 <dl class="index">
@@ -253,6 +397,10 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueIterator.html#hasNext()" class="member-name-link">hasNext()</a> - Method in class com.surrealdb.<a href="com/surrealdb/ValueIterator.html" title="class in com.surrealdb">ValueIterator</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#health()" class="member-name-link">health()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Performs a health check against the server.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:I">I</h2>
 <dl class="index">
@@ -262,7 +410,12 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Id.html" class="type-name-link" title="class in com.surrealdb">Id</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The Id class represents a unique identifier that can be either a long value or a string.</div>
+<div class="block">The Id class represents a unique identifier that can be either a long value
+ or a string.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#import_(java.lang.String)" class="member-name-link">import_(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Imports the database from a file.</div>
 </dd>
 <dt><a href="com/surrealdb/InsertRelation.html#in" class="member-name-link">in</a> - Variable in class com.surrealdb.<a href="com/surrealdb/InsertRelation.html" title="class in com.surrealdb">InsertRelation</a></dt>
 <dd>&nbsp;</dd>
@@ -270,11 +423,13 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Surreal.html#insert(java.lang.Class,java.lang.String,T...)" class="member-name-link">insert(Class&lt;T&gt;, String, T...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Insert records in the database with the given table and the provided contents as the values.</div>
+<div class="block">Insert records in the database with the given table and the provided contents
+ as the values.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#insert(java.lang.String,T...)" class="member-name-link">insert(String, T...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Insert records in the database with the given table and the provided contents as the values.</div>
+<div class="block">Insert records in the database with the given table and the provided contents
+ as the values.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#insertRelation(java.lang.Class,java.lang.String,T)" class="member-name-link">insertRelation(Class&lt;T&gt;, String, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -286,7 +441,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/InsertRelation.html" class="type-name-link" title="class in com.surrealdb">InsertRelation</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The InsertRelation class represents a relationship between entities in a graph database.</div>
+<div class="block">The InsertRelation class represents a relationship between entities in a
+ graph database.</div>
 </dd>
 <dt><a href="com/surrealdb/InsertRelation.html#%3Cinit%3E()" class="member-name-link">InsertRelation()</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/InsertRelation.html" title="class in com.surrealdb">InsertRelation</a></dt>
 <dd>&nbsp;</dd>
@@ -300,11 +456,15 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Inserts relations into the specified table with the provided contents.</div>
 </dd>
+<dt><a href="com/surrealdb/Surreal.html#invalidate()" class="member-name-link">invalidate()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Invalidates the authentication for the current connection.</div>
+</dd>
 <dt><a href="com/surrealdb/Id.html#isArray()" class="member-name-link">isArray()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isArray()" class="member-name-link">isArray()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/Value.html#isBigdecimal()" class="member-name-link">isBigdecimal()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dt><a href="com/surrealdb/Value.html#isBigDecimal()" class="member-name-link">isBigDecimal()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isBoolean()" class="member-name-link">isBoolean()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
@@ -315,6 +475,8 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/surrealdb/Value.html#isDouble()" class="member-name-link">isDouble()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isDuration()" class="member-name-link">isDuration()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Value.html#isFile()" class="member-name-link">isFile()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isGeometry()" class="member-name-link">isGeometry()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
@@ -332,11 +494,15 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Geometry.html#isPoint()" class="member-name-link">isPoint()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Value.html#isRange()" class="member-name-link">isRange()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Value.html#isRecordId()" class="member-name-link">isRecordId()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Id.html#isString()" class="member-name-link">isString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isString()" class="member-name-link">isString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/surrealdb/Value.html#isThing()" class="member-name-link">isThing()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dt><a href="com/surrealdb/Value.html#isTable()" class="member-name-link">isTable()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Id.html#isUuid()" class="member-name-link">isUuid()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
@@ -355,6 +521,18 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Object.html#len()" class="member-name-link">len()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Object.html" title="class in com.surrealdb">Object</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/LiveNotification.html" class="type-name-link" title="class in com.surrealdb">LiveNotification</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">A single notification from a live query (CREATE, UPDATE, or DELETE).</div>
+</dd>
+<dt><a href="com/surrealdb/LiveNotification.html#%3Cinit%3E(java.lang.String,long,java.lang.String)" class="member-name-link">LiveNotification(String, long, String)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/LiveNotification.html" title="class in com.surrealdb">LiveNotification</a></dt>
+<dd>
+<div class="block">Called from native code only.</div>
+</dd>
+<dt><a href="com/surrealdb/LiveStream.html" class="type-name-link" title="class in com.surrealdb">LiveStream</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">Blocking iterator over live query notifications.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:M">M</h2>
 <dl class="index">
@@ -365,20 +543,41 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:N">N</h2>
 <dl class="index">
-<dt><a href="com/surrealdb/signin/Namespace.html" class="type-name-link" title="class in com.surrealdb.signin">Namespace</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
+<dt><a href="com/surrealdb/signin/NamespaceCredential.html" class="type-name-link" title="class in com.surrealdb.signin">NamespaceCredential</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
 <dd>
-<div class="block">The Namespace class represents a specific level of credentials for signing into a SurrealDB namespace.</div>
+<div class="block">Namespace-level credentials for signing into a SurrealDB namespace.</div>
 </dd>
-<dt><a href="com/surrealdb/signin/Namespace.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">Namespace(String, String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/Namespace.html" title="class in com.surrealdb.signin">Namespace</a></dt>
+<dt><a href="com/surrealdb/signin/NamespaceCredential.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">NamespaceCredential(String, String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/NamespaceCredential.html" title="class in com.surrealdb.signin">NamespaceCredential</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Native.html" class="type-name-link" title="class in com.surrealdb">Native</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Base for types backed by a native pointer.</div>
+</dd>
 <dt><a href="com/surrealdb/EntryMut.html#newEntry(java.lang.String,com.surrealdb.ValueMut)" class="member-name-link">newEntry(String, ValueMut)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/EntryMut.html" title="class in com.surrealdb">EntryMut</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#newSession()" class="member-name-link">newSession()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Creates a new session that shares the same connection but has its own
+ namespace, database, and authentication state.</div>
+</dd>
 <dt><a href="com/surrealdb/EntryIterator.html#next()" class="member-name-link">next()</a> - Method in class com.surrealdb.<a href="com/surrealdb/EntryIterator.html" title="class in com.surrealdb">EntryIterator</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/LiveStream.html#next()" class="member-name-link">next()</a> - Method in class com.surrealdb.<a href="com/surrealdb/LiveStream.html" title="class in com.surrealdb">LiveStream</a></dt>
+<dd>
+<div class="block">Blocks until the next notification is available, or the stream ends.</div>
+</dd>
 <dt><a href="com/surrealdb/ValueIterator.html#next()" class="member-name-link">next()</a> - Method in class com.surrealdb.<a href="com/surrealdb/ValueIterator.html" title="class in com.surrealdb">ValueIterator</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/NsDb.html" class="type-name-link" title="class in com.surrealdb">NsDb</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">Holds the current namespace and database after a
+ <a href="com/surrealdb/Surreal.html#useNs(java.lang.String)"><code>Surreal.useNs(String)</code></a>, <a href="com/surrealdb/Surreal.html#useDb(java.lang.String)"><code>Surreal.useDb(String)</code></a>, or
+ <a href="com/surrealdb/Surreal.html#useDefaults()"><code>Surreal.useDefaults()</code></a> call.</div>
+</dd>
+<dt><a href="com/surrealdb/NsDb.html#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">NsDb(String, String)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/NsDb.html" title="class in com.surrealdb">NsDb</a></dt>
+<dd>
+<div class="block">Creates an NsDb with the given namespace and database (both may be null).</div>
+</dd>
 </dl>
 <h2 class="title" id="I:O">O</h2>
 <dl class="index">
@@ -404,6 +603,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Executes a SurrealQL query on the database.</div>
 </dd>
+<dt><a href="com/surrealdb/Transaction.html#query(java.lang.String)" class="member-name-link">query(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Transaction.html" title="class in com.surrealdb">Transaction</a></dt>
+<dd>
+<div class="block">Runs a SurrealQL query within this transaction.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#queryBind(java.lang.String,java.util.Map)" class="member-name-link">queryBind(String, Map&lt;String, ?&gt;)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Executes a parameterized SurrealQL query on the database.</div>
@@ -411,19 +614,49 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:R">R</h2>
 <dl class="index">
+<dt><a href="com/surrealdb/signin/RecordCredential.html" class="type-name-link" title="class in com.surrealdb.signin">RecordCredential</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
+<dd>
+<div class="block">Credentials for signing up or signing in as a record user (record access
+ method).</div>
+</dd>
+<dt><a href="com/surrealdb/signin/RecordCredential.html#%3Cinit%3E(java.lang.String,java.lang.Object)" class="member-name-link">RecordCredential(String, Object)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></dt>
+<dd>
+<div class="block">Creates record credentials using the current session namespace and database.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/RecordCredential.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String,java.lang.Object)" class="member-name-link">RecordCredential(String, String, String, Object)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></dt>
+<dd>
+<div class="block">Creates record credentials with explicit namespace and database.</div>
+</dd>
 <dt><a href="com/surrealdb/RecordId.html" class="type-name-link" title="class in com.surrealdb">RecordId</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
 <div class="block">The RecordId class represents a unique identifier for a record in a database.</div>
 </dd>
 <dt><a href="com/surrealdb/RecordId.html#%3Cinit%3E(java.lang.String,long)" class="member-name-link">RecordId(String, long)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/RecordId.html#%3Cinit%3E(java.lang.String,com.surrealdb.Array)" class="member-name-link">RecordId(String, Array)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
+<dd>
+<div class="block">Creates a RecordId with an array key (e.g.</div>
+</dd>
+<dt><a href="com/surrealdb/RecordId.html#%3Cinit%3E(java.lang.String,com.surrealdb.Object)" class="member-name-link">RecordId(String, Object)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
+<dd>
+<div class="block">Creates a RecordId with an object key.</div>
+</dd>
 <dt><a href="com/surrealdb/RecordId.html#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">RecordId(String, String)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/RecordId.html#%3Cinit%3E(java.lang.String,java.util.UUID)" class="member-name-link">RecordId(String, UUID)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/RecordIdRange.html" class="type-name-link" title="class in com.surrealdb">RecordIdRange</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">Represents a range of record IDs on a table for range queries (e.g.</div>
+</dd>
+<dt><a href="com/surrealdb/RecordIdRange.html#%3Cinit%3E(java.lang.String,com.surrealdb.Id,com.surrealdb.Id)" class="member-name-link">RecordIdRange(String, Id, Id)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
+<dd>
+<div class="block">Creates a range over the given table with optional start and end bounds.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate(RecordId, String, RecordId)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Establishes a relation between two records identified by `from` and `to` within a specified table.</div>
+<div class="block">Establishes a relation between two records identified by `from` and `to`
+ within a specified table.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId,T)" class="member-name-link">relate(RecordId, String, RecordId, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -432,7 +665,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#relate(java.lang.Class,com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId,T)" class="member-name-link">relate(Class&lt;R&gt;, RecordId, String, RecordId, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Establishes a relation between two records and retrieves it based on the specified relation type.</div>
+<div class="block">Establishes a relation between two records and retrieves it based on the
+ specified relation type.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#relate(java.lang.Class,com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate(Class&lt;T&gt;, RecordId, String, RecordId)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -440,7 +674,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Relation.html" class="type-name-link" title="class in com.surrealdb">Relation</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The Relation class represents a relationship between two records within a database.</div>
+<div class="block">The Relation class represents a relationship between two records within a
+ database.</div>
 </dd>
 <dt><a href="com/surrealdb/Relation.html#%3Cinit%3E()" class="member-name-link">Relation()</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/Relation.html" title="class in com.surrealdb">Relation</a></dt>
 <dd>&nbsp;</dd>
@@ -448,14 +683,19 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Response.html" class="type-name-link" title="class in com.surrealdb">Response</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The Response class is a specialized wrapper for handling responses from SurrealDB.</div>
+<div class="block">The Response class is a specialized wrapper for handling responses from
+ SurrealDB.</div>
 </dd>
-<dt><a href="com/surrealdb/signin/Root.html" class="type-name-link" title="class in com.surrealdb.signin">Root</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
+<dt><a href="com/surrealdb/signin/RootCredential.html" class="type-name-link" title="class in com.surrealdb.signin">RootCredential</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
 <dd>
-<div class="block">The Root class represents a level of credentials used for signing into the SurrealDB database.</div>
+<div class="block">Root-level credentials (username and password) for signing into SurrealDB.</div>
 </dd>
-<dt><a href="com/surrealdb/signin/Root.html#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">Root(String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/Root.html" title="class in com.surrealdb.signin">Root</a></dt>
+<dt><a href="com/surrealdb/signin/RootCredential.html#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">RootCredential(String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/RootCredential.html" title="class in com.surrealdb.signin">RootCredential</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#run(java.lang.String,java.lang.Object...)" class="member-name-link">run(String, Object...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Runs a SurrealDB function by name with the given arguments (e.g.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:S">S</h2>
 <dl class="index">
@@ -467,13 +707,23 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Selects values based on the provided RecordIds.</div>
 </dd>
+<dt><a href="com/surrealdb/Surreal.html#select(com.surrealdb.RecordIdRange)" class="member-name-link">select(RecordIdRange)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Selects all records in the given record ID range.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#select(java.lang.Class,com.surrealdb.RecordId)" class="member-name-link">select(Class&lt;T&gt;, RecordId)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Selects an instance of the specified type from a record identified by the given RecordId.</div>
+<div class="block">Selects an instance of the specified type from a record identified by the
+ given RecordId.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#select(java.lang.Class,com.surrealdb.RecordId...)" class="member-name-link">select(Class&lt;T&gt;, RecordId...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Selects and retrieves a list of objects of the specified type based on the given record IDs.</div>
+<div class="block">Selects and retrieves a list of objects of the specified type based on the
+ given record IDs.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#select(java.lang.Class,com.surrealdb.RecordIdRange)" class="member-name-link">select(Class&lt;T&gt;, RecordIdRange)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Selects records in the given range and maps them to the specified type.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#select(java.lang.Class,java.lang.String)" class="member-name-link">select(Class&lt;T&gt;, String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -481,31 +731,44 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#select(java.lang.String)" class="member-name-link">select(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Selects and returns an iterator over the values corresponding to the given targets.</div>
+<div class="block">Selects and returns an iterator over the values corresponding to the given
+ targets.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#selectLive(java.lang.String)" class="member-name-link">selectLive(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Starts a live query on the given table.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#selectSync(java.lang.Class,java.lang.String)" class="member-name-link">selectSync(Class&lt;T&gt;, String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Selects and returns a thread-safe iterator over a collection of objects of the specified type
- from the given targets.</div>
+<div class="block">Selects and returns a thread-safe iterator over a collection of objects of
+ the specified type from the given targets.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#selectSync(java.lang.String)" class="member-name-link">selectSync(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Selects and returns a thread-safe iterator to traverse values associated with the given targets.</div>
+<div class="block">Selects and returns a thread-safe iterator to traverse values associated with
+ the given targets.</div>
 </dd>
-<dt><a href="com/surrealdb/Surreal.html#signin(com.surrealdb.signin.Signin)" class="member-name-link">signin(Signin)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dt><a href="com/surrealdb/Surreal.html#signin(com.surrealdb.signin.Credential)" class="member-name-link">signin(Credential)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Attempts to sign in to the Surreal system using the provided credentials.</div>
+<div class="block">Signs in with the given credential.</div>
 </dd>
 <dt><a href="com/surrealdb/signin/Signin.html" class="type-name-link" title="interface in com.surrealdb.signin">Signin</a> - Interface in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
 <dd>
-<div class="block">The Signin interface is a marker interface used for classes that encapsulate
- credentials used for logging into the Surreal system.</div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">Use <a href="com/surrealdb/signin/Credential.html" title="interface in com.surrealdb.signin"><code>Credential</code></a> and
+             <a href="com/surrealdb/Surreal.html#signin(com.surrealdb.signin.Credential)"><code>Surreal.signin(Credential)</code></a> instead.</div>
+</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#signup(com.surrealdb.signin.RecordCredential)" class="member-name-link">signup(RecordCredential)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Signs up a record user with the given record access credentials.</div>
 </dd>
 <dt><a href="com/surrealdb/Response.html#size()" class="member-name-link">size()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Response.html" title="class in com.surrealdb">Response</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Surreal.html" class="type-name-link" title="class in com.surrealdb">Surreal</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The <code>Surreal</code> class provides methods to interact with a Surreal database.</div>
+<div class="block">The <code>Surreal</code> class provides methods to interact with a Surreal
+ database.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#%3Cinit%3E()" class="member-name-link">Surreal()</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -513,7 +776,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/SurrealException.html" class="type-name-link" title="class in com.surrealdb">SurrealException</a> - Exception Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The SurrealException class is a custom RuntimeException used to signal exceptional conditions.</div>
+<div class="block">The SurrealException class is a custom RuntimeException used to signal
+ exceptional conditions.</div>
 </dd>
 <dt><a href="com/surrealdb/Array.html#synchronizedIterator()" class="member-name-link">synchronizedIterator()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Array.html" title="class in com.surrealdb">Array</a></dt>
 <dd>&nbsp;</dd>
@@ -530,19 +794,33 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/signin/Token.html" class="type-name-link" title="class in com.surrealdb.signin">Token</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
 <dd>
-<div class="block">Represents a session token.</div>
+<div class="block">Authentication tokens returned by signin and signup.</div>
 </dd>
 <dt><a href="com/surrealdb/signin/Token.html#%3Cinit%3E(java.lang.String)" class="member-name-link">Token(String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/Token.html" title="class in com.surrealdb.signin">Token</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Legacy constructor: single token string as access token, no refresh.</div>
+</dd>
+<dt><a href="com/surrealdb/signin/Token.html#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">Token(String, String)</a> - Constructor for class com.surrealdb.signin.<a href="com/surrealdb/signin/Token.html" title="class in com.surrealdb.signin">Token</a></dt>
+<dd>
+<div class="block">Creates a token with access and optional refresh token.</div>
+</dd>
 <dt><a href="com/surrealdb/InsertRelation.html#toString()" class="member-name-link">toString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/InsertRelation.html" title="class in com.surrealdb">InsertRelation</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Native.html#toString()" class="member-name-link">toString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Native.html" title="class in com.surrealdb">Native</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Relation.html#toString()" class="member-name-link">toString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Relation.html" title="class in com.surrealdb">Relation</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Transaction.html" class="type-name-link" title="class in com.surrealdb">Transaction</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">Client-side transaction.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:U">U</h2>
 <dl class="index">
+<dt><a href="com/surrealdb/Surreal.html#update(com.surrealdb.RecordIdRange,com.surrealdb.UpType,T)" class="member-name-link">update(RecordIdRange, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Updates all records in the given record ID range with the given content.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#update(com.surrealdb.RecordId,com.surrealdb.UpType,T)" class="member-name-link">update(RecordId, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Updates the value of a record with the specified content and update type.</div>
@@ -571,7 +849,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#updateSync(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">updateSync(Class&lt;T&gt;, String[], UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Updates the provided tables with the provided content and returns an iterator for the updated values.</div>
+<div class="block">Updates the provided tables with the provided content and returns an iterator
+ for the updated values.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#updateSync(java.lang.Class,java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">updateSync(Class&lt;T&gt;, String, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -585,6 +864,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Updates the specified table with the provided content.</div>
 </dd>
+<dt><a href="com/surrealdb/Surreal.html#upsert(com.surrealdb.RecordIdRange,com.surrealdb.UpType,T)" class="member-name-link">upsert(RecordIdRange, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Upserts all records in the given record ID range with the given content.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#upsert(com.surrealdb.RecordId,com.surrealdb.UpType,T)" class="member-name-link">upsert(RecordId, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Inserts a new record or updates an existing record with the given content.</div>
@@ -595,7 +878,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#upsert(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">upsert(Class&lt;T&gt;, String[], UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Updates or inserts the provided content based on the specified tables and update type.</div>
+<div class="block">Updates or inserts the provided content based on the specified tables and
+ update type.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#upsert(java.lang.Class,java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsert(Class&lt;T&gt;, String, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -607,7 +891,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#upsert(java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsert(String, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Performs an upsert operation on the specified table with the provided content.</div>
+<div class="block">Performs an upsert operation on the specified table with the provided
+ content.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#upsertSync(java.lang.Class,java.lang.String%5B%5D,com.surrealdb.UpType,T)" class="member-name-link">upsertSync(Class&lt;T&gt;, String[], UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -623,8 +908,8 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#upsertSync(java.lang.String,com.surrealdb.UpType,T)" class="member-name-link">upsertSync(String, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Inserts or updates the table with the provided content and
- returns a thread-safe iterator over the resulting values.</div>
+<div class="block">Inserts or updates the table with the provided content and returns a
+ thread-safe iterator over the resulting values.</div>
 </dd>
 <dt><a href="com/surrealdb/UpType.html" class="type-name-link" title="enum class in com.surrealdb">UpType</a> - Enum Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
@@ -632,7 +917,11 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#useDb(java.lang.String)" class="member-name-link">useDb(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Sets the database for the current instance of the Surreal class.</div>
+<div class="block">Sets the database for the current instance.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#useDefaults()" class="member-name-link">useDefaults()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Sets the default namespace and database.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#useNs(java.lang.String)" class="member-name-link">useNs(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
@@ -643,13 +932,15 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="com/surrealdb/Value.html" class="type-name-link" title="class in com.surrealdb">Value</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The Value class represents a general-purpose wrapper for different types of values.</div>
+<div class="block">The Value class represents a general-purpose wrapper for different types of
+ values.</div>
 </dd>
 <dt><a href="com/surrealdb/ValueIterator.html" class="type-name-link" title="class in com.surrealdb">ValueIterator</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">The ValueIterator class provides an iterator for the Value type, allowing iteration
- over a collection of Value objects, typically used within the context of array
- structures that extend the functionality provided by the library.</div>
+<div class="block">The ValueIterator class provides an iterator for the Value type, allowing
+ iteration over a collection of Value objects, typically used within the
+ context of array structures that extend the functionality provided by the
+ library.</div>
 </dd>
 <dt><a href="com/surrealdb/ValueMut.html" class="type-name-link" title="class in com.surrealdb">ValueMut</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>&nbsp;</dd>
@@ -662,7 +953,11 @@ loadScripts(document, 'script');</script>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 </dd>
+<dt><a href="com/surrealdb/Surreal.html#version()" class="member-name-link">version()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Returns the server version (semantic version string, e.g.</div>
+</dd>
 </dl>
-<a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:Q">Q</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="serialized-form.html">Serialized&nbsp;Form</a></main>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:Q">Q</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="serialized-form.html">Serialized&nbsp;Form</a></main>
 </body>
 </html>

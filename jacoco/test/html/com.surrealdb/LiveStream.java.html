@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LiveStream.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">LiveStream.java</span></div><h1>LiveStream.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.util.Optional;
+
+/**
+ * Blocking iterator over live query notifications. Call {@link #next()} in a
+ * loop and {@link #close()} when done. Implements {@link AutoCloseable} for
+ * use in try-with-resources.
+ */
+public class LiveStream implements AutoCloseable {
+
+	static {
+<span class="fc" id="L13">		Loader.loadNative();</span>
+<span class="fc" id="L14">	}</span>
+
+	private long handle;
+
+<span class="fc" id="L18">	LiveStream(long handle) {</span>
+<span class="fc" id="L19">		this.handle = handle;</span>
+<span class="fc" id="L20">	}</span>
+
+	/**
+	 * Blocks until the next notification is available, or the stream ends.
+	 *
+	 * @return the next notification, or empty if the stream has ended
+	 */
+	public Optional&lt;LiveNotification&gt; next() {
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">		if (handle == 0) {</span>
+<span class="nc" id="L29">			return Optional.empty();</span>
+		}
+<span class="fc" id="L31">		LiveNotification n = nextNative(handle);</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">		return n == null ? Optional.empty() : Optional.of(n);</span>
+	}
+
+	/**
+	 * Releases the live query and stops receiving notifications. Idempotent.
+	 */
+	@Override
+	public void close() {
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">		if (handle != 0) {</span>
+<span class="fc" id="L41">			releaseNative(handle);</span>
+<span class="fc" id="L42">			handle = 0;</span>
+		}
+<span class="fc" id="L44">	}</span>
+
+	private static native LiveNotification nextNative(long handle);
+
+	private static native void releaseNative(long handle);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -29,6 +29,7 @@ loadScripts(document, 'script');</script>
 <li><a href="package-summary.html">Package</a></li>
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../index-all.html">Index</a></li>
 <li><a href="../../../help-doc.html#class">Help</a></li>
 </ul>
@@ -85,16 +86,24 @@ loadScripts(document, 'script');</script>
 <section class="class-description" id="class-description">
 <div class="horizontal-scroll">
 <dl class="notes">
+<dt>All Superinterfaces:</dt>
+<dd><code><a href="Credential.html" title="interface in com.surrealdb.signin">Credential</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>All Known Implementing Classes:</dt>
-<dd><code><a href="Database.html" title="class in com.surrealdb.signin">Database</a></code>, <code><a href="Namespace.html" title="class in com.surrealdb.signin">Namespace</a></code>, <code><a href="Root.html" title="class in com.surrealdb.signin">Root</a></code></dd>
+<dd><code><a href="DatabaseCredential.html" title="class in com.surrealdb.signin">DatabaseCredential</a></code>, <code><a href="NamespaceCredential.html" title="class in com.surrealdb.signin">NamespaceCredential</a></code>, <code><a href="RootCredential.html" title="class in com.surrealdb.signin">RootCredential</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Signin</span></div>
-<div class="block">The Signin interface is a marker interface used for classes that encapsulate
- credentials used for logging into the Surreal system.
- <p>
- The concrete implementations of this interface (i.e., Root, Namespace, and Database)
- determine the scope and type of the credentials being used for the sign-in process.</div>
+<div class="type-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/Deprecated.html" title="class or interface in java.lang" class="external-link">@Deprecated</a>
+</span><span class="modifiers">public interface </span><span class="element-name type-name-label">Signin</span><span class="extends-implements">
+extends <a href="Credential.html" title="interface in com.surrealdb.signin">Credential</a></span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">Use <a href="Credential.html" title="interface in com.surrealdb.signin"><code>Credential</code></a> and
+             <a href="../Surreal.html#signin(com.surrealdb.signin.Credential)"><code>Surreal.signin(Credential)</code></a> instead.</div>
+</div>
+<div class="block">Marker interface for sign-in credentials (RootCredential,
+ NamespaceCredential, DatabaseCredential). Extends <a href="Credential.html" title="interface in com.surrealdb.signin"><code>Credential</code></a> for
+ backward compatibility.</div>
 </div>
 </section>
 <!-- ========= END OF CLASS DATA ========= -->

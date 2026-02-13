@@ -3,40 +3,47 @@
 /**
  * Enumeration to represent the type of update operations.
  * &lt;p&gt;
- * The UpType enum provides constants to specify the kind of update operation that should be performed.
+ * The UpType enum provides constants to specify the kind of update operation
+ * that should be performed.
  */
-<span class="fc" id="L8">public enum UpType {</span>
+<span class="fc" id="L9">public enum UpType {</span>
 
-    /**
-     * Represents a content update operation.
-     * This type of operation replaces the entire existing data with the provided data.
-     * &lt;p&gt;
-     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/update#content-clause&quot;&gt;SurrealQL documentation&lt;/a&gt;.
-     * &lt;p&gt;
-     */
-<span class="fc" id="L17">    CONTENT(1),</span>
-    /**
-     * Represents a merge update operation.
-     * This type of operation merges the existing data with the provided data.
-     * &lt;p&gt;
-     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/update#merge-clause&quot;&gt;SurrealQL documentation&lt;/a&gt;.
-     * &lt;p&gt;
-     */
-<span class="fc" id="L25">    MERGE(2),</span>
-    /**
-     * Represents a patch update operation.
-     * This type of operation applies partial changes to the existing data.
-     * &lt;p&gt;
-     * For more details, check the &lt;a href=&quot;https://surrealdb.com/docs/surrealql/statements/update#patch-clause&quot;&gt;SurrealQL documentation&lt;/a&gt;.
-     * &lt;p&gt;
-     */
-<span class="fc" id="L33">    PATCH(3);</span>
+	/**
+	 * Represents a content update operation. This type of operation replaces the
+	 * entire existing data with the provided data.
+	 * &lt;p&gt;
+	 * For more details, check the &lt;a href=
+	 * &quot;https://surrealdb.com/docs/surrealql/statements/update#content-clause&quot;&gt;SurrealQL
+	 * documentation&lt;/a&gt;.
+	 * &lt;p&gt;
+	 */
+<span class="fc" id="L20">	CONTENT(1),</span>
+	/**
+	 * Represents a merge update operation. This type of operation merges the
+	 * existing data with the provided data.
+	 * &lt;p&gt;
+	 * For more details, check the &lt;a href=
+	 * &quot;https://surrealdb.com/docs/surrealql/statements/update#merge-clause&quot;&gt;SurrealQL
+	 * documentation&lt;/a&gt;.
+	 * &lt;p&gt;
+	 */
+<span class="fc" id="L30">	MERGE(2),</span>
+	/**
+	 * Represents a patch update operation. This type of operation applies partial
+	 * changes to the existing data.
+	 * &lt;p&gt;
+	 * For more details, check the &lt;a href=
+	 * &quot;https://surrealdb.com/docs/surrealql/statements/update#patch-clause&quot;&gt;SurrealQL
+	 * documentation&lt;/a&gt;.
+	 * &lt;p&gt;
+	 */
+<span class="fc" id="L40">	PATCH(3);</span>
 
-    final int code;
+	final int code;
 
-<span class="fc" id="L37">    UpType(int code) {</span>
-<span class="fc" id="L38">        this.code = code;</span>
-<span class="fc" id="L39">    }</span>
+<span class="fc" id="L44">	UpType(int code) {</span>
+<span class="fc" id="L45">		this.code = code;</span>
+<span class="fc" id="L46">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

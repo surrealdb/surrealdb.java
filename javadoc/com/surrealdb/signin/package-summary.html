@@ -29,6 +29,7 @@ loadScripts(document, 'script');</script>
 <li class="nav-bar-cell1-rev">Package</li>
 <li>Class</li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../index-all.html">Index</a></li>
 <li><a href="../../../help-doc.html#package">Help</a></li>
 </ul>
@@ -88,26 +89,40 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary" aria-labelledby="class-summary-tab0">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Database.html" title="class in com.surrealdb.signin">Database</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="BearerCredential.html" title="class in com.surrealdb.signin">BearerCredential</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">The Database class represents a specific level of credentials for signing into a SurrealDB database.</div>
+<div class="block">Credential that authenticates the session with an existing access token (e.g.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Namespace.html" title="class in com.surrealdb.signin">Namespace</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">The Namespace class represents a specific level of credentials for signing into a SurrealDB namespace.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Root.html" title="class in com.surrealdb.signin">Root</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">The Root class represents a level of credentials used for signing into the SurrealDB database.</div>
-</div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Signin.html" title="interface in com.surrealdb.signin">Signin</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Credential.html" title="interface in com.surrealdb.signin">Credential</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">
-<div class="block">The Signin interface is a marker interface used for classes that encapsulate
- credentials used for logging into the Surreal system.</div>
+<div class="block">Base type for all authentication credentials used with
+ <a href="../Surreal.html#signin(com.surrealdb.signin.Credential)"><code>Surreal.signin(Credential)</code></a>.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Token.html" title="class in com.surrealdb.signin">Token</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="DatabaseCredential.html" title="class in com.surrealdb.signin">DatabaseCredential</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Represents a session token.</div>
+<div class="block">Database-level credentials for signing into a SurrealDB database.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NamespaceCredential.html" title="class in com.surrealdb.signin">NamespaceCredential</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Namespace-level credentials for signing into a SurrealDB namespace.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Credentials for signing up or signing in as a record user (record access
+ method).</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RootCredential.html" title="class in com.surrealdb.signin">RootCredential</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Root-level credentials (username and password) for signing into SurrealDB.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Signin.html" title="interface in com.surrealdb.signin">Signin</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">Deprecated.
+<div class="deprecation-comment">Use <a href="Credential.html" title="interface in com.surrealdb.signin"><code>Credential</code></a> and
+             <a href="../Surreal.html#signin(com.surrealdb.signin.Credential)"><code>Surreal.signin(Credential)</code></a> instead.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Token.html" title="class in com.surrealdb.signin">Token</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Authentication tokens returned by signin and signup.</div>
 </div>
 </div>
 </div>

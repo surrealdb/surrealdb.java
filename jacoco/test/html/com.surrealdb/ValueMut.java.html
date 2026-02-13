@@ -8,134 +8,146 @@ import java.util.UUID;
 
 public class ValueMut extends Native {
 
-    private ValueMut(long ptr) {
-<span class="fc" id="L12">        super(ptr);</span>
-<span class="fc" id="L13">    }</span>
+	private ValueMut(long ptr) {
+<span class="fc" id="L12">		super(ptr);</span>
+<span class="fc" id="L13">	}</span>
 
-    private static native long newNone();
+	private static native long newNone();
 
-    private static native long newNull();
+	private static native long newNull();
 
-    private static native long newString(String s);
+	private static native long newString(String s);
 
-    private static native long newBoolean(boolean b);
+	private static native long newBoolean(boolean b);
 
-    private static native long newDouble(double d);
+	private static native long newDouble(double d);
 
-    private static native long newLong(long l);
+	private static native long newLong(long l);
 
-    private static native long newDecimal(String s);
+	private static native long newDecimal(String s);
 
-    private static native long newDuration(long l);
+	private static native long newDuration(long l);
 
-    private static native long newDatetime(long seconds, long nanos);
+	private static native long newDatetime(long seconds, long nanos);
 
-    private static native long newUuid(String s);
+	private static native long newUuid(String s);
 
-    private static native long newId(long ptr);
+	private static native long newId(long ptr);
 
-    private static native long newThing(long ptr);
+	private static native long newRecordId(long ptr);
 
-    private static native long newArray(long ptr);
+	private static native long newArray(long ptr);
 
-    private static native long newArrayOf(long[] ptrs);
+	private static native long newArrayOf(long[] ptrs);
 
-    private static native long newObject(long ptr);
+	private static native long newObject(long ptr);
 
-    private static native long newObjectOf(long[] ptrs);
+	private static native long newObjectOf(long[] ptrs);
 
-    public static ValueMut createNone() {
-<span class="fc" id="L48">        return new ValueMut(newNone());</span>
-    }
+	private static native long newFile(String bucket, String key);
 
-    public static ValueMut createNull() {
-<span class="fc" id="L52">        return new ValueMut(newNull());</span>
-    }
+	private static native long newTable(String name);
 
-    public static ValueMut createString(String s) {
-<span class="fc" id="L56">        return new ValueMut(newString(s));</span>
-    }
+	public static ValueMut createNone() {
+<span class="fc" id="L52">		return new ValueMut(newNone());</span>
+	}
 
-    public static ValueMut createBoolean(boolean b) {
-<span class="fc" id="L60">        return new ValueMut(newBoolean(b));</span>
-    }
+	public static ValueMut createNull() {
+<span class="fc" id="L56">		return new ValueMut(newNull());</span>
+	}
 
-    public static ValueMut createDouble(double d) {
-<span class="fc" id="L64">        return new ValueMut(newDouble(d));</span>
-    }
+	public static ValueMut createString(String s) {
+<span class="fc" id="L60">		return new ValueMut(newString(s));</span>
+	}
 
-    public static ValueMut createLong(long l) {
-<span class="fc" id="L68">        return new ValueMut(newLong(l));</span>
-    }
+	public static ValueMut createBoolean(boolean b) {
+<span class="fc" id="L64">		return new ValueMut(newBoolean(b));</span>
+	}
 
-    public static ValueMut createBigDecimal(BigDecimal d) {
-<span class="fc" id="L72">        return new ValueMut(newDecimal(d.toString()));</span>
-    }
+	public static ValueMut createDouble(double d) {
+<span class="fc" id="L68">		return new ValueMut(newDouble(d));</span>
+	}
 
-    public static ValueMut createDuration(Duration d) {
-<span class="fc" id="L76">        return new ValueMut(newDuration(d.toMillis()));</span>
-    }
+	public static ValueMut createLong(long l) {
+<span class="fc" id="L72">		return new ValueMut(newLong(l));</span>
+	}
 
-    public static ValueMut createDatetime(ZonedDateTime d) {
-<span class="fc" id="L80">        return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));</span>
-    }
+	public static ValueMut createBigDecimal(BigDecimal d) {
+<span class="fc" id="L76">		return new ValueMut(newDecimal(d.toString()));</span>
+	}
 
-    public static ValueMut createUuid(UUID uuid) {
-<span class="fc" id="L84">        return new ValueMut(newUuid(uuid.toString()));</span>
-    }
+	public static ValueMut createDuration(Duration d) {
+<span class="fc" id="L80">		return new ValueMut(newDuration(d.toMillis()));</span>
+	}
 
-    public static ValueMut createId(Id id) {
-<span class="fc" id="L88">        return new ValueMut(newId(id.getPtr()));</span>
-    }
+	public static ValueMut createDatetime(ZonedDateTime d) {
+<span class="fc" id="L84">		return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));</span>
+	}
 
-    public static ValueMut createThing(RecordId recordId) {
-<span class="fc" id="L92">        return new ValueMut(newThing(recordId.getPtr()));</span>
-    }
+	public static ValueMut createUuid(UUID uuid) {
+<span class="fc" id="L88">		return new ValueMut(newUuid(uuid.toString()));</span>
+	}
 
-    public static ValueMut createArray(Array array) {
-<span class="fc" id="L96">        return new ValueMut(newArray(array.getPtr()));</span>
-    }
+	public static ValueMut createId(Id id) {
+<span class="fc" id="L92">		return new ValueMut(newId(id.getPtr()));</span>
+	}
 
-    public static ValueMut createArray(List&lt;ValueMut&gt; values) {
-<span class="fc" id="L100">        final long[] ptrs = new long[values.size()];</span>
-<span class="fc" id="L101">        int idx = 0;</span>
-        // Retrieve the PTR for each element
-<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (final ValueMut value : values) {</span>
-<span class="fc" id="L104">            ptrs[idx++] = value.getPtr();</span>
-<span class="fc" id="L105">        }</span>
-<span class="fc" id="L106">        final ValueMut value = new ValueMut(newArrayOf(ptrs));</span>
-        // The Values have been moved
-<span class="fc" id="L108">        values.forEach(Native::moved);</span>
-<span class="fc" id="L109">        return value;</span>
-    }
+	public static ValueMut createRecordId(RecordId recordId) {
+<span class="fc" id="L96">		return new ValueMut(newRecordId(recordId.getPtr()));</span>
+	}
 
-    public static ValueMut createObject(Object object) {
-<span class="fc" id="L113">        return new ValueMut(newObject(object.getPtr()));</span>
-    }
+	public static ValueMut createArray(Array array) {
+<span class="fc" id="L100">		return new ValueMut(newArray(array.getPtr()));</span>
+	}
 
-    public static ValueMut createObject(List&lt;EntryMut&gt; entries) {
-<span class="fc" id="L117">        final long[] ptrs = new long[entries.size()];</span>
-<span class="fc" id="L118">        int idx = 0;</span>
-        // Retrieve the PTR for each element
-<span class="fc bfc" id="L120" title="All 2 branches covered.">        for (final EntryMut entry : entries) {</span>
-<span class="fc" id="L121">            ptrs[idx++] = entry.getPtr();</span>
-<span class="fc" id="L122">        }</span>
-<span class="fc" id="L123">        final ValueMut value = new ValueMut(newObjectOf(ptrs));</span>
-        // The Entries have been moved
-<span class="fc" id="L125">        entries.forEach(Native::moved);</span>
-<span class="fc" id="L126">        return value;</span>
-    }
+	public static ValueMut createArray(List&lt;ValueMut&gt; values) {
+<span class="fc" id="L104">		final long[] ptrs = new long[values.size()];</span>
+<span class="fc" id="L105">		int idx = 0;</span>
+		// Retrieve the PTR for each element
+<span class="fc bfc" id="L107" title="All 2 branches covered.">		for (final ValueMut value : values) {</span>
+<span class="fc" id="L108">			ptrs[idx++] = value.getPtr();</span>
+<span class="fc" id="L109">		}</span>
+<span class="fc" id="L110">		final ValueMut value = new ValueMut(newArrayOf(ptrs));</span>
+		// The Values have been moved
+<span class="fc" id="L112">		values.forEach(Native::moved);</span>
+<span class="fc" id="L113">		return value;</span>
+	}
 
-    @Override
-    final native String toString(long ptr);
+	public static ValueMut createObject(Object object) {
+<span class="fc" id="L117">		return new ValueMut(newObject(object.getPtr()));</span>
+	}
 
-    @Override
-    final native int hashCode(long ptr);
+	public static ValueMut createObject(List&lt;EntryMut&gt; entries) {
+<span class="fc" id="L121">		final long[] ptrs = new long[entries.size()];</span>
+<span class="fc" id="L122">		int idx = 0;</span>
+		// Retrieve the PTR for each element
+<span class="fc bfc" id="L124" title="All 2 branches covered.">		for (final EntryMut entry : entries) {</span>
+<span class="fc" id="L125">			ptrs[idx++] = entry.getPtr();</span>
+<span class="fc" id="L126">		}</span>
+<span class="fc" id="L127">		final ValueMut value = new ValueMut(newObjectOf(ptrs));</span>
+		// The Entries have been moved
+<span class="fc" id="L129">		entries.forEach(Native::moved);</span>
+<span class="fc" id="L130">		return value;</span>
+	}
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	public static ValueMut createFile(String bucket, String key) {
+<span class="fc" id="L134">		return new ValueMut(newFile(bucket, key));</span>
+	}
 
-    @Override
-    final native void deleteInstance(long ptr);
+	public static ValueMut createTable(String name) {
+<span class="fc" id="L138">		return new ValueMut(newTable(name));</span>
+	}
+
+	@Override
+	final native String toString(long ptr);
+
+	@Override
+	final native int hashCode(long ptr);
+
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
+
+	@Override
+	final native void deleteInstance(long ptr);
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

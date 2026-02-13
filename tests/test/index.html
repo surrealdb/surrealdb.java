@@ -20,7 +20,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">65</div>
+<div class="counter">136</div>
 <p>tests</p>
 </div>
 </td>
@@ -32,13 +32,13 @@
 </td>
 <td>
 <div class="infoBox" id="ignored">
-<div class="counter">0</div>
+<div class="counter">2</div>
 <p>ignored</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.847s</div>
+<div class="counter">2.069s</div>
 <p>duration</p>
 </div>
 </td>
@@ -47,7 +47,7 @@
 </div>
 </td>
 <td>
-<div class="infoBox success" id="successRate">
+<div class="infoBox skipped" id="successRate">
 <div class="percent">100%</div>
 <p>successful</p>
 </div>
@@ -58,13 +58,29 @@
 <div id="tabs">
 <ul class="tabLinks">
 <li>
-<a href="#tab0">Packages</a>
+<a href="#tab0">Ignored tests</a>
 </li>
 <li>
-<a href="#tab1">Classes</a>
+<a href="#tab1">Packages</a>
+</li>
+<li>
+<a href="#tab2">Classes</a>
 </li>
 </ul>
 <div id="tab0" class="tab">
+<h2>Ignored tests</h2>
+<ul class="linkList">
+<li>
+<a href="classes/com.surrealdb.LiveQueryTests.html">LiveQueryTests</a>.
+<a href="classes/com.surrealdb.LiveQueryTests.html#killLiveQuery_byQueryId()">killLiveQuery_byQueryId()</a>
+</li>
+<li>
+<a href="classes/com.surrealdb.ValueTypesTests.html">ValueTypesTests</a>.
+<a href="classes/com.surrealdb.ValueTypesTests.html#valueFileFromQuery()">valueFileFromQuery()</a>
+</li>
+</ul>
+</div>
+<div id="tab1" class="tab">
 <h2>Packages</h2>
 <table>
 <thead>
@@ -79,19 +95,19 @@
 </thead>
 <tbody>
 <tr>
-<td class="success">
+<td class="skipped">
 <a href="packages/com.surrealdb.html">com.surrealdb</a>
 </td>
-<td>65</td>
+<td>136</td>
 <td>0</td>
-<td>0</td>
-<td>0.847s</td>
-<td class="success">100%</td>
+<td>2</td>
+<td>2.069s</td>
+<td class="skipped">100%</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="tab1" class="tab">
+<div id="tab2" class="tab">
 <h2>Classes</h2>
 <table>
 <thead>
@@ -107,12 +123,22 @@
 <tbody>
 <tr>
 <td class="success">
+<a href="classes/com.surrealdb.ApiTests.html">com.surrealdb.ApiTests</a>
+</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0.127s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
 <a href="classes/com.surrealdb.ConnectionTests.html">com.surrealdb.ConnectionTests</a>
 </td>
 <td>3</td>
 <td>0</td>
 <td>0</td>
-<td>0.150s</td>
+<td>0.262s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -122,7 +148,17 @@
 <td>7</td>
 <td>0</td>
 <td>0</td>
-<td>0.083s</td>
+<td>0.071s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/com.surrealdb.CredentialTests.html">com.surrealdb.CredentialTests</a>
+</td>
+<td>19</td>
+<td>0</td>
+<td>0</td>
+<td>0.091s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -132,7 +168,7 @@
 <td>3</td>
 <td>0</td>
 <td>0</td>
-<td>0.042s</td>
+<td>0.054s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -142,7 +178,17 @@
 <td>1</td>
 <td>0</td>
 <td>0</td>
-<td>0.015s</td>
+<td>0.022s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/com.surrealdb.ExportImportTests.html">com.surrealdb.ExportImportTests</a>
+</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0.034s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -152,7 +198,7 @@
 <td>4</td>
 <td>0</td>
 <td>0</td>
-<td>0.063s</td>
+<td>0.069s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -162,7 +208,27 @@
 <td>4</td>
 <td>0</td>
 <td>0</td>
-<td>0.050s</td>
+<td>0.051s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="skipped">
+<a href="classes/com.surrealdb.LiveQueryTests.html">com.surrealdb.LiveQueryTests</a>
+</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0.539s</td>
+<td class="skipped">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/com.surrealdb.MultiSessionTests.html">com.surrealdb.MultiSessionTests</a>
+</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0.045s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -172,7 +238,17 @@
 <td>16</td>
 <td>0</td>
 <td>0</td>
-<td>0.165s</td>
+<td>0.148s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/com.surrealdb.RecordIdRangeTests.html">com.surrealdb.RecordIdRangeTests</a>
+</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0.092s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -187,22 +263,42 @@
 </tr>
 <tr>
 <td class="success">
+<a href="classes/com.surrealdb.RunTests.html">com.surrealdb.RunTests</a>
+</td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td>0.022s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
 <a href="classes/com.surrealdb.SelectTests.html">com.surrealdb.SelectTests</a>
 </td>
 <td>7</td>
 <td>0</td>
 <td>0</td>
-<td>0.020s</td>
+<td>0.029s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/com.surrealdb.TransactionTests.html">com.surrealdb.TransactionTests</a>
+</td>
+<td>12</td>
+<td>0</td>
+<td>0</td>
+<td>0.094s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
 <td class="success">
 <a href="classes/com.surrealdb.TypeTests.html">com.surrealdb.TypeTests</a>
 </td>
-<td>4</td>
+<td>6</td>
 <td>0</td>
 <td>0</td>
-<td>0.052s</td>
+<td>0.062s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -212,7 +308,7 @@
 <td>6</td>
 <td>0</td>
 <td>0</td>
-<td>0.090s</td>
+<td>0.074s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
@@ -222,8 +318,28 @@
 <td>6</td>
 <td>0</td>
 <td>0</td>
-<td>0.068s</td>
+<td>0.062s</td>
 <td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/com.surrealdb.UseNsUseDbTests.html">com.surrealdb.UseNsUseDbTests</a>
+</td>
+<td>10</td>
+<td>0</td>
+<td>0</td>
+<td>0.045s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="skipped">
+<a href="classes/com.surrealdb.ValueTypesTests.html">com.surrealdb.ValueTypesTests</a>
+</td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0.027s</td>
+<td class="skipped">100%</td>
 </tr>
 </tbody>
 </table>
@@ -236,7 +352,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 8.8</a> at Jan 26, 2026, 9:25:40 AM</p>
+<a href="http://www.gradle.org">Gradle 8.8</a> at Feb 13, 2026, 10:24:32 AM</p>
 </div>
 </div>
 </body>

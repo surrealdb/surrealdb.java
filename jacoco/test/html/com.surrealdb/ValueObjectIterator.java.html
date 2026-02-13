@@ -4,24 +4,23 @@ import java.util.Iterator;
 
 class ValueObjectIterator&lt;T&gt; implements Iterator&lt;T&gt; {
 
-    private final ValueClassConverter&lt;T&gt; converter;
-    private final Iterator&lt;Value&gt; iterator;
+	private final ValueClassConverter&lt;T&gt; converter;
+	private final Iterator&lt;Value&gt; iterator;
 
-<span class="fc" id="L10">    ValueObjectIterator(Class&lt;T&gt; clazz, Iterator&lt;Value&gt; iterator) {</span>
-<span class="fc" id="L11">        this.converter = new ValueClassConverter&lt;&gt;(clazz);</span>
-<span class="fc" id="L12">        this.iterator = iterator;</span>
-<span class="fc" id="L13">    }</span>
+<span class="fc" id="L10">	ValueObjectIterator(Class&lt;T&gt; clazz, Iterator&lt;Value&gt; iterator) {</span>
+<span class="fc" id="L11">		this.converter = new ValueClassConverter&lt;&gt;(clazz);</span>
+<span class="fc" id="L12">		this.iterator = iterator;</span>
+<span class="fc" id="L13">	}</span>
 
+	@Override
+	final public boolean hasNext() {
+<span class="fc" id="L17">		return iterator.hasNext();</span>
+	}
 
-    @Override
-    final public boolean hasNext() {
-<span class="fc" id="L18">        return iterator.hasNext();</span>
-    }
-
-    @Override
-    final public T next() {
-<span class="fc" id="L23">        final Value value = iterator.next();</span>
-<span class="fc" id="L24">        return converter.convert(value);</span>
-    }
+	@Override
+	final public T next() {
+<span class="fc" id="L22">		final Value value = iterator.next();</span>
+<span class="fc" id="L23">		return converter.convert(value);</span>
+	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RecordIdRange.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">RecordIdRange.java</span></div><h1>RecordIdRange.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.util.Objects;
+
+/**
+ * Represents a range of record IDs on a table for range queries (e.g.
+ * select/update/delete/upsert over IDs in [start..end] or unbounded on either
+ * side).
+ * &lt;p&gt;
+ * Use {@link Id#from(long)}, {@link Id#from(String)}, or
+ * {@link Id#from(java.util.UUID)} for bounds. Pass {@code null} for start or
+ * end to make that bound unbounded.
+ */
+public final class RecordIdRange {
+
+	private final String table;
+	private final Id start;
+	private final Id end;
+
+	/**
+	 * Creates a range over the given table with optional start and end bounds.
+	 *
+	 * @param table
+	 *            table name
+	 * @param start
+	 *            lower bound (inclusive), or {@code null} for unbounded
+	 * @param end
+	 *            upper bound (inclusive), or {@code null} for unbounded
+	 */
+<span class="fc" id="L30">	public RecordIdRange(String table, Id start, Id end) {</span>
+<span class="fc" id="L31">		this.table = Objects.requireNonNull(table, &quot;table&quot;);</span>
+<span class="fc" id="L32">		this.start = start;</span>
+<span class="fc" id="L33">		this.end = end;</span>
+<span class="fc" id="L34">	}</span>
+
+	public String getTable() {
+<span class="fc" id="L37">		return table;</span>
+	}
+
+	/**
+	 * Lower bound (inclusive), or {@code null} if unbounded.
+	 */
+	public Id getStart() {
+<span class="fc" id="L44">		return start;</span>
+	}
+
+	/**
+	 * Upper bound (inclusive), or {@code null} if unbounded.
+	 */
+	public Id getEnd() {
+<span class="fc" id="L51">		return end;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

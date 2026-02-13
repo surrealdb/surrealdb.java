@@ -3,38 +3,38 @@
 /**
  * Entry represents a key-value pair entry in a native data structure.
  * &lt;p&gt;
- * Entry provides methods to retrieve the key and value associated with the entry.
+ * Entry provides methods to retrieve the key and value associated with the
+ * entry.
  */
 public class Entry extends Native {
 
-    Entry(long ptr) {
-<span class="fc" id="L11">        super(ptr);</span>
-<span class="fc" id="L12">    }</span>
+	Entry(long ptr) {
+<span class="fc" id="L12">		super(ptr);</span>
+<span class="fc" id="L13">	}</span>
 
-    private static native String getKey(long ptr);
+	private static native String getKey(long ptr);
 
-    private static native long getValue(long ptr);
+	private static native long getValue(long ptr);
 
-    @Override
-    final native String toString(long ptr);
+	@Override
+	final native String toString(long ptr);
 
-    @Override
-    final native int hashCode(long ptr);
+	@Override
+	final native int hashCode(long ptr);
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final native void deleteInstance(long ptr);
 
-    public String getKey() {
-<span class="fc" id="L31">        return getKey(getPtr());</span>
-    }
+	public String getKey() {
+<span class="fc" id="L32">		return getKey(getPtr());</span>
+	}
 
-    public Value getValue() {
-<span class="fc" id="L35">        return new Value(getValue(getPtr()));</span>
-    }
+	public Value getValue() {
+<span class="fc" id="L36">		return new Value(getValue(getPtr()));</span>
+	}
 
 }
-
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

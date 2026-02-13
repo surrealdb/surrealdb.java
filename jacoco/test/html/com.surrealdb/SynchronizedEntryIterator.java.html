@@ -5,41 +5,41 @@ import java.util.Objects;
 
 class SynchronizedEntryIterator extends Native implements Iterator&lt;Entry&gt; {
 
-    SynchronizedEntryIterator(long ptr) {
-<span class="fc" id="L9">        super(ptr);</span>
-<span class="fc" id="L10">    }</span>
+	SynchronizedEntryIterator(long ptr) {
+<span class="fc" id="L9">		super(ptr);</span>
+<span class="fc" id="L10">	}</span>
 
-    private static native boolean hasNext(long ptr);
+	private static native boolean hasNext(long ptr);
 
-    private static native long next(long ptr);
+	private static native long next(long ptr);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final native void deleteInstance(long ptr);
 
-    @Override
-    final public boolean hasNext() {
-<span class="fc" id="L21">        return hasNext(getPtr());</span>
-    }
+	@Override
+	final public boolean hasNext() {
+<span class="fc" id="L21">		return hasNext(getPtr());</span>
+	}
 
-    @Override
-    final public Entry next() {
-<span class="fc" id="L26">        return new Entry(next(getPtr()));</span>
-    }
+	@Override
+	final public Entry next() {
+<span class="fc" id="L26">		return new Entry(next(getPtr()));</span>
+	}
 
-    @Override
-    final String toString(long ptr) {
-<span class="nc" id="L31">        return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
-    }
+	@Override
+	final String toString(long ptr) {
+<span class="nc" id="L31">		return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+	}
 
-    @Override
-    final int hashCode(long ptr) {
-<span class="nc" id="L36">        return Objects.hashCode(ptr);</span>
-    }
+	@Override
+	final int hashCode(long ptr) {
+<span class="nc" id="L36">		return Objects.hashCode(ptr);</span>
+	}
 
-    @Override
-    final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L41" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
-    }
+	@Override
+	final boolean equals(long ptr1, long ptr2) {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
+	}
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

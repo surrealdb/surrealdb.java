@@ -4,60 +4,58 @@ import java.util.Iterator;
 
 /**
  * The Array class represents a native array structure and provides methods to
- * interact with and retrieve values from the array.
- * It implements the Iterable interface for Value type.
+ * interact with and retrieve values from the array. It implements the Iterable
+ * interface for Value type.
  */
 public class Array extends Native implements Iterable&lt;Value&gt; {
 
+	Array(long ptr) {
+<span class="fc" id="L13">		super(ptr);</span>
+<span class="fc" id="L14">	}</span>
 
-    Array(long ptr) {
-<span class="fc" id="L14">        super(ptr);</span>
-<span class="fc" id="L15">    }</span>
+	private static native long get(long ptr, int idx);
 
-    private static native long get(long ptr, int idx);
+	private static native int len(long ptr);
 
-    private static native int len(long ptr);
+	private static native long iterator(long ptr);
 
-    private static native long iterator(long ptr);
+	private static native long synchronizedIterator(long ptr);
 
-    private static native long synchronizedIterator(long ptr);
+	@Override
+	final native String toString(long ptr);
 
-    @Override
-    final native String toString(long ptr);
+	@Override
+	final native int hashCode(long ptr);
 
-    @Override
-    final native int hashCode(long ptr);
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	final public Value get(int idx) {
+<span class="fc" id="L34">		return new Value(get(getPtr(), idx));</span>
+	}
 
-    final public Value get(int idx) {
-<span class="fc" id="L35">        return new Value(get(getPtr(), idx));</span>
-    }
+	final public int len() {
+<span class="fc" id="L38">		return len(getPtr());</span>
+	}
 
-    final public int len() {
-<span class="fc" id="L39">        return len(getPtr());</span>
-    }
+	@Override
+	final native void deleteInstance(long ptr);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final public Iterator&lt;Value&gt; iterator() {
+<span class="fc" id="L46">		return new ValueIterator(iterator(getPtr()));</span>
+	}
 
-    @Override
-    final public Iterator&lt;Value&gt; iterator() {
-<span class="fc" id="L47">        return new ValueIterator(iterator(getPtr()));</span>
-    }
+	final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
+<span class="fc" id="L50">		return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
+	}
 
-    final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
-<span class="fc" id="L51">        return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
-    }
+	final public Iterator&lt;Value&gt; synchronizedIterator() {
+<span class="fc" id="L54">		return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
+	}
 
-    final public Iterator&lt;Value&gt; synchronizedIterator() {
-<span class="fc" id="L55">        return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
-    }
-
-    final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
-<span class="nc" id="L59">        return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
-    }
+	final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
+<span class="nc" id="L58">		return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
+	}
 }
-
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

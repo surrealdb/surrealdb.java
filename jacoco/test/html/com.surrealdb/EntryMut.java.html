@@ -2,31 +2,31 @@
 
 public class EntryMut extends Native {
 
-    private EntryMut(long ptr) {
-<span class="fc" id="L6">        super(ptr);</span>
-<span class="fc" id="L7">    }</span>
+	private EntryMut(long ptr) {
+<span class="fc" id="L6">		super(ptr);</span>
+<span class="fc" id="L7">	}</span>
 
-    private static native long create(String name, long valuePtr);
+	private static native long create(String name, long valuePtr);
 
-    public static EntryMut newEntry(String name, ValueMut value) {
-<span class="fc" id="L12">        final long ptr = create(name, value.getPtr());</span>
-<span class="fc" id="L13">        EntryMut entry = new EntryMut(ptr);</span>
-        // The lifecycle of ValueMut is now moved to the Entry
-<span class="fc" id="L15">        value.moved();</span>
-<span class="fc" id="L16">        return entry;</span>
-    }
+	public static EntryMut newEntry(String name, ValueMut value) {
+<span class="fc" id="L12">		final long ptr = create(name, value.getPtr());</span>
+<span class="fc" id="L13">		EntryMut entry = new EntryMut(ptr);</span>
+		// The lifecycle of ValueMut is now moved to the Entry
+<span class="fc" id="L15">		value.moved();</span>
+<span class="fc" id="L16">		return entry;</span>
+	}
 
-    @Override
-    final native String toString(long ptr);
+	@Override
+	final native String toString(long ptr);
 
-    @Override
-    final native int hashCode(long ptr);
+	@Override
+	final native int hashCode(long ptr);
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final native void deleteInstance(long ptr);
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

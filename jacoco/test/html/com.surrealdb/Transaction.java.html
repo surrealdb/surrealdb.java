@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Transaction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">Transaction.java</span></div><h1>Transaction.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.util.Objects;
+
+/**
+ * Client-side transaction. Use {@link Surreal#beginTransaction()} to start a
+ * transaction. Operations (e.g. {@link #query(String)}) run within the
+ * transaction until {@link #commit()} or {@link #cancel()} is called.
+ */
+public class Transaction extends Native {
+
+	Transaction(long ptr) {
+<span class="fc" id="L13">		super(ptr);</span>
+<span class="fc" id="L14">	}</span>
+
+	private static native void nativeDeleteInstance(long ptr);
+
+	private static native boolean commit(long ptr);
+
+	private static native boolean cancel(long ptr);
+
+	private static native long query(long ptr, String sql);
+
+	/**
+	 * Commits the transaction. After this call, the transaction is completed and
+	 * must not be used. On failure the native layer throws; the return value is
+	 * only true on success.
+	 */
+	public void commit() {
+		try {
+<span class="fc" id="L31">			commit(getPtr());</span>
+		} finally {
+<span class="fc" id="L33">			moved();</span>
+		}
+<span class="fc" id="L35">	}</span>
+
+	/**
+	 * Cancels (rolls back) the transaction. After this call, the transaction is
+	 * completed and must not be used. On failure the native layer throws; the
+	 * return value is only true on success.
+	 */
+	public void cancel() {
+		try {
+<span class="fc" id="L44">			cancel(getPtr());</span>
+		} finally {
+<span class="fc" id="L46">			moved();</span>
+		}
+<span class="fc" id="L48">	}</span>
+
+	/**
+	 * Runs a SurrealQL query within this transaction.
+	 *
+	 * @param sql
+	 *            the SurrealQL query
+	 * @return the query response
+	 */
+	public Response query(String sql) {
+<span class="fc" id="L58">		return new Response(query(getPtr(), sql));</span>
+	}
+
+	@Override
+	final void deleteInstance(long ptr) {
+<span class="nc" id="L63">		nativeDeleteInstance(ptr);</span>
+<span class="nc" id="L64">	}</span>
+
+	@Override
+	final String toString(long ptr) {
+<span class="nc" id="L68">		return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+	}
+
+	@Override
+	final int hashCode(long ptr) {
+<span class="nc" id="L73">		return Objects.hashCode(ptr);</span>
+	}
+
+	@Override
+	final boolean equals(long ptr1, long ptr2) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

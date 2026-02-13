@@ -4,48 +4,47 @@ import java.util.Iterator;
 import java.util.Objects;
 
 /**
- * EntryIterator is a specialized iterator for traversing entries.
- * This class implements the Java Iterator interface to provide a seamless way to
- * iterate over Entry objects.
+ * EntryIterator is a specialized iterator for traversing entries. This class
+ * implements the Java Iterator interface to provide a seamless way to iterate
+ * over Entry objects.
  */
 public class EntryIterator extends Native implements Iterator&lt;Entry&gt; {
 
-    EntryIterator(long ptr) {
-<span class="fc" id="L14">        super(ptr);</span>
-<span class="fc" id="L15">    }</span>
+	EntryIterator(long ptr) {
+<span class="fc" id="L14">		super(ptr);</span>
+<span class="fc" id="L15">	}</span>
 
-    private static native boolean hasNext(long ptr);
+	private static native boolean hasNext(long ptr);
 
-    private static native long next(long ptr);
+	private static native long next(long ptr);
 
-    @Override
-    final String toString(long ptr) {
-<span class="nc" id="L23">        return &quot;EntryIterator[ptr=&quot; + ptr + &quot;]&quot;;</span>
-    }
+	@Override
+	final String toString(long ptr) {
+<span class="nc" id="L23">		return &quot;EntryIterator[ptr=&quot; + ptr + &quot;]&quot;;</span>
+	}
 
-    @Override
-    final int hashCode(long ptr) {
-<span class="nc" id="L28">        return Objects.hashCode(ptr);</span>
-    }
+	@Override
+	final int hashCode(long ptr) {
+<span class="nc" id="L28">		return Objects.hashCode(ptr);</span>
+	}
 
-    @Override
-    final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L33" title="All 2 branches missed.">        return ptr1 == ptr2;</span>
-    }
+	@Override
+	final boolean equals(long ptr1, long ptr2) {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
+	}
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final native void deleteInstance(long ptr);
 
-    @Override
-    public boolean hasNext() {
-<span class="fc" id="L41">        return hasNext(getPtr());</span>
-    }
+	@Override
+	public boolean hasNext() {
+<span class="fc" id="L41">		return hasNext(getPtr());</span>
+	}
 
-    @Override
-    public Entry next() {
-<span class="fc" id="L46">        return new Entry(next(getPtr()));</span>
-    }
-
+	@Override
+	public Entry next() {
+<span class="fc" id="L46">		return new Entry(next(getPtr()));</span>
+	}
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

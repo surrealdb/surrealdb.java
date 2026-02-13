@@ -11,54 +11,69 @@ import java.util.UUID;
  */
 public class RecordId extends Native {
 
+	RecordId(long ptr) {
+<span class="fc" id="L15">		super(ptr);</span>
+<span class="fc" id="L16">	}</span>
 
-    RecordId(long ptr) {
-<span class="fc" id="L16">        super(ptr);</span>
-<span class="fc" id="L17">    }</span>
+	public RecordId(String table, long id) {
+<span class="fc" id="L19">		super(newRecordIdWithLong(table, id));</span>
+<span class="fc" id="L20">	}</span>
 
-    public RecordId(String table, long id) {
-<span class="fc" id="L20">        super(newThingLongId(table, id));</span>
-<span class="fc" id="L21">    }</span>
+	public RecordId(String table, String id) {
+<span class="fc" id="L23">		super(newRecordIdWithString(table, id));</span>
+<span class="fc" id="L24">	}</span>
 
-    public RecordId(String table, String id) {
-<span class="fc" id="L24">        super(newThingStringId(table, id));</span>
-<span class="fc" id="L25">    }</span>
+	public RecordId(String table, UUID id) {
+<span class="fc" id="L27">		super(newRecordIdWithUuid(table, id.toString()));</span>
+<span class="fc" id="L28">	}</span>
 
-    public RecordId(String table, UUID id) {
-<span class="fc" id="L28">        super(newThingUuidId(table, id.toString()));</span>
-<span class="fc" id="L29">    }</span>
+	/**
+	 * Creates a RecordId with an array key (e.g. composite keys for timeseries).
+	 */
+	public RecordId(String table, Array id) {
+<span class="fc" id="L34">		super(newRecordIdWithArray(table, id.getPtr()));</span>
+<span class="fc" id="L35">	}</span>
 
-    private static native long newThingLongId(String table, long id);
+	/**
+	 * Creates a RecordId with an object key.
+	 */
+	public RecordId(String table, Object id) {
+<span class="fc" id="L41">		super(newRecordIdWithObject(table, id.getPtr()));</span>
+<span class="fc" id="L42">	}</span>
 
-    private static native long newThingStringId(String table, String id);
+	private static native long newRecordIdWithLong(String table, long id);
 
-    private static native long newThingUuidId(String table, String id);
+	private static native long newRecordIdWithString(String table, String id);
 
-    private static native String getTable(long ptr);
+	private static native long newRecordIdWithUuid(String table, String id);
 
-    private static native long getId(long ptr);
+	private static native long newRecordIdWithArray(String table, long arrayPtr);
 
-    @Override
-    final native String toString(long ptr);
+	private static native long newRecordIdWithObject(String table, long objectPtr);
 
-    @Override
-    final native int hashCode(long ptr);
+	private static native String getTable(long ptr);
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	private static native long getId(long ptr);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final native String toString(long ptr);
 
+	@Override
+	final native int hashCode(long ptr);
 
-    public String getTable() {
-<span class="fc" id="L55">        return getTable(getPtr());</span>
-    }
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
 
-    public Id getId() {
-<span class="fc" id="L59">        return new Id(getId(getPtr()));</span>
-    }
+	@Override
+	final native void deleteInstance(long ptr);
+
+	public String getTable() {
+<span class="fc" id="L71">		return getTable(getPtr());</span>
+	}
+
+	public Id getId() {
+<span class="fc" id="L75">		return new Id(getId(getPtr()));</span>
+	}
 
 }
-
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

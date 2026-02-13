@@ -3,104 +3,104 @@
 import java.util.UUID;
 
 /**
- * The Id class represents a unique identifier that can be either a long value or a string.
+ * The Id class represents a unique identifier that can be either a long value
+ * or a string.
  */
 public class Id extends Native {
 
-    Id(long ptr) {
-<span class="fc" id="L11">        super(ptr);</span>
-<span class="fc" id="L12">    }</span>
+	Id(long ptr) {
+<span class="fc" id="L12">		super(ptr);</span>
+<span class="fc" id="L13">	}</span>
 
-    public static Id from(long id) {
-<span class="fc" id="L15">        return new Id(newLongId(id));</span>
-    }
+	public static Id from(long id) {
+<span class="fc" id="L16">		return new Id(newLongId(id));</span>
+	}
 
-    public static Id from(String id) {
-<span class="fc" id="L19">        return new Id(newStringId(id));</span>
-    }
+	public static Id from(String id) {
+<span class="fc" id="L20">		return new Id(newStringId(id));</span>
+	}
 
-    public static Id from(UUID id) {
-<span class="nc" id="L23">        return new Id(newUuidId(id.toString()));</span>
-    }
+	public static Id from(UUID id) {
+<span class="nc" id="L24">		return new Id(newUuidId(id.toString()));</span>
+	}
 
-    private static native long newLongId(long id);
+	private static native long newLongId(long id);
 
-    private static native long newStringId(String id);
+	private static native long newStringId(String id);
 
-    private static native long newUuidId(String id);
+	private static native long newUuidId(String id);
 
-    private static native boolean isLong(long ptr);
+	private static native boolean isLong(long ptr);
 
-    private static native long getLong(long ptr);
+	private static native long getLong(long ptr);
 
-    private static native boolean isString(long ptr);
+	private static native boolean isString(long ptr);
 
-    private static native String getString(long ptr);
+	private static native String getString(long ptr);
 
-    private static native boolean isUuid(long ptr);
+	private static native boolean isUuid(long ptr);
 
-    private static native String getUuid(long ptr);
+	private static native String getUuid(long ptr);
 
-    private static native boolean isArray(long ptr);
+	private static native boolean isArray(long ptr);
 
-    private static native Array getArray(long ptr);
+	private static native Array getArray(long ptr);
 
-    private static native boolean isObject(long ptr);
+	private static native boolean isObject(long ptr);
 
-    private static native Object getObject(long ptr);
+	private static native Object getObject(long ptr);
 
-    @Override
-    final native int hashCode(long ptr);
+	@Override
+	final native int hashCode(long ptr);
 
-    @Override
-    final native String toString(long ptr);
+	@Override
+	final native String toString(long ptr);
 
-    @Override
-    final native boolean equals(long ptr1, long ptr2);
+	@Override
+	final native boolean equals(long ptr1, long ptr2);
 
-    @Override
-    final native void deleteInstance(long ptr);
+	@Override
+	final native void deleteInstance(long ptr);
 
-    final public boolean isLong() {
-<span class="fc" id="L65">        return isLong(getPtr());</span>
-    }
+	final public boolean isLong() {
+<span class="fc" id="L66">		return isLong(getPtr());</span>
+	}
 
-    final public long getLong() {
-<span class="fc" id="L69">        return getLong(getPtr());</span>
-    }
+	final public long getLong() {
+<span class="fc" id="L70">		return getLong(getPtr());</span>
+	}
 
-    final public boolean isString() {
-<span class="nc" id="L73">        return isString(getPtr());</span>
-    }
+	final public boolean isString() {
+<span class="nc" id="L74">		return isString(getPtr());</span>
+	}
 
-    final public String getString() {
-<span class="nc" id="L77">        return getString(getPtr());</span>
-    }
+	final public String getString() {
+<span class="nc" id="L78">		return getString(getPtr());</span>
+	}
 
-    final public boolean isUuid() {
-<span class="nc" id="L81">        return isUuid(getPtr());</span>
-    }
+	final public boolean isUuid() {
+<span class="nc" id="L82">		return isUuid(getPtr());</span>
+	}
 
-    final public UUID getUuid() {
-<span class="nc" id="L85">        return UUID.fromString(getUuid(getPtr()));</span>
-    }
+	final public UUID getUuid() {
+<span class="nc" id="L86">		return UUID.fromString(getUuid(getPtr()));</span>
+	}
 
-    final public boolean isArray() {
-<span class="nc" id="L89">        return isArray(getPtr());</span>
-    }
+	final public boolean isArray() {
+<span class="nc" id="L90">		return isArray(getPtr());</span>
+	}
 
-    final public Array getArray() {
-<span class="nc" id="L93">        return getArray(getPtr());</span>
-    }
+	final public Array getArray() {
+<span class="nc" id="L94">		return getArray(getPtr());</span>
+	}
 
-    final public boolean isObject() {
-<span class="nc" id="L97">        return isObject(getPtr());</span>
-    }
+	final public boolean isObject() {
+<span class="nc" id="L98">		return isObject(getPtr());</span>
+	}
 
-    final public Object getObject() {
-<span class="nc" id="L101">        return getObject(getPtr());</span>
-    }
+	final public Object getObject() {
+<span class="nc" id="L102">		return getObject(getPtr());</span>
+	}
 
 }
-
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
