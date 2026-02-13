@@ -10,8 +10,24 @@ use std::collections::btree_map::IntoIter as BIntoIter;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::vec::IntoIter;
+use surrealdb::engine::any::Any;
+use surrealdb::method::Transaction;
 use surrealdb::types::Value;
 use surrealdb::{Connection, IndexedResults, Surreal};
+
+/// Item type for the live query channel (Result<Notification<Value>>).
+pub(crate) type LiveNotificationResult =
+    std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
+
+/// Stored as handle for live streams. recv_mutex is held by nextNative during recv() so that
+/// releaseNative can wait for no thread in recv() before taking and dropping the receiver.
+/// join_handle, shutdown_tx and rx are in Mutex<Option<..>> so releaseNative can take/drop them via get_instance.
+pub(crate) type LiveStreamChannel = (
+    std::sync::Arc<parking_lot::Mutex<()>>, // held during recv()
+    parking_lot::Mutex<Option<std::thread::JoinHandle<()>>>,
+    parking_lot::Mutex<Option<async_channel::Sender<()>>>,
+    parking_lot::Mutex<Option<async_channel::Receiver<LiveNotificationResult>>>,
+);
 use tokio::runtime::Runtime;
 
 mod array;
@@ -19,13 +35,16 @@ mod entry;
 mod entryiterator;
 mod entrymut;
 mod error;
+mod fileref;
 mod geometry;
 mod id;
+mod live;
 mod macros;
 mod object;
 mod recordid;
 mod response;
 mod surreal;
+mod transaction;
 mod syncentryiterator;
 mod syncvalueiterator;
 mod value;
@@ -41,6 +60,7 @@ type Allocations = DashMap<jlong, JniTypes>;
 #[derive(PartialEq)]
 enum JniTypes {
     Surreal,
+    Transaction,
     Value,
     ValueMut,
     ArrayIter,
@@ -50,11 +70,16 @@ enum JniTypes {
     ObjectIter,
     SyncObjectIter,
     Response,
+    LiveStream,
 }
 
 impl JniTypes {
     fn new_surreal<C: Connection>(s: Surreal<C>) -> jlong {
         create_instance(s, Self::Surreal)
+    }
+
+    fn new_transaction<C: Connection>(t: Transaction<C>) -> jlong {
+        create_instance(t, Self::Transaction)
     }
 
     fn new_value(v: Arc<Value>) -> jlong {
@@ -93,9 +118,14 @@ impl JniTypes {
         create_instance(res, Self::Response)
     }
 
+    fn new_live_stream(chan: LiveStreamChannel) -> jlong {
+        create_instance(chan, Self::LiveStream)
+    }
+
     fn as_str(&self) -> &'static str {
         match self {
             JniTypes::Surreal => "Surreal",
+            JniTypes::Transaction => "Transaction",
             JniTypes::Value => "Value",
             JniTypes::ValueMut => "MutableValue",
             JniTypes::ArrayIter => "ArrayIterator",
@@ -105,6 +135,7 @@ impl JniTypes {
             JniTypes::ObjectIter => "ObjectIterator",
             JniTypes::SyncObjectIter => "SynchronizedObjectIterator",
             JniTypes::Response => "Response",
+            JniTypes::LiveStream => "LiveStream",
         }
     }
 }
@@ -176,16 +207,27 @@ fn get_instance_mut<T>(ptr: jlong, t: JniTypes) -> Result<&'static mut T, Surrea
     Ok(instance)
 }
 
-fn take_instance<T>(ptr: jlong, t: JniTypes) -> Result<T, SurrealError> {
+pub(crate) fn take_instance<T>(ptr: jlong, t: JniTypes) -> Result<T, SurrealError> {
     if ptr == 0 {
         return Err(SurrealError::NullPointerException(t.as_str()));
     }
     #[cfg(debug_assertions)]
-    check_allocation(ptr, t)?;
+    {
+        check_allocation(ptr, t)?;
+        ALLOCATOR.remove(&ptr);
+    }
 
     // Convert jlong to a Box<T>, effectively taking ownership of the instance
     let instance = unsafe { Box::from_raw(ptr as *mut T) };
     Ok(*instance)
+}
+
+/// Clones the Surreal instance at the given pointer and returns a new pointer to the clone.
+/// Used for multi-session support: each clone is a separate session sharing the same connection.
+pub(crate) fn clone_surreal_instance(ptr: jlong) -> Result<jlong, SurrealError> {
+    let s = get_instance::<Surreal<Any>>(ptr, JniTypes::Surreal)?;
+    let cloned = (*s).clone();
+    Ok(JniTypes::new_surreal(cloned))
 }
 
 fn release_instance<T>(ptr: jlong) {

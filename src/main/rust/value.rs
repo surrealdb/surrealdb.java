@@ -1,4 +1,5 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
+use std::ops::Bound;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
@@ -311,7 +312,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getString<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_isThing<'local>(
+pub extern "system" fn Java_com_surrealdb_Value_isRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -321,7 +322,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isThing<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
+pub extern "system" fn Java_com_surrealdb_Value_getRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -330,7 +331,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getThing<'local>(
     if let Value::RecordId(_) = value.as_ref() {
         JniTypes::new_value(value)
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
     }
 }
 
@@ -352,9 +353,101 @@ pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
 ) -> jstring {
     let value = get_value_instance!(&mut env, ptr, null_mut);
     if let Value::Uuid(uuid) = value.as_ref() {
-        new_string!(&mut env, uuid.0.to_string(), null_mut)
+        new_string!(&mut env, uuid.to_string(), null_mut)
     } else {
         SurrealError::NullPointerException("Uuid").exception(&mut env, null_mut)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_file() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if value.is_file() {
+        JniTypes::new_value(value)
+    } else {
+        SurrealError::NullPointerException("File").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isRange<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_range() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getRangeStart<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Range(r) = value.as_ref() {
+        match &r.start {
+            Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
+            Bound::Unbounded => 0,
+        }
+    } else {
+        SurrealError::NullPointerException("Range").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getRangeEnd<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    let value = get_value_instance!(&mut env, ptr, || 0);
+    if let Value::Range(r) = value.as_ref() {
+        match &r.end {
+            Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
+            Bound::Unbounded => 0,
+        }
+    } else {
+        SurrealError::NullPointerException("Range").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isTable<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
+    value.is_table() as jboolean
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getTable<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    let value = get_value_instance!(&mut env, ptr, null_mut);
+    if let Value::Table(t) = value.as_ref() {
+        new_string!(&mut env, t.as_str().to_string(), null_mut)
+    } else {
+        SurrealError::NullPointerException("Table").exception(&mut env, null_mut)
     }
 }
 

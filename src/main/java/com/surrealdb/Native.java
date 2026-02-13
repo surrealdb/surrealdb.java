@@ -1,63 +1,70 @@
 package com.surrealdb;
 
+/**
+ * Base for types backed by a native pointer. Instances are only valid for the
+ * lifetime of the native resource (e.g. the parent {@link Value} or connection
+ * they were obtained from). Using an instance after the underlying resource
+ * has been released may cause undefined behavior or native errors.
+ */
 public abstract class Native {
 
-    // Unique internal ptr used by the native library to locate the SurrealDB instance
-    private long ptr;
+	// Unique internal ptr used by the native library to locate the SurrealDB
+	// instance
+	private long ptr;
 
-    Native(long ptr) {
-        this.ptr = ptr;
-    }
+	Native(long ptr) {
+		this.ptr = ptr;
+	}
 
-    abstract String toString(long ptr);
+	abstract String toString(long ptr);
 
-    abstract int hashCode(long ptr);
+	abstract int hashCode(long ptr);
 
-    abstract boolean equals(long ptr1, long ptr2);
+	abstract boolean equals(long ptr1, long ptr2);
 
-    abstract void deleteInstance(long ptr);
+	abstract void deleteInstance(long ptr);
 
-    final long getPtr() {
-        return this.ptr;
-    }
+	final long getPtr() {
+		return this.ptr;
+	}
 
-    final void deleteInstance() {
-        deleteInstance(ptr);
-        ptr = 0;
-    }
+	final void deleteInstance() {
+		deleteInstance(ptr);
+		ptr = 0;
+	}
 
-    final void moved() {
-        this.ptr = 0;
-    }
+	final void moved() {
+		this.ptr = 0;
+	}
 
-    @Override
-    final public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final Native n2 = (Native) o;
-        return equals(ptr, n2.ptr);
-    }
+	@Override
+	final public boolean equals(java.lang.Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		final Native n2 = (Native) o;
+		return equals(ptr, n2.ptr);
+	}
 
-    @Override
-    final public int hashCode() {
-        return hashCode(ptr);
-    }
+	@Override
+	final public int hashCode() {
+		return hashCode(ptr);
+	}
 
-    @Override
-    final public String toString() {
-        return toString(ptr);
-    }
+	@Override
+	final public String toString() {
+		return toString(ptr);
+	}
 
-    @Override
-    final protected void finalize() throws Throwable {
-        try {
-            deleteInstance();
-        } finally {
-            super.finalize();
-        }
-    }
+	@Override
+	final protected void finalize() throws Throwable {
+		try {
+			deleteInstance();
+		} finally {
+			super.finalize();
+		}
+	}
 }

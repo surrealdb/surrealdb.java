@@ -1,9 +1,31 @@
+// Spotless requires JVM 11+; only add classpath when building with Java 11+ so Java 8 builds succeed
+buildscript {
+    repositories { gradlePluginPortal() }
+    dependencies {
+        if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
+            classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.25.0'
+        }
+    }
+}
+
 plugins {
     id 'java'
     id 'jacoco'
     id 'java-library'
     id 'maven-publish'
     id 'signing'
+}
+
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
+    apply plugin: 'com.diffplug.spotless'
+    spotless {
+        java {
+            eclipse()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
 }
 
 group 'com.surrealdb'
@@ -99,11 +121,46 @@ jacoco {
     toolVersion = "0.8.12"
 }
 
+// Build Rust native library so tests can load it
+def nativeLibName = System.getProperty('os.name').toLowerCase().contains('mac') ? 'libsurrealdb.dylib' : (System.getProperty('os.name').toLowerCase().contains('win') ? 'surrealdb.dll' : 'libsurrealdb.so')
+tasks.register('cargoBuild', Exec) {
+    description = 'Builds the Rust native library (debug) for tests'
+    group = 'build'
+    commandLine 'cargo', 'build'
+    workingDir projectDir
+    // Always build so test JVM loads a lib that matches current Java/Rust code (avoids UnsatisfiedLinkError)
+}
+tasks.register('cargoBuildRelease', Exec) {
+    description = 'Builds the Rust native library (release)'
+    group = 'build'
+    commandLine 'cargo', 'build', '--release'
+    workingDir projectDir
+}
+
 test {
     useJUnitPlatform()
-    systemProperty 'java.library.path', file('target/debug').absolutePath
+    dependsOn cargoBuild
+    // Explicit path so tests load the built native lib regardless of java.library.path
+    def nativeLibFile = file("target/debug/${nativeLibName}")
+    def nativeLibPath = nativeLibFile.absolutePath
+    systemProperty 'surrealdb.native.path', nativeLibPath
+    jvmArgs "-Dsurrealdb.native.path=${nativeLibPath}"
+    // Also set java.library.path for fallback
+    def debugDir = new File(projectDir, 'target/debug').absolutePath
+    def releaseDir = new File(projectDir, 'target/release').absolutePath
+    def libPath = debugDir + File.pathSeparator + releaseDir
+    systemProperty 'java.library.path', libPath
+    jvmArgs "-Djava.library.path=${libPath}"
+    // Per-test timeout so a single test cannot hang the suite (may not interrupt native/JNI blocks)
+    systemProperty 'junit.jupiter.execution.timeout.default', '15s'
+    maxParallelForks = 1
+    // To pinpoint where the run gets stuck, uncomment and run with short timeout (e.g. ./test-with-timeout.sh 25):
+    // beforeTest { d -> logger.lifecycle("[{}] START {} > {}", System.currentTimeMillis(), d.className, d.name) }
+    // afterTest { d, r -> logger.lifecycle("[{}] END   {} > {} => {}", System.currentTimeMillis(), d.className, d.name, r.resultType) }
     testLogging {
-        events "passed"
+        events "passed", "failed", "skipped"
+        showStackTraces = true
+        exceptionFormat = "full"
     }
 }
 

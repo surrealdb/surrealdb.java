@@ -8,7 +8,7 @@ use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::JNIEnv;
 use rust_decimal::Decimal;
-use surrealdb::types::{Array, Datetime, Duration, Number, Object, ToSql, Uuid, Value};
+use surrealdb::types::{Array, Datetime, Duration, File, Number, Object, Table, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{
@@ -157,7 +157,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newUuid<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
+pub extern "system" fn Java_com_surrealdb_ValueMut_newRecordId<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -166,7 +166,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newThing<'local>(
     if matches!(value.as_ref(), Value::RecordId(_)) {
         return JniTypes::new_value_mut(value.as_ref().clone());
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
 }
 
 #[no_mangle]
@@ -225,6 +225,30 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObjectOf<'local>(
     }
     let value = Value::Object(Object::from(map));
     create_instance(value, JniTypes::ValueMut)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newFile<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    bucket: JString<'local>,
+    key: JString<'local>,
+) -> jlong {
+    let bucket = get_rust_string!(&mut env, bucket, || 0);
+    let key = get_rust_string!(&mut env, key, || 0);
+    let value = Value::File(File::new(bucket, key));
+    JniTypes::new_value_mut(value)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newTable<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    name: JString<'local>,
+) -> jlong {
+    let name = get_rust_string!(&mut env, name, || 0);
+    let value = Value::Table(Table::new(name));
+    JniTypes::new_value_mut(value)
 }
 
 #[no_mangle]

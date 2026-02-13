@@ -40,6 +40,17 @@ jobs:
       - name: Setup Gradle
         run: chmod +x gradlew
 
+      - name: Start SurrealDB
+        uses: surrealdb/setup-surreal@v2
+        with:
+          surrealdb_version: v3.0.0-beta.3
+          surrealdb_port: 8000
+          surrealdb_auth: false
+          surrealdb_strict: false
+          surrealdb_log: info
+          surrealdb_additional_args: --allow-all
+          surrealdb_retry_count: 30
+
       - name: Clean
         run: ./gradlew -i clean
 

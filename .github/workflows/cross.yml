@@ -143,7 +143,7 @@ jobs:
       matrix:
         include:
           - arch: x86_64
-            runs-on: macos-13
+            runs-on: macos-15-intel
           - arch: aarch64
             runs-on: macos-latest
     runs-on: ${{ matrix.runs-on }}
@@ -294,7 +294,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        os: [ macos-13, macos-latest, windows-latest, ubuntu-latest ]
+        os: [ macos-14, macos-latest, windows-latest, ubuntu-latest ]
 
     runs-on: ${{ matrix.os }}
     needs:

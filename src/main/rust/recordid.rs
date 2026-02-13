@@ -20,7 +20,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_deleteInstance<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithLong<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     table: JString<'local>,
@@ -32,7 +32,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingLongId<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_RecordId_newThingStringId<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithString<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     table: JString<'local>,
@@ -45,7 +45,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingStringId<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_RecordId_newThingUuidId<'local>(
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithUuid<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     table: JString<'local>,
@@ -57,7 +57,43 @@ pub extern "system" fn Java_com_surrealdb_RecordId_newThingUuidId<'local>(
         let value = Value::RecordId(RecordId::new(table, RecordIdKey::Uuid(uuid)));
         JniTypes::new_value(value.into())
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithArray<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    array_ptr: jlong,
+) -> jlong {
+    let table = get_rust_string!(&mut env, table, || 0);
+    let value = get_value_instance!(&mut env, array_ptr, || 0);
+    if let Value::Array(a) = value.as_ref() {
+        let key = RecordIdKey::Array(a.clone());
+        let value = Value::RecordId(RecordId::new(table, key));
+        JniTypes::new_value(value.into())
+    } else {
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_RecordId_newRecordIdWithObject<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    object_ptr: jlong,
+) -> jlong {
+    let table = get_rust_string!(&mut env, table, || 0);
+    let value = get_value_instance!(&mut env, object_ptr, || 0);
+    if let Value::Object(o) = value.as_ref() {
+        let key = RecordIdKey::Object(o.clone());
+        let value = Value::RecordId(RecordId::new(table, key));
+        JniTypes::new_value(value.into())
+    } else {
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
     }
 }
 
@@ -71,7 +107,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_getTable<'local>(
     if let Value::RecordId(o) = value.as_ref() {
         new_string!(&mut env, o.table.to_sql(), null_mut)
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
+        SurrealError::NullPointerException("RecordId").exception(&mut env, null_mut)
     }
 }
 
@@ -85,7 +121,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_getId<'local>(
     if let Value::RecordId(_) = value.as_ref() {
         JniTypes::new_value(value)
     } else {
-        SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
     }
 }
 
@@ -101,7 +137,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_equals<'local>(
     if let (Value::RecordId(t1), Value::RecordId(t2)) = (v1.as_ref(), v2.as_ref()) {
         return t1.eq(t2) as jboolean;
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || false as jboolean)
+    SurrealError::NullPointerException("RecordId").exception(&mut env, || false as jboolean)
 }
 
 #[no_mangle]
@@ -117,7 +153,7 @@ pub extern "system" fn Java_com_surrealdb_RecordId_hashCode<'local>(
         let hash64 = hasher.finish();
         return (hash64 & 0xFFFFFFFF) as jint;
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, || 0)
+    SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
 }
 
 #[no_mangle]
@@ -130,5 +166,5 @@ pub extern "system" fn Java_com_surrealdb_RecordId_toString<'local>(
     if let Value::RecordId(o) = value.as_ref() {
         return new_string!(&mut env, o.to_sql(), null_mut);
     }
-    SurrealError::NullPointerException("Thing").exception(&mut env, null_mut)
+    SurrealError::NullPointerException("RecordId").exception(&mut env, null_mut)
 }
