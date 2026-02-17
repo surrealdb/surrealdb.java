@@ -14,8 +14,9 @@ opt-level = 3
 
 [dependencies]
 jni = "0.21.1"
-surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", branch = "main", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
+surrealdb = { git = "https://github.com/surrealdb/surrealdb.git", rev = "f42133c5402ce59a91544fddebd6365b3a2e26e1", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
 serde = "1.0.218"
+serde_json = "1.0"
 rust_decimal = "1.39.0"
 tokio = "1.48.0"
 parking_lot = "0.12.5"
