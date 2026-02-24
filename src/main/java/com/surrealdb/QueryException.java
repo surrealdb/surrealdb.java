@@ -5,6 +5,9 @@ import java.util.Map;
 /**
  * Query execution failure (not executed, timed out, cancelled).
  *
+ * <p>Details use the {@code {kind, details?}} format with variants defined
+ * in {@link QueryDetailKind}.
+ *
  * @see ErrorKind#QUERY
  */
 public class QueryException extends ServerException {
@@ -21,28 +24,28 @@ public class QueryException extends ServerException {
 	 * Returns {@code true} when the query was not executed
 	 * (e.g. a previous statement in a multi-statement query failed).
 	 *
-	 * @return whether the detail is {@code "NotExecuted"}
+	 * @return whether the detail kind is {@code NotExecuted}
 	 */
 	public boolean isNotExecuted() {
-		return hasDetailKey(getDetails(), "NotExecuted");
+		return hasDetailKey(getDetails(), QueryDetailKind.NOT_EXECUTED);
 	}
 
 	/**
 	 * Returns {@code true} when the query timed out.
 	 *
-	 * @return whether the detail key is {@code "TimedOut"}
+	 * @return whether the detail kind is {@code TimedOut}
 	 */
 	public boolean isTimedOut() {
-		return hasDetailKey(getDetails(), "TimedOut");
+		return hasDetailKey(getDetails(), QueryDetailKind.TIMED_OUT);
 	}
 
 	/**
 	 * Returns {@code true} when the query was cancelled.
 	 *
-	 * @return whether the detail is {@code "Cancelled"}
+	 * @return whether the detail kind is {@code Cancelled}
 	 */
 	public boolean isCancelled() {
-		return hasDetailKey(getDetails(), "Cancelled");
+		return hasDetailKey(getDetails(), QueryDetailKind.CANCELLED);
 	}
 
 	/**
@@ -53,9 +56,9 @@ public class QueryException extends ServerException {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, java.lang.Object> getTimeout() {
-		java.lang.Object value = getDetailValue(getDetails(), "TimedOut");
-		if (value instanceof Map) {
-			java.lang.Object duration = ((Map<String, java.lang.Object>) value).get("duration");
+		java.lang.Object inner = getDetailValue(getDetails(), QueryDetailKind.TIMED_OUT);
+		if (inner instanceof Map) {
+			java.lang.Object duration = ((Map<String, java.lang.Object>) inner).get("duration");
 			if (duration instanceof Map) {
 				return (Map<String, java.lang.Object>) duration;
 			}

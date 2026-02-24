@@ -55,11 +55,29 @@ fn kind_to_string(kind: &ErrorKind) -> &'static str {
     }
 }
 
-/// Serializes details Value to a JSON string, or returns None.
+/// Serializes details to a JSON string, or returns None.
+///
+/// Also unwraps double-wrapped details produced by SurrealDB v3.0.0:
+/// when the outer `kind` in the serialized details matches the error's
+/// kind, the actual detail is nested one level deeper. This is fixed in
+/// v3.0.1 but we keep the unwrapping for backward compatibility.
 fn details_to_json(error: &surrealdb::Error) -> Option<String> {
-    error
+    let json = error
         .details()
-        .and_then(|v| serde_json::to_string(v).ok())
+        .and_then(|v| serde_json::to_string(v).ok())?;
+
+    // Unwrap double-encoded details: if the serialized JSON object has
+    // a "kind" that matches the error kind, extract the inner "details".
+    let kind_str = kind_to_string(error.kind());
+    if let Ok(serde_json::Value::Object(map)) = serde_json::from_str::<serde_json::Value>(&json) {
+        if map.get("kind").and_then(|v| v.as_str()) == Some(kind_str) {
+            if let Some(inner) = map.get("details") {
+                return serde_json::to_string(inner).ok();
+            }
+        }
+    }
+
+    Some(json)
 }
 
 /// Recursively builds a Java ServerException (or subclass) from a surrealdb::Error,

@@ -9,8 +9,20 @@ import java.util.Map;
  * Base class for all exceptions originating from the SurrealDB server.
  *
  * <p>Carries structured error information: a machine-readable {@link #getKind() kind},
- * optional {@link #getDetails() details} (serde externally-tagged enum format), and
- * an optional typed {@link #getServerCause() cause} chain.
+ * optional {@link #getDetails() details} using the {@code {kind, details?}} wire format,
+ * and an optional typed {@link #getServerCause() cause} chain.
+ *
+ * <p>Details follow the internally-tagged format where each detail object has a
+ * {@code "kind"} field and an optional {@code "details"} field:
+ * <ul>
+ *   <li>Unit variant: {@code {"kind": "Parse"}}</li>
+ *   <li>Newtype variant: {@code {"kind": "Auth", "details": {"kind": "TokenExpired"}}}</li>
+ *   <li>Struct variant: {@code {"kind": "Table", "details": {"name": "users"}}}</li>
+ * </ul>
+ *
+ * <p>For backward compatibility with older servers, the legacy externally-tagged
+ * format ({@code "Parse"}, {@code {"Auth": "TokenExpired"}},
+ * {@code {"Table": {"name": "users"}}}) is also supported by all detail helpers.
  *
  * <p>Specific error kinds are represented by subclasses (e.g. {@link NotAllowedException},
  * {@link NotFoundException}). When the server returns an unknown kind, a plain
@@ -53,12 +65,13 @@ public class ServerException extends SurrealException {
 	/**
 	 * Returns the optional structured details for this error.
 	 *
-	 * <p>Details use serde's externally-tagged enum format. The value is either:
+	 * <p>Details use the {@code {kind, details?}} wire format. The value is either:
 	 * <ul>
 	 *   <li>{@code null} -- no details</li>
-	 *   <li>a {@link String} -- a unit variant (e.g. {@code "Parse"})</li>
-	 *   <li>a {@code Map<String, Object>} -- a struct or newtype variant
-	 *       (e.g. {@code {"Table": {"name": "users"}}})</li>
+	 *   <li>a {@code Map<String, Object>} with a {@code "kind"} key and optional
+	 *       {@code "details"} key (new internally-tagged format)</li>
+	 *   <li>a {@link String} -- a unit variant in the legacy format (e.g. {@code "Parse"})</li>
+	 *   <li>a {@code Map<String, Object>} without {@code "kind"} -- legacy externally-tagged format</li>
 	 * </ul>
 	 *
 	 * <p>Prefer the typed convenience getters on subclasses (e.g.
@@ -111,17 +124,54 @@ public class ServerException extends SurrealException {
 		return null;
 	}
 
-	// ---- Detail navigation helpers (serde externally-tagged enum format) ----
+	// ---- Detail navigation helpers ----
+	//
+	// SurrealDB v3 uses a recursive { "kind": "...", "details": ... } format
+	// for error details (internally-tagged). Older servers used serde's
+	// externally-tagged format ("Parse" / {"Auth": "TokenExpired"} / {"Table": {"name": "users"}}).
+	//
+	// All helpers support both formats for backward compatibility.
 
 	/**
-	 * Checks whether the details object contains a given key.
+	 * Extracts the {@code "kind"} string from a {@code {kind, details?}} detail
+	 * object. Returns {@code null} if the details are not in internally-tagged format.
 	 *
-	 * <p>Handles the serde externally-tagged format:
+	 * @param details the details object (may be {@code null})
+	 * @return the kind string, or {@code null}
+	 */
+	@SuppressWarnings("unchecked")
+	static String detailKind(java.lang.Object details) {
+		if (details instanceof Map) {
+			java.lang.Object k = ((Map<String, java.lang.Object>) details).get("kind");
+			if (k instanceof String) {
+				return (String) k;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Extracts the {@code "details"} value from a {@code {kind, details?}} detail
+	 * object. Returns {@code null} if not present or not in internally-tagged format.
+	 *
+	 * @param details the details object (may be {@code null})
+	 * @return the inner details value, or {@code null}
+	 */
+	@SuppressWarnings("unchecked")
+	static java.lang.Object detailInner(java.lang.Object details) {
+		if (details instanceof Map) {
+			return ((Map<String, java.lang.Object>) details).get("details");
+		}
+		return null;
+	}
+
+	/**
+	 * Checks whether the details object matches a given variant key.
+	 * Supports both new and old formats:
 	 * <ul>
-	 *   <li>If details is a {@code String}, returns {@code true} when the string
-	 *       equals the key.</li>
-	 *   <li>If details is a {@code Map}, returns {@code true} when the map
-	 *       contains the key.</li>
+	 *   <li>New: {@code {"kind": "Parse"}} -- checks if {@code kind} equals key</li>
+	 *   <li>Old: {@code "Parse"} -- checks if the string equals key</li>
+	 *   <li>Old: {@code {"Parse": ...}} -- checks if the map contains key</li>
 	 * </ul>
 	 *
 	 * @param details the details object (may be {@code null})
@@ -133,9 +183,16 @@ public class ServerException extends SurrealException {
 		if (details == null) {
 			return false;
 		}
+		// New format: {"kind": "Parse"}
+		String dk = detailKind(details);
+		if (dk != null) {
+			return dk.equals(key);
+		}
+		// Old format: "Parse" (bare string)
 		if (details instanceof String) {
 			return ((String) details).equals(key);
 		}
+		// Old format: {"Parse": ...} (map key)
 		if (details instanceof Map) {
 			return ((Map<String, java.lang.Object>) details).containsKey(key);
 		}
@@ -143,14 +200,12 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Extracts the value for a key from the details object.
-	 *
-	 * <p>Handles the serde externally-tagged format:
+	 * Extracts the inner value for a given variant key.
+	 * Supports both new and old formats:
 	 * <ul>
-	 *   <li>If details is a {@code String} that equals the key, returns
-	 *       {@code null} (unit variant, key is present but has no value).</li>
-	 *   <li>If details is a {@code Map} and contains the key, returns the
-	 *       mapped value.</li>
+	 *   <li>New: if {@code kind} equals key, returns {@code details["details"]}</li>
+	 *   <li>Old: if details is a map, returns {@code details[key]}</li>
+	 *   <li>Old: if details is a string matching key, returns {@code null} (unit variant)</li>
 	 * </ul>
 	 *
 	 * @param details the details object (may be {@code null})
@@ -162,9 +217,19 @@ public class ServerException extends SurrealException {
 		if (details == null) {
 			return null;
 		}
+		// New format: {"kind": "Auth", "details": {"kind": "TokenExpired"}}
+		String dk = detailKind(details);
+		if (dk != null) {
+			if (dk.equals(key)) {
+				return detailInner(details);
+			}
+			return null;
+		}
+		// Old format: unit variant string has no value
 		if (details instanceof String) {
 			return null;
 		}
+		// Old format: {"Auth": "TokenExpired"} or {"Table": {"name": "users"}}
 		if (details instanceof Map) {
 			return ((Map<String, java.lang.Object>) details).get(key);
 		}
@@ -172,39 +237,72 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Extracts a string field from a nested struct variant.
+	 * Extracts a string field from a variant's inner details.
+	 * Supports both new and old formats.
 	 *
-	 * <p>For details like {@code {"Table": {"name": "users"}}}, calling
-	 * {@code getNestedString(details, "Table", "name")} returns {@code "users"}.
+	 * <p>New: {@code {"kind": "Table", "details": {"name": "users"}}}
+	 * <br>Old: {@code {"Table": {"name": "users"}}}
+	 * <br>Both: {@code detailField(details, "Table", "name")} returns {@code "users"}.
 	 *
-	 * @param details  the details object
-	 * @param outerKey the outer key (variant name)
-	 * @param innerKey the inner key (field name)
+	 * @param details the details object
+	 * @param key     the variant key
+	 * @param field   the field name inside the inner object
 	 * @return the string value, or {@code null}
 	 */
 	@SuppressWarnings("unchecked")
-	static String getNestedString(java.lang.Object details, String outerKey, String innerKey) {
-		java.lang.Object outer = getDetailValue(details, outerKey);
-		if (outer instanceof Map) {
-			java.lang.Object inner = ((Map<String, java.lang.Object>) outer).get(innerKey);
-			return inner instanceof String ? (String) inner : null;
+	static String detailField(java.lang.Object details, String key, String field) {
+		java.lang.Object inner = getDetailValue(details, key);
+		if (inner instanceof Map) {
+			java.lang.Object value = ((Map<String, java.lang.Object>) inner).get(field);
+			return value instanceof String ? (String) value : null;
 		}
 		return null;
 	}
 
 	/**
-	 * Checks whether a newtype variant wraps a specific string value.
+	 * Extracts a string from the inner details of a newtype variant.
+	 * Supports both new and old formats:
+	 * <ul>
+	 *   <li>New: {@code {"kind": "Auth", "details": {"kind": "TokenExpired"}}}
+	 *       -- returns {@code "TokenExpired"}</li>
+	 *   <li>Old: {@code {"Auth": "TokenExpired"}} -- returns {@code "TokenExpired"}</li>
+	 * </ul>
 	 *
-	 * <p>For details like {@code {"Auth": "TokenExpired"}}, calling
-	 * {@code isNewtypeValue(details, "Auth", "TokenExpired")} returns {@code true}.
-	 *
-	 * @param details  the details object
-	 * @param outerKey the outer key (variant name)
-	 * @param value    the expected string value
-	 * @return {@code true} if the match is found
+	 * @param details the details object
+	 * @param key     the variant key
+	 * @return the string value, or {@code null}
+	 */
+	static String getDetailString(java.lang.Object details, String key) {
+		java.lang.Object inner = getDetailValue(details, key);
+		if (inner == null) {
+			return null;
+		}
+		// New format: inner is {"kind": "TokenExpired"}
+		String dk = detailKind(inner);
+		if (dk != null) {
+			return dk;
+		}
+		// Old format: inner is "TokenExpired"
+		if (inner instanceof String) {
+			return (String) inner;
+		}
+		return null;
+	}
+
+	// ---- Legacy helpers (delegate to new ones for backward source compat) ----
+
+	/**
+	 * @deprecated Use {@link #detailField(Object, String, String)} instead.
+	 */
+	@SuppressWarnings("unchecked")
+	static String getNestedString(java.lang.Object details, String outerKey, String innerKey) {
+		return detailField(details, outerKey, innerKey);
+	}
+
+	/**
+	 * @deprecated Use {@link #getDetailString(Object, String)} with an equality check instead.
 	 */
 	static boolean isNewtypeValue(java.lang.Object details, String outerKey, String value) {
-		java.lang.Object outer = getDetailValue(details, outerKey);
-		return value.equals(outer);
+		return value.equals(getDetailString(details, outerKey));
 	}
 }

@@ -1,7 +1,10 @@
 package com.surrealdb;
 
 /**
- * Resource not found (table, record, namespace, database, RPC method).
+ * Resource not found (table, record, namespace, database, RPC method, session).
+ *
+ * <p>Details use the {@code {kind, details?}} format with variants defined
+ * in {@link NotFoundDetailKind}.
  *
  * @see ErrorKind#NOT_FOUND
  */
@@ -21,7 +24,7 @@ public class NotFoundException extends ServerException {
 	 * @return the table name, or {@code null}
 	 */
 	public String getTableName() {
-		return getNestedString(getDetails(), "Table", "name");
+		return detailField(getDetails(), NotFoundDetailKind.TABLE, "name");
 	}
 
 	/**
@@ -30,7 +33,7 @@ public class NotFoundException extends ServerException {
 	 * @return the record id string, or {@code null}
 	 */
 	public String getRecordId() {
-		return getNestedString(getDetails(), "Record", "id");
+		return detailField(getDetails(), NotFoundDetailKind.RECORD, "id");
 	}
 
 	/**
@@ -39,7 +42,7 @@ public class NotFoundException extends ServerException {
 	 * @return the method name, or {@code null}
 	 */
 	public String getMethodName() {
-		return getNestedString(getDetails(), "Method", "name");
+		return detailField(getDetails(), NotFoundDetailKind.METHOD, "name");
 	}
 
 	/**
@@ -48,7 +51,7 @@ public class NotFoundException extends ServerException {
 	 * @return the namespace name, or {@code null}
 	 */
 	public String getNamespaceName() {
-		return getNestedString(getDetails(), "Namespace", "name");
+		return detailField(getDetails(), NotFoundDetailKind.NAMESPACE, "name");
 	}
 
 	/**
@@ -57,6 +60,15 @@ public class NotFoundException extends ServerException {
 	 * @return the database name, or {@code null}
 	 */
 	public String getDatabaseName() {
-		return getNestedString(getDetails(), "Database", "name");
+		return detailField(getDetails(), NotFoundDetailKind.DATABASE, "name");
+	}
+
+	/**
+	 * Returns the session id, if this is a session-not-found error.
+	 *
+	 * @return the session id, or {@code null}
+	 */
+	public String getSessionId() {
+		return detailField(getDetails(), NotFoundDetailKind.SESSION, "id");
 	}
 }
