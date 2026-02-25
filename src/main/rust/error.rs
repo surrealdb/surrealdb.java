@@ -1,7 +1,9 @@
+use std::error::Error as StdError;
+
 use jni::errors::Error;
 use jni::objects::{JObject, JThrowable, JValue};
 use jni::JNIEnv;
-use surrealdb::types::ErrorKind;
+use surrealdb::types::SurrealValue;
 
 pub(super) enum SurrealError {
     Exception(Error),
@@ -18,57 +20,38 @@ const SURREAL_EXCEPTION: &str = "com/surrealdb/SurrealException";
 
 const SERVER_EXCEPTION: &str = "com/surrealdb/ServerException";
 
-/// Maps an ErrorKind to the corresponding Java exception class.
+/// Maps an error kind string to the corresponding Java exception class.
 /// Unknown kinds map to ServerException (NOT InternalException) for forward compatibility.
-fn kind_to_java_class(kind: &ErrorKind) -> &'static str {
+fn kind_to_java_class(kind: &str) -> &'static str {
     match kind {
-        ErrorKind::Validation => "com/surrealdb/ValidationException",
-        ErrorKind::Configuration => "com/surrealdb/ConfigurationException",
-        ErrorKind::Thrown => "com/surrealdb/ThrownException",
-        ErrorKind::Query => "com/surrealdb/QueryException",
-        ErrorKind::Serialization => "com/surrealdb/SerializationException",
-        ErrorKind::NotAllowed => "com/surrealdb/NotAllowedException",
-        ErrorKind::NotFound => "com/surrealdb/NotFoundException",
-        ErrorKind::AlreadyExists => "com/surrealdb/AlreadyExistsException",
-        ErrorKind::Connection => SERVER_EXCEPTION,
-        ErrorKind::Internal => "com/surrealdb/InternalException",
+        "Validation" => "com/surrealdb/ValidationException",
+        "Configuration" => "com/surrealdb/ConfigurationException",
+        "Thrown" => "com/surrealdb/ThrownException",
+        "Query" => "com/surrealdb/QueryException",
+        "Serialization" => "com/surrealdb/SerializationException",
+        "NotAllowed" => "com/surrealdb/NotAllowedException",
+        "NotFound" => "com/surrealdb/NotFoundException",
+        "AlreadyExists" => "com/surrealdb/AlreadyExistsException",
+        "Connection" => SERVER_EXCEPTION,
+        "Internal" => "com/surrealdb/InternalException",
         // Forward compat: unknown kinds get base ServerException
         _ => SERVER_EXCEPTION,
     }
 }
 
-/// Maps an ErrorKind to its string representation for the Java side.
-/// Used when constructing base ServerException (Connection / unknown kinds).
-fn kind_to_string(kind: &ErrorKind) -> &'static str {
-    match kind {
-        ErrorKind::Validation => "Validation",
-        ErrorKind::Configuration => "Configuration",
-        ErrorKind::Thrown => "Thrown",
-        ErrorKind::Query => "Query",
-        ErrorKind::Serialization => "Serialization",
-        ErrorKind::NotAllowed => "NotAllowed",
-        ErrorKind::NotFound => "NotFound",
-        ErrorKind::AlreadyExists => "AlreadyExists",
-        ErrorKind::Connection => "Connection",
-        ErrorKind::Internal => "Internal",
-        _ => "Internal",
-    }
-}
-
-/// Serializes details to a JSON string, or returns None.
+/// Serializes details to a JSON string.
 ///
-/// Also unwraps double-wrapped details produced by SurrealDB v3.0.0:
-/// when the outer `kind` in the serialized details matches the error's
-/// kind, the actual detail is nested one level deeper. This is fixed in
-/// v3.0.1 but we keep the unwrapping for backward compatibility.
+/// In 3.0.1, details are converted via SurrealValue::into_value and then
+/// serialized to JSON. We also unwrap double-wrapped details produced by
+/// SurrealDB v3.0.0 (when the outer `kind` matches the error kind, extract
+/// the inner "details") for backward compatibility.
 fn details_to_json(error: &surrealdb::Error) -> Option<String> {
-    let json = error
-        .details()
-        .and_then(|v| serde_json::to_string(v).ok())?;
+    let value = SurrealValue::into_value(error.details().clone());
+    let json = serde_json::to_string(&value).ok()?;
 
     // Unwrap double-encoded details: if the serialized JSON object has
     // a "kind" that matches the error kind, extract the inner "details".
-    let kind_str = kind_to_string(error.kind());
+    let kind_str = error.kind_str();
     if let Ok(serde_json::Value::Object(map)) = serde_json::from_str::<serde_json::Value>(&json) {
         if map.get("kind").and_then(|v| v.as_str()) == Some(kind_str) {
             if let Some(inner) = map.get("details") {
@@ -89,14 +72,19 @@ fn build_server_exception<'a>(
     env: &mut JNIEnv<'a>,
     error: &surrealdb::Error,
 ) -> Option<JObject<'a>> {
-    // Recursively build the cause first
-    let java_cause: JObject = if let Some(cause) = error.cause() {
-        build_server_exception(env, cause).unwrap_or_else(|| JObject::null())
+    // Recursively build the cause first (std::error::Error::source; cause chain when present)
+    let java_cause: JObject = if let Some(source) = error.source() {
+        if let Some(surreal_cause) = source.downcast_ref::<surrealdb::Error>() {
+            build_server_exception(env, surreal_cause).unwrap_or_else(|| JObject::null())
+        } else {
+            JObject::null()
+        }
     } else {
         JObject::null()
     };
 
-    let class_name = kind_to_java_class(error.kind());
+    let kind_str = error.kind_str();
+    let class_name = kind_to_java_class(kind_str);
     let is_base_class = class_name == SERVER_EXCEPTION;
 
     let class = match env.find_class(class_name) {
@@ -122,7 +110,7 @@ fn build_server_exception<'a>(
 
     if is_base_class {
         // ServerException(String kind, String message, String detailsJson, ServerException cause)
-        let kind_str = match env.new_string(kind_to_string(error.kind())) {
+        let kind_str = match env.new_string(kind_str) {
             Ok(s) => s,
             Err(_) => return None,
         };
