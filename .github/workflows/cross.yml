@@ -289,6 +289,17 @@ jobs:
           name: surrealdb
           path: build/libs/surrealdb-3.0.0-SNAPSHOT.jar
 
+      - name: Start SurrealDB
+        uses: surrealdb/setup-surreal@v2
+        with:
+          surrealdb_version: v3.0.0-beta.3
+          surrealdb_port: 8000
+          surrealdb_auth: false
+          surrealdb_strict: false
+          surrealdb_log: info
+          surrealdb_additional_args: --allow-all
+          surrealdb_retry_count: 30
+
       - name: Linux Integration Test
         run: ./gradlew -i integrationTest
 
@@ -321,6 +332,17 @@ jobs:
         with:
           name: surrealdb
           path: native
+
+      - name: Start SurrealDB
+        uses: surrealdb/setup-surreal@v2
+        with:
+          surrealdb_version: v3.0.0-beta.3
+          surrealdb_port: 8000
+          surrealdb_auth: false
+          surrealdb_strict: false
+          surrealdb_log: info
+          surrealdb_additional_args: --allow-all
+          surrealdb_retry_count: 30
 
       - name: Tests
         run: ./gradlew -i integrationTest
