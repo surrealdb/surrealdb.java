@@ -14,10 +14,6 @@ public class SerializationException extends ServerException {
 		super(ErrorKind.SERIALIZATION, message, details, cause);
 	}
 
-	SerializationException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.SERIALIZATION, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns {@code true} when this is specifically a deserialization error
 	 * (as opposed to serialization).

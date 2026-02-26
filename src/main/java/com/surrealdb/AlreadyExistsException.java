@@ -14,10 +14,6 @@ public class AlreadyExistsException extends ServerException {
 		super(ErrorKind.ALREADY_EXISTS, message, details, cause);
 	}
 
-	AlreadyExistsException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.ALREADY_EXISTS, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns the record id, if this is a duplicate record error.
 	 *

@@ -23,6 +23,42 @@ import org.junit.jupiter.api.Test;
  */
 public class ErrorTests {
 
+	/** New format: unit variant {@code {"kind": "X"}}. */
+	private static Map<String, java.lang.Object> nf(String kind) {
+		Map<String, java.lang.Object> m = new LinkedHashMap<>();
+		m.put("kind", kind);
+		return m;
+	}
+
+	/** New format: struct variant {@code {"kind": "X", "details": {...}}}. */
+	private static Map<String, java.lang.Object> nf(String kind, Map<String, java.lang.Object> details) {
+		Map<String, java.lang.Object> m = new LinkedHashMap<>();
+		m.put("kind", kind);
+		m.put("details", details);
+		return m;
+	}
+
+	/** New format: newtype variant {@code {"kind": "X", "details": {"kind": "Y"}}}. */
+	private static Map<String, java.lang.Object> nfNested(String kind, String innerKind) {
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("kind", innerKind);
+		return nf(kind, inner);
+	}
+
+	/** Old format: single key -> value (object). */
+	private static Map<String, java.lang.Object> of(String key, Map<String, java.lang.Object> value) {
+		Map<String, java.lang.Object> m = new LinkedHashMap<>();
+		m.put(key, value);
+		return m;
+	}
+
+	/** Old format: single key -> string (newtype). */
+	private static Map<String, java.lang.Object> ofStr(String key, String value) {
+		Map<String, java.lang.Object> m = new LinkedHashMap<>();
+		m.put(key, value);
+		return m;
+	}
+
 	// ---- ErrorKind constants ----
 
 	@Test
@@ -220,98 +256,8 @@ public class ErrorTests {
 		}
 	}
 
-	// ---- Detail parsing (JSON -> Object) ----
-
-	@Test
-	void detailParserNull() {
-		assertNull(DetailParser.parseDetailsJson(null));
-		assertNull(DetailParser.parseDetailsJson(""));
-	}
-
-	@Test
-	void detailParserString() {
-		java.lang.Object result = DetailParser.parseDetailsJson("\"Parse\"");
-		assertEquals("Parse", result);
-	}
-
-	@Test
-	void detailParserUnitObject() {
-		// Old format: {"Auth": "TokenExpired"}
-		java.lang.Object result = DetailParser.parseDetailsJson("{\"Auth\": \"TokenExpired\"}");
-		assertTrue(result instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> map = (Map<String, java.lang.Object>) result;
-		assertEquals("TokenExpired", map.get("Auth"));
-	}
-
-	@Test
-	void detailParserStructObject() {
-		// Old format: {"Table": {"name": "users"}}
-		java.lang.Object result = DetailParser.parseDetailsJson("{\"Table\": {\"name\": \"users\"}}");
-		assertTrue(result instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> map = (Map<String, java.lang.Object>) result;
-		assertTrue(map.get("Table") instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> inner = (Map<String, java.lang.Object>) map.get("Table");
-		assertEquals("users", inner.get("name"));
-	}
-
-	@Test
-	void detailParserNumber() {
-		java.lang.Object result = DetailParser.parseDetailsJson("{\"TimedOut\": {\"duration\": {\"secs\": 30, \"nanos\": 0}}}");
-		assertTrue(result instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> map = (Map<String, java.lang.Object>) result;
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> timedOut = (Map<String, java.lang.Object>) map.get("TimedOut");
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> duration = (Map<String, java.lang.Object>) timedOut.get("duration");
-		assertEquals(30, duration.get("secs"));
-		assertEquals(0, duration.get("nanos"));
-	}
-
-	@Test
-	void detailParserNullLiteral() {
-		java.lang.Object result = DetailParser.parseDetailsJson("null");
-		assertNull(result);
-	}
-
-	@Test
-	void detailParserNewFormatUnit() {
-		// New format: {"kind": "Parse"}
-		java.lang.Object result = DetailParser.parseDetailsJson("{\"kind\": \"Parse\"}");
-		assertTrue(result instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> map = (Map<String, java.lang.Object>) result;
-		assertEquals("Parse", map.get("kind"));
-	}
-
-	@Test
-	void detailParserNewFormatStruct() {
-		// New format: {"kind": "Table", "details": {"name": "users"}}
-		java.lang.Object result = DetailParser.parseDetailsJson(
-				"{\"kind\": \"Table\", \"details\": {\"name\": \"users\"}}");
-		assertTrue(result instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> map = (Map<String, java.lang.Object>) result;
-		assertEquals("Table", map.get("kind"));
-		assertTrue(map.get("details") instanceof Map);
-	}
-
-	@Test
-	void detailParserNewFormatNested() {
-		// New format: {"kind": "Auth", "details": {"kind": "TokenExpired"}}
-		java.lang.Object result = DetailParser.parseDetailsJson(
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"TokenExpired\"}}");
-		assertTrue(result instanceof Map);
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> map = (Map<String, java.lang.Object>) result;
-		assertEquals("Auth", map.get("kind"));
-		@SuppressWarnings("unchecked")
-		Map<String, java.lang.Object> inner = (Map<String, java.lang.Object>) map.get("details");
-		assertEquals("TokenExpired", inner.get("kind"));
-	}
+	// Detail structure is built on the native (Rust) side and passed as Object (Map/List/String/Number).
+	// The tests below verify the Java detail helpers work with that structure.
 
 	// ---- detailKind / detailInner ----
 
@@ -499,16 +445,16 @@ public class ErrorTests {
 
 	@Test
 	void validationParseErrorNewFormat() {
-		ValidationException e = new ValidationException("parse error",
-				"{\"kind\": \"Parse\"}", null);
+		ValidationException e = new ValidationException("parse error", nf("Parse"), null);
 		assertTrue(e.isParseError());
 		assertNull(e.getParameterName());
 	}
 
 	@Test
 	void validationInvalidParameterNewFormat() {
-		ValidationException e = new ValidationException("bad param",
-				"{\"kind\": \"InvalidParameter\", \"details\": {\"name\": \"foo\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "foo");
+		ValidationException e = new ValidationException("bad param", nf("InvalidParameter", inner), null);
 		assertFalse(e.isParseError());
 		assertEquals("foo", e.getParameterName());
 	}
@@ -517,8 +463,7 @@ public class ErrorTests {
 
 	@Test
 	void configurationLiveQueryNotSupportedNewFormat() {
-		ConfigurationException e = new ConfigurationException("not supported",
-				"{\"kind\": \"LiveQueryNotSupported\"}", null);
+		ConfigurationException e = new ConfigurationException("not supported", nf("LiveQueryNotSupported"), null);
 		assertTrue(e.isLiveQueryNotSupported());
 	}
 
@@ -526,8 +471,7 @@ public class ErrorTests {
 
 	@Test
 	void queryNotExecutedNewFormat() {
-		QueryException e = new QueryException("not executed",
-				"{\"kind\": \"NotExecuted\"}", null);
+		QueryException e = new QueryException("not executed", nf("NotExecuted"), null);
 		assertTrue(e.isNotExecuted());
 		assertFalse(e.isTimedOut());
 		assertFalse(e.isCancelled());
@@ -536,8 +480,12 @@ public class ErrorTests {
 
 	@Test
 	void queryTimedOutNewFormat() {
-		QueryException e = new QueryException("timed out",
-				"{\"kind\": \"TimedOut\", \"details\": {\"duration\": {\"secs\": 30, \"nanos\": 500}}}", null);
+		Map<String, java.lang.Object> duration = new LinkedHashMap<>();
+		duration.put("secs", 30);
+		duration.put("nanos", 500);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("duration", duration);
+		QueryException e = new QueryException("timed out", nf("TimedOut", inner), null);
 		assertTrue(e.isTimedOut());
 		assertFalse(e.isNotExecuted());
 		Map<String, java.lang.Object> timeout = e.getTimeout();
@@ -548,8 +496,7 @@ public class ErrorTests {
 
 	@Test
 	void queryCancelledNewFormat() {
-		QueryException e = new QueryException("cancelled",
-				"{\"kind\": \"Cancelled\"}", null);
+		QueryException e = new QueryException("cancelled", nf("Cancelled"), null);
 		assertTrue(e.isCancelled());
 		assertFalse(e.isTimedOut());
 	}
@@ -558,15 +505,13 @@ public class ErrorTests {
 
 	@Test
 	void serializationDeserializationNewFormat() {
-		SerializationException e = new SerializationException("deser error",
-				"{\"kind\": \"Deserialization\"}", null);
+		SerializationException e = new SerializationException("deser error", nf("Deserialization"), null);
 		assertTrue(e.isDeserialization());
 	}
 
 	@Test
 	void serializationSerializationNewFormat() {
-		SerializationException e = new SerializationException("ser error",
-				"{\"kind\": \"Serialization\"}", null);
+		SerializationException e = new SerializationException("ser error", nf("Serialization"), null);
 		assertFalse(e.isDeserialization());
 	}
 
@@ -574,8 +519,7 @@ public class ErrorTests {
 
 	@Test
 	void notAllowedTokenExpiredNewFormat() {
-		NotAllowedException e = new NotAllowedException("token expired",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"TokenExpired\"}}", null);
+		NotAllowedException e = new NotAllowedException("token expired", nfNested("Auth", "TokenExpired"), null);
 		assertTrue(e.isTokenExpired());
 		assertFalse(e.isInvalidAuth());
 		assertFalse(e.isScriptingBlocked());
@@ -586,24 +530,23 @@ public class ErrorTests {
 
 	@Test
 	void notAllowedInvalidAuthNewFormat() {
-		NotAllowedException e = new NotAllowedException("invalid auth",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"InvalidAuth\"}}", null);
+		NotAllowedException e = new NotAllowedException("invalid auth", nfNested("Auth", "InvalidAuth"), null);
 		assertTrue(e.isInvalidAuth());
 		assertFalse(e.isTokenExpired());
 	}
 
 	@Test
 	void notAllowedScriptingNewFormat() {
-		NotAllowedException e = new NotAllowedException("scripting blocked",
-				"{\"kind\": \"Scripting\"}", null);
+		NotAllowedException e = new NotAllowedException("scripting blocked", nf("Scripting"), null);
 		assertTrue(e.isScriptingBlocked());
 		assertFalse(e.isTokenExpired());
 	}
 
 	@Test
 	void notAllowedMethodNewFormat() {
-		NotAllowedException e = new NotAllowedException("method blocked",
-				"{\"kind\": \"Method\", \"details\": {\"name\": \"query\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "query");
+		NotAllowedException e = new NotAllowedException("method blocked", nf("Method", inner), null);
 		assertEquals("query", e.getMethodName());
 		assertNull(e.getFunctionName());
 		assertNull(e.getTargetName());
@@ -611,16 +554,18 @@ public class ErrorTests {
 
 	@Test
 	void notAllowedFunctionNewFormat() {
-		NotAllowedException e = new NotAllowedException("fn blocked",
-				"{\"kind\": \"Function\", \"details\": {\"name\": \"http::get\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "http::get");
+		NotAllowedException e = new NotAllowedException("fn blocked", nf("Function", inner), null);
 		assertEquals("http::get", e.getFunctionName());
 		assertNull(e.getMethodName());
 	}
 
 	@Test
 	void notAllowedTargetNewFormat() {
-		NotAllowedException e = new NotAllowedException("target blocked",
-				"{\"kind\": \"Target\", \"details\": {\"name\": \"some_target\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "some_target");
+		NotAllowedException e = new NotAllowedException("target blocked", nf("Target", inner), null);
 		assertEquals("some_target", e.getTargetName());
 		assertNull(e.getMethodName());
 		assertNull(e.getFunctionName());
@@ -630,8 +575,9 @@ public class ErrorTests {
 
 	@Test
 	void notFoundTableNewFormat() {
-		NotFoundException e = new NotFoundException("table not found",
-				"{\"kind\": \"Table\", \"details\": {\"name\": \"users\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "users");
+		NotFoundException e = new NotFoundException("table not found", nf("Table", inner), null);
 		assertEquals("users", e.getTableName());
 		assertNull(e.getRecordId());
 		assertNull(e.getMethodName());
@@ -642,37 +588,42 @@ public class ErrorTests {
 
 	@Test
 	void notFoundRecordNewFormat() {
-		NotFoundException e = new NotFoundException("record not found",
-				"{\"kind\": \"Record\", \"details\": {\"id\": \"person:1\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "person:1");
+		NotFoundException e = new NotFoundException("record not found", nf("Record", inner), null);
 		assertEquals("person:1", e.getRecordId());
 		assertNull(e.getTableName());
 	}
 
 	@Test
 	void notFoundMethodNewFormat() {
-		NotFoundException e = new NotFoundException("method not found",
-				"{\"kind\": \"Method\", \"details\": {\"name\": \"unknown\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "unknown");
+		NotFoundException e = new NotFoundException("method not found", nf("Method", inner), null);
 		assertEquals("unknown", e.getMethodName());
 	}
 
 	@Test
 	void notFoundNamespaceNewFormat() {
-		NotFoundException e = new NotFoundException("ns not found",
-				"{\"kind\": \"Namespace\", \"details\": {\"name\": \"test_ns\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "test_ns");
+		NotFoundException e = new NotFoundException("ns not found", nf("Namespace", inner), null);
 		assertEquals("test_ns", e.getNamespaceName());
 	}
 
 	@Test
 	void notFoundDatabaseNewFormat() {
-		NotFoundException e = new NotFoundException("db not found",
-				"{\"kind\": \"Database\", \"details\": {\"name\": \"test_db\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "test_db");
+		NotFoundException e = new NotFoundException("db not found", nf("Database", inner), null);
 		assertEquals("test_db", e.getDatabaseName());
 	}
 
 	@Test
 	void notFoundSessionNewFormat() {
-		NotFoundException e = new NotFoundException("session not found",
-				"{\"kind\": \"Session\", \"details\": {\"id\": \"sess_123\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "sess_123");
+		NotFoundException e = new NotFoundException("session not found", nf("Session", inner), null);
 		assertEquals("sess_123", e.getSessionId());
 	}
 
@@ -680,8 +631,9 @@ public class ErrorTests {
 
 	@Test
 	void alreadyExistsRecordNewFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate record",
-				"{\"kind\": \"Record\", \"details\": {\"id\": \"person:1\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "person:1");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate record", nf("Record", inner), null);
 		assertEquals("person:1", e.getRecordId());
 		assertNull(e.getTableName());
 		assertNull(e.getSessionId());
@@ -691,30 +643,34 @@ public class ErrorTests {
 
 	@Test
 	void alreadyExistsTableNewFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate table",
-				"{\"kind\": \"Table\", \"details\": {\"name\": \"users\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "users");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate table", nf("Table", inner), null);
 		assertEquals("users", e.getTableName());
 		assertNull(e.getRecordId());
 	}
 
 	@Test
 	void alreadyExistsSessionNewFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate session",
-				"{\"kind\": \"Session\", \"details\": {\"id\": \"sess_abc\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "sess_abc");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate session", nf("Session", inner), null);
 		assertEquals("sess_abc", e.getSessionId());
 	}
 
 	@Test
 	void alreadyExistsNamespaceNewFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate namespace",
-				"{\"kind\": \"Namespace\", \"details\": {\"name\": \"ns1\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "ns1");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate namespace", nf("Namespace", inner), null);
 		assertEquals("ns1", e.getNamespaceName());
 	}
 
 	@Test
 	void alreadyExistsDatabaseNewFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate database",
-				"{\"kind\": \"Database\", \"details\": {\"name\": \"db1\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "db1");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate database", nf("Database", inner), null);
 		assertEquals("db1", e.getDatabaseName());
 	}
 
@@ -724,29 +680,29 @@ public class ErrorTests {
 
 	@Test
 	void validationParseErrorOldFormat() {
-		ValidationException e = new ValidationException("parse error", "\"Parse\"", null);
+		ValidationException e = new ValidationException("parse error", "Parse", null);
 		assertTrue(e.isParseError());
 		assertNull(e.getParameterName());
 	}
 
 	@Test
 	void validationInvalidParameterOldFormat() {
-		ValidationException e = new ValidationException("bad param",
-				"{\"InvalidParameter\": {\"name\": \"foo\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "foo");
+		ValidationException e = new ValidationException("bad param", of("InvalidParameter", inner), null);
 		assertFalse(e.isParseError());
 		assertEquals("foo", e.getParameterName());
 	}
 
 	@Test
 	void configurationLiveQueryNotSupportedOldFormat() {
-		ConfigurationException e = new ConfigurationException("not supported",
-				"\"LiveQueryNotSupported\"", null);
+		ConfigurationException e = new ConfigurationException("not supported", "LiveQueryNotSupported", null);
 		assertTrue(e.isLiveQueryNotSupported());
 	}
 
 	@Test
 	void queryNotExecutedOldFormat() {
-		QueryException e = new QueryException("not executed", "\"NotExecuted\"", null);
+		QueryException e = new QueryException("not executed", "NotExecuted", null);
 		assertTrue(e.isNotExecuted());
 		assertFalse(e.isTimedOut());
 		assertFalse(e.isCancelled());
@@ -755,8 +711,12 @@ public class ErrorTests {
 
 	@Test
 	void queryTimedOutOldFormat() {
-		QueryException e = new QueryException("timed out",
-				"{\"TimedOut\": {\"duration\": {\"secs\": 30, \"nanos\": 500}}}", null);
+		Map<String, java.lang.Object> duration = new LinkedHashMap<>();
+		duration.put("secs", 30);
+		duration.put("nanos", 500);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("duration", duration);
+		QueryException e = new QueryException("timed out", of("TimedOut", inner), null);
 		assertTrue(e.isTimedOut());
 		assertFalse(e.isNotExecuted());
 		Map<String, java.lang.Object> timeout = e.getTimeout();
@@ -767,29 +727,26 @@ public class ErrorTests {
 
 	@Test
 	void queryCancelledOldFormat() {
-		QueryException e = new QueryException("cancelled", "\"Cancelled\"", null);
+		QueryException e = new QueryException("cancelled", "Cancelled", null);
 		assertTrue(e.isCancelled());
 		assertFalse(e.isTimedOut());
 	}
 
 	@Test
 	void serializationDeserializationOldFormat() {
-		SerializationException e = new SerializationException("deser error",
-				"\"Deserialization\"", null);
+		SerializationException e = new SerializationException("deser error", "Deserialization", null);
 		assertTrue(e.isDeserialization());
 	}
 
 	@Test
 	void serializationSerializationOldFormat() {
-		SerializationException e = new SerializationException("ser error",
-				"\"Serialization\"", null);
+		SerializationException e = new SerializationException("ser error", "Serialization", null);
 		assertFalse(e.isDeserialization());
 	}
 
 	@Test
 	void notAllowedTokenExpiredOldFormat() {
-		NotAllowedException e = new NotAllowedException("token expired",
-				"{\"Auth\": \"TokenExpired\"}", null);
+		NotAllowedException e = new NotAllowedException("token expired", ofStr("Auth", "TokenExpired"), null);
 		assertTrue(e.isTokenExpired());
 		assertFalse(e.isInvalidAuth());
 		assertFalse(e.isScriptingBlocked());
@@ -799,40 +756,41 @@ public class ErrorTests {
 
 	@Test
 	void notAllowedInvalidAuthOldFormat() {
-		NotAllowedException e = new NotAllowedException("invalid auth",
-				"{\"Auth\": \"InvalidAuth\"}", null);
+		NotAllowedException e = new NotAllowedException("invalid auth", ofStr("Auth", "InvalidAuth"), null);
 		assertTrue(e.isInvalidAuth());
 		assertFalse(e.isTokenExpired());
 	}
 
 	@Test
 	void notAllowedScriptingOldFormat() {
-		NotAllowedException e = new NotAllowedException("scripting blocked",
-				"\"Scripting\"", null);
+		NotAllowedException e = new NotAllowedException("scripting blocked", "Scripting", null);
 		assertTrue(e.isScriptingBlocked());
 		assertFalse(e.isTokenExpired());
 	}
 
 	@Test
 	void notAllowedMethodOldFormat() {
-		NotAllowedException e = new NotAllowedException("method blocked",
-				"{\"Method\": {\"name\": \"query\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "query");
+		NotAllowedException e = new NotAllowedException("method blocked", of("Method", inner), null);
 		assertEquals("query", e.getMethodName());
 		assertNull(e.getFunctionName());
 	}
 
 	@Test
 	void notAllowedFunctionOldFormat() {
-		NotAllowedException e = new NotAllowedException("fn blocked",
-				"{\"Function\": {\"name\": \"http::get\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "http::get");
+		NotAllowedException e = new NotAllowedException("fn blocked", of("Function", inner), null);
 		assertEquals("http::get", e.getFunctionName());
 		assertNull(e.getMethodName());
 	}
 
 	@Test
 	void notFoundTableOldFormat() {
-		NotFoundException e = new NotFoundException("table not found",
-				"{\"Table\": {\"name\": \"users\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "users");
+		NotFoundException e = new NotFoundException("table not found", of("Table", inner), null);
 		assertEquals("users", e.getTableName());
 		assertNull(e.getRecordId());
 		assertNull(e.getMethodName());
@@ -842,45 +800,51 @@ public class ErrorTests {
 
 	@Test
 	void notFoundRecordOldFormat() {
-		NotFoundException e = new NotFoundException("record not found",
-				"{\"Record\": {\"id\": \"person:1\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "person:1");
+		NotFoundException e = new NotFoundException("record not found", of("Record", inner), null);
 		assertEquals("person:1", e.getRecordId());
 		assertNull(e.getTableName());
 	}
 
 	@Test
 	void notFoundMethodOldFormat() {
-		NotFoundException e = new NotFoundException("method not found",
-				"{\"Method\": {\"name\": \"unknown\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "unknown");
+		NotFoundException e = new NotFoundException("method not found", of("Method", inner), null);
 		assertEquals("unknown", e.getMethodName());
 	}
 
 	@Test
 	void notFoundNamespaceOldFormat() {
-		NotFoundException e = new NotFoundException("ns not found",
-				"{\"Namespace\": {\"name\": \"test_ns\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "test_ns");
+		NotFoundException e = new NotFoundException("ns not found", of("Namespace", inner), null);
 		assertEquals("test_ns", e.getNamespaceName());
 	}
 
 	@Test
 	void notFoundDatabaseOldFormat() {
-		NotFoundException e = new NotFoundException("db not found",
-				"{\"Database\": {\"name\": \"test_db\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "test_db");
+		NotFoundException e = new NotFoundException("db not found", of("Database", inner), null);
 		assertEquals("test_db", e.getDatabaseName());
 	}
 
 	@Test
 	void alreadyExistsRecordOldFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate record",
-				"{\"Record\": {\"id\": \"person:1\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "person:1");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate record", of("Record", inner), null);
 		assertEquals("person:1", e.getRecordId());
 		assertNull(e.getTableName());
 	}
 
 	@Test
 	void alreadyExistsTableOldFormat() {
-		AlreadyExistsException e = new AlreadyExistsException("duplicate table",
-				"{\"Table\": {\"name\": \"users\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "users");
+		AlreadyExistsException e = new AlreadyExistsException("duplicate table", of("Table", inner), null);
 		assertEquals("users", e.getTableName());
 		assertNull(e.getRecordId());
 	}
@@ -892,10 +856,10 @@ public class ErrorTests {
 	@Test
 	void causeChainStandard() {
 		InternalException root = new InternalException("root", (java.lang.Object) null, null);
-		NotAllowedException middle = new NotAllowedException("middle",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"TokenExpired\"}}", root);
-		NotFoundException top = new NotFoundException("top",
-				"{\"kind\": \"Table\", \"details\": {\"name\": \"users\"}}", middle);
+		NotAllowedException middle = new NotAllowedException("middle", nfNested("Auth", "TokenExpired"), root);
+		Map<String, java.lang.Object> tableDetails = new LinkedHashMap<>();
+		tableDetails.put("name", "users");
+		NotFoundException top = new NotFoundException("top", nf("Table", tableDetails), middle);
 
 		assertEquals(middle, top.getCause());
 		assertEquals(root, middle.getCause());
@@ -933,12 +897,9 @@ public class ErrorTests {
 	@Test
 	void deepCauseChain() {
 		InternalException e1 = new InternalException("level 1", (java.lang.Object) null, null);
-		QueryException e2 = new QueryException("level 2",
-				"{\"kind\": \"NotExecuted\"}", e1);
-		NotAllowedException e3 = new NotAllowedException("level 3",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"TokenExpired\"}}", e2);
-		ValidationException e4 = new ValidationException("level 4",
-				"{\"kind\": \"Parse\"}", e3);
+		QueryException e2 = new QueryException("level 2", nf("NotExecuted"), e1);
+		NotAllowedException e3 = new NotAllowedException("level 3", nfNested("Auth", "TokenExpired"), e2);
+		ValidationException e4 = new ValidationException("level 4", nf("Parse"), e3);
 
 		assertTrue(e4.hasKind(ErrorKind.INTERNAL));
 		assertEquals(e1, e4.findCause(ErrorKind.INTERNAL));
@@ -964,15 +925,19 @@ public class ErrorTests {
 	}
 
 	@Test
-	void detailsFromJsonString() {
-		ValidationException e = new ValidationException("parse error", "\"Parse\"", null);
+	void detailsFromString() {
+		ValidationException e = new ValidationException("parse error", "Parse", null);
 		assertEquals("Parse", e.getDetails());
 	}
 
 	@Test
-	void detailsFromJsonObject() {
-		NotFoundException e = new NotFoundException("not found",
-				"{\"kind\": \"Table\", \"details\": {\"name\": \"users\"}}", null);
+	void detailsFromMap() {
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("name", "users");
+		Map<String, java.lang.Object> details = new LinkedHashMap<>();
+		details.put("kind", "Table");
+		details.put("details", inner);
+		NotFoundException e = new NotFoundException("not found", details, null);
 		assertTrue(e.getDetails() instanceof Map);
 	}
 
@@ -996,22 +961,34 @@ public class ErrorTests {
 	void doubleWrappedDetailsManuallyUnwrapped() {
 		// After the Rust bridge unwraps, Java receives:
 		//   {"kind": "Record", "details": {"id": "person:dup"}}
-		AlreadyExistsException e = new AlreadyExistsException("duplicate",
-				"{\"kind\": \"Record\", \"details\": {\"id\": \"person:dup\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("id", "person:dup");
+		Map<String, java.lang.Object> details = new LinkedHashMap<>();
+		details.put("kind", "Record");
+		details.put("details", inner);
+		AlreadyExistsException e = new AlreadyExistsException("duplicate", details, null);
 		assertEquals("person:dup", e.getRecordId());
 	}
 
 	@Test
 	void deeplyNestedAuthDetails() {
 		// Full depth: NotAllowed -> Auth -> TokenExpired (new format)
-		NotAllowedException e = new NotAllowedException("auth failed",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"TokenExpired\"}}", null);
+		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
+		inner.put("kind", "TokenExpired");
+		Map<String, java.lang.Object> details = new LinkedHashMap<>();
+		details.put("kind", "Auth");
+		details.put("details", inner);
+		NotAllowedException e = new NotAllowedException("auth failed", details, null);
 		assertTrue(e.isTokenExpired());
 		assertFalse(e.isInvalidAuth());
 
 		// Full depth: NotAllowed -> Auth -> InvalidAuth (new format)
-		NotAllowedException e2 = new NotAllowedException("auth failed",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"InvalidAuth\"}}", null);
+		Map<String, java.lang.Object> inner2 = new LinkedHashMap<>();
+		inner2.put("kind", "InvalidAuth");
+		Map<String, java.lang.Object> details2 = new LinkedHashMap<>();
+		details2.put("kind", "Auth");
+		details2.put("details", inner2);
+		NotAllowedException e2 = new NotAllowedException("auth failed", details2, null);
 		assertTrue(e2.isInvalidAuth());
 		assertFalse(e2.isTokenExpired());
 	}
@@ -1019,8 +996,15 @@ public class ErrorTests {
 	@Test
 	void deeplyNestedAuthWithRole() {
 		// NotAllowed -> Auth -> InvalidRole with details
-		NotAllowedException e = new NotAllowedException("bad role",
-				"{\"kind\": \"Auth\", \"details\": {\"kind\": \"InvalidRole\", \"details\": {\"name\": \"admin\"}}}", null);
+		Map<String, java.lang.Object> roleDetails = new LinkedHashMap<>();
+		roleDetails.put("name", "admin");
+		Map<String, java.lang.Object> invalidRoleInner = new LinkedHashMap<>();
+		invalidRoleInner.put("kind", "InvalidRole");
+		invalidRoleInner.put("details", roleDetails);
+		Map<String, java.lang.Object> details = new LinkedHashMap<>();
+		details.put("kind", "Auth");
+		details.put("details", invalidRoleInner);
+		NotAllowedException e = new NotAllowedException("bad role", details, null);
 		assertFalse(e.isTokenExpired());
 		assertFalse(e.isInvalidAuth());
 	}

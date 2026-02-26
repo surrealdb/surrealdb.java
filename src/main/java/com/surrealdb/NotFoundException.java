@@ -14,10 +14,6 @@ public class NotFoundException extends ServerException {
 		super(ErrorKind.NOT_FOUND, message, details, cause);
 	}
 
-	NotFoundException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.NOT_FOUND, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns the table name, if this is a table-not-found error.
 	 *

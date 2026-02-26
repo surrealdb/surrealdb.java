@@ -16,10 +16,6 @@ public class QueryException extends ServerException {
 		super(ErrorKind.QUERY, message, details, cause);
 	}
 
-	QueryException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.QUERY, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns {@code true} when the query was not executed
 	 * (e.g. a previous statement in a multi-statement query failed).

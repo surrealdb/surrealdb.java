@@ -14,10 +14,6 @@ public class ValidationException extends ServerException {
 		super(ErrorKind.VALIDATION, message, details, cause);
 	}
 
-	ValidationException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.VALIDATION, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns {@code true} when the error is a parse error.
 	 *

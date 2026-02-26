@@ -37,19 +37,15 @@ public class ServerException extends SurrealException {
 	private final java.lang.Object details;
 	private final ServerException serverCause;
 
+	/**
+	 * Constructs a {@code ServerException} with structured details.
+	 * Used by the JNI bridge; details are built from the error value on the native side.
+	 */
 	ServerException(String kind, String message, java.lang.Object details, ServerException cause) {
 		super(message, cause);
 		this.kind = kind;
 		this.details = details;
 		this.serverCause = cause;
-	}
-
-	/**
-	 * Constructs a {@code ServerException} from a JSON details string.
-	 * Used by the JNI bridge.
-	 */
-	ServerException(String kind, String message, String detailsJson, ServerException cause) {
-		this(kind, message, DetailParser.parseDetailsJson(detailsJson), cause);
 	}
 
 	/**

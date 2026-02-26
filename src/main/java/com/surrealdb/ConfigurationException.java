@@ -14,10 +14,6 @@ public class ConfigurationException extends ServerException {
 		super(ErrorKind.CONFIGURATION, message, details, cause);
 	}
 
-	ConfigurationException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.CONFIGURATION, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns {@code true} when the error indicates that live queries are not
 	 * supported.

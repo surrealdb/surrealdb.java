@@ -3,7 +3,7 @@ use std::error::Error as StdError;
 use jni::errors::Error;
 use jni::objects::{JObject, JThrowable, JValue};
 use jni::JNIEnv;
-use surrealdb::types::SurrealValue;
+use surrealdb::types::{Number, SurrealValue, Value};
 
 pub(super) enum SurrealError {
     Exception(Error),
@@ -39,35 +39,101 @@ fn kind_to_java_class(kind: &str) -> &'static str {
     }
 }
 
-/// Serializes details to a JSON string.
-///
-/// In 3.0.1, details are converted via SurrealValue::into_value and then
-/// serialized to JSON. We also unwrap double-wrapped details produced by
-/// SurrealDB v3.0.0 (when the outer `kind` matches the error kind, extract
-/// the inner "details") for backward compatibility.
-fn details_to_json(error: &surrealdb::Error) -> Option<String> {
+/// Converts error details (SurrealValue) into a Value we can walk.
+/// Unwraps double-wrapped details from SurrealDB v3.0.0 when outer "kind"
+/// matches the error kind and "details" is present.
+fn details_value(error: &surrealdb::Error) -> Value {
     let value = SurrealValue::into_value(error.details().clone());
-    let json = serde_json::to_string(&value).ok()?;
-
-    // Unwrap double-encoded details: if the serialized JSON object has
-    // a "kind" that matches the error kind, extract the inner "details".
     let kind_str = error.kind_str();
-    if let Ok(serde_json::Value::Object(map)) = serde_json::from_str::<serde_json::Value>(&json) {
-        if map.get("kind").and_then(|v| v.as_str()) == Some(kind_str) {
+    if let Value::Object(ref map) = value {
+        let kind_matches = map
+            .get("kind")
+            .map(|v| matches!(v, Value::String(s) if s.to_string() == kind_str))
+            .unwrap_or(false);
+        if kind_matches {
             if let Some(inner) = map.get("details") {
-                return serde_json::to_string(inner).ok();
+                return inner.clone();
             }
         }
     }
+    value
+}
 
-    Some(json)
+/// Builds a Java object (Map, String, Number, or null) from a SurrealDB Value via JNI.
+/// Used for error details only; supports objects, strings, numbers, null, and arrays.
+fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'a>> {
+    match value {
+        Value::None | Value::Null => Some(JObject::null()),
+        Value::String(s) => env.new_string(s.to_string()).ok().map(JObject::from),
+        Value::Number(n) => number_to_jobject(env, n),
+        Value::Bool(b) => {
+            let class = env.find_class("java/lang/Boolean").ok()?;
+            let z = if *b { 1u8 } else { 0u8 };
+            env.call_static_method(class, "valueOf", "(Z)Ljava/lang/Boolean;", &[JValue::Bool(z)])
+                .ok()
+                .and_then(|v| v.l().ok())
+                .map(JObject::from)
+        }
+        Value::Object(map) => {
+            let class = env.find_class("java/util/LinkedHashMap").ok()?;
+            let map_obj = env.new_object(class, "()V", &[]).ok()?;
+            for (k, v) in map.iter() {
+                let key_obj = env.new_string(k).ok().map(JObject::from)?;
+                let val_obj = value_to_jobject(env, v).unwrap_or(JObject::null());
+                let _ = env.call_method(
+                    &map_obj,
+                    "put",
+                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+                    &[JValue::Object(&key_obj), JValue::Object(&val_obj)],
+                );
+            }
+            Some(map_obj)
+        }
+        Value::Array(arr) => {
+            let class = env.find_class("java/util/ArrayList").ok()?;
+            let list_obj = env.new_object(class, "()V", &[]).ok()?;
+            for v in arr.iter() {
+                let elem = value_to_jobject(env, v).unwrap_or(JObject::null());
+                let _ = env.call_method(&list_obj, "add", "(Ljava/lang/Object;)Z", &[JValue::Object(&elem)]);
+            }
+            Some(list_obj)
+        }
+        _ => Some(JObject::null()),
+    }
+}
+
+fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>> {
+    match n {
+        Number::Int(i) => {
+            let class = env.find_class("java/lang/Long").ok()?;
+            env.call_static_method(class, "valueOf", "(J)Ljava/lang/Long;", &[JValue::Long(*i)])
+                .ok()
+                .and_then(|v| v.l().ok())
+                .map(JObject::from)
+        }
+        Number::Float(f) => {
+            let class = env.find_class("java/lang/Double").ok()?;
+            env.call_static_method(class, "valueOf", "(D)Ljava/lang/Double;", &[JValue::Double(*f)])
+                .ok()
+                .and_then(|v| v.l().ok())
+                .map(JObject::from)
+        }
+        Number::Decimal(d) => {
+            let class = env.find_class("java/lang/Double").ok()?;
+            let f: f64 = d.to_string().parse().unwrap_or(0.0);
+            env.call_static_method(class, "valueOf", "(D)Ljava/lang/Double;", &[JValue::Double(f)])
+                .ok()
+                .and_then(|v| v.l().ok())
+                .map(JObject::from)
+        }
+    }
 }
 
 /// Recursively builds a Java ServerException (or subclass) from a surrealdb::Error,
 /// constructing the cause chain bottom-up.
 ///
-/// Subclasses use a 3-arg constructor: (String message, String detailsJson, ServerException cause)
-/// Base ServerException uses a 4-arg constructor: (String kind, String message, String detailsJson, ServerException cause)
+/// Subclasses use a 3-arg constructor: (String message, Object details, ServerException cause)
+/// Base ServerException uses a 4-arg constructor: (String kind, String message, Object details, ServerException cause)
 fn build_server_exception<'a>(
     env: &mut JNIEnv<'a>,
     error: &surrealdb::Error,
@@ -97,29 +163,23 @@ fn build_server_exception<'a>(
         Err(_) => return None,
     };
 
-    let details_json = details_to_json(error);
-    let details_jstr = match &details_json {
-        Some(json) => match env.new_string(json) {
-            Ok(s) => JObject::from(s),
-            Err(_) => JObject::null(),
-        },
-        None => JObject::null(),
-    };
+    let details_value = details_value(error);
+    let details_obj = value_to_jobject(env, &details_value).unwrap_or(JObject::null());
 
     let message_obj = JObject::from(message);
 
     if is_base_class {
-        // ServerException(String kind, String message, String detailsJson, ServerException cause)
+        // ServerException(String kind, String message, Object details, ServerException cause)
         let kind_str = match env.new_string(kind_str) {
             Ok(s) => s,
             Err(_) => return None,
         };
         let kind_obj = JObject::from(kind_str);
-        let sig = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/surrealdb/ServerException;)V";
+        let sig = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
         let args = [
             JValue::Object(&kind_obj),
             JValue::Object(&message_obj),
-            JValue::Object(&details_jstr),
+            JValue::Object(&details_obj),
             JValue::Object(&java_cause),
         ];
         match env.new_object(class, sig, &args) {
@@ -127,11 +187,11 @@ fn build_server_exception<'a>(
             Err(_) => None,
         }
     } else {
-        // Subclass(String message, String detailsJson, ServerException cause)
-        let sig = "(Ljava/lang/String;Ljava/lang/String;Lcom/surrealdb/ServerException;)V";
+        // Subclass(String message, Object details, ServerException cause)
+        let sig = "(Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
         let args = [
             JValue::Object(&message_obj),
-            JValue::Object(&details_jstr),
+            JValue::Object(&details_obj),
             JValue::Object(&java_cause),
         ];
         match env.new_object(class, sig, &args) {

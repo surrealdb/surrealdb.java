@@ -15,10 +15,6 @@ public class NotAllowedException extends ServerException {
 		super(ErrorKind.NOT_ALLOWED, message, details, cause);
 	}
 
-	NotAllowedException(String message, String detailsJson, ServerException cause) {
-		super(ErrorKind.NOT_ALLOWED, message, detailsJson, cause);
-	}
-
 	/**
 	 * Returns {@code true} when the token used for authentication has expired.
 	 *
