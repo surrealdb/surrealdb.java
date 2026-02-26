@@ -15,13 +15,27 @@ public class NotAllowedException extends ServerException {
 		super(ErrorKind.NOT_ALLOWED, null, message, details, cause);
 	}
 
+	private static String extractAuthKind(java.lang.Object inner) {
+		if (inner == null) {
+			return null;
+		}
+		String dk = detailKind(inner);
+		if (dk != null) {
+			return dk;
+		}
+		if (inner instanceof String) {
+			return (String) inner;
+		}
+		return null;
+	}
+
 	/**
 	 * Returns {@code true} when the token used for authentication has expired.
 	 *
 	 * @return whether the detail matches {@code Auth -> TokenExpired}
 	 */
 	public boolean isTokenExpired() {
-		return AuthDetailKind.TOKEN_EXPIRED.equals(getDetailString(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
+		return AuthDetailKind.TOKEN_EXPIRED.equals(extractAuthKind(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
 	}
 
 	/**
@@ -30,7 +44,7 @@ public class NotAllowedException extends ServerException {
 	 * @return whether the detail matches {@code Auth -> InvalidAuth}
 	 */
 	public boolean isInvalidAuth() {
-		return AuthDetailKind.INVALID_AUTH.equals(getDetailString(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
+		return AuthDetailKind.INVALID_AUTH.equals(extractAuthKind(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
 	}
 
 	/**
@@ -60,6 +74,8 @@ public class NotAllowedException extends ServerException {
 		return detailField(getDetails(), NotAllowedDetailKind.FUNCTION, "name");
 	}
 
+	// ---- Auth detail helpers ----
+
 	/**
 	 * Returns the name of the target that is not allowed, if applicable.
 	 *
@@ -67,21 +83,5 @@ public class NotAllowedException extends ServerException {
 	 */
 	public String getTargetName() {
 		return detailField(getDetails(), NotAllowedDetailKind.TARGET, "name");
-	}
-
-	// ---- Auth detail helpers ----
-
-	private static String getDetailString(java.lang.Object inner) {
-		if (inner == null) {
-			return null;
-		}
-		String dk = detailKind(inner);
-		if (dk != null) {
-			return dk;
-		}
-		if (inner instanceof String) {
-			return (String) inner;
-		}
-		return null;
 	}
 }

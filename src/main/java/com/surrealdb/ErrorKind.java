@@ -1,5 +1,8 @@
 package com.surrealdb;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Machine-readable error kind, aligned with the SurrealDB Rust SDK's {@code ErrorDetails} enum.
  *
@@ -22,17 +25,21 @@ public enum ErrorKind {
 	/** Unknown kind from a newer server; raw string is in {@link ServerException#getKind()}. */
 	UNKNOWN(null);
 
+	private static final Map<String, ErrorKind> LOOKUP;
+
+	static {
+		LOOKUP = new HashMap<>();
+		for (ErrorKind k : values()) {
+			if (k.raw != null) {
+				LOOKUP.put(k.raw, k);
+			}
+		}
+	}
+
 	private final String raw;
 
 	ErrorKind(String raw) {
 		this.raw = raw;
-	}
-
-	/**
-	 * Returns the wire string for this kind, or {@code null} for {@link #UNKNOWN}.
-	 */
-	public String getRaw() {
-		return raw;
 	}
 
 	/**
@@ -46,11 +53,13 @@ public enum ErrorKind {
 		if (kind == null) {
 			return UNKNOWN;
 		}
-		for (ErrorKind k : values()) {
-			if (k != UNKNOWN && kind.equals(k.raw)) {
-				return k;
-			}
-		}
-		return UNKNOWN;
+		return LOOKUP.getOrDefault(kind, UNKNOWN);
+	}
+
+	/**
+	 * Returns the wire string for this kind, or {@code null} for {@link #UNKNOWN}.
+	 */
+	public String getRaw() {
+		return raw;
 	}
 }

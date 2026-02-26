@@ -67,117 +67,6 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Returns the machine-readable error kind string (e.g. {@code "NotAllowed"}).
-	 * For unknown kinds this is the wire string; otherwise it matches {@link #getKindEnum()}{@code .getRaw()}.
-	 *
-	 * @return the error kind string, never {@code null}
-	 */
-	public String getKind() {
-		return rawKind != null ? rawKind : kindEnum.getRaw();
-	}
-
-	/**
-	 * Returns the error kind as an enum for type-safe matching.
-	 * Unknown kinds from newer servers map to {@link ErrorKind#UNKNOWN}; the raw string is in {@link #getKind()}.
-	 *
-	 * @return the error kind enum, never {@code null}
-	 */
-	public ErrorKind getKindEnum() {
-		return kindEnum;
-	}
-
-	/**
-	 * Returns the optional structured details for this error.
-	 *
-	 * <p>Details use the {@code {kind, details?}} wire format. The value is either:
-	 * <ul>
-	 *   <li>{@code null} -- no details</li>
-	 *   <li>a {@code Map<String, Object>} with a {@code "kind"} key and optional
-	 *       {@code "details"} key (new internally-tagged format)</li>
-	 *   <li>a {@link String} -- a unit variant in the legacy format (e.g. {@code "Parse"})</li>
-	 *   <li>a {@code Map<String, Object>} without {@code "kind"} -- legacy externally-tagged format</li>
-	 * </ul>
-	 *
-	 * <p>Prefer the typed convenience getters on subclasses (e.g.
-	 * {@link NotFoundException#getTableName()}) over inspecting details directly.
-	 *
-	 * @return the details object, or {@code null}
-	 */
-	public java.lang.Object getDetails() {
-		return details;
-	}
-
-	/**
-	 * Returns the typed server-side cause of this error, if any.
-	 *
-	 * <p>This is equivalent to calling {@link #getCause()} and casting to
-	 * {@code ServerException}, but avoids the cast.
-	 *
-	 * @return the server cause, or {@code null}
-	 */
-	public ServerException getServerCause() {
-		return serverCause;
-	}
-
-	/**
-	 * Checks whether this error or any error in its cause chain has the given
-	 * {@link ErrorKind kind}.
-	 *
-	 * @param kind the kind to look for
-	 * @return {@code true} if any error in the chain matches
-	 */
-	public boolean hasKind(String kind) {
-		return findCause(kind) != null;
-	}
-
-	/**
-	 * Checks whether this error or any error in its cause chain has the given {@link ErrorKind}.
-	 */
-	public boolean hasKind(ErrorKind kind) {
-		return findCause(kind) != null;
-	}
-
-	/**
-	 * Finds the first error in the cause chain (including this error) that has
-	 * the given {@link ErrorKind kind}.
-	 *
-	 * @param kind the kind to look for
-	 * @return the matching {@code ServerException}, or {@code null}
-	 */
-	public ServerException findCause(String kind) {
-		ServerException current = this;
-		while (current != null) {
-			if (kind.equals(current.getKind())) {
-				return current;
-			}
-			current = current.serverCause;
-		}
-		return null;
-	}
-
-	/**
-	 * Finds the first error in the cause chain (including this error) that has the given {@link ErrorKind}.
-	 */
-	public ServerException findCause(ErrorKind kind) {
-		ServerException current = this;
-		while (current != null) {
-			if (kind == current.kindEnum) {
-				return current;
-			}
-			current = current.serverCause;
-		}
-		return null;
-	}
-
-	// ---- Detail navigation helpers ----
-	//
-	// SurrealDB v3 uses a recursive { "kind": "...", "details": ... } format
-	// for error details (internally-tagged). Older servers used serde's
-	// externally-tagged format ("Parse" / {"Auth": "TokenExpired"} / {"Table": {"name": "users"}}).
-	//
-	// All helpers support both formats for backward compatibility.
-
-	/**
 	 * Extracts the {@code "kind"} string from a {@code {kind, details?}} detail
 	 * object. Returns {@code null} if the details are not in internally-tagged format.
 	 *
@@ -334,10 +223,8 @@ public class ServerException extends SurrealException {
 		return null;
 	}
 
-	// ---- Legacy helpers (delegate to new ones for backward source compat) ----
-
 	/**
-	 * @deprecated Use {@link #detailField(Object, String, String)} instead.
+	 * @deprecated Use {@link #detailField(java.lang.Object, String, String)} instead.
 	 */
 	@SuppressWarnings("unchecked")
 	static String getNestedString(java.lang.Object details, String outerKey, String innerKey) {
@@ -345,9 +232,122 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * @deprecated Use {@link #getDetailString(Object, String)} with an equality check instead.
+	 * @deprecated Use {@link #getDetailString(java.lang.Object, String)} with an equality check instead.
 	 */
 	static boolean isNewtypeValue(java.lang.Object details, String outerKey, String value) {
 		return value.equals(getDetailString(details, outerKey));
+	}
+
+	// ---- Detail navigation helpers ----
+	//
+	// SurrealDB v3 uses a recursive { "kind": "...", "details": ... } format
+	// for error details (internally-tagged). Older servers used serde's
+	// externally-tagged format ("Parse" / {"Auth": "TokenExpired"} / {"Table": {"name": "users"}}).
+	//
+	// All helpers support both formats for backward compatibility.
+
+	/**
+	 * Returns the machine-readable error kind string (e.g. {@code "NotAllowed"}).
+	 * For unknown kinds this is the wire string; otherwise it matches {@link #getKindEnum()}{@code .getRaw()}.
+	 *
+	 * @return the error kind string, never {@code null}
+	 */
+	public String getKind() {
+		return rawKind != null ? rawKind : kindEnum.getRaw();
+	}
+
+	/**
+	 * Returns the error kind as an enum for type-safe matching.
+	 * Unknown kinds from newer servers map to {@link ErrorKind#UNKNOWN}; the raw string is in {@link #getKind()}.
+	 *
+	 * @return the error kind enum, never {@code null}
+	 */
+	public ErrorKind getKindEnum() {
+		return kindEnum;
+	}
+
+	/**
+	 * Returns the optional structured details for this error.
+	 *
+	 * <p>Details use the {@code {kind, details?}} wire format. The value is either:
+	 * <ul>
+	 *   <li>{@code null} -- no details</li>
+	 *   <li>a {@code Map<String, Object>} with a {@code "kind"} key and optional
+	 *       {@code "details"} key (new internally-tagged format)</li>
+	 *   <li>a {@link String} -- a unit variant in the legacy format (e.g. {@code "Parse"})</li>
+	 *   <li>a {@code Map<String, Object>} without {@code "kind"} -- legacy externally-tagged format</li>
+	 * </ul>
+	 *
+	 * <p>Prefer the typed convenience getters on subclasses (e.g.
+	 * {@link NotFoundException#getTableName()}) over inspecting details directly.
+	 *
+	 * @return the details object, or {@code null}
+	 */
+	public java.lang.Object getDetails() {
+		return details;
+	}
+
+	/**
+	 * Returns the typed server-side cause of this error, if any.
+	 *
+	 * <p>This is equivalent to calling {@link #getCause()} and casting to
+	 * {@code ServerException}, but avoids the cast.
+	 *
+	 * @return the server cause, or {@code null}
+	 */
+	public ServerException getServerCause() {
+		return serverCause;
+	}
+
+	/**
+	 * Checks whether this error or any error in its cause chain has the given
+	 * {@link ErrorKind kind}.
+	 *
+	 * @param kind the kind to look for
+	 * @return {@code true} if any error in the chain matches
+	 */
+	public boolean hasKind(String kind) {
+		return findCause(kind) != null;
+	}
+
+	/**
+	 * Checks whether this error or any error in its cause chain has the given {@link ErrorKind}.
+	 */
+	public boolean hasKind(ErrorKind kind) {
+		return findCause(kind) != null;
+	}
+
+	// ---- Legacy helpers (delegate to new ones for backward source compat) ----
+
+	/**
+	 * Finds the first error in the cause chain (including this error) that has
+	 * the given {@link ErrorKind kind}.
+	 *
+	 * @param kind the kind to look for
+	 * @return the matching {@code ServerException}, or {@code null}
+	 */
+	public ServerException findCause(String kind) {
+		ServerException current = this;
+		while (current != null) {
+			if (kind.equals(current.getKind())) {
+				return current;
+			}
+			current = current.serverCause;
+		}
+		return null;
+	}
+
+	/**
+	 * Finds the first error in the cause chain (including this error) that has the given {@link ErrorKind}.
+	 */
+	public ServerException findCause(ErrorKind kind) {
+		ServerException current = this;
+		while (current != null) {
+			if (kind == current.kindEnum) {
+				return current;
+			}
+			current = current.serverCause;
+		}
+		return null;
 	}
 }

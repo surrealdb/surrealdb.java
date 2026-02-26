@@ -8,6 +8,7 @@ package com.surrealdb;
 public final class NotAllowedDetailKind {
 
 	public static final String SCRIPTING = "Scripting";
+	/** Auth sub-detail; inner variants are defined in {@link AuthDetailKind}. */
 	public static final String AUTH = "Auth";
 	public static final String METHOD = "Method";
 	public static final String FUNCTION = "Function";
