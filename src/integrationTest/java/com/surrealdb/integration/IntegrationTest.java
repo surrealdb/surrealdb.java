@@ -15,7 +15,9 @@ import com.surrealdb.SurrealException;
 
 public class IntegrationTest {
 
+	// Skipped on Windows: SurrealDB is typically not started there in CI (setup-surreal is Linux/macOS).
 	@Test
+	@EnabledOnOs({ OS.LINUX, OS.MAC })
 	void surrealdb_websocket() {
 		// When SurrealDB is running at localhost:8000 (e.g. in CI), connect and verify.
 		try (Surreal surreal = new Surreal()) {
