@@ -59,20 +59,20 @@ public class ErrorTests {
 		return m;
 	}
 
-	// ---- ErrorKind constants ----
+	// ---- ErrorKind enum: wire strings via getRaw() ----
 
 	@Test
 	void errorKindConstants() {
-		assertEquals("Validation", ErrorKind.VALIDATION);
-		assertEquals("Configuration", ErrorKind.CONFIGURATION);
-		assertEquals("Thrown", ErrorKind.THROWN);
-		assertEquals("Query", ErrorKind.QUERY);
-		assertEquals("Serialization", ErrorKind.SERIALIZATION);
-		assertEquals("NotAllowed", ErrorKind.NOT_ALLOWED);
-		assertEquals("NotFound", ErrorKind.NOT_FOUND);
-		assertEquals("AlreadyExists", ErrorKind.ALREADY_EXISTS);
-		assertEquals("Connection", ErrorKind.CONNECTION);
-		assertEquals("Internal", ErrorKind.INTERNAL);
+		assertEquals("Validation", ErrorKind.VALIDATION.getRaw());
+		assertEquals("Configuration", ErrorKind.CONFIGURATION.getRaw());
+		assertEquals("Thrown", ErrorKind.THROWN.getRaw());
+		assertEquals("Query", ErrorKind.QUERY.getRaw());
+		assertEquals("Serialization", ErrorKind.SERIALIZATION.getRaw());
+		assertEquals("NotAllowed", ErrorKind.NOT_ALLOWED.getRaw());
+		assertEquals("NotFound", ErrorKind.NOT_FOUND.getRaw());
+		assertEquals("AlreadyExists", ErrorKind.ALREADY_EXISTS.getRaw());
+		assertEquals("Connection", ErrorKind.CONNECTION.getRaw());
+		assertEquals("Internal", ErrorKind.INTERNAL.getRaw());
 	}
 
 	// ---- Detail kind constants ----
@@ -167,71 +167,71 @@ public class ErrorTests {
 		assertTrue(e instanceof ServerException);
 		assertTrue(e instanceof SurrealException);
 		assertTrue(e instanceof RuntimeException);
-		assertEquals(ErrorKind.VALIDATION, e.getKind());
+		assertEquals(ErrorKind.VALIDATION, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyConfiguration() {
 		ConfigurationException e = new ConfigurationException("not supported", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.CONFIGURATION, e.getKind());
+		assertEquals(ErrorKind.CONFIGURATION, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyThrown() {
 		ThrownException e = new ThrownException("user error", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.THROWN, e.getKind());
+		assertEquals(ErrorKind.THROWN, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyQuery() {
 		QueryException e = new QueryException("timeout", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.QUERY, e.getKind());
+		assertEquals(ErrorKind.QUERY, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchySerialization() {
 		SerializationException e = new SerializationException("bad data", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.SERIALIZATION, e.getKind());
+		assertEquals(ErrorKind.SERIALIZATION, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyNotAllowed() {
 		NotAllowedException e = new NotAllowedException("denied", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.NOT_ALLOWED, e.getKind());
+		assertEquals(ErrorKind.NOT_ALLOWED, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyNotFound() {
 		NotFoundException e = new NotFoundException("missing", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.NOT_FOUND, e.getKind());
+		assertEquals(ErrorKind.NOT_FOUND, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyAlreadyExists() {
 		AlreadyExistsException e = new AlreadyExistsException("duplicate", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.ALREADY_EXISTS, e.getKind());
+		assertEquals(ErrorKind.ALREADY_EXISTS, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyInternal() {
 		InternalException e = new InternalException("unexpected", (java.lang.Object) null, null);
 		assertTrue(e instanceof ServerException);
-		assertEquals(ErrorKind.INTERNAL, e.getKind());
+		assertEquals(ErrorKind.INTERNAL, e.getKindEnum());
 	}
 
 	@Test
 	void hierarchyServerException() {
-		ServerException e = new ServerException(ErrorKind.CONNECTION, "conn error", (java.lang.Object) null, null);
+		ServerException e = new ServerException(ErrorKind.CONNECTION, null, "conn error", (java.lang.Object) null, null);
 		assertTrue(e instanceof SurrealException);
 		assertFalse(e instanceof InternalException);
-		assertEquals(ErrorKind.CONNECTION, e.getKind());
+		assertEquals(ErrorKind.CONNECTION, e.getKindEnum());
 	}
 
 	@Test

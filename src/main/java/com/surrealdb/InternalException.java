@@ -8,6 +8,6 @@ package com.surrealdb;
 public class InternalException extends ServerException {
 
 	InternalException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.INTERNAL, message, details, cause);
+		super(ErrorKind.INTERNAL, null, message, details, cause);
 	}
 }

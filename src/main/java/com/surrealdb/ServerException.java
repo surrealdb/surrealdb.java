@@ -33,29 +33,57 @@ import java.util.Map;
  */
 public class ServerException extends SurrealException {
 
-	private final String kind;
+	private final ErrorKind kindEnum;
+	private final String rawKind;
 	private final java.lang.Object details;
 	private final ServerException serverCause;
 
 	/**
-	 * Constructs a {@code ServerException} with structured details.
-	 * Used by the JNI bridge; details are built from the error value on the native side.
+	 * Constructs a {@code ServerException} from an {@link ErrorKind} and optional raw kind string.
+	 * Used by the JNI bridge when the native side passes the enum. When {@code kind} is
+	 * {@link ErrorKind#UNKNOWN}, {@code rawKindIfUnknown} must be the wire string.
+	 *
+	 * @param kind             the error kind enum (from the Rust SDK's ErrorDetails)
+	 * @param rawKindIfUnknown when {@code kind} is {@link ErrorKind#UNKNOWN}, the wire string; otherwise {@code null}
 	 */
-	ServerException(String kind, String message, java.lang.Object details, ServerException cause) {
+	ServerException(ErrorKind kind, String rawKindIfUnknown, String message, java.lang.Object details, ServerException cause) {
 		super(message, cause);
-		this.kind = kind;
+		this.kindEnum = kind;
+		this.rawKind = kind == ErrorKind.UNKNOWN ? rawKindIfUnknown : null;
 		this.details = details;
 		this.serverCause = cause;
 	}
 
 	/**
-	 * Returns the machine-readable error kind (e.g. {@code "NotAllowed"}).
+	 * Constructs a {@code ServerException} from a kind string (for subclasses and tests).
+	 * The kind is resolved to an {@link ErrorKind} via {@link ErrorKind#fromString(String)}.
+	 */
+	ServerException(String kind, String message, java.lang.Object details, ServerException cause) {
+		super(message, cause);
+		this.kindEnum = ErrorKind.fromString(kind);
+		this.rawKind = kindEnum == ErrorKind.UNKNOWN ? kind : null;
+		this.details = details;
+		this.serverCause = cause;
+	}
+
+	/**
+	 * Returns the machine-readable error kind string (e.g. {@code "NotAllowed"}).
+	 * For unknown kinds this is the wire string; otherwise it matches {@link #getKindEnum()}{@code .getRaw()}.
 	 *
 	 * @return the error kind string, never {@code null}
-	 * @see ErrorKind
 	 */
 	public String getKind() {
-		return kind;
+		return rawKind != null ? rawKind : kindEnum.getRaw();
+	}
+
+	/**
+	 * Returns the error kind as an enum for type-safe matching.
+	 * Unknown kinds from newer servers map to {@link ErrorKind#UNKNOWN}; the raw string is in {@link #getKind()}.
+	 *
+	 * @return the error kind enum, never {@code null}
+	 */
+	public ErrorKind getKindEnum() {
+		return kindEnum;
 	}
 
 	/**
@@ -103,6 +131,13 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
+	 * Checks whether this error or any error in its cause chain has the given {@link ErrorKind}.
+	 */
+	public boolean hasKind(ErrorKind kind) {
+		return findCause(kind) != null;
+	}
+
+	/**
 	 * Finds the first error in the cause chain (including this error) that has
 	 * the given {@link ErrorKind kind}.
 	 *
@@ -112,7 +147,21 @@ public class ServerException extends SurrealException {
 	public ServerException findCause(String kind) {
 		ServerException current = this;
 		while (current != null) {
-			if (kind.equals(current.kind)) {
+			if (kind.equals(current.getKind())) {
+				return current;
+			}
+			current = current.serverCause;
+		}
+		return null;
+	}
+
+	/**
+	 * Finds the first error in the cause chain (including this error) that has the given {@link ErrorKind}.
+	 */
+	public ServerException findCause(ErrorKind kind) {
+		ServerException current = this;
+		while (current != null) {
+			if (kind == current.kindEnum) {
 				return current;
 			}
 			current = current.serverCause;

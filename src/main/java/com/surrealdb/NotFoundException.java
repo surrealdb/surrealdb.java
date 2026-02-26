@@ -11,7 +11,7 @@ package com.surrealdb;
 public class NotFoundException extends ServerException {
 
 	NotFoundException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.NOT_FOUND, message, details, cause);
+		super(ErrorKind.NOT_FOUND, null, message, details, cause);
 	}
 
 	/**

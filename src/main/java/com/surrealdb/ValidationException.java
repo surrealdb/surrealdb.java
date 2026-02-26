@@ -11,7 +11,7 @@ package com.surrealdb;
 public class ValidationException extends ServerException {
 
 	ValidationException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.VALIDATION, message, details, cause);
+		super(ErrorKind.VALIDATION, null, message, details, cause);
 	}
 
 	/**

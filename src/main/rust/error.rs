@@ -3,7 +3,7 @@ use std::error::Error as StdError;
 use jni::errors::Error;
 use jni::objects::{JObject, JThrowable, JValue};
 use jni::JNIEnv;
-use surrealdb::types::{Number, SurrealValue, Value};
+use surrealdb::types::{ErrorDetails, Number, SurrealValue, Value};
 
 pub(super) enum SurrealError {
     Exception(Error),
@@ -19,25 +19,6 @@ const NO_SUCH_ELEMENT_EXCEPTION: &str = "java/util/NoSuchElementException";
 const SURREAL_EXCEPTION: &str = "com/surrealdb/SurrealException";
 
 const SERVER_EXCEPTION: &str = "com/surrealdb/ServerException";
-
-/// Maps an error kind string to the corresponding Java exception class.
-/// Unknown kinds map to ServerException (NOT InternalException) for forward compatibility.
-fn kind_to_java_class(kind: &str) -> &'static str {
-    match kind {
-        "Validation" => "com/surrealdb/ValidationException",
-        "Configuration" => "com/surrealdb/ConfigurationException",
-        "Thrown" => "com/surrealdb/ThrownException",
-        "Query" => "com/surrealdb/QueryException",
-        "Serialization" => "com/surrealdb/SerializationException",
-        "NotAllowed" => "com/surrealdb/NotAllowedException",
-        "NotFound" => "com/surrealdb/NotFoundException",
-        "AlreadyExists" => "com/surrealdb/AlreadyExistsException",
-        "Connection" => SERVER_EXCEPTION,
-        "Internal" => "com/surrealdb/InternalException",
-        // Forward compat: unknown kinds get base ServerException
-        _ => SERVER_EXCEPTION,
-    }
-}
 
 /// Converts error details (SurrealValue) into a Value we can walk.
 /// Unwraps double-wrapped details from SurrealDB v3.0.0 when outer "kind"
@@ -132,8 +113,9 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
 /// Recursively builds a Java ServerException (or subclass) from a surrealdb::Error,
 /// constructing the cause chain bottom-up.
 ///
-/// Subclasses use a 3-arg constructor: (String message, Object details, ServerException cause)
-/// Base ServerException uses a 4-arg constructor: (String kind, String message, Object details, ServerException cause)
+/// Matches on the Rust SDK's ErrorDetails enum to choose the Java exception class and
+/// ErrorKind enum. Base ServerException uses (ErrorKind, String rawKindIfUnknown, message, details, cause);
+/// subclasses use (String message, Object details, ServerException cause).
 fn build_server_exception<'a>(
     env: &mut JNIEnv<'a>,
     error: &surrealdb::Error,
@@ -149,8 +131,20 @@ fn build_server_exception<'a>(
         JObject::null()
     };
 
-    let kind_str = error.kind_str();
-    let class_name = kind_to_java_class(kind_str);
+    // Match on the Rust SDK's ErrorDetails enum to align with the typed API.
+    let (class_name, enum_name, raw_kind_for_unknown) = match error.details() {
+        ErrorDetails::Validation(_) => ("com/surrealdb/ValidationException", "VALIDATION", None),
+        ErrorDetails::Configuration(_) => ("com/surrealdb/ConfigurationException", "CONFIGURATION", None),
+        ErrorDetails::Thrown => ("com/surrealdb/ThrownException", "THROWN", None),
+        ErrorDetails::Query(_) => ("com/surrealdb/QueryException", "QUERY", None),
+        ErrorDetails::Serialization(_) => ("com/surrealdb/SerializationException", "SERIALIZATION", None),
+        ErrorDetails::NotAllowed(_) => ("com/surrealdb/NotAllowedException", "NOT_ALLOWED", None),
+        ErrorDetails::NotFound(_) => ("com/surrealdb/NotFoundException", "NOT_FOUND", None),
+        ErrorDetails::AlreadyExists(_) => ("com/surrealdb/AlreadyExistsException", "ALREADY_EXISTS", None),
+        ErrorDetails::Connection(_) => (SERVER_EXCEPTION, "CONNECTION", None),
+        ErrorDetails::Internal => ("com/surrealdb/InternalException", "INTERNAL", None),
+        _ => (SERVER_EXCEPTION, "UNKNOWN", Some(error.kind_str())),
+    };
     let is_base_class = class_name == SERVER_EXCEPTION;
 
     let class = match env.find_class(class_name) {
@@ -169,15 +163,22 @@ fn build_server_exception<'a>(
     let message_obj = JObject::from(message);
 
     if is_base_class {
-        // ServerException(String kind, String message, Object details, ServerException cause)
-        let kind_str = match env.new_string(kind_str) {
-            Ok(s) => s,
-            Err(_) => return None,
+        // ServerException(ErrorKind kind, String rawKindIfUnknown, String message, Object details, ServerException cause)
+        let enum_class = env.find_class("com/surrealdb/ErrorKind").ok()?;
+        let enum_obj = env
+            .get_static_field(&enum_class, enum_name, "Lcom/surrealdb/ErrorKind;")
+            .ok()?
+            .l()
+            .ok()
+            .map(JObject::from)?;
+        let raw_kind_jstr = match raw_kind_for_unknown {
+            Some(s) => env.new_string(s).ok().map(JObject::from).unwrap_or(JObject::null()),
+            None => JObject::null(),
         };
-        let kind_obj = JObject::from(kind_str);
-        let sig = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
+        let sig = "(Lcom/surrealdb/ErrorKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
         let args = [
-            JValue::Object(&kind_obj),
+            JValue::Object(&enum_obj),
+            JValue::Object(&raw_kind_jstr),
             JValue::Object(&message_obj),
             JValue::Object(&details_obj),
             JValue::Object(&java_cause),

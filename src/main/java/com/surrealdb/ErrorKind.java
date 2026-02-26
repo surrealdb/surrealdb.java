@@ -1,44 +1,56 @@
 package com.surrealdb;
 
 /**
- * Machine-readable error kind constants returned by
- * {@link ServerException#getKind()}.
+ * Machine-readable error kind, aligned with the SurrealDB Rust SDK's {@code ErrorDetails} enum.
  *
- * <p>These values match the {@code ErrorKind} enum defined in the SurrealDB
- * server and are stable across SDK versions.
+ * <p>Returned by {@link ServerException#getKindEnum()}. Use this for type-safe matching instead
+ * of {@link ServerException#getKind()} when the kind is known. For unknown (future) kinds,
+ * {@link #UNKNOWN} is used and the raw string is available via {@link ServerException#getKind()}.
  */
-public final class ErrorKind {
+public enum ErrorKind {
 
-	/** Invalid input: parse error, invalid request or params. */
-	public static final String VALIDATION = "Validation";
+	VALIDATION("Validation"),
+	CONFIGURATION("Configuration"),
+	THROWN("Thrown"),
+	QUERY("Query"),
+	SERIALIZATION("Serialization"),
+	NOT_ALLOWED("NotAllowed"),
+	NOT_FOUND("NotFound"),
+	ALREADY_EXISTS("AlreadyExists"),
+	CONNECTION("Connection"),
+	INTERNAL("Internal"),
+	/** Unknown kind from a newer server; raw string is in {@link ServerException#getKind()}. */
+	UNKNOWN(null);
 
-	/** Feature or config not supported (e.g. live queries, GraphQL). */
-	public static final String CONFIGURATION = "Configuration";
+	private final String raw;
 
-	/** User-thrown error (THROW in SurrealQL). */
-	public static final String THROWN = "Thrown";
+	ErrorKind(String raw) {
+		this.raw = raw;
+	}
 
-	/** Query execution failure (timeout, cancelled, not executed). */
-	public static final String QUERY = "Query";
+	/**
+	 * Returns the wire string for this kind, or {@code null} for {@link #UNKNOWN}.
+	 */
+	public String getRaw() {
+		return raw;
+	}
 
-	/** Serialization or deserialization error. */
-	public static final String SERIALIZATION = "Serialization";
-
-	/** Permission denied, method not allowed, function or scripting blocked. */
-	public static final String NOT_ALLOWED = "NotAllowed";
-
-	/** Resource not found (table, record, namespace, RPC method). */
-	public static final String NOT_FOUND = "NotFound";
-
-	/** Duplicate resource (table, record, namespace). */
-	public static final String ALREADY_EXISTS = "AlreadyExists";
-
-	/** Client connection error (SDK-side only). */
-	public static final String CONNECTION = "Connection";
-
-	/** Unexpected or unknown error (fallback for unrecognised kinds). */
-	public static final String INTERNAL = "Internal";
-
-	private ErrorKind() {
+	/**
+	 * Resolves a kind string from the wire to an enum constant.
+	 * Unknown strings return {@link #UNKNOWN}.
+	 *
+	 * @param kind the kind string (e.g. from the server)
+	 * @return the matching enum constant, or {@link #UNKNOWN}
+	 */
+	public static ErrorKind fromString(String kind) {
+		if (kind == null) {
+			return UNKNOWN;
+		}
+		for (ErrorKind k : values()) {
+			if (k != UNKNOWN && kind.equals(k.raw)) {
+				return k;
+			}
+		}
+		return UNKNOWN;
 	}
 }

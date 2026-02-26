@@ -12,7 +12,7 @@ package com.surrealdb;
 public class NotAllowedException extends ServerException {
 
 	NotAllowedException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.NOT_ALLOWED, message, details, cause);
+		super(ErrorKind.NOT_ALLOWED, null, message, details, cause);
 	}
 
 	/**

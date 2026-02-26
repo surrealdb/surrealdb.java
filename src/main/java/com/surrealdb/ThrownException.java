@@ -8,6 +8,6 @@ package com.surrealdb;
 public class ThrownException extends ServerException {
 
 	ThrownException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.THROWN, message, details, cause);
+		super(ErrorKind.THROWN, null, message, details, cause);
 	}
 }

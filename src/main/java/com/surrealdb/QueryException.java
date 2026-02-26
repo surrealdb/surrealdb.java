@@ -13,7 +13,7 @@ import java.util.Map;
 public class QueryException extends ServerException {
 
 	QueryException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.QUERY, message, details, cause);
+		super(ErrorKind.QUERY, null, message, details, cause);
 	}
 
 	/**

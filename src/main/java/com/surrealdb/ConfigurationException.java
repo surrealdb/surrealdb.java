@@ -11,7 +11,7 @@ package com.surrealdb;
 public class ConfigurationException extends ServerException {
 
 	ConfigurationException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.CONFIGURATION, message, details, cause);
+		super(ErrorKind.CONFIGURATION, null, message, details, cause);
 	}
 
 	/**

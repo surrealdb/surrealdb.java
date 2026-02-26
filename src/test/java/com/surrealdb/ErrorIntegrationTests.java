@@ -22,7 +22,7 @@ public class ErrorIntegrationTests {
 				surreal.query("THIS IS NOT VALID SQL !!! %%%");
 				fail("Expected a ValidationException for invalid SQL");
 			} catch (ValidationException e) {
-				assertEquals(ErrorKind.VALIDATION, e.getKind());
+				assertEquals(ErrorKind.VALIDATION, e.getKindEnum());
 				assertNotNull(e.getMessage());
 			} catch (ServerException e) {
 				// Also acceptable -- the server may classify this differently
@@ -74,7 +74,7 @@ public class ErrorIntegrationTests {
 				response.take(0);
 				fail("Expected a ThrownException for THROW statement");
 			} catch (ThrownException e) {
-				assertEquals(ErrorKind.THROWN, e.getKind());
+				assertEquals(ErrorKind.THROWN, e.getKindEnum());
 				assertNotNull(e.getMessage());
 			} catch (ServerException e) {
 				// Acceptable if the server classifies differently

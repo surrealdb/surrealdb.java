@@ -11,7 +11,7 @@ package com.surrealdb;
 public class AlreadyExistsException extends ServerException {
 
 	AlreadyExistsException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.ALREADY_EXISTS, message, details, cause);
+		super(ErrorKind.ALREADY_EXISTS, null, message, details, cause);
 	}
 
 	/**

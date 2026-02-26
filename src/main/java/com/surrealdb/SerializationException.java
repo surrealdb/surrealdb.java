@@ -11,7 +11,7 @@ package com.surrealdb;
 public class SerializationException extends ServerException {
 
 	SerializationException(String message, java.lang.Object details, ServerException cause) {
-		super(ErrorKind.SERIALIZATION, message, details, cause);
+		super(ErrorKind.SERIALIZATION, null, message, details, cause);
 	}
 
 	/**
