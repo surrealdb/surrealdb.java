@@ -5,8 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -16,15 +15,13 @@ import com.surrealdb.SurrealException;
 
 public class IntegrationTest {
 
+	// Skipped on Windows: SurrealDB is typically not started there in CI (setup-surreal is Linux/macOS).
 	@Test
-	void surrealdb_websocket() throws SurrealException {
+	@EnabledOnOs({ OS.LINUX, OS.MAC })
+	void surrealdb_websocket() {
+		// When SurrealDB is running at localhost:8000 (e.g. in CI), connect and verify.
 		try (Surreal surreal = new Surreal()) {
-			// We expected an exception as there is no running server
-			RuntimeException e = assertThrows(RuntimeException.class, () -> {
-				surreal.connect("ws://localhost:8000");
-			});
-			assertTrue(e.getMessage().startsWith("There was an error processing a WebSocket request: IO error"),
-					e::getMessage);
+			assertDoesNotThrow(() -> surreal.connect("ws://localhost:8000").useNs("test").useDb("test"));
 		}
 	}
 

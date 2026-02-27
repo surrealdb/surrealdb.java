@@ -160,6 +160,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stream"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b5a71a6f37880a80d1d7f19efd781e4b5de42c88f0722cc13bcb6cc2cfe8476"
+dependencies = [
+ "async-stream-impl",
+ "futures-core",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "async-stream-impl"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.114",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -307,12 +329,6 @@ checksum = "bf95709a440f45e986983918d0e8a1f30a9b1df04918fc828670606804ac3c09"
 dependencies = [
  "virtue",
 ]
-
-[[package]]
-name = "bit-vec"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
 name = "bitflags"
@@ -569,12 +585,6 @@ dependencies = [
  "bytes",
  "memchr",
 ]
-
-[[package]]
-name = "compare"
-version = "0.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea0095f6103c2a8b44acd6fd15960c801dafebf02e21940360833e0673f48ba7"
 
 [[package]]
 name = "concurrent-queue"
@@ -859,12 +869,6 @@ dependencies = [
  "trice",
  "urlencoding",
 ]
-
-[[package]]
-name = "double-ended-peekable"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0d05e1c0dbad51b52c38bda7adceef61b9efc2baf04acfe8726a8c4630a6f57"
 
 [[package]]
 name = "dtoa"
@@ -1894,15 +1898,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c00403deb17c3221a1fe4fb571b9ed0370b3dcd116553c77fa294a3d918699"
 
 [[package]]
-name = "interval-heap"
-version = "0.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11274e5e8e89b8607cfedc2910b6626e998779b48a019151c7604d0adcb86ac6"
-dependencies = [
- "compare",
-]
-
-[[package]]
 name = "ipnet"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2175,15 +2170,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273"
 
 [[package]]
-name = "memmap2"
-version = "0.9.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "744133e4a0e0a658e1374cf3bf8e415c4052a15a111acd372764c55b4177d490"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2208,15 +2194,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "nanoid"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ffa00dec017b5b1a8b7cf5e2c008bfda1aa7e0697ac1508b491fdf2622fb4d8"
-dependencies = [
- "rand 0.8.5",
 ]
 
 [[package]]
@@ -3827,9 +3804,11 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "surrealdb"
-version = "3.0.0-beta"
-source = "git+https://github.com/surrealdb/surrealdb.git?branch=main#696fbdef388b01f38d181b801d27bbcd97e32e5b"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a18997a4c20c9559461846bff0dad185854c32639407904e2bb97567b4fa6a63"
 dependencies = [
+ "anyhow",
  "async-channel",
  "boxcar",
  "chrono",
@@ -3847,7 +3826,6 @@ dependencies = [
  "serde_json",
  "surrealdb-core",
  "surrealdb-types",
- "thiserror 2.0.18",
  "tokio",
  "tokio-tungstenite",
  "tokio-tungstenite-wasm",
@@ -3863,8 +3841,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-core"
-version = "3.0.0-beta"
-source = "git+https://github.com/surrealdb/surrealdb.git?branch=main#696fbdef388b01f38d181b801d27bbcd97e32e5b"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "470a61158ca8b4e774f8be3a8fbe1393bd33c026d9025a3db8f5ada0a06adf6a"
 dependencies = [
  "addr",
  "affinitypool",
@@ -3873,6 +3852,7 @@ dependencies = [
  "anyhow",
  "argon2",
  "async-channel",
+ "async-stream",
  "async-trait",
  "base64",
  "bcrypt",
@@ -3900,7 +3880,6 @@ dependencies = [
  "lexicmp",
  "md-5",
  "mime",
- "nanoid",
  "ndarray",
  "ndarray-stats",
  "num-traits",
@@ -3942,7 +3921,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "trice",
  "ulid",
  "unicase",
  "url",
@@ -3950,11 +3928,12 @@ dependencies = [
  "vart",
  "wasm-bindgen-futures",
  "wasmtimer",
+ "web-time",
 ]
 
 [[package]]
 name = "surrealdb-java"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "async-channel",
  "cargo-lock",
@@ -3966,6 +3945,7 @@ dependencies = [
  "parking_lot",
  "rust_decimal",
  "serde",
+ "serde_json",
  "surrealdb",
  "tokio",
 ]
@@ -3996,8 +3976,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-types"
-version = "3.0.0-beta"
-source = "git+https://github.com/surrealdb/surrealdb.git?branch=main#696fbdef388b01f38d181b801d27bbcd97e32e5b"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58db59440236ec593dbbb2487c4db11e4452ee636f9a1da3e3672c1cc1f42259"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4006,8 +3987,8 @@ dependencies = [
  "geo 0.32.0",
  "hex",
  "http",
- "nanoid",
  "papaya",
+ "rand 0.8.5",
  "regex",
  "rstest",
  "rust_decimal",
@@ -4021,8 +4002,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-types-derive"
-version = "3.0.0-beta"
-source = "git+https://github.com/surrealdb/surrealdb.git?branch=main#696fbdef388b01f38d181b801d27bbcd97e32e5b"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "617a808c9b3a2cd688c98027f4781c522507df73b42b1c56820ae72407eda016"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4031,30 +4013,23 @@ dependencies = [
 
 [[package]]
 name = "surrealkv"
-version = "0.17.1"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "545d3fb48e4f2cbdd84e6f6bc4dc011a5c6ee6d4acf5b9ba1073d1ee31debf6f"
+checksum = "a6c1dd97851edc773c24afb282d6a17eb1bc798fafac53ea0d2951458854d472"
 dependencies = [
  "arc-swap",
- "async-channel",
  "async-trait",
- "bit-vec",
  "byteorder",
  "bytes",
  "chrono",
  "crc32fast",
- "crossbeam",
  "crossbeam-skiplist",
- "double-ended-peekable",
  "fs2",
- "futures",
  "getrandom 0.3.4",
  "guardian",
  "integer-encoding",
- "interval-heap",
  "log",
  "lz4_flex",
- "memmap2",
  "parking_lot",
  "quick_cache",
  "rand 0.9.2",
@@ -4066,9 +4041,9 @@ dependencies = [
 
 [[package]]
 name = "surrealmx"
-version = "0.15.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbe0aa6326a59dbc86821220a1e9d9a2f46a354deaadd93637cdfac1862e6b0e"
+checksum = "6508449a7d1379a92a51ba49391b48ccab0b60dd11a4277c0dda965d8c99dbff"
 dependencies = [
  "arc-swap",
  "bincode",
@@ -4083,6 +4058,7 @@ dependencies = [
  "smallvec",
  "thiserror 2.0.18",
  "tracing",
+ "web-time",
 ]
 
 [[package]]
