@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotFoundException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">NotFoundException.java</span></div><h1>NotFoundException.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+/**
+ * Resource not found (table, record, namespace, database, RPC method, session).
+ *
+ * &lt;p&gt;Details use the {@code {kind, details?}} format with variants defined
+ * in {@link NotFoundDetailKind}.
+ *
+ * @see ErrorKind#NOT_FOUND
+ */
+public class NotFoundException extends ServerException {
+
+	NotFoundException(String message, java.lang.Object details, ServerException cause) {
+<span class="fc" id="L14">		super(ErrorKind.NOT_FOUND, null, message, details, cause);</span>
+<span class="fc" id="L15">	}</span>
+
+	/**
+	 * Returns the table name, if this is a table-not-found error.
+	 *
+	 * @return the table name, or {@code null}
+	 */
+	public String getTableName() {
+<span class="fc" id="L23">		return detailField(getDetails(), NotFoundDetailKind.TABLE, &quot;name&quot;);</span>
+	}
+
+	/**
+	 * Returns the record id, if this is a record-not-found error.
+	 *
+	 * @return the record id string, or {@code null}
+	 */
+	public String getRecordId() {
+<span class="fc" id="L32">		return detailField(getDetails(), NotFoundDetailKind.RECORD, &quot;id&quot;);</span>
+	}
+
+	/**
+	 * Returns the method name, if this is a method-not-found error.
+	 *
+	 * @return the method name, or {@code null}
+	 */
+	public String getMethodName() {
+<span class="fc" id="L41">		return detailField(getDetails(), NotFoundDetailKind.METHOD, &quot;name&quot;);</span>
+	}
+
+	/**
+	 * Returns the namespace name, if this is a namespace-not-found error.
+	 *
+	 * @return the namespace name, or {@code null}
+	 */
+	public String getNamespaceName() {
+<span class="fc" id="L50">		return detailField(getDetails(), NotFoundDetailKind.NAMESPACE, &quot;name&quot;);</span>
+	}
+
+	/**
+	 * Returns the database name, if this is a database-not-found error.
+	 *
+	 * @return the database name, or {@code null}
+	 */
+	public String getDatabaseName() {
+<span class="fc" id="L59">		return detailField(getDetails(), NotFoundDetailKind.DATABASE, &quot;name&quot;);</span>
+	}
+
+	/**
+	 * Returns the session id, if this is a session-not-found error.
+	 *
+	 * @return the session id, or {@code null}
+	 */
+	public String getSessionId() {
+<span class="fc" id="L68">		return detailField(getDetails(), NotFoundDetailKind.SESSION, &quot;id&quot;);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

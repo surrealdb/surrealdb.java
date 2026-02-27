@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ErrorKind.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ErrorKind.java</span></div><h1>ErrorKind.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Machine-readable error kind, aligned with the SurrealDB Rust SDK's {@code ErrorDetails} enum.
+ *
+ * &lt;p&gt;Returned by {@link ServerException#getKindEnum()}. Use this for type-safe matching instead
+ * of {@link ServerException#getKind()} when the kind is known. For unknown (future) kinds,
+ * {@link #UNKNOWN} is used and the raw string is available via {@link ServerException#getKind()}.
+ */
+<span class="fc" id="L13">public enum ErrorKind {</span>
+
+<span class="fc" id="L15">	VALIDATION(&quot;Validation&quot;),</span>
+<span class="fc" id="L16">	CONFIGURATION(&quot;Configuration&quot;),</span>
+<span class="fc" id="L17">	THROWN(&quot;Thrown&quot;),</span>
+<span class="fc" id="L18">	QUERY(&quot;Query&quot;),</span>
+<span class="fc" id="L19">	SERIALIZATION(&quot;Serialization&quot;),</span>
+<span class="fc" id="L20">	NOT_ALLOWED(&quot;NotAllowed&quot;),</span>
+<span class="fc" id="L21">	NOT_FOUND(&quot;NotFound&quot;),</span>
+<span class="fc" id="L22">	ALREADY_EXISTS(&quot;AlreadyExists&quot;),</span>
+<span class="fc" id="L23">	CONNECTION(&quot;Connection&quot;),</span>
+<span class="fc" id="L24">	INTERNAL(&quot;Internal&quot;),</span>
+	/** Unknown kind from a newer server; raw string is in {@link ServerException#getKind()}. */
+<span class="fc" id="L26">	UNKNOWN(null);</span>
+
+	private static final Map&lt;String, ErrorKind&gt; LOOKUP;
+
+	static {
+<span class="fc" id="L31">		LOOKUP = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">		for (ErrorKind k : values()) {</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">			if (k.raw != null) {</span>
+<span class="fc" id="L34">				LOOKUP.put(k.raw, k);</span>
+			}
+		}
+<span class="fc" id="L37">	}</span>
+
+	private final String raw;
+
+<span class="fc" id="L41">	ErrorKind(String raw) {</span>
+<span class="fc" id="L42">		this.raw = raw;</span>
+<span class="fc" id="L43">	}</span>
+
+	/**
+	 * Resolves a kind string from the wire to an enum constant.
+	 * Unknown strings return {@link #UNKNOWN}.
+	 *
+	 * @param kind the kind string (e.g. from the server)
+	 * @return the matching enum constant, or {@link #UNKNOWN}
+	 */
+	public static ErrorKind fromString(String kind) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">		if (kind == null) {</span>
+<span class="nc" id="L54">			return UNKNOWN;</span>
+		}
+<span class="fc" id="L56">		return LOOKUP.getOrDefault(kind, UNKNOWN);</span>
+	}
+
+	/**
+	 * Returns the wire string for this kind, or {@code null} for {@link #UNKNOWN}.
+	 */
+	public String getRaw() {
+<span class="fc" id="L63">		return raw;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

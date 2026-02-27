@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">QueryException.java</span></div><h1>QueryException.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.util.Map;
+
+/**
+ * Query execution failure (not executed, timed out, cancelled).
+ *
+ * &lt;p&gt;Details use the {@code {kind, details?}} format with variants defined
+ * in {@link QueryDetailKind}.
+ *
+ * @see ErrorKind#QUERY
+ */
+public class QueryException extends ServerException {
+
+	QueryException(String message, java.lang.Object details, ServerException cause) {
+<span class="fc" id="L16">		super(ErrorKind.QUERY, null, message, details, cause);</span>
+<span class="fc" id="L17">	}</span>
+
+	/**
+	 * Returns {@code true} when the query was not executed
+	 * (e.g. a previous statement in a multi-statement query failed).
+	 *
+	 * @return whether the detail kind is {@code NotExecuted}
+	 */
+	public boolean isNotExecuted() {
+<span class="fc" id="L26">		return hasDetailKey(getDetails(), QueryDetailKind.NOT_EXECUTED);</span>
+	}
+
+	/**
+	 * Returns {@code true} when the query timed out.
+	 *
+	 * @return whether the detail kind is {@code TimedOut}
+	 */
+	public boolean isTimedOut() {
+<span class="fc" id="L35">		return hasDetailKey(getDetails(), QueryDetailKind.TIMED_OUT);</span>
+	}
+
+	/**
+	 * Returns {@code true} when the query was cancelled.
+	 *
+	 * @return whether the detail kind is {@code Cancelled}
+	 */
+	public boolean isCancelled() {
+<span class="fc" id="L44">		return hasDetailKey(getDetails(), QueryDetailKind.CANCELLED);</span>
+	}
+
+	/**
+	 * Returns the timeout duration when the query timed out, as a map
+	 * containing {@code &quot;secs&quot;} and {@code &quot;nanos&quot;} keys.
+	 *
+	 * @return the timeout map, or {@code null}
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	public Map&lt;String, java.lang.Object&gt; getTimeout() {
+<span class="fc" id="L55">		java.lang.Object inner = getDetailValue(getDetails(), QueryDetailKind.TIMED_OUT);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		if (inner instanceof Map) {</span>
+<span class="fc" id="L57">			java.lang.Object duration = ((Map&lt;String, java.lang.Object&gt;) inner).get(&quot;duration&quot;);</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">			if (duration instanceof Map) {</span>
+<span class="fc" id="L59">				return (Map&lt;String, java.lang.Object&gt;) duration;</span>
+			}
+		}
+<span class="fc" id="L62">		return null;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

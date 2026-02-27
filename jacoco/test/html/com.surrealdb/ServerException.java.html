@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServerException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ServerException.java</span></div><h1>ServerException.java</h1><pre class="source lang-java linenums">package com.surrealdb;
+
+import java.util.Map;
+
+// Note: java.lang.Object is used explicitly throughout because
+// com.surrealdb.Object shadows it in this package.
+
+/**
+ * Base class for all exceptions originating from the SurrealDB server.
+ *
+ * &lt;p&gt;Carries structured error information: a machine-readable {@link #getKind() kind},
+ * optional {@link #getDetails() details} using the {@code {kind, details?}} wire format,
+ * and an optional typed {@link #getServerCause() cause} chain.
+ *
+ * &lt;p&gt;Details follow the internally-tagged format where each detail object has a
+ * {@code &quot;kind&quot;} field and an optional {@code &quot;details&quot;} field:
+ * &lt;ul&gt;
+ *   &lt;li&gt;Unit variant: {@code {&quot;kind&quot;: &quot;Parse&quot;}}&lt;/li&gt;
+ *   &lt;li&gt;Newtype variant: {@code {&quot;kind&quot;: &quot;Auth&quot;, &quot;details&quot;: {&quot;kind&quot;: &quot;TokenExpired&quot;}}}&lt;/li&gt;
+ *   &lt;li&gt;Struct variant: {@code {&quot;kind&quot;: &quot;Table&quot;, &quot;details&quot;: {&quot;name&quot;: &quot;users&quot;}}}&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;For backward compatibility with older servers, the legacy externally-tagged
+ * format ({@code &quot;Parse&quot;}, {@code {&quot;Auth&quot;: &quot;TokenExpired&quot;}},
+ * {@code {&quot;Table&quot;: {&quot;name&quot;: &quot;users&quot;}}}) is also supported by all detail helpers.
+ *
+ * &lt;p&gt;Specific error kinds are represented by subclasses (e.g. {@link NotAllowedException},
+ * {@link NotFoundException}). When the server returns an unknown kind, a plain
+ * {@code ServerException} is used (not {@link InternalException}) to preserve forward
+ * compatibility.
+ *
+ * @see ErrorKind
+ */
+public class ServerException extends SurrealException {
+
+	private final ErrorKind kindEnum;
+	private final String rawKind;
+	private final java.lang.Object details;
+	private final ServerException serverCause;
+
+	/**
+	 * Constructs a {@code ServerException} from an {@link ErrorKind} and optional raw kind string.
+	 * Used by the JNI bridge when the native side passes the enum. When {@code kind} is
+	 * {@link ErrorKind#UNKNOWN}, {@code rawKindIfUnknown} must be the wire string.
+	 *
+	 * @param kind             the error kind enum (from the Rust SDK's ErrorDetails)
+	 * @param rawKindIfUnknown when {@code kind} is {@link ErrorKind#UNKNOWN}, the wire string; otherwise {@code null}
+	 */
+	ServerException(ErrorKind kind, String rawKindIfUnknown, String message, java.lang.Object details, ServerException cause) {
+<span class="fc" id="L50">		super(message, cause);</span>
+<span class="fc" id="L51">		this.kindEnum = kind;</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">		this.rawKind = kind == ErrorKind.UNKNOWN ? rawKindIfUnknown : null;</span>
+<span class="fc" id="L53">		this.details = details;</span>
+<span class="fc" id="L54">		this.serverCause = cause;</span>
+<span class="fc" id="L55">	}</span>
+
+	/**
+	 * Constructs a {@code ServerException} from a kind string (for subclasses and tests).
+	 * The kind is resolved to an {@link ErrorKind} via {@link ErrorKind#fromString(String)}.
+	 */
+	ServerException(String kind, String message, java.lang.Object details, ServerException cause) {
+<span class="fc" id="L62">		super(message, cause);</span>
+<span class="fc" id="L63">		this.kindEnum = ErrorKind.fromString(kind);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">		this.rawKind = kindEnum == ErrorKind.UNKNOWN ? kind : null;</span>
+<span class="fc" id="L65">		this.details = details;</span>
+<span class="fc" id="L66">		this.serverCause = cause;</span>
+<span class="fc" id="L67">	}</span>
+
+	/**
+	 * Extracts the {@code &quot;kind&quot;} string from a {@code {kind, details?}} detail
+	 * object. Returns {@code null} if the details are not in internally-tagged format.
+	 *
+	 * @param details the details object (may be {@code null})
+	 * @return the kind string, or {@code null}
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	static String detailKind(java.lang.Object details) {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (details instanceof Map) {</span>
+<span class="fc" id="L79">			java.lang.Object k = ((Map&lt;String, java.lang.Object&gt;) details).get(&quot;kind&quot;);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">			if (k instanceof String) {</span>
+<span class="fc" id="L81">				return (String) k;</span>
+			}
+		}
+<span class="fc" id="L84">		return null;</span>
+	}
+
+	/**
+	 * Extracts the {@code &quot;details&quot;} value from a {@code {kind, details?}} detail
+	 * object. Returns {@code null} if not present or not in internally-tagged format.
+	 *
+	 * @param details the details object (may be {@code null})
+	 * @return the inner details value, or {@code null}
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	static java.lang.Object detailInner(java.lang.Object details) {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (details instanceof Map) {</span>
+<span class="fc" id="L97">			return ((Map&lt;String, java.lang.Object&gt;) details).get(&quot;details&quot;);</span>
+		}
+<span class="fc" id="L99">		return null;</span>
+	}
+
+	/**
+	 * Checks whether the details object matches a given variant key.
+	 * Supports both new and old formats:
+	 * &lt;ul&gt;
+	 *   &lt;li&gt;New: {@code {&quot;kind&quot;: &quot;Parse&quot;}} -- checks if {@code kind} equals key&lt;/li&gt;
+	 *   &lt;li&gt;Old: {@code &quot;Parse&quot;} -- checks if the string equals key&lt;/li&gt;
+	 *   &lt;li&gt;Old: {@code {&quot;Parse&quot;: ...}} -- checks if the map contains key&lt;/li&gt;
+	 * &lt;/ul&gt;
+	 *
+	 * @param details the details object (may be {@code null})
+	 * @param key     the key to look for
+	 * @return {@code true} if the key is present
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	static boolean hasDetailKey(java.lang.Object details, String key) {
+<span class="fc bfc" id="L117" title="All 2 branches covered.">		if (details == null) {</span>
+<span class="fc" id="L118">			return false;</span>
+		}
+		// New format: {&quot;kind&quot;: &quot;Parse&quot;}
+<span class="fc" id="L121">		String dk = detailKind(details);</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">		if (dk != null) {</span>
+<span class="fc" id="L123">			return dk.equals(key);</span>
+		}
+		// Old format: &quot;Parse&quot; (bare string)
+<span class="fc bfc" id="L126" title="All 2 branches covered.">		if (details instanceof String) {</span>
+<span class="fc" id="L127">			return ((String) details).equals(key);</span>
+		}
+		// Old format: {&quot;Parse&quot;: ...} (map key)
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">		if (details instanceof Map) {</span>
+<span class="fc" id="L131">			return ((Map&lt;String, java.lang.Object&gt;) details).containsKey(key);</span>
+		}
+<span class="nc" id="L133">		return false;</span>
+	}
+
+	/**
+	 * Extracts the inner value for a given variant key.
+	 * Supports both new and old formats:
+	 * &lt;ul&gt;
+	 *   &lt;li&gt;New: if {@code kind} equals key, returns {@code details[&quot;details&quot;]}&lt;/li&gt;
+	 *   &lt;li&gt;Old: if details is a map, returns {@code details[key]}&lt;/li&gt;
+	 *   &lt;li&gt;Old: if details is a string matching key, returns {@code null} (unit variant)&lt;/li&gt;
+	 * &lt;/ul&gt;
+	 *
+	 * @param details the details object (may be {@code null})
+	 * @param key     the key to extract
+	 * @return the value, or {@code null}
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	static java.lang.Object getDetailValue(java.lang.Object details, String key) {
+<span class="fc bfc" id="L151" title="All 2 branches covered.">		if (details == null) {</span>
+<span class="fc" id="L152">			return null;</span>
+		}
+		// New format: {&quot;kind&quot;: &quot;Auth&quot;, &quot;details&quot;: {&quot;kind&quot;: &quot;TokenExpired&quot;}}
+<span class="fc" id="L155">		String dk = detailKind(details);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">		if (dk != null) {</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">			if (dk.equals(key)) {</span>
+<span class="fc" id="L158">				return detailInner(details);</span>
+			}
+<span class="fc" id="L160">			return null;</span>
+		}
+		// Old format: unit variant string has no value
+<span class="fc bfc" id="L163" title="All 2 branches covered.">		if (details instanceof String) {</span>
+<span class="fc" id="L164">			return null;</span>
+		}
+		// Old format: {&quot;Auth&quot;: &quot;TokenExpired&quot;} or {&quot;Table&quot;: {&quot;name&quot;: &quot;users&quot;}}
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">		if (details instanceof Map) {</span>
+<span class="fc" id="L168">			return ((Map&lt;String, java.lang.Object&gt;) details).get(key);</span>
+		}
+<span class="nc" id="L170">		return null;</span>
+	}
+
+	/**
+	 * Extracts a string field from a variant's inner details.
+	 * Supports both new and old formats.
+	 *
+	 * &lt;p&gt;New: {@code {&quot;kind&quot;: &quot;Table&quot;, &quot;details&quot;: {&quot;name&quot;: &quot;users&quot;}}}
+	 * &lt;br&gt;Old: {@code {&quot;Table&quot;: {&quot;name&quot;: &quot;users&quot;}}}
+	 * &lt;br&gt;Both: {@code detailField(details, &quot;Table&quot;, &quot;name&quot;)} returns {@code &quot;users&quot;}.
+	 *
+	 * @param details the details object
+	 * @param key     the variant key
+	 * @param field   the field name inside the inner object
+	 * @return the string value, or {@code null}
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	static String detailField(java.lang.Object details, String key, String field) {
+<span class="fc" id="L188">		java.lang.Object inner = getDetailValue(details, key);</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">		if (inner instanceof Map) {</span>
+<span class="fc" id="L190">			java.lang.Object value = ((Map&lt;String, java.lang.Object&gt;) inner).get(field);</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">			return value instanceof String ? (String) value : null;</span>
+		}
+<span class="fc" id="L193">		return null;</span>
+	}
+
+	/**
+	 * Extracts a string from the inner details of a newtype variant.
+	 * Supports both new and old formats:
+	 * &lt;ul&gt;
+	 *   &lt;li&gt;New: {@code {&quot;kind&quot;: &quot;Auth&quot;, &quot;details&quot;: {&quot;kind&quot;: &quot;TokenExpired&quot;}}}
+	 *       -- returns {@code &quot;TokenExpired&quot;}&lt;/li&gt;
+	 *   &lt;li&gt;Old: {@code {&quot;Auth&quot;: &quot;TokenExpired&quot;}} -- returns {@code &quot;TokenExpired&quot;}&lt;/li&gt;
+	 * &lt;/ul&gt;
+	 *
+	 * @param details the details object
+	 * @param key     the variant key
+	 * @return the string value, or {@code null}
+	 */
+	static String getDetailString(java.lang.Object details, String key) {
+<span class="fc" id="L210">		java.lang.Object inner = getDetailValue(details, key);</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">		if (inner == null) {</span>
+<span class="fc" id="L212">			return null;</span>
+		}
+		// New format: inner is {&quot;kind&quot;: &quot;TokenExpired&quot;}
+<span class="fc" id="L215">		String dk = detailKind(inner);</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">		if (dk != null) {</span>
+<span class="fc" id="L217">			return dk;</span>
+		}
+		// Old format: inner is &quot;TokenExpired&quot;
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">		if (inner instanceof String) {</span>
+<span class="fc" id="L221">			return (String) inner;</span>
+		}
+<span class="nc" id="L223">		return null;</span>
+	}
+
+	/**
+	 * @deprecated Use {@link #detailField(java.lang.Object, String, String)} instead.
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	static String getNestedString(java.lang.Object details, String outerKey, String innerKey) {
+<span class="fc" id="L231">		return detailField(details, outerKey, innerKey);</span>
+	}
+
+	/**
+	 * @deprecated Use {@link #getDetailString(java.lang.Object, String)} with an equality check instead.
+	 */
+	static boolean isNewtypeValue(java.lang.Object details, String outerKey, String value) {
+<span class="fc" id="L238">		return value.equals(getDetailString(details, outerKey));</span>
+	}
+
+	// ---- Detail navigation helpers ----
+	//
+	// SurrealDB v3 uses a recursive { &quot;kind&quot;: &quot;...&quot;, &quot;details&quot;: ... } format
+	// for error details (internally-tagged). Older servers used serde's
+	// externally-tagged format (&quot;Parse&quot; / {&quot;Auth&quot;: &quot;TokenExpired&quot;} / {&quot;Table&quot;: {&quot;name&quot;: &quot;users&quot;}}).
+	//
+	// All helpers support both formats for backward compatibility.
+
+	/**
+	 * Returns the machine-readable error kind string (e.g. {@code &quot;NotAllowed&quot;}).
+	 * For unknown kinds this is the wire string; otherwise it matches {@link #getKindEnum()}{@code .getRaw()}.
+	 *
+	 * @return the error kind string, never {@code null}
+	 */
+	public String getKind() {
+<span class="fc bfc" id="L256" title="All 2 branches covered.">		return rawKind != null ? rawKind : kindEnum.getRaw();</span>
+	}
+
+	/**
+	 * Returns the error kind as an enum for type-safe matching.
+	 * Unknown kinds from newer servers map to {@link ErrorKind#UNKNOWN}; the raw string is in {@link #getKind()}.
+	 *
+	 * @return the error kind enum, never {@code null}
+	 */
+	public ErrorKind getKindEnum() {
+<span class="fc" id="L266">		return kindEnum;</span>
+	}
+
+	/**
+	 * Returns the optional structured details for this error.
+	 *
+	 * &lt;p&gt;Details use the {@code {kind, details?}} wire format. The value is either:
+	 * &lt;ul&gt;
+	 *   &lt;li&gt;{@code null} -- no details&lt;/li&gt;
+	 *   &lt;li&gt;a {@code Map&lt;String, Object&gt;} with a {@code &quot;kind&quot;} key and optional
+	 *       {@code &quot;details&quot;} key (new internally-tagged format)&lt;/li&gt;
+	 *   &lt;li&gt;a {@link String} -- a unit variant in the legacy format (e.g. {@code &quot;Parse&quot;})&lt;/li&gt;
+	 *   &lt;li&gt;a {@code Map&lt;String, Object&gt;} without {@code &quot;kind&quot;} -- legacy externally-tagged format&lt;/li&gt;
+	 * &lt;/ul&gt;
+	 *
+	 * &lt;p&gt;Prefer the typed convenience getters on subclasses (e.g.
+	 * {@link NotFoundException#getTableName()}) over inspecting details directly.
+	 *
+	 * @return the details object, or {@code null}
+	 */
+	public java.lang.Object getDetails() {
+<span class="fc" id="L287">		return details;</span>
+	}
+
+	/**
+	 * Returns the typed server-side cause of this error, if any.
+	 *
+	 * &lt;p&gt;This is equivalent to calling {@link #getCause()} and casting to
+	 * {@code ServerException}, but avoids the cast.
+	 *
+	 * @return the server cause, or {@code null}
+	 */
+	public ServerException getServerCause() {
+<span class="fc" id="L299">		return serverCause;</span>
+	}
+
+	/**
+	 * Checks whether this error or any error in its cause chain has the given
+	 * {@link ErrorKind kind}.
+	 *
+	 * @param kind the kind to look for
+	 * @return {@code true} if any error in the chain matches
+	 */
+	public boolean hasKind(String kind) {
+<span class="nc bnc" id="L310" title="All 2 branches missed.">		return findCause(kind) != null;</span>
+	}
+
+	/**
+	 * Checks whether this error or any error in its cause chain has the given {@link ErrorKind}.
+	 */
+	public boolean hasKind(ErrorKind kind) {
+<span class="fc bfc" id="L317" title="All 2 branches covered.">		return findCause(kind) != null;</span>
+	}
+
+	// ---- Legacy helpers (delegate to new ones for backward source compat) ----
+
+	/**
+	 * Finds the first error in the cause chain (including this error) that has
+	 * the given {@link ErrorKind kind}.
+	 *
+	 * @param kind the kind to look for
+	 * @return the matching {@code ServerException}, or {@code null}
+	 */
+	public ServerException findCause(String kind) {
+<span class="nc" id="L330">		ServerException current = this;</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">		while (current != null) {</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">			if (kind.equals(current.getKind())) {</span>
+<span class="nc" id="L333">				return current;</span>
+			}
+<span class="nc" id="L335">			current = current.serverCause;</span>
+		}
+<span class="nc" id="L337">		return null;</span>
+	}
+
+	/**
+	 * Finds the first error in the cause chain (including this error) that has the given {@link ErrorKind}.
+	 */
+	public ServerException findCause(ErrorKind kind) {
+<span class="fc" id="L344">		ServerException current = this;</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">		while (current != null) {</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">			if (kind == current.kindEnum) {</span>
+<span class="fc" id="L347">				return current;</span>
+			}
+<span class="fc" id="L349">			current = current.serverCause;</span>
+		}
+<span class="fc" id="L351">		return null;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
