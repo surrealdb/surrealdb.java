@@ -65,7 +65,7 @@ Gradle:
 
 ```groovy
 ext {
-    surrealdbVersion = "3.0.1"
+    surrealdbVersion = "3.0.2"
 }
 
 dependencies {
@@ -80,7 +80,7 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>surrealdb</artifactId>
-    <version>1.0.0-beta.1</version>
+    <version>2.0.0-alpha.1</version>
 </dependency>
 ```
 
