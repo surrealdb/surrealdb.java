@@ -377,11 +377,17 @@ jobs:
           name: surrealdb
           path: native
 
-      - name: Publish Jar (Maven)
-        run: ./gradlew publish
+      - name: Publish Jar (Maven Central)
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_USERNAME: ${{ secrets.OSSRH_USER }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASS }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
+
+      - name: Publish Jar (GitHub Packages)
+        run: ./gradlew publishMavenJavaPublicationToGitHubPackagesRepository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
