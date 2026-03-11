@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link Surreal#export(String)} and {@link Surreal#import_(String)}.
+ * Tests for {@link Surreal#exportSql(String)} and {@link Surreal#importSql(String)}.
  */
 public class ExportImportTests {
 
@@ -22,12 +22,12 @@ public class ExportImportTests {
 			try (Surreal surreal = new Surreal()) {
 				surreal.connect("memory").useNs("test").useDb("test");
 				surreal.query("CREATE person:id SET name = 'Alice';");
-				boolean exported = surreal.export(file.toString());
+				boolean exported = surreal.exportSql(file.toString());
 				assertTrue(exported);
 			}
 			try (Surreal surreal = new Surreal()) {
 				surreal.connect("memory").useNs("test").useDb("test");
-				boolean imported = surreal.import_(file.toString());
+				boolean imported = surreal.importSql(file.toString());
 				assertTrue(imported);
 				Response response = surreal.query("SELECT * FROM person");
 				Array rows = response.take(0).getArray();
@@ -46,7 +46,7 @@ public class ExportImportTests {
 			surreal.connect("memory").useNs("test").useDb("test");
 			Path missing = Paths.get("nonexistent_" + System.nanoTime() + ".surql");
 			try {
-				boolean imported = surreal.import_(missing.toString());
+				boolean imported = surreal.importSql(missing.toString());
 				assertFalse(imported, "import of missing file should return false or throw");
 			} catch (SurrealException e) {
 				// expected when server throws instead of returning false
