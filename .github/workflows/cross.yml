@@ -289,7 +289,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb
-          path: build/libs/surrealdb-2.0.0-alpha.1.jar
+          path: build/libs/surrealdb-2.0.0-SNAPSHOT.jar
 
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@v2
@@ -378,7 +378,7 @@ jobs:
           path: native
 
       - name: Publish Jar (Maven Central)
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew publishToSonatype
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USER }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASS }}
