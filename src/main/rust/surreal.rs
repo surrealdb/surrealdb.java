@@ -529,7 +529,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_export<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_exportSql<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -545,7 +545,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_export<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_import_1<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_importSql<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
