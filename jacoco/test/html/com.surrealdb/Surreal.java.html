@@ -147,9 +147,9 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native long run(long ptr, String name, long[] argsValuePtrs);
 
-	private static native boolean export(long ptr, String path);
+	private static native boolean exportSql(long ptr, String path);
 
-	private static native boolean import_(long ptr, String path);
+	private static native boolean importSql(long ptr, String path);
 
 	private static native long selectLive(long ptr, String table);
 
@@ -246,8 +246,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @throws SurrealException
 	 *             if export fails or backups are not supported
 	 */
-	public boolean export(String path) {
-<span class="fc" id="L250">		return export(getPtr(), path);</span>
+	public boolean exportSql(String path) {
+<span class="fc" id="L250">		return exportSql(getPtr(), path);</span>
 	}
 
 	/**
@@ -260,8 +260,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @throws SurrealException
 	 *             if import fails or backups are not supported
 	 */
-	public boolean import_(String path) {
-<span class="fc" id="L264">		return import_(getPtr(), path);</span>
+	public boolean importSql(String path) {
+<span class="fc" id="L264">		return importSql(getPtr(), path);</span>
 	}
 
 	/**
