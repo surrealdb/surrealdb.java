@@ -11,13 +11,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      RUSTFLAGS: '--cfg surrealdb_unstable'
 
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11', '17', '21', '22' ]
+        java: [ '8', '11', '17', '21', '22', '25' ]
 
     steps:
       - name: Install Rust
@@ -46,7 +44,7 @@ jobs:
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@v2
         with:
-          surrealdb_version: v3.0.2
+          surrealdb_version: v3.0.4
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
