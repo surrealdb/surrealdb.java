@@ -251,6 +251,11 @@ nmcpAggregation {
         password = System.getenv("MAVEN_PASSWORD")
         publishingType = "AUTOMATIC"
     }
+    snapshotRepository {
+        username = System.getenv("MAVEN_USERNAME")
+        password = System.getenv("MAVEN_PASSWORD")
+        url = "https://central.sonatype.com/repository/maven-snapshots/"
+    }
 }
 
 publishing {

@@ -282,6 +282,10 @@ jobs:
           name: i686-pc-windows-msvc
           path: src/main/resources/natives/windows_32
 
+      - name: Extract version
+        id: version
+        run: echo "VERSION=$(grep '^version ' build.gradle | sed "s/version '\(.*\)'/\1/")" >> $GITHUB_OUTPUT
+
       - name: Build JAR
         run: ./gradlew jar
 
@@ -289,7 +293,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb
-          path: build/libs/surrealdb-2.0.0-SNAPSHOT.jar
+          path: build/libs/surrealdb-${{ steps.version.outputs.VERSION }}.jar
 
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@v2
@@ -378,7 +382,15 @@ jobs:
           path: native
 
       - name: Publish Jar (Maven Central)
-        run: ./gradlew publishAggregationToCentralPortal
+        run: |
+          VERSION=$(grep '^version ' build.gradle | sed "s/version '\(.*\)'/\1/")
+          if [[ "$VERSION" == *-SNAPSHOT ]]; then
+            echo "Publishing SNAPSHOT to snapshots repository..."
+            ./gradlew publishAggregationToSnapshotsRepository
+          else
+            echo "Publishing release to Central Portal..."
+            ./gradlew publishAggregationToCentralPortal
+          fi
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
