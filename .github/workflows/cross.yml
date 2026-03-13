@@ -378,10 +378,10 @@ jobs:
           path: native
 
       - name: Publish Jar (Maven Central)
-        run: ./gradlew publishToSonatype
+        run: ./gradlew publishAllPublicationsToCentralPortal
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USER }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASS }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
 

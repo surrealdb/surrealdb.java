@@ -14,7 +14,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
-    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
+    id 'com.gradleup.nmcp' version '0.1.4'
 }
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
@@ -242,14 +242,11 @@ project.afterEvaluate {
     }
 }
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-            username = System.getenv("MAVEN_USERNAME")
-            password = System.getenv("MAVEN_PASSWORD")
-        }
+nmcp {
+    publishAllPublications {
+        username = System.getenv("MAVEN_USERNAME")
+        password = System.getenv("MAVEN_PASSWORD")
+        publicationType = "AUTOMATIC"
     }
 }
 
