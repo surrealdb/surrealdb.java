@@ -31,7 +31,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
 }
 
 group 'com.surrealdb'
-version '2.0.1-SNAPSHOT'
+version '2.0.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -298,9 +298,14 @@ publishing {
                         email = 'tobie@surrealdb.com'
                     }
                     developer {
-                        id = 'phughk'
-                        name = 'Hugh Kaznowski'
-                        email = 'hugh@surrealdb.com'
+                        id = 'macjuul'
+                        name = 'Julian Mills'
+                        email = 'julian.mills@surrealdb.com'
+                    }
+                    developer {
+                        id = 'kearfy'
+                        name = 'Micha de Vries'
+                        email = 'micha.de.vries@surrealdb.com'
                     }
                     developer {
                         id = 'emmanuel-keller'
