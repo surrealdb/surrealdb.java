@@ -386,7 +386,7 @@ jobs:
           VERSION=$(grep '^version ' build.gradle | sed "s/version '\(.*\)'/\1/")
           if [[ "$VERSION" == *-SNAPSHOT ]]; then
             echo "Publishing SNAPSHOT to snapshots repository..."
-            ./gradlew publishAggregationToSnapshotsRepository
+            ./gradlew publishAggregationToCentralSnapshots
           else
             echo "Publishing release to Central Portal..."
             ./gradlew publishAggregationToCentralPortal
