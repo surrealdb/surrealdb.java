@@ -282,6 +282,10 @@ jobs:
           name: i686-pc-windows-msvc
           path: src/main/resources/natives/windows_32
 
+      - name: Extract version
+        id: version
+        run: echo "VERSION=$(grep '^version ' build.gradle | sed "s/version '\(.*\)'/\1/")" >> $GITHUB_OUTPUT
+
       - name: Build JAR
         run: ./gradlew jar
 
@@ -289,12 +293,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surrealdb
-          path: build/libs/surrealdb-3.0.0-ALPHA.1.jar
+          path: build/libs/surrealdb-${{ steps.version.outputs.VERSION }}.jar
 
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@v2
         with:
-          surrealdb_version: v3.0.1
+          surrealdb_version: v3.0.2
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
@@ -339,7 +343,7 @@ jobs:
         if: runner.os != 'Windows'
         uses: surrealdb/setup-surreal@v2
         with:
-          surrealdb_version: v3.0.1
+          surrealdb_version: v3.0.2
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
@@ -377,11 +381,25 @@ jobs:
           name: surrealdb
           path: native
 
-      - name: Publish Jar (Maven)
-        run: ./gradlew publish
+      - name: Publish Jar (Maven Central)
+        run: |
+          VERSION=$(grep '^version ' build.gradle | sed "s/version '\(.*\)'/\1/")
+          if [[ "$VERSION" == *-SNAPSHOT ]]; then
+            echo "Publishing SNAPSHOT to snapshots repository..."
+            ./gradlew publishAggregationToCentralSnapshots
+          else
+            echo "Publishing release to Central Portal..."
+            ./gradlew publishAggregationToCentralPortal
+          fi
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
+
+      - name: Publish Jar (GitHub Packages)
+        run: ./gradlew publishMavenJavaPublicationToGitHubPackagesRepository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USER }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASS }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
