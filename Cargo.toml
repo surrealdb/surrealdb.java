@@ -13,9 +13,9 @@ path = "src/main/rust/lib.rs"
 opt-level = 3
 
 [dependencies]
-jni = "0.22.3"
-surrealdb = { version = "3.0.4", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
-serde = "1.0.228"
+jni = "0.21.1"
+surrealdb = { version = "3.0.2", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
+serde = "1.0.218"
 serde_json = "1.0"
 rust_decimal = "1.40.0"
 tokio = "1.49.0"
