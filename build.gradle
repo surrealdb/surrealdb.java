@@ -42,6 +42,15 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
+    toolchain {
+        // Gradle will use JDK 22 to run the compiler
+        languageVersion = JavaLanguageVersion.of(22)
+    }
+}
+
+// Strictly enforce Java 8 API compatibility
+tasks.withType(JavaCompile).configureEach {
+    options.release = 8
 }
 
 sourceSets {
