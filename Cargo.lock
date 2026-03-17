@@ -3850,9 +3850,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "surrealdb"
-version = "3.0.2"
+version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4743fbc9ef13ad8dc83d8015bdab3d2bbe799b50335d597b8ea595cd4fb8ded"
+checksum = "b19f5232640cfe8b1423b49582f36bc4c867dac9e85ad87f9a81b5fd1633621f"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -3888,9 +3888,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-core"
-version = "3.0.2"
+version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c68692e07cb32e3d14fcf8ecd4d359178168b05d6995d40974e79431b775d97c"
+checksum = "089a8dc4b88097a84ca3663ad0c152ae53d2e23ffc8b636dac7f65aa86ba3766"
 dependencies = [
  "addr",
  "affinitypool",
@@ -3980,7 +3980,7 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-java"
-version = "3.0.2"
+version = "3.0.4"
 dependencies = [
  "async-channel",
  "cargo-lock",
@@ -4023,9 +4023,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-types"
-version = "3.0.2"
+version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47ff6e65d183500794b407cd650ca92143ec1980c8dd7fc99f3ffbaef6be14ff"
+checksum = "69a8277f923a20960c82cd7d133524fb2c5d0a73d5f52abd74f28d8d83a8b6fa"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4049,9 +4049,9 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-types-derive"
-version = "3.0.2"
+version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78dcd6796474fbb368e502b98c47843ec28d32c3e1a42d1291d65f060f30b1e8"
+checksum = "491b1457e76011c800818421d814472e0a9a4d3c690ae1edb44381678e97a554"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4060,9 +4060,9 @@ dependencies = [
 
 [[package]]
 name = "surrealkv"
-version = "0.20.2"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6c1dd97851edc773c24afb282d6a17eb1bc798fafac53ea0d2951458854d472"
+checksum = "485ec2c4bbb6c0a708e1fb8c439cbc9e69d400899a8f7bde2ee56b91c0a713f3"
 dependencies = [
  "arc-swap",
  "async-trait",
