@@ -1,9 +1,13 @@
-// Spotless requires JVM 11+; only add classpath when building with Java 11+ so Java 8 builds succeed
+// Spotless requires JVM 11+; NMCP requires JVM 17+
+// Only add classpath entries when building with a compatible JVM so older JDK builds succeed
 buildscript {
     repositories { gradlePluginPortal() }
     dependencies {
         if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
             classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.25.0'
+        }
+        if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+            classpath 'com.gradleup.nmcp:nmcp:1.4.4'
         }
     }
 }
@@ -14,8 +18,11 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
-    id 'com.gradleup.nmcp' version '1.4.4'
-    id 'com.gradleup.nmcp.aggregation' version '1.4.4'
+}
+
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+    apply plugin: 'com.gradleup.nmcp'
+    apply plugin: 'com.gradleup.nmcp.aggregation'
 }
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
@@ -31,7 +38,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
 }
 
 group 'com.surrealdb'
-version '2.0.0-alpha.1'
+version '2.0.0'
 
 repositories {
     mavenCentral()
@@ -117,8 +124,13 @@ dependencies {
     integrationTestImplementation sourceSets.main.output
     // the staged, native-enabled JAR
     integrationTestImplementation files("native/surrealdb-${version}.jar")
-    // NMCP aggregation: include this project's publications
-    nmcpAggregation project(":")
+}
+
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+    dependencies {
+        // NMCP aggregation: include this project's publications
+        nmcpAggregation project(":")
+    }
 }
 
 jacoco {
@@ -245,11 +257,13 @@ project.afterEvaluate {
     }
 }
 
-nmcpAggregation {
-    centralPortal {
-        username = System.getenv("MAVEN_USERNAME")
-        password = System.getenv("MAVEN_PASSWORD")
-        publishingType = "AUTOMATIC"
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+    nmcpAggregation {
+        centralPortal {
+            username = System.getenv("MAVEN_USERNAME")
+            password = System.getenv("MAVEN_PASSWORD")
+            publishingType = "AUTOMATIC"
+        }
     }
 }
 
