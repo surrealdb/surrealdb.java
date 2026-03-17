@@ -1,7 +1,12 @@
 # Changelog
 
-## [3.0.0] - 2025-02-XX
-- Upgrade to SurrealDB SDK 3.0.0
+## [2.0.0] - 2026-03-17
+- Upgrade to SurrealDB 3.0 - Java SDK v3.0.0 by @emmanuel-keller in [#118](https://github.com/surrealdb/surrealdb.java/pull/118)
+- Support byte[] class fields for bytes type by @7Hazard in [#122](https://github.com/surrealdb/surrealdb.java/pull/122)
+- 3.0 features by @kearfy in [#127](https://github.com/surrealdb/surrealdb.java/pull/127)
+- Structured error handling by @kearfy in [#128](https://github.com/surrealdb/surrealdb.java/pull/128)
+- exportSql & importSql naming by @kearfy in [#130](https://github.com/surrealdb/surrealdb.java/pull/130)
+- Upgrade to SurrealDB SDK 3.0.4 in [#132](https://github.com/surrealdb/surrealdb.java/pull/132)
 
 ## [1.0.0] - 2025-02-XX
 
