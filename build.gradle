@@ -38,7 +38,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
 }
 
 group 'com.surrealdb'
-version '2.0.0'
+version '2.0.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -49,6 +49,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
+}
+
+// Use --release to enforce both bytecode version and API surface at compile time.
+// This prevents accidental use of APIs introduced after Java 8 (e.g. String.isBlank()),
+// which would compile fine on a modern JDK but fail at runtime on Java 8.
+// Note: --release flag is only supported on JDK 9+.
+if (JavaVersion.current() > JavaVersion.VERSION_1_8) {
+    tasks.withType(JavaCompile).configureEach {
+        options.release = 8
+    }
 }
 
 sourceSets {
@@ -108,6 +118,7 @@ tasks.named('jar') {
 tasks.withType(PublishToMavenRepository).configureEach {
     dependsOn 'stageNativeJar'
 }
+
 // Metadata / POM generation tasks must wait as well
 tasks.matching { it.name.startsWith('generate') && it.name.endsWith('Publication') }
       .configureEach { dependsOn 'stageNativeJar' }
@@ -304,7 +315,6 @@ publishing {
                         url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
-
                 developers {
                     developer {
                         id = 'tobiemh'
@@ -312,9 +322,14 @@ publishing {
                         email = 'tobie@surrealdb.com'
                     }
                     developer {
-                        id = 'phughk'
-                        name = 'Hugh Kaznowski'
-                        email = 'hugh@surrealdb.com'
+                        id = 'macjuul'
+                        name = 'Julian Mills'
+                        email = 'julian.mills@surrealdb.com'
+                    }
+                    developer {
+                        id = 'kearfy'
+                        name = 'Micha de Vries'
+                        email = 'micha.de.vries@surrealdb.com'
                     }
                     developer {
                         id = 'emmanuel-keller'

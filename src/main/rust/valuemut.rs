@@ -8,7 +8,9 @@ use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::JNIEnv;
 use rust_decimal::Decimal;
-use surrealdb::types::{Array, Datetime, Duration, File, Number, Object, Table, ToSql, Uuid, Value};
+use surrealdb::types::{
+    Array, Datetime, Duration, File, Number, Object, Table, ToSql, Uuid, Value,
+};
 
 use crate::error::SurrealError;
 use crate::{
@@ -133,8 +135,9 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newId<'local>(
             surrealdb::types::RecordIdKey::Object(o) => Value::Object(o.clone()),
             surrealdb::types::RecordIdKey::Range(_) => {
                 return SurrealError::SurrealDBJni(
-                    "Range-based IDs are not supported for Id serialization".to_string()
-                ).exception(&mut env, || 0);
+                    "Range-based IDs are not supported for Id serialization".to_string(),
+                )
+                .exception(&mut env, || 0);
             }
         };
         return JniTypes::new_value_mut(key_value);

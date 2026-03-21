@@ -45,7 +45,10 @@ macro_rules! get_surreal_ref {
 #[macro_export]
 macro_rules! get_transaction_ref {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<surrealdb::method::Transaction<Any>>($id, JniTypes::Transaction) {
+        match $crate::get_instance::<surrealdb::method::Transaction<Any>>(
+            $id,
+            JniTypes::Transaction,
+        ) {
             Ok(t) => t,
             Err(e) => return e.exception($env, $default_fn),
         }
@@ -55,7 +58,10 @@ macro_rules! get_transaction_ref {
 #[macro_export]
 macro_rules! get_response_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::get_instance::<Arc<parking_lot::Mutex<surrealdb::IndexedResults>>>($id, JniTypes::Response) {
+        match $crate::get_instance::<Arc<parking_lot::Mutex<surrealdb::IndexedResults>>>(
+            $id,
+            JniTypes::Response,
+        ) {
             Ok(s) => s.clone(),
             Err(e) => return e.exception($env, $default_fn),
         }
