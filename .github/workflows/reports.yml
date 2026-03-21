@@ -26,11 +26,11 @@ jobs:
       - name: Cache Rust
         uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
-      - name: Set up JDK 22
+      - name: Set up JDK
         uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: 'temurin'
-          java-version: 22
+          java-version: 25
 
       - name: Build native lib
         env:
