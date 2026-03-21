@@ -16,15 +16,15 @@ opt-level = 3
 jni = "0.21.1"
 surrealdb = { version = "3.0.4", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
 serde = "1.0.228"
-serde_json = "1.0"
+serde_json = "1.0.149"
 rust_decimal = "1.40.0"
 tokio = "1.50.0"
 parking_lot = "0.12.5"
-once_cell = "1.21.3"
+once_cell = "1.21.4"
 chrono = "0.4.44"
 dashmap = "6.1.0"
-futures = "0.3"
-async-channel = "2.0"
+futures = "0.3.21"
+async-channel = "2.5.0"
 
 [build-dependencies]
 cargo-lock = "11.0.1"
