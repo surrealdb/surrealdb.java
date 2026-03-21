@@ -8,11 +8,14 @@ on:
     branches:
       - main
 
+# This toolchain version should be aligned with the SurrealDB version
+# See: https://github.com/surrealdb/surrealdb/blob/v3.0.4/rust-toolchain.toml
+env:
+  RUST_TOOLCHAIN: "1.91"
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      RUSTFLAGS: '--cfg surrealdb_unstable'
 
     strategy:
       fail-fast: false
@@ -23,7 +26,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: clippy,rustfmt
 
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4

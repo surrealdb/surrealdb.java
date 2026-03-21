@@ -14,6 +14,11 @@ on:
         required: false
         default: 'false'
 
+# This toolchain version should be aligned with the SurrealDB version
+# See: https://github.com/surrealdb/surrealdb/blob/v3.0.4/rust-toolchain.toml
+env:
+  RUST_TOOLCHAIN: "1.91"
+
 jobs:
 
   android:
@@ -43,15 +48,13 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
         run: cargo install cargo-ndk
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo ndk -t ${{ matrix.ndk }} build --release
 
       - name: Upload so lib
@@ -94,12 +97,10 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: |
           export ${{ matrix.linker }}
           cargo build --target ${{ matrix.target }} --release
@@ -125,12 +126,10 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           target: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
 
       - name: Upload artifact
@@ -158,11 +157,9 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release
 
       - name: Upload artifact

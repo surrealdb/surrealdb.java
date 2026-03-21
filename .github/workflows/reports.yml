@@ -33,8 +33,6 @@ jobs:
           java-version: 25
 
       - name: Build native lib
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build
 
       - name: Setup Gradle
