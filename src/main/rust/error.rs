@@ -50,10 +50,15 @@ fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'
         Value::Bool(b) => {
             let class = env.find_class("java/lang/Boolean").ok()?;
             let z = if *b { 1u8 } else { 0u8 };
-            env.call_static_method(class, "valueOf", "(Z)Ljava/lang/Boolean;", &[JValue::Bool(z)])
-                .ok()
-                .and_then(|v| v.l().ok())
-                .map(JObject::from)
+            env.call_static_method(
+                class,
+                "valueOf",
+                "(Z)Ljava/lang/Boolean;",
+                &[JValue::Bool(z)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+            .map(JObject::from)
         }
         Value::Object(map) => {
             let class = env.find_class("java/util/LinkedHashMap").ok()?;
@@ -75,7 +80,12 @@ fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'
             let list_obj = env.new_object(class, "()V", &[]).ok()?;
             for v in arr.iter() {
                 let elem = value_to_jobject(env, v).unwrap_or(JObject::null());
-                let _ = env.call_method(&list_obj, "add", "(Ljava/lang/Object;)Z", &[JValue::Object(&elem)]);
+                let _ = env.call_method(
+                    &list_obj,
+                    "add",
+                    "(Ljava/lang/Object;)Z",
+                    &[JValue::Object(&elem)],
+                );
             }
             Some(list_obj)
         }
@@ -94,18 +104,28 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
         }
         Number::Float(f) => {
             let class = env.find_class("java/lang/Double").ok()?;
-            env.call_static_method(class, "valueOf", "(D)Ljava/lang/Double;", &[JValue::Double(*f)])
-                .ok()
-                .and_then(|v| v.l().ok())
-                .map(JObject::from)
+            env.call_static_method(
+                class,
+                "valueOf",
+                "(D)Ljava/lang/Double;",
+                &[JValue::Double(*f)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+            .map(JObject::from)
         }
         Number::Decimal(d) => {
             let class = env.find_class("java/lang/Double").ok()?;
             let f: f64 = d.to_string().parse().unwrap_or(0.0);
-            env.call_static_method(class, "valueOf", "(D)Ljava/lang/Double;", &[JValue::Double(f)])
-                .ok()
-                .and_then(|v| v.l().ok())
-                .map(JObject::from)
+            env.call_static_method(
+                class,
+                "valueOf",
+                "(D)Ljava/lang/Double;",
+                &[JValue::Double(f)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+            .map(JObject::from)
         }
     }
 }
@@ -134,13 +154,25 @@ fn build_server_exception<'a>(
     // Match on the Rust SDK's ErrorDetails enum to align with the typed API.
     let (class_name, enum_name, raw_kind_for_unknown) = match error.details() {
         ErrorDetails::Validation(_) => ("com/surrealdb/ValidationException", "VALIDATION", None),
-        ErrorDetails::Configuration(_) => ("com/surrealdb/ConfigurationException", "CONFIGURATION", None),
+        ErrorDetails::Configuration(_) => (
+            "com/surrealdb/ConfigurationException",
+            "CONFIGURATION",
+            None,
+        ),
         ErrorDetails::Thrown => ("com/surrealdb/ThrownException", "THROWN", None),
         ErrorDetails::Query(_) => ("com/surrealdb/QueryException", "QUERY", None),
-        ErrorDetails::Serialization(_) => ("com/surrealdb/SerializationException", "SERIALIZATION", None),
+        ErrorDetails::Serialization(_) => (
+            "com/surrealdb/SerializationException",
+            "SERIALIZATION",
+            None,
+        ),
         ErrorDetails::NotAllowed(_) => ("com/surrealdb/NotAllowedException", "NOT_ALLOWED", None),
         ErrorDetails::NotFound(_) => ("com/surrealdb/NotFoundException", "NOT_FOUND", None),
-        ErrorDetails::AlreadyExists(_) => ("com/surrealdb/AlreadyExistsException", "ALREADY_EXISTS", None),
+        ErrorDetails::AlreadyExists(_) => (
+            "com/surrealdb/AlreadyExistsException",
+            "ALREADY_EXISTS",
+            None,
+        ),
         ErrorDetails::Connection(_) => (SERVER_EXCEPTION, "CONNECTION", None),
         ErrorDetails::Internal => ("com/surrealdb/InternalException", "INTERNAL", None),
         _ => (SERVER_EXCEPTION, "UNKNOWN", Some(error.kind_str())),
@@ -172,7 +204,11 @@ fn build_server_exception<'a>(
             .ok()
             .map(JObject::from)?;
         let raw_kind_jstr = match raw_kind_for_unknown {
-            Some(s) => env.new_string(s).ok().map(JObject::from).unwrap_or(JObject::null()),
+            Some(s) => env
+                .new_string(s)
+                .ok()
+                .map(JObject::from)
+                .unwrap_or(JObject::null()),
             None => JObject::null(),
         };
         let sig = "(Lcom/surrealdb/ErrorKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";

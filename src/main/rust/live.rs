@@ -5,9 +5,7 @@ use jni::sys::{jlong, jobject};
 use jni::JNIEnv;
 
 use crate::error::SurrealError;
-use crate::{
-    get_instance, new_string, take_instance, JniTypes, LiveStreamChannel, TOKIO_RUNTIME,
-};
+use crate::{get_instance, new_string, take_instance, JniTypes, LiveStreamChannel, TOKIO_RUNTIME};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
@@ -35,14 +33,14 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
         Err(e) => return SurrealError::from(e).exception(&mut env, || std::ptr::null_mut()),
     };
     // Build Java LiveNotification(action, valuePtr, queryId)
-    let action_raw = new_string!(&mut env, notification.action.to_string(), || std::ptr::null_mut());
+    let action_raw = new_string!(&mut env, notification.action.to_string(), || {
+        std::ptr::null_mut()
+    });
     let action_str = unsafe { JObject::from_raw(action_raw) };
     let value_ptr = JniTypes::new_value(Arc::new(notification.data));
-    let query_id_raw = new_string!(
-        &mut env,
-        notification.query_id.to_string(),
-        || std::ptr::null_mut()
-    );
+    let query_id_raw = new_string!(&mut env, notification.query_id.to_string(), || {
+        std::ptr::null_mut()
+    });
     let query_id_str = unsafe { JObject::from_raw(query_id_raw) };
     let class = match env.find_class("com/surrealdb/LiveNotification") {
         Ok(c) => c,
@@ -83,5 +81,6 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_releaseNative<'local>(
     let _recv_guard = recv_mutex.lock(); // wait until any thread in nextNative has left recv()
     let _rx = rx_mux.lock().take(); // take and drop receiver while holding recv_guard
     drop(_recv_guard);
-    let _ = take_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream); // free the box
+    let _ = take_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream);
+    // free the box
 }
