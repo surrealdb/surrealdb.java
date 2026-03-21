@@ -1,8 +1,5 @@
 name: Cross-Compile
 
-env:
-  RUST_TOOLCHAIN: "1.91"
-
 on:
   push:
     branches:
@@ -43,10 +40,14 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update -y
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
@@ -92,10 +93,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ${{ matrix.apt-get }}
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
           targets: ${{ matrix.target }}
 
       - name: Build
@@ -121,10 +126,15 @@ jobs:
       - name: Cache Rust
         uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        shell: bash
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
           targets: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
@@ -152,10 +162,14 @@ jobs:
       - name: Cache Rust
         uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
 
       - name: Build
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release
