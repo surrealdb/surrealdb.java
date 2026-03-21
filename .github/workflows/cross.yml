@@ -1,5 +1,8 @@
 name: Cross-Compile
 
+env:
+  RUST_TOOLCHAIN: "1.91"
+
 on:
   push:
     branches:
@@ -43,6 +46,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
@@ -91,6 +95,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
 
       - name: Build
@@ -119,7 +124,8 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          target: ${{ matrix.arch }}-pc-windows-msvc
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          targets: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
         run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
@@ -148,6 +154,8 @@ jobs:
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
 
       - name: Build
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release
