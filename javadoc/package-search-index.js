@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.surrealdb"},{"l":"com.surrealdb.signin"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"com.surrealdb"},{"l":"com.surrealdb.signin"}];updateSearchResults();
