@@ -54,8 +54,11 @@ java {
 // Use --release to enforce both bytecode version and API surface at compile time.
 // This prevents accidental use of APIs introduced after Java 8 (e.g. String.isBlank()),
 // which would compile fine on a modern JDK but fail at runtime on Java 8.
-tasks.withType(JavaCompile).configureEach {
-    options.release = 8
+// Note: --release flag is only supported on JDK 9+.
+if (JavaVersion.current() > JavaVersion.VERSION_1_8) {
+    tasks.withType(JavaCompile).configureEach {
+        options.release = 8
+    }
 }
 
 sourceSets {
