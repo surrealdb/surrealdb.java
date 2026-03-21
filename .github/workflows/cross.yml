@@ -41,9 +41,8 @@ jobs:
         run: sudo apt-get update -y
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.91
         with:
-          toolchain: stable
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
@@ -92,9 +91,8 @@ jobs:
           sudo apt-get install -y ${{ matrix.apt-get }}
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.91
         with:
-          toolchain: stable
           targets: ${{ matrix.target }}
 
       - name: Build
@@ -123,10 +121,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.91
         with:
-          toolchain: stable
-          target: ${{ matrix.arch }}-pc-windows-msvc
+          targets: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
         env:
@@ -156,9 +153,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
+        uses: dtolnay/rust-toolchain@1.91
 
       - name: Build
         env:

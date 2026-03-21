@@ -12,8 +12,10 @@ fn main() {
         })
         .expect("Failed to find surrealdb in Cargo.lock");
 
-    let version =
-        format!("{}.{}.{}", package.version.major, package.version.minor, package.version.patch);
+    let version = format!(
+        "{}.{}.{}",
+        package.version.major, package.version.minor, package.version.patch
+    );
 
     println!("cargo:rustc-env=SURREALDB_VERSION={}", version);
 }

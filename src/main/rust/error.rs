@@ -13,7 +13,7 @@ pub(super) enum SurrealError {
     SurrealDBJni(String),
 }
 
-const EXCEPTION: &str = "java/lang/exception";
+const EXCEPTION: &str = "java/lang/Exception";
 const NULL_POINTER_EXCEPTION: &str = "java/lang/NullPointerException";
 const NO_SUCH_ELEMENT_EXCEPTION: &str = "java/util/NoSuchElementException";
 const SURREAL_EXCEPTION: &str = "com/surrealdb/SurrealException";
@@ -50,10 +50,15 @@ fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'
         Value::Bool(b) => {
             let class = env.find_class("java/lang/Boolean").ok()?;
             let z = if *b { 1u8 } else { 0u8 };
-            env.call_static_method(class, "valueOf", "(Z)Ljava/lang/Boolean;", &[JValue::Bool(z)])
-                .ok()
-                .and_then(|v| v.l().ok())
-                .map(JObject::from)
+            env.call_static_method(
+                class,
+                "valueOf",
+                "(Z)Ljava/lang/Boolean;",
+                &[JValue::Bool(z)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+            .map(JObject::from)
         }
         Value::Object(map) => {
             let class = env.find_class("java/util/LinkedHashMap").ok()?;
@@ -75,7 +80,12 @@ fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'
             let list_obj = env.new_object(class, "()V", &[]).ok()?;
             for v in arr.iter() {
                 let elem = value_to_jobject(env, v).unwrap_or(JObject::null());
-                let _ = env.call_method(&list_obj, "add", "(Ljava/lang/Object;)Z", &[JValue::Object(&elem)]);
+                let _ = env.call_method(
+                    &list_obj,
+                    "add",
+                    "(Ljava/lang/Object;)Z",
+                    &[JValue::Object(&elem)],
+                );
             }
             Some(list_obj)
         }
@@ -94,18 +104,28 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
         }
         Number::Float(f) => {
             let class = env.find_class("java/lang/Double").ok()?;
-            env.call_static_method(class, "valueOf", "(D)Ljava/lang/Double;", &[JValue::Double(*f)])
-                .ok()
-                .and_then(|v| v.l().ok())
-                .map(JObject::from)
+            env.call_static_method(
+                class,
+                "valueOf",
+                "(D)Ljava/lang/Double;",
+                &[JValue::Double(*f)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+            .map(JObject::from)
         }
         Number::Decimal(d) => {
             let class = env.find_class("java/lang/Double").ok()?;
             let f: f64 = d.to_string().parse().unwrap_or(0.0);
-            env.call_static_method(class, "valueOf", "(D)Ljava/lang/Double;", &[JValue::Double(f)])
-                .ok()
-                .and_then(|v| v.l().ok())
-                .map(JObject::from)
+            env.call_static_method(
+                class,
+                "valueOf",
+                "(D)Ljava/lang/Double;",
+                &[JValue::Double(f)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+            .map(JObject::from)
         }
     }
 }
@@ -134,13 +154,25 @@ fn build_server_exception<'a>(
     // Match on the Rust SDK's ErrorDetails enum to align with the typed API.
     let (class_name, enum_name, raw_kind_for_unknown) = match error.details() {
         ErrorDetails::Validation(_) => ("com/surrealdb/ValidationException", "VALIDATION", None),
-        ErrorDetails::Configuration(_) => ("com/surrealdb/ConfigurationException", "CONFIGURATION", None),
+        ErrorDetails::Configuration(_) => (
+            "com/surrealdb/ConfigurationException",
+            "CONFIGURATION",
+            None,
+        ),
         ErrorDetails::Thrown => ("com/surrealdb/ThrownException", "THROWN", None),
         ErrorDetails::Query(_) => ("com/surrealdb/QueryException", "QUERY", None),
-        ErrorDetails::Serialization(_) => ("com/surrealdb/SerializationException", "SERIALIZATION", None),
+        ErrorDetails::Serialization(_) => (
+            "com/surrealdb/SerializationException",
+            "SERIALIZATION",
+            None,
+        ),
         ErrorDetails::NotAllowed(_) => ("com/surrealdb/NotAllowedException", "NOT_ALLOWED", None),
         ErrorDetails::NotFound(_) => ("com/surrealdb/NotFoundException", "NOT_FOUND", None),
-        ErrorDetails::AlreadyExists(_) => ("com/surrealdb/AlreadyExistsException", "ALREADY_EXISTS", None),
+        ErrorDetails::AlreadyExists(_) => (
+            "com/surrealdb/AlreadyExistsException",
+            "ALREADY_EXISTS",
+            None,
+        ),
         ErrorDetails::Connection(_) => (SERVER_EXCEPTION, "CONNECTION", None),
         ErrorDetails::Internal => ("com/surrealdb/InternalException", "INTERNAL", None),
         _ => (SERVER_EXCEPTION, "UNKNOWN", Some(error.kind_str())),
@@ -172,7 +204,11 @@ fn build_server_exception<'a>(
             .ok()
             .map(JObject::from)?;
         let raw_kind_jstr = match raw_kind_for_unknown {
-            Some(s) => env.new_string(s).ok().map(JObject::from).unwrap_or(JObject::null()),
+            Some(s) => env
+                .new_string(s)
+                .ok()
+                .map(JObject::from)
+                .unwrap_or(JObject::null()),
             None => JObject::null(),
         };
         let sig = "(Lcom/surrealdb/ErrorKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
@@ -269,5 +305,47 @@ impl From<Error> for SurrealError {
 impl From<surrealdb::Error> for SurrealError {
     fn from(e: surrealdb::Error) -> Self {
         SurrealError::SurrealDB(e)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Validates that JNI class name constants use correct Java casing.
+    /// Java class names are case-sensitive in JNI; e.g. "java/lang/Exception"
+    /// is valid but "java/lang/exception" would fail at runtime.
+    #[test]
+    fn jni_class_names_are_correctly_cased() {
+        assert_eq!(EXCEPTION, "java/lang/Exception");
+        assert_eq!(NULL_POINTER_EXCEPTION, "java/lang/NullPointerException");
+        assert_eq!(
+            NO_SUCH_ELEMENT_EXCEPTION,
+            "java/util/NoSuchElementException"
+        );
+        assert_eq!(SURREAL_EXCEPTION, "com/surrealdb/SurrealException");
+        assert_eq!(SERVER_EXCEPTION, "com/surrealdb/ServerException");
+    }
+
+    /// Validates that each JNI class name segment that represents a class
+    /// (the last segment) starts with an uppercase letter, following Java conventions.
+    #[test]
+    fn jni_class_names_have_uppercase_class_segment() {
+        let constants = [
+            EXCEPTION,
+            NULL_POINTER_EXCEPTION,
+            NO_SUCH_ELEMENT_EXCEPTION,
+            SURREAL_EXCEPTION,
+            SERVER_EXCEPTION,
+        ];
+        for name in constants {
+            let class_segment = name.rsplit('/').next().unwrap();
+            assert!(
+                class_segment.starts_with(char::is_uppercase),
+                "JNI class name '{}' has a class segment '{}' that does not start with an uppercase letter",
+                name,
+                class_segment
+            );
+        }
     }
 }

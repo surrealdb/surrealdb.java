@@ -3,7 +3,8 @@ use std::ptr::null_mut;
 
 use crate::error::SurrealError;
 use crate::{
-    get_entry_mut_instance, get_rust_string, new_string, release_instance, take_value_mut_instance, JniTypes,
+    get_entry_mut_instance, get_rust_string, new_string, release_instance, take_value_mut_instance,
+    JniTypes,
 };
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};

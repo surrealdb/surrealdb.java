@@ -5,20 +5,19 @@ use std::sync::Arc;
 
 use crate::error::SurrealError;
 use crate::{
-    check_query_result, convert_up_type, get_long_array, get_rust_string,
-    get_rust_string_array, get_surreal_ref, get_value_instance,
-    get_value_mut_instance, new_jlong_array, new_string, release_instance, return_unexpected_result,
-    return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
-    take_one_result, JniTypes, TOKIO_RUNTIME,
+    check_query_result, convert_up_type, get_long_array, get_rust_string, get_rust_string_array,
+    get_surreal_ref, get_value_instance, get_value_mut_instance, new_jlong_array, new_string,
+    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
+    return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME,
 };
-use jni::objects::{JClass, JObject, JLongArray, JObjectArray, JString, JValue};
+use futures::StreamExt;
+use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString, JValue};
 use jni::sys::{jboolean, jint, jlong, jlongArray, jobject, jstring};
 use jni::JNIEnv;
-use std::result::Result as StdResult;
 use parking_lot::Mutex;
 use serde::Serialize;
-use futures::StreamExt;
 use std::ops::Bound;
+use std::result::Result as StdResult;
 use surrealdb::engine::any::Any;
 use surrealdb::opt::auth::{Database, Namespace, Record as AuthRecord, Root};
 use surrealdb::types::{RecordId, RecordIdKey, RecordIdKeyRange, SurrealValue, ToSql, Value};
@@ -31,9 +30,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_beginTransaction<'local>(
     ptr: jlong,
 ) -> jlong {
     let surreal = get_surreal_ref!(&mut env, ptr, || 0);
-    match TOKIO_RUNTIME.block_on(async {
-        surreal.clone().begin().await
-    }) {
+    match TOKIO_RUNTIME.block_on(async { surreal.clone().begin().await }) {
         Ok(txn) => JniTypes::new_transaction(txn),
         Err(e) => SurrealError::from(e).exception(&mut env, || 0),
     }
@@ -117,7 +114,9 @@ fn new_token_object<'local>(
     access: String,
     refresh: Option<String>,
 ) -> StdResult<jobject, SurrealError> {
-    let token_class = env.find_class("com/surrealdb/signin/Token").map_err(SurrealError::from)?;
+    let token_class = env
+        .find_class("com/surrealdb/signin/Token")
+        .map_err(SurrealError::from)?;
     let access_jstr = env.new_string(access).map_err(SurrealError::from)?;
     let refresh_jobj: JObject<'local> = match refresh {
         Some(s) => env.new_string(s).map_err(SurrealError::from)?.into(),
@@ -128,7 +127,11 @@ fn new_token_object<'local>(
         JValue::Object(refresh_jobj.as_ref()),
     ];
     let token_obj = env
-        .new_object(token_class, "(Ljava/lang/String;Ljava/lang/String;)V", &args)
+        .new_object(
+            token_class,
+            "(Ljava/lang/String;Ljava/lang/String;)V",
+            &args,
+        )
         .map_err(SurrealError::from)?;
     Ok(token_obj.into_raw())
 }
@@ -138,7 +141,9 @@ fn new_ns_db_object<'local>(
     namespace: Option<String>,
     database: Option<String>,
 ) -> StdResult<jobject, SurrealError> {
-    let ns_db_class = env.find_class("com/surrealdb/NsDb").map_err(SurrealError::from)?;
+    let ns_db_class = env
+        .find_class("com/surrealdb/NsDb")
+        .map_err(SurrealError::from)?;
     let ns_jobj: JObject<'local> = match namespace {
         Some(s) => env.new_string(s).map_err(SurrealError::from)?.into(),
         None => JObject::null(),
@@ -152,7 +157,11 @@ fn new_ns_db_object<'local>(
         JValue::Object(db_jobj.as_ref()),
     ];
     let ns_db_obj = env
-        .new_object(ns_db_class, "(Ljava/lang/String;Ljava/lang/String;)V", &args)
+        .new_object(
+            ns_db_class,
+            "(Ljava/lang/String;Ljava/lang/String;)V",
+            &args,
+        )
         .map_err(SurrealError::from)?;
     Ok(ns_db_obj.into_raw())
 }
@@ -168,14 +177,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
     let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
     let username = get_rust_string!(&mut env, username, null_mut);
     let password = get_rust_string!(&mut env, password, null_mut);
-    match TOKIO_RUNTIME.block_on(async {
-        surreal
-            .signin(Root {
-                username,
-                password,
-            })
-            .await
-    }) {
+    match TOKIO_RUNTIME.block_on(async { surreal.signin(Root { username, password }).await }) {
         Ok(token) => {
             let access = token.access.into_insecure_token();
             let refresh = token.refresh.map(|r| r.into_insecure_token());
@@ -336,9 +338,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_authenticate<'local>(
 ) -> jboolean {
     let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
     let token_str = get_rust_string!(&mut env, token, || false as jboolean);
-    if let Err(err) = TOKIO_RUNTIME.block_on(async {
-        surreal.authenticate(token_str).await
-    }) {
+    if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.authenticate(token_str).await }) {
         return SurrealError::from(err).exception(&mut env, || false as jboolean);
     }
     true as jboolean
@@ -743,7 +743,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
         let value = get_value_mut_instance!(&mut env, *value_ptr, null_mut);
         records.push(value.to_sql());
     }
-    let query = format!("INSERT RELATION INTO {} [ {} ]", target, records.join(" , "));
+    let query = format!(
+        "INSERT RELATION INTO {} [ {} ]",
+        target,
+        records.join(" , ")
+    );
     // Execute the query
     let res = surrealdb_query::<()>(&surreal, &query, None);
     // Check the result
@@ -816,7 +820,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
     let to_value = get_value_instance!(&mut env, to_ptr, || 0);
     let content_value = get_value_mut_instance!(&mut env, content_ptr, || 0);
     // Execute the query
-    let query = format!("RELATE $from->{}->$to CONTENT {}", target, content_value.to_sql());
+    let query = format!(
+        "RELATE $from->{}->$to CONTENT {}",
+        target,
+        content_value.to_sql()
+    );
     let params = BTreeMap::from([
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),
@@ -1107,10 +1115,7 @@ fn build_range_value(
         start: start_bound,
         end: end_bound,
     };
-    let range_record_id = RecordId::new(
-        table.to_string(),
-        RecordIdKey::Range(Box::new(range)),
-    );
+    let range_record_id = RecordId::new(table.to_string(), RecordIdKey::Range(Box::new(range)));
     Ok(Value::RecordId(range_record_id))
 }
 
@@ -1153,7 +1158,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdValue<'local>(
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
-    up_record_id_value(env, surreal_ptr, record_id_ptr, up_type, value_ptr, "update")
+    up_record_id_value(
+        env,
+        surreal_ptr,
+        record_id_ptr,
+        up_type,
+        value_ptr,
+        "update",
+    )
 }
 
 #[no_mangle]
@@ -1165,7 +1177,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdValue<'local>(
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
-    up_record_id_value(env, surreal_ptr, record_id_ptr, up_type, value_ptr, "upsert")
+    up_record_id_value(
+        env,
+        surreal_ptr,
+        record_id_ptr,
+        up_type,
+        value_ptr,
+        "upsert",
+    )
 }
 
 fn up_record_id_range_value(
@@ -1216,7 +1235,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdRangeValue<'loca
     value_ptr: jlong,
 ) -> jlong {
     up_record_id_range_value(
-        env, surreal_ptr, table, start_id_ptr, end_id_ptr, up_type, value_ptr, "update",
+        env,
+        surreal_ptr,
+        table,
+        start_id_ptr,
+        end_id_ptr,
+        up_type,
+        value_ptr,
+        "update",
     )
 }
 
@@ -1232,7 +1258,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdRangeValue<'loca
     value_ptr: jlong,
 ) -> jlong {
     up_record_id_range_value(
-        env, surreal_ptr, table, start_id_ptr, end_id_ptr, up_type, value_ptr, "upsert",
+        env,
+        surreal_ptr,
+        table,
+        start_id_ptr,
+        end_id_ptr,
+        up_type,
+        value_ptr,
+        "upsert",
     )
 }
 
