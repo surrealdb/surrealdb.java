@@ -14,11 +14,6 @@ on:
         required: false
         default: 'false'
 
-# This toolchain version should be aligned with the SurrealDB version
-# See: https://github.com/surrealdb/surrealdb/blob/v3.0.4/rust-toolchain.toml
-env:
-  RUST_TOOLCHAIN: "1.91"
-
 jobs:
 
   android:
@@ -48,7 +43,6 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
@@ -97,7 +91,6 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
 
       - name: Build
@@ -126,7 +119,6 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
           target: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
@@ -156,8 +148,6 @@ jobs:
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
 
       - name: Build
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release

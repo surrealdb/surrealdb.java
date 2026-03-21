@@ -1,0 +1,5 @@
+# This toolchain version should be aligned with the SurrealDB version
+# See: https://github.com/surrealdb/surrealdb/blob/v3.0.4/rust-toolchain.toml
+[toolchain]
+channel = "1.91"
+components = ["rustfmt", "clippy"]
