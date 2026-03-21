@@ -32,17 +32,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
       - name: Install dependencies
         run: sudo apt-get update -y
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@1.91
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
@@ -54,7 +55,7 @@ jobs:
         run: cargo ndk -t ${{ matrix.ndk }} build --release
 
       - name: Upload so lib
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.target }}
           path: target/${{ matrix.target }}/release/*.so
@@ -80,10 +81,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
       - name: Install dependencies
         run: |
@@ -91,8 +92,9 @@ jobs:
           sudo apt-get install -y ${{ matrix.apt-get }}
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@1.91
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
 
       - name: Build
@@ -103,7 +105,7 @@ jobs:
           cargo build --target ${{ matrix.target }} --release
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.target }}
           path: target/${{ matrix.target }}/release/*.so
@@ -115,15 +117,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@1.91
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          targets: ${{ matrix.arch }}-pc-windows-msvc
+          toolchain: stable
+          target: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
         env:
@@ -131,7 +134,7 @@ jobs:
         run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.arch }}-pc-windows-msvc
           path: target/${{ matrix.arch }}-pc-windows-msvc/release/*.dll
@@ -147,13 +150,15 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@1.91
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
+        with:
+          toolchain: stable
 
       - name: Build
         env:
@@ -161,7 +166,7 @@ jobs:
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.arch }}-apple-darwin
           path: target/${{ matrix.arch }}-apple-darwin/release/*.dylib
@@ -178,13 +183,13 @@ jobs:
         run: sudo apt-get update
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Set up JDK 22
-        uses: actions/setup-java@v4
+      - name: Set up JDK
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: 'temurin'
-          java-version: 22
+          java-version: 25
 
       - name: Gradle
         run: chmod +x gradlew
@@ -205,74 +210,74 @@ jobs:
           mkdir -p src/main/resources/natives/windows_32
 
       - name: Download Android 64 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: x86_64-linux-android
           path: src/main/resources/natives/android_64
 
       - name: Download Android 32 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: i686-linux-android
           path: src/main/resources/natives/android_32
 
       - name: Download Android 64 arm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: aarch64-linux-android
           path: src/main/resources/natives/android_arm64
 
       - name: Download Android 32 arm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: armv7-linux-androideabi
           path: src/main/resources/natives/android_arm32
 
       - name: Download Linux 64 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: x86_64-unknown-linux-gnu
           path: src/main/resources/natives/linux_64
 
       - name: Download Linux 32 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         with:
           name: i686-unknown-linux-gnu
           path: src/main/resources/natives/linux_32
 
       - name: Download Linux 64 arm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: aarch64-unknown-linux-gnu
           path: src/main/resources/natives/linux_arm64
 
       - name: Download Linux 32 arm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: armv7-unknown-linux-gnueabihf
           path: src/main/resources/natives/linux_arm32
 
       - name: Download Darwin 64 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: x86_64-apple-darwin
           path: src/main/resources/natives/osx_64
 
       - name: Download Darwin 64 arm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: aarch64-apple-darwin
           path: src/main/resources/natives/osx_arm64
 
       - name: Download Windows 64 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: x86_64-pc-windows-msvc
           path: src/main/resources/natives/windows_64
 
       - name: Download Windows 32 intel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: i686-pc-windows-msvc
           path: src/main/resources/natives/windows_32
@@ -285,13 +290,13 @@ jobs:
         run: ./gradlew jar
 
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: surrealdb
           path: build/libs/surrealdb-${{ steps.version.outputs.VERSION }}.jar
 
       - name: Start SurrealDB
-        uses: surrealdb/setup-surreal@v2
+        uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
           surrealdb_version: v3.0.4
           surrealdb_port: 8000
@@ -314,13 +319,13 @@ jobs:
       - aggregated-jar
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Set up JDK 22
-        uses: actions/setup-java@v4
+      - name: Set up JDK
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: 'temurin'
-          java-version: 22
+          java-version: 25
 
       - name: Gradle
         run: chmod +x gradlew
@@ -329,14 +334,14 @@ jobs:
         run: mkdir -p native
 
       - name: Download JAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: surrealdb
           path: native
 
       - name: Start SurrealDB
         if: runner.os != 'Windows'
-        uses: surrealdb/setup-surreal@v2
+        uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
           surrealdb_version: v3.0.4
           surrealdb_port: 8000
@@ -359,19 +364,19 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Set up JDK 22
-        uses: actions/setup-java@v4
+      - name: Set up JDK
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: 'temurin'
-          java-version: 22
+          java-version: 25
 
       - name: Create directory native
         run: mkdir -p native
 
       - name: Download JAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: surrealdb
           path: native

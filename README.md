@@ -44,7 +44,7 @@ View the SDK documentation [here](https://surrealdb.com/docs/integration/librari
 - Simple API: [see docs](https://surrealdb.com/docs/integration/libraries/java).
 - Support of 'memory' (embedded SurrealDB).
 - Support of remote connection to SurrealDB.
-- Supported on JAVA JDK 8, 11, 17, 21, 22.
+- Supported on JAVA JDK 8, 11, 17, 21, 25.
 - Supported architectures:
     - Linux (ARM) aarch64
     - Linux (INTEL) x86_64
