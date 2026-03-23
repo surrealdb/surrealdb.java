@@ -13,7 +13,7 @@ pub(super) enum SurrealError {
     SurrealDBJni(String),
 }
 
-const EXCEPTION: &str = "java/lang/exception";
+const EXCEPTION: &str = "java/lang/Exception";
 const NULL_POINTER_EXCEPTION: &str = "java/lang/NullPointerException";
 const NO_SUCH_ELEMENT_EXCEPTION: &str = "java/util/NoSuchElementException";
 const SURREAL_EXCEPTION: &str = "com/surrealdb/SurrealException";
@@ -305,5 +305,47 @@ impl From<Error> for SurrealError {
 impl From<surrealdb::Error> for SurrealError {
     fn from(e: surrealdb::Error) -> Self {
         SurrealError::SurrealDB(e)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Validates that JNI class name constants use correct Java casing.
+    /// Java class names are case-sensitive in JNI; e.g. "java/lang/Exception"
+    /// is valid but "java/lang/exception" would fail at runtime.
+    #[test]
+    fn jni_class_names_are_correctly_cased() {
+        assert_eq!(EXCEPTION, "java/lang/Exception");
+        assert_eq!(NULL_POINTER_EXCEPTION, "java/lang/NullPointerException");
+        assert_eq!(
+            NO_SUCH_ELEMENT_EXCEPTION,
+            "java/util/NoSuchElementException"
+        );
+        assert_eq!(SURREAL_EXCEPTION, "com/surrealdb/SurrealException");
+        assert_eq!(SERVER_EXCEPTION, "com/surrealdb/ServerException");
+    }
+
+    /// Validates that each JNI class name segment that represents a class
+    /// (the last segment) starts with an uppercase letter, following Java conventions.
+    #[test]
+    fn jni_class_names_have_uppercase_class_segment() {
+        let constants = [
+            EXCEPTION,
+            NULL_POINTER_EXCEPTION,
+            NO_SUCH_ELEMENT_EXCEPTION,
+            SURREAL_EXCEPTION,
+            SERVER_EXCEPTION,
+        ];
+        for name in constants {
+            let class_segment = name.rsplit('/').next().unwrap();
+            assert!(
+                class_segment.starts_with(char::is_uppercase),
+                "JNI class name '{}' has a class segment '{}' that does not start with an uppercase letter",
+                name,
+                class_segment
+            );
+        }
     }
 }

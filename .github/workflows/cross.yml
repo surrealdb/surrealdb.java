@@ -40,18 +40,20 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update -y
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
           targets: ${{ matrix.target }}
 
       - name: Install cargo-ndk
         run: cargo install cargo-ndk
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo ndk -t ${{ matrix.ndk }} build --release
 
       - name: Upload so lib
@@ -91,15 +93,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ${{ matrix.apt-get }}
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
           targets: ${{ matrix.target }}
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: |
           export ${{ matrix.linker }}
           cargo build --target ${{ matrix.target }} --release
@@ -122,15 +126,18 @@ jobs:
       - name: Cache Rust
         uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        shell: bash
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
-          target: ${{ matrix.arch }}-pc-windows-msvc
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
+          targets: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
 
       - name: Upload artifact
@@ -155,14 +162,16 @@ jobs:
       - name: Cache Rust
         uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
 
+      - name: Read Rust toolchain version
+        id: rust-version
+        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
-          toolchain: stable
+          toolchain: ${{ steps.rust-version.outputs.CHANNEL }}
 
       - name: Build
-        env:
-          RUSTFLAGS: '--cfg surrealdb_unstable'
         run: cargo build --target ${{ matrix.arch }}-apple-darwin --release
 
       - name: Upload artifact
