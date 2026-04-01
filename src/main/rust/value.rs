@@ -318,7 +318,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isRecordId<'local>(
     ptr: jlong,
 ) -> jboolean {
     let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_record() as jboolean
+    matches!(value.as_ref(), Value::RecordId(_)) as jboolean
 }
 
 #[no_mangle]
