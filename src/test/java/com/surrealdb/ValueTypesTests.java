@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Disabled;
@@ -75,6 +76,43 @@ public class ValueTypesTests {
 		ValueMut vm = ValueMut.createTable("sometable");
 		assertNotNull(vm);
 		// Conversion to Value happens via DB; we just ensure creation doesn't throw
+	}
+
+	@Test
+	void isRecordIdReturnsFalseForUrlStrings() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			Response r = surreal.query("RETURN 'https://example.com/avatar/001.png'");
+			Value v = r.take(0);
+			assertTrue(v.isString());
+			assertFalse(v.isRecordId());
+		}
+	}
+
+	@Test
+	void isRecordIdReturnsFalseForColonStrings() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			Response r = surreal.query("RETURN 'key:value'");
+			Value v = r.take(0);
+			assertTrue(v.isString());
+			assertFalse(v.isRecordId());
+		}
+	}
+
+	@Test
+	void isRecordIdReturnsTrueForActualRecordId() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			surreal.query("CREATE person:1 SET name = 'Test'");
+			Response r = surreal.query("SELECT * FROM person:1");
+			Value v = r.take(0);
+			assertTrue(v.isArray());
+			Value first = v.getArray().get(0);
+			assertTrue(first.isObject());
+			Value id = first.getObject().get("id");
+			assertTrue(id.isRecordId());
+		}
 	}
 
 	@Test
