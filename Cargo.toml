@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb-java"
-version = "3.0.4"
+version = "3.0.5"
 authors = ["Emmanuel Keller <emmanuel.keller@surrealdb.com>"]
 edition = "2021"
 
