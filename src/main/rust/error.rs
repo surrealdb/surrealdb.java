@@ -29,7 +29,7 @@ fn details_value(error: &surrealdb::Error) -> Value {
     if let Value::Object(ref map) = value {
         let kind_matches = map
             .get("kind")
-            .map(|v| matches!(v, Value::String(s) if s.to_string() == kind_str))
+            .map(|v| matches!(v, Value::String(s) if *s == kind_str))
             .unwrap_or(false);
         if kind_matches {
             if let Some(inner) = map.get("details") {
@@ -58,7 +58,6 @@ fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'
             )
             .ok()
             .and_then(|v| v.l().ok())
-            .map(JObject::from)
         }
         Value::Object(map) => {
             let class = env.find_class("java/util/LinkedHashMap").ok()?;
@@ -100,7 +99,6 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
             env.call_static_method(class, "valueOf", "(J)Ljava/lang/Long;", &[JValue::Long(*i)])
                 .ok()
                 .and_then(|v| v.l().ok())
-                .map(JObject::from)
         }
         Number::Float(f) => {
             let class = env.find_class("java/lang/Double").ok()?;
@@ -112,7 +110,6 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
             )
             .ok()
             .and_then(|v| v.l().ok())
-            .map(JObject::from)
         }
         Number::Decimal(d) => {
             let class = env.find_class("java/lang/Double").ok()?;
@@ -125,7 +122,6 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
             )
             .ok()
             .and_then(|v| v.l().ok())
-            .map(JObject::from)
         }
     }
 }
@@ -136,6 +132,7 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
 /// Matches on the Rust SDK's ErrorDetails enum to choose the Java exception class and
 /// ErrorKind enum. Base ServerException uses (ErrorKind, String rawKindIfUnknown, message, details, cause);
 /// subclasses use (String message, Object details, ServerException cause).
+#[allow(clippy::redundant_closure)] // JObject::null as fn ptr produces 'static, breaking the 'a lifetime
 fn build_server_exception<'a>(
     env: &mut JNIEnv<'a>,
     error: &surrealdb::Error,
@@ -201,8 +198,7 @@ fn build_server_exception<'a>(
             .get_static_field(&enum_class, enum_name, "Lcom/surrealdb/ErrorKind;")
             .ok()?
             .l()
-            .ok()
-            .map(JObject::from)?;
+            .ok()?;
         let raw_kind_jstr = match raw_kind_for_unknown {
             Some(s) => env
                 .new_string(s)
@@ -219,10 +215,7 @@ fn build_server_exception<'a>(
             JValue::Object(&details_obj),
             JValue::Object(&java_cause),
         ];
-        match env.new_object(class, sig, &args) {
-            Ok(obj) => Some(obj),
-            Err(_) => None,
-        }
+        env.new_object(class, sig, &args).ok()
     } else {
         // Subclass(String message, Object details, ServerException cause)
         let sig = "(Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
@@ -231,10 +224,7 @@ fn build_server_exception<'a>(
             JValue::Object(&details_obj),
             JValue::Object(&java_cause),
         ];
-        match env.new_object(class, sig, &args) {
-            Ok(obj) => Some(obj),
-            Err(_) => None,
-        }
+        env.new_object(class, sig, &args).ok()
     }
 }
 

@@ -265,15 +265,25 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	/**
-	 * Starts a live query on the given table. Returns a blocking stream of
-	 * notifications (CREATE, UPDATE, DELETE). Call {@link LiveStream#next()} in a
-	 * loop and {@link LiveStream#close()} when done.
+	 * Starts a live query on the given table and returns a blocking stream of
+	 * notifications (CREATE, UPDATE, DELETE).
+	 *
+	 * <p>This method blocks until the live query subscription is fully
+	 * established on the server. If the subscription fails (e.g. the table does
+	 * not exist), a {@link SurrealException} is thrown immediately rather than
+	 * being deferred to the first {@link LiveStream#next()} call.
+	 *
+	 * <p>Call {@link LiveStream#next()} in a loop to receive notifications and
+	 * {@link LiveStream#close()} when done. The returned stream implements
+	 * {@link AutoCloseable} for use in try-with-resources.
 	 *
 	 * @param table
-	 *            table name to watch
-	 * @return a LiveStream; must call {@link LiveStream#close()} when done
+	 *            table name to watch (must already exist)
+	 * @return a LiveStream; the caller must call {@link LiveStream#close()} when
+	 *         done
 	 * @throws SurrealException
-	 *             if live queries are not supported or the request fails
+	 *             if live queries are not supported, the table does not exist,
+	 *             or the subscription fails
 	 */
 	public LiveStream selectLive(String table) {
 		return new LiveStream(selectLive(getPtr(), table));
