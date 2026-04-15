@@ -495,14 +495,19 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
     let table = get_rust_string!(&mut env, &table, || 0);
     let (tx, rx) = async_channel::unbounded();
     let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(1);
+    let (ready_tx, ready_rx) =
+        std::sync::mpsc::channel::<std::result::Result<(), surrealdb::Error>>();
     let tx_thread = tx.clone();
     let surreal_clone = surreal.clone();
     let join_handle = std::thread::spawn(move || {
         TOKIO_RUNTIME.block_on(async move {
             let mut stream = match surreal_clone.select(table).live().await {
-                Ok(s) => s,
+                Ok(s) => {
+                    let _ = ready_tx.send(Ok(()));
+                    s
+                }
                 Err(e) => {
-                    let _ = tx_thread.send(Err(e)).await;
+                    let _ = ready_tx.send(Err(e));
                     return;
                 }
             };
@@ -519,6 +524,20 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
             }
         });
     });
+    match ready_rx.recv() {
+        Ok(Ok(())) => {}
+        Ok(Err(e)) => {
+            let _ = join_handle.join();
+            return SurrealError::from(e).exception(&mut env, || 0);
+        }
+        Err(_) => {
+            let _ = join_handle.join();
+            return SurrealError::SurrealDBJni(
+                "Live query background thread exited unexpectedly".to_string(),
+            )
+            .exception(&mut env, || 0);
+        }
+    }
     let recv_mutex = std::sync::Arc::new(parking_lot::Mutex::new(()));
     JniTypes::new_live_stream((
         recv_mutex,

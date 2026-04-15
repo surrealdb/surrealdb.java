@@ -13,7 +13,7 @@ public class LiveStream implements AutoCloseable {
 		Loader.loadNative();
 	}
 
-	private long handle;
+	private volatile long handle;
 
 	LiveStream(long handle) {
 		this.handle = handle;

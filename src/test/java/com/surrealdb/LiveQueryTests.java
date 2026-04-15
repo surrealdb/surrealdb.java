@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Disabled;
@@ -28,6 +28,7 @@ public class LiveQueryTests {
 	void selectLiveReturnsLiveStream() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");
+			surreal.query("DEFINE TABLE person SCHEMALESS");
 			try (LiveStream stream = surreal.selectLive("person")) {
 				assertNotNull(stream);
 			}
@@ -59,6 +60,7 @@ public class LiveQueryTests {
 	void liveStreamCloseReleases() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");
+			surreal.query("DEFINE TABLE person SCHEMALESS");
 			try (LiveStream stream = surreal.selectLive("person")) {
 				// No exception; closing again or using after close is undefined but we don't
 				// crash
@@ -71,6 +73,7 @@ public class LiveQueryTests {
 	void liveStreamTryWithResources() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");
+			surreal.query("DEFINE TABLE person SCHEMALESS");
 			try (LiveStream stream = surreal.selectLive("person")) {
 				assertNotNull(stream);
 			}
@@ -267,6 +270,18 @@ public class LiveQueryTests {
 			if (error.get() != null) {
 				fail("Concurrent access caused an exception: " + error.get());
 			}
+		}
+	}
+
+	/**
+	 * Verifies that selectLive() surfaces subscription errors immediately
+	 * rather than deferring them to the first next() call.
+	 */
+	@Test
+	void selectLiveOnNonExistentTableThrowsImmediately() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			assertThrows(SurrealException.class, () -> surreal.selectLive("no_such_table"));
 		}
 	}
 
