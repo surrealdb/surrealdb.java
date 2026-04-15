@@ -15,15 +15,40 @@ use surrealdb::method::Transaction;
 use surrealdb::types::Value;
 use surrealdb::{Connection, IndexedResults, Surreal};
 
-/// Item type for the live query channel (Result<Notification<Value>>).
+/// Item type for the live query notification channel.
 pub(crate) type LiveNotificationResult =
     std::result::Result<surrealdb::Notification<surrealdb::types::Value>, surrealdb::Error>;
 
-/// Stored as handle for live streams. recv_mutex is held by nextNative during recv() so that
-/// releaseNative can wait for no thread in recv() before taking and dropping the receiver.
-/// join_handle, shutdown_tx and rx are in Mutex<Option<..>> so releaseNative can take/drop them via get_instance.
+/// Native handle backing a Java `LiveStream` instance.
+///
+/// Created by `selectLive` (in surreal.rs) after the live query subscription
+/// is confirmed, and freed by `releaseNative` (in live.rs) when the Java side
+/// calls `close()`.
+///
+/// ## Fields (tuple elements)
+///
+/// 0. **`recv_mutex`** (`Arc<Mutex<()>>`) — held by `nextNative` for the
+///    entire duration of the blocking `recv()` call.  `releaseNative` acquires
+///    it *after* the channel has been closed so it can be sure no thread is
+///    still inside `recv()` before freeing the handle.
+///
+/// 1. **`join_handle`** (`Mutex<Option<JoinHandle>>`) — the background thread
+///    that reads from the SurrealDB live-query stream and forwards
+///    notifications into the async channel.  Taken and joined by
+///    `releaseNative` during shutdown.
+///
+/// 2. **`shutdown_tx`** (`Mutex<Option<Sender<()>>>`) — dropping this sender
+///    signals the background thread (via `tokio::select!`) to exit.
+///
+/// 3. **`rx`** (`Mutex<Option<Receiver<LiveNotificationResult>>>`) — the
+///    receiving end of the notification channel, read by `nextNative`.
+///
+/// ## Lock ordering
+///
+/// Both `nextNative` and `releaseNative` acquire `recv_mutex` **before**
+/// `rx`, ensuring a consistent ordering and preventing deadlocks.
 pub(crate) type LiveStreamChannel = (
-    std::sync::Arc<parking_lot::Mutex<()>>, // held during recv()
+    std::sync::Arc<parking_lot::Mutex<()>>,
     parking_lot::Mutex<Option<std::thread::JoinHandle<()>>>,
     parking_lot::Mutex<Option<async_channel::Sender<()>>>,
     parking_lot::Mutex<Option<async_channel::Receiver<LiveNotificationResult>>>,

@@ -484,6 +484,39 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     JniTypes::new_value(Arc::new(result))
 }
 
+/// JNI implementation of `Surreal.selectLive(long ptr, String table)`.
+///
+/// Sets up a live query on `table` and returns a `LiveStreamChannel` handle
+/// that the Java `LiveStream` wrapper reads from.
+///
+/// ## Architecture
+///
+/// ```text
+///  Java thread          Background thread            SurrealDB engine
+///  ───────────          ─────────────────            ────────────────
+///  selectLive()
+///    ├─ spawn ──────▶  .select(table).live().await ──▶ subscribe
+///    │                   │
+///    │  ready_rx.recv()  │  ready_tx.send(Ok/Err)
+///    │◀──────────────────┤
+///    │                   │
+///    ▼                   ▼
+///  return handle       loop { select! { notification ──▶ tx_thread.send() } }
+///                                │
+///  nextNative()                  │
+///    rx.recv() ◀─────────────────┘
+/// ```
+///
+/// A dedicated OS thread runs `block_on` on the shared tokio runtime to drive
+/// the live-query stream.  Notifications are forwarded through an unbounded
+/// `async_channel` to the Java side, which reads them via `nextNative`.
+///
+/// ## Readiness handshake
+///
+/// The background thread signals via a `std::sync::mpsc` channel once the
+/// subscription is established (`Ok(())`) or has failed (`Err(e)`).
+/// `selectLive` blocks on this signal so that errors (e.g. table does not
+/// exist) are thrown at call site instead of being deferred to `next()`.
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
     mut env: JNIEnv<'local>,
@@ -493,10 +526,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
 ) -> jlong {
     let surreal = get_surreal_ref!(&mut env, ptr, || 0);
     let table = get_rust_string!(&mut env, &table, || 0);
+
+    // Notification channel: background thread produces, nextNative consumes.
     let (tx, rx) = async_channel::unbounded();
+    // Shutdown channel: dropping shutdown_tx signals the background thread to exit.
     let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(1);
+    // Readiness channel: background thread confirms subscription before we return.
     let (ready_tx, ready_rx) =
         std::sync::mpsc::channel::<std::result::Result<(), surrealdb::Error>>();
+
     let tx_thread = tx.clone();
     let surreal_clone = surreal.clone();
     let join_handle = std::thread::spawn(move || {
@@ -524,6 +562,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
             }
         });
     });
+
+    // Block until the subscription is confirmed or fails.
     match ready_rx.recv() {
         Ok(Ok(())) => {}
         Ok(Err(e)) => {
@@ -538,6 +578,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
             .exception(&mut env, || 0);
         }
     }
+
     let recv_mutex = std::sync::Arc::new(parking_lot::Mutex::new(()));
     JniTypes::new_live_stream((
         recv_mutex,
