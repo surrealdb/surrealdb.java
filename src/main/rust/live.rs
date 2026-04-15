@@ -34,7 +34,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     let (recv_mutex, _join_handle_mux, _shutdown_tx_mux, rx_mux) =
         match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
             Ok(r) => r,
-            Err(e) => return e.exception(&mut env, || std::ptr::null_mut()),
+            Err(e) => return e.exception(&mut env, std::ptr::null_mut),
         };
     let _recv_guard = recv_mutex.lock();
     let rx_opt_guard = rx_mux.lock();
@@ -48,7 +48,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     };
     let notification = match item {
         Ok(n) => n,
-        Err(e) => return SurrealError::from(e).exception(&mut env, || std::ptr::null_mut()),
+        Err(e) => return SurrealError::from(e).exception(&mut env, std::ptr::null_mut),
     };
     let action_raw = new_string!(&mut env, notification.action.to_string(), || {
         std::ptr::null_mut()
@@ -61,7 +61,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     let query_id_str = unsafe { JObject::from_raw(query_id_raw) };
     let class = match env.find_class("com/surrealdb/LiveNotification") {
         Ok(c) => c,
-        Err(e) => return SurrealError::from(e).exception(&mut env, || std::ptr::null_mut()),
+        Err(e) => return SurrealError::from(e).exception(&mut env, std::ptr::null_mut),
     };
     let args = [
         JValue::Object(&action_str),
@@ -70,7 +70,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
     ];
     match env.new_object(class, "(Ljava/lang/String;JLjava/lang/String;)V", &args) {
         Ok(obj) => obj.into_raw(),
-        Err(e) => SurrealError::from(e).exception(&mut env, || std::ptr::null_mut()),
+        Err(e) => SurrealError::from(e).exception(&mut env, std::ptr::null_mut),
     }
 }
 

@@ -183,7 +183,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
             let refresh = token.refresh.map(|r| r.into_insecure_token());
             match new_token_object(&mut env, access, refresh) {
                 Ok(obj) => obj,
-                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+                Err(e) => e.exception(&mut env, null_mut),
             }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -217,7 +217,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
             let refresh = token.refresh.map(|r| r.into_insecure_token());
             match new_token_object(&mut env, access, refresh) {
                 Ok(obj) => obj,
-                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+                Err(e) => e.exception(&mut env, null_mut),
             }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -254,7 +254,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
             let refresh = token.refresh.map(|r| r.into_insecure_token());
             match new_token_object(&mut env, access, refresh) {
                 Ok(obj) => obj,
-                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+                Err(e) => e.exception(&mut env, null_mut),
             }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -288,7 +288,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signup<'local>(
             let refresh = token.refresh.map(|r| r.into_insecure_token());
             match new_token_object(&mut env, access_str, refresh) {
                 Ok(obj) => obj,
-                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+                Err(e) => e.exception(&mut env, null_mut),
             }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -322,7 +322,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRecord<'local>(
             let refresh = token.refresh.map(|r| r.into_insecure_token());
             match new_token_object(&mut env, access_str, refresh) {
                 Ok(obj) => obj,
-                Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+                Err(e) => e.exception(&mut env, null_mut),
             }
         }
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
@@ -369,7 +369,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     match TOKIO_RUNTIME.block_on(async { surreal.use_ns(ns).await }) {
         Ok((namespace, database)) => match new_ns_db_object(&mut env, namespace, database) {
             Ok(obj) => obj,
-            Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            Err(e) => e.exception(&mut env, null_mut),
         },
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
@@ -387,7 +387,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDb<'local>(
     match TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
         Ok((namespace, database)) => match new_ns_db_object(&mut env, namespace, database) {
             Ok(obj) => obj,
-            Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            Err(e) => e.exception(&mut env, null_mut),
         },
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
@@ -403,7 +403,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDefaults<'local>(
     match TOKIO_RUNTIME.block_on(async { surreal.use_defaults().await }) {
         Ok((namespace, database)) => match new_ns_db_object(&mut env, namespace, database) {
             Ok(obj) => obj,
-            Err(e) => SurrealError::from(e).exception(&mut env, null_mut),
+            Err(e) => e.exception(&mut env, null_mut),
         },
         Err(err) => SurrealError::from(err).exception(&mut env, null_mut),
     }
@@ -421,7 +421,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     // Retrieve the query
     let query = get_rust_string!(&mut env, &query, || 0);
     // Execute the query
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
@@ -449,7 +449,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
         params_map.insert(key, value.clone());
     }
 
-    let res = surrealdb_query::<Value>(&surreal, &query, Some(params_map));
+    let res = surrealdb_query::<Value>(surreal, &query, Some(params_map));
     let res = check_query_result!(&mut env, res, || 0);
     // Build a response instance
     JniTypes::new_response(Arc::new(Mutex::new(res)))
@@ -476,7 +476,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     }
     let args_list = placeholders.join(", ");
     let query = format!("RETURN {}({})", name, args_list);
-    let res = surrealdb_query::<Value>(&surreal, &query, Some(params_map));
+    let res = surrealdb_query::<Value>(surreal, &query, Some(params_map));
     let mut response = check_query_result!(&mut env, res, || 0);
     let mut result = take_one_result!(&mut env, response, || 0);
     return_value_array_first!(result);
@@ -655,7 +655,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createRecordIdValue<'local>(
     // Execute the query
     let query = format!("CREATE {} CONTENT $val", record_id.to_sql());
     let params = BTreeMap::from([("val".to_string(), value.clone())]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -690,7 +690,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
     }
     let query = queries.join(";\n");
     // Execute the query
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut res = check_query_result!(&mut env, res, null_mut);
     // Prepare the result
@@ -737,7 +737,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     }
     let query = format!("INSERT INTO {} [ {} ]", target, records.join(" , "));
     // Execute the query
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut response = check_query_result!(&mut env, res, null_mut);
     // There is only one statement
@@ -772,7 +772,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValue<'loc
     let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
     // Execute the query
     let query = format!("INSERT RELATION INTO {} {}", target, value.to_sql());
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -809,7 +809,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
         records.join(" , ")
     );
     // Execute the query
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut response = check_query_result!(&mut env, res, null_mut);
     // There is only one statement
@@ -850,7 +850,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),
     ]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -889,7 +889,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
         ("from".to_string(), from_value),
         ("to".to_string(), to_value),
     ]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -913,7 +913,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordId<'local>(
     let record_id = get_value_instance!(&mut env, record_id_ptr, || 0);
     // Execute the query
     let query = format!("SELECT * FROM {}", record_id.to_sql());
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -949,7 +949,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIds<'local>(
     }
     // Execute the query
     let query = format!("SELECT * FROM {}", record_ids.join(","));
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut res = check_query_result!(&mut env, res, null_mut);
     // There is only one statement
@@ -983,7 +983,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     // Prepare the query
     let query = format!("SELECT * FROM {}", targets.join(","));
     // Execute the query
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -1008,7 +1008,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     // Prepare the query
     let query = format!("SELECT * FROM {}", targets.join(","));
     // Execute the query
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -1033,7 +1033,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordId<'local>(
     // Prepare the params
     let params = BTreeMap::from([("t".to_string(), record_id)]);
     // Execute the query
-    let res = surrealdb_query(&surreal, "DELETE $t", Some(params));
+    let res = surrealdb_query(surreal, "DELETE $t", Some(params));
     // Check the result
     check_query_result!(&mut env, res, || false as jboolean);
     true as jboolean
@@ -1061,7 +1061,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIds<'local>(
     // Prepare the query
     let query = format!("DELETE {}", targets.join(","));
     // Execute the query
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     check_query_result!(&mut env, res, || 0);
     true as jboolean
@@ -1083,7 +1083,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIdRange<'local>(
         Err(e) => return e.exception(&mut env, null_mut),
     };
     let params = BTreeMap::from([("_range".to_string(), range_value)]);
-    let res = surrealdb_query(&surreal, "SELECT * FROM $_range", Some(params));
+    let res = surrealdb_query(surreal, "SELECT * FROM $_range", Some(params));
     let mut res = check_query_result!(&mut env, res, null_mut);
     let res = take_one_result!(&mut env, res, null_mut);
     if let Value::Array(a) = res {
@@ -1115,7 +1115,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIdRange<'local>(
         Err(e) => return e.exception(&mut env, || false as jboolean),
     };
     let params = BTreeMap::from([("_range".to_string(), range_value)]);
-    let res = surrealdb_query(&surreal, "DELETE $_range", Some(params));
+    let res = surrealdb_query(surreal, "DELETE $_range", Some(params));
     check_query_result!(&mut env, res, || false as jboolean);
     true as jboolean
 }
@@ -1134,7 +1134,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteTarget<'local>(
     // Prepare the query
     let query = format!("DELETE FROM {}", target);
     // Execute the query
-    let res = surrealdb_query::<()>(&surreal, &query, None);
+    let res = surrealdb_query::<()>(surreal, &query, None);
     // Check the result
     check_query_result!(&mut env, res, || false as jboolean);
     true as jboolean
@@ -1198,7 +1198,7 @@ fn up_record_id_value(
     // Execute the query
     let query = format!("{up} {} {up_type} $val", record_id.to_sql());
     let params = BTreeMap::from([("val".to_string(), value.clone())]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -1247,6 +1247,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdValue<'local>(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn up_record_id_range_value(
     mut env: JNIEnv,
     surreal_ptr: jlong,
@@ -1269,7 +1270,7 @@ fn up_record_id_range_value(
     params.insert("_range".to_string(), range_value);
     params.insert("val".to_string(), value.clone());
     let query = format!("{up} $_range {up_type} $val");
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     let mut response = check_query_result!(&mut env, res, || 0);
     let mut result: Value = take_one_result!(&mut env, response, || 0);
     return_value_array_first!(result);
@@ -1348,7 +1349,7 @@ fn up_target_value(
     // Execute the query
     let query = format!("{up} {} {up_type} $val", target);
     let params = BTreeMap::from([("val".to_string(), value.clone())]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
@@ -1402,7 +1403,7 @@ fn up_target_value_sync<'local>(
     // Execute the query
     let query = format!("{up} {} {up_type} $val", target);
     let params = BTreeMap::from([("val".to_string(), value.clone())]);
-    let res = surrealdb_query(&surreal, &query, Some(params));
+    let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(&mut env, res, || 0);
     // There is only one statement
