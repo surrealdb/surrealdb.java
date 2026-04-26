@@ -81,9 +81,26 @@ loadScripts(document, 'script');</script>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">LiveStream</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
 implements <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></span></div>
-<div class="block">Blocking iterator over live query notifications. Call <a href="#next()"><code>next()</code></a> in a
-loop and <a href="#close()"><code>close()</code></a> when done. Implements <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link"><code>AutoCloseable</code></a> for
-use in try-with-resources.</div>
+<div class="block">Blocking iterator over live query notifications returned by
+<a href="Surreal.html#selectLive(java.lang.String)"><code>Surreal.selectLive(String)</code></a>.
+
+<p>Typical usage:
+<pre><code>try (LiveStream stream = surreal.selectLive("person")) {
+    while (true) {
+        Optional&lt;LiveNotification&gt; n = stream.next();
+        if (!n.isPresent()) break;   // stream closed
+        process(n.get());
+    }
+}
+</code></pre>
+
+<p><b>Thread safety:</b> <a href="#next()"><code>next()</code></a> may be called from one thread while
+<a href="#close()"><code>close()</code></a> is called from another. The <code>close()</code> call will
+unblock any thread currently waiting inside <code>next()</code>. The native
+handle is declared <code>volatile</code> so that the zeroing performed by
+<code>close()</code> is immediately visible to concurrent <code>next()</code> callers.
+Concurrent calls to <code>next()</code> from multiple threads are serialized by
+a mutex in the native layer.</div>
 </div>
 </section>
 <section class="summary">
@@ -131,10 +148,17 @@ use in try-with-resources.</div>
 <h3>next</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="LiveNotification.html" title="class in com.surrealdb">LiveNotification</a>&gt;</span>&nbsp;<span class="element-name">next</span>()</div>
-<div class="block">Blocks until the next notification is available, or the stream ends.</div>
+<div class="block">Blocks until the next notification is available, or the stream ends.
+
+<p>Returns <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html#empty()" title="class or interface in java.util" class="external-link"><code>Optional.empty()</code></a> when the stream has been closed
+(either explicitly via <a href="#close()"><code>close()</code></a> or because the server ended the
+live query). If the underlying live query encounters an error, a
+<a href="SurrealException.html" title="class in com.surrealdb"><code>SurrealException</code></a> is thrown.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the next notification, or empty if the stream has ended</dd>
+<dt>Throws:</dt>
+<dd><code><a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></code> - if the live query encounters an error</dd>
 </dl>
 </div>
 </section>
@@ -144,7 +168,11 @@ use in try-with-resources.</div>
 <h3>close</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">close</span>()</div>
-<div class="block">Releases the live query and stops receiving notifications. Idempotent.</div>
+<div class="block">Releases the live query and stops receiving notifications.
+
+<p>If another thread is blocked inside <a href="#next()"><code>next()</code></a>, it will be
+unblocked and will return <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html#empty()" title="class or interface in java.util" class="external-link"><code>Optional.empty()</code></a>. This method is
+idempotent: calling it more than once has no effect.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html#close()" title="class or interface in java.lang" class="external-link">close</a></code>&nbsp;in interface&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></code></dd>

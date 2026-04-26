@@ -762,7 +762,8 @@ supported.</div>
 </dd>
 <dt><a href="com/surrealdb/LiveStream.html" class="type-name-link" title="class in com.surrealdb">LiveStream</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
 <dd>
-<div class="block">Blocking iterator over live query notifications.</div>
+<div class="block">Blocking iterator over live query notifications returned by
+<a href="com/surrealdb/Surreal.html#selectLive(java.lang.String)"><code>Surreal.selectLive(String)</code></a>.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:M">M</h2>
@@ -1023,7 +1024,8 @@ targets.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#selectLive(java.lang.String)" class="member-name-link">selectLive(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Starts a live query on the given table.</div>
+<div class="block">Starts a live query on the given table and returns a blocking stream of
+notifications (CREATE, UPDATE, DELETE).</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#selectSync(java.lang.Class,java.lang.String)" class="member-name-link">selectSync(Class, String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>

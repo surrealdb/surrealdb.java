@@ -12,17 +12,17 @@ public class LiveNotification {
 	/**
 	 * Called from native code only.
 	 */
-<span class="nc" id="L15">	public LiveNotification(String action, long valuePtr, String queryId) {</span>
-<span class="nc" id="L16">		this.action = action;</span>
-<span class="nc bnc" id="L17" title="All 2 branches missed.">		this.value = valuePtr != 0 ? new Value(valuePtr) : null;</span>
-<span class="nc" id="L18">		this.queryId = queryId;</span>
-<span class="nc" id="L19">	}</span>
+<span class="fc" id="L15">	public LiveNotification(String action, long valuePtr, String queryId) {</span>
+<span class="fc" id="L16">		this.action = action;</span>
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">		this.value = valuePtr != 0 ? new Value(valuePtr) : null;</span>
+<span class="fc" id="L18">		this.queryId = queryId;</span>
+<span class="fc" id="L19">	}</span>
 
 	/**
 	 * The action that caused this notification: &quot;CREATE&quot;, &quot;UPDATE&quot;, or &quot;DELETE&quot;.
 	 */
 	public String getAction() {
-<span class="nc" id="L25">		return action;</span>
+<span class="fc" id="L25">		return action;</span>
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class LiveNotification {
 	 * @return the record value, or null
 	 */
 	public Value getValue() {
-<span class="nc" id="L35">		return value;</span>
+<span class="fc" id="L35">		return value;</span>
 	}
 
 	/** The live query UUID this notification belongs to. */

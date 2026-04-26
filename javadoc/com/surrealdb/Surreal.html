@@ -446,7 +446,8 @@ targets.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="LiveStream.html" title="class in com.surrealdb">LiveStream</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectLive(java.lang.String)" class="member-name-link">selectLive</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts a live query on the given table.</div>
+<div class="block">Starts a live query on the given table and returns a blocking stream of
+notifications (CREATE, UPDATE, DELETE).</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Iterator.html" title="class or interface in java.util" class="external-link">Iterator</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectSync(java.lang.Class,java.lang.String)" class="member-name-link">selectSync</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
@@ -808,16 +809,26 @@ WebSocket.</div>
 <h3>selectLive</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="LiveStream.html" title="class in com.surrealdb">LiveStream</a></span>&nbsp;<span class="element-name">selectLive</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table)</span></div>
-<div class="block">Starts a live query on the given table. Returns a blocking stream of
-notifications (CREATE, UPDATE, DELETE). Call <a href="LiveStream.html#next()"><code>LiveStream.next()</code></a> in a
-loop and <a href="LiveStream.html#close()"><code>LiveStream.close()</code></a> when done.</div>
+<div class="block">Starts a live query on the given table and returns a blocking stream of
+notifications (CREATE, UPDATE, DELETE).
+
+<p>This method blocks until the live query subscription is fully
+established on the server. If the subscription fails (e.g. the table does
+not exist), a <a href="SurrealException.html" title="class in com.surrealdb"><code>SurrealException</code></a> is thrown immediately rather than
+being deferred to the first <a href="LiveStream.html#next()"><code>LiveStream.next()</code></a> call.
+
+<p>Call <a href="LiveStream.html#next()"><code>LiveStream.next()</code></a> in a loop to receive notifications and
+<a href="LiveStream.html#close()"><code>LiveStream.close()</code></a> when done. The returned stream implements
+<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link"><code>AutoCloseable</code></a> for use in try-with-resources.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>table</code> - table name to watch</dd>
+<dd><code>table</code> - table name to watch (must already exist)</dd>
 <dt>Returns:</dt>
-<dd>a LiveStream; must call <a href="LiveStream.html#close()"><code>LiveStream.close()</code></a> when done</dd>
+<dd>a LiveStream; the caller must call <a href="LiveStream.html#close()"><code>LiveStream.close()</code></a> when
+        done</dd>
 <dt>Throws:</dt>
-<dd><code><a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></code> - if live queries are not supported or the request fails</dd>
+<dd><code><a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></code> - if live queries are not supported, the table does not exist,
+            or the subscription fails</dd>
 </dl>
 </div>
 </section>
