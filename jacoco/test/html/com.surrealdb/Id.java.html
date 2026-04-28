@@ -44,11 +44,11 @@ public class Id extends Native {
 
 	private static native boolean isArray(long ptr);
 
-	private static native Array getArray(long ptr);
+	private static native long getArray(long ptr);
 
 	private static native boolean isObject(long ptr);
 
-	private static native Object getObject(long ptr);
+	private static native long getObject(long ptr);
 
 	@Override
 	final native int hashCode(long ptr);
@@ -87,19 +87,19 @@ public class Id extends Native {
 	}
 
 	final public boolean isArray() {
-<span class="nc" id="L90">		return isArray(getPtr());</span>
+<span class="fc" id="L90">		return isArray(getPtr());</span>
 	}
 
 	final public Array getArray() {
-<span class="nc" id="L94">		return getArray(getPtr());</span>
+<span class="fc" id="L94">		return new Array(getArray(getPtr()));</span>
 	}
 
 	final public boolean isObject() {
-<span class="nc" id="L98">		return isObject(getPtr());</span>
+<span class="fc" id="L98">		return isObject(getPtr());</span>
 	}
 
 	final public Object getObject() {
-<span class="nc" id="L102">		return getObject(getPtr());</span>
+<span class="fc" id="L102">		return new Object(getObject(getPtr()));</span>
 	}
 
 }
