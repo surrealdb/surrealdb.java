@@ -116,6 +116,24 @@ public class ValueTypesTests {
 	}
 
 	@Test
+	void recordIdArrayKeyAccessorsFromQuery() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			Response r = surreal.query(
+					"CREATE myDoc:['myTenant', 'myUlid'] CONTENT { name: 'jules', tenant: 'myTenant' }");
+			Value v = r.take(0);
+			assertTrue(v.isArray());
+			RecordId recordId = v.getArray().get(0).getObject().get("id").getRecordId();
+			Id id = recordId.getId();
+			assertTrue(id.isArray());
+			Array idArray = id.getArray();
+			assertEquals(2, idArray.len());
+			assertEquals("myTenant", idArray.get(0).getString());
+			assertEquals("myUlid", idArray.get(1).getString());
+		}
+	}
+
+	@Test
 	void valueRangeFromQuery() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");

@@ -92,6 +92,11 @@ public class TypeTests {
 			assertTrue(arrayValue.isArray());
 			Array keyArray = arrayValue.getArray();
 			RecordId rid = new RecordId("with_array_key", keyArray);
+			Id id = rid.getId();
+			assertTrue(id.isArray());
+			Array idArray = id.getArray();
+			assertEquals(3, idArray.len());
+			assertEquals(1, idArray.get(0).getLong());
 			final Name name = new Name("array", "key");
 			final Value created = surreal.create(rid, name);
 			assertEquals(created.get(Name.class), name);
@@ -110,6 +115,12 @@ public class TypeTests {
 			assertTrue(objValue.isObject());
 			Object keyObj = objValue.getObject();
 			RecordId rid = new RecordId("with_object_key", keyObj);
+			Id id = rid.getId();
+			assertTrue(id.isObject());
+			Object idObject = id.getObject();
+			assertEquals(2, idObject.len());
+			assertEquals(1, idObject.get("a").getLong());
+			assertEquals("two", idObject.get("b").getString());
 			final Name name = new Name("object", "key");
 			final Value created = surreal.create(rid, name);
 			assertEquals(created.get(Name.class), name);
