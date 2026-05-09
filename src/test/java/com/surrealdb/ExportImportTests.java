@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link Surreal#exportSql(String)} and {@link Surreal#importSql(String)}.
+ * Tests for {@link Surreal#exportSql(String)} and
+ * {@link Surreal#importSql(String)}.
  */
 public class ExportImportTests {
 

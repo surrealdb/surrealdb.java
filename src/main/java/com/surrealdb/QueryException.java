@@ -5,8 +5,9 @@ import java.util.Map;
 /**
  * Query execution failure (not executed, timed out, cancelled).
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link QueryDetailKind}.
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link QueryDetailKind}.
  *
  * @see ErrorKind#QUERY
  */
@@ -17,8 +18,8 @@ public class QueryException extends ServerException {
 	}
 
 	/**
-	 * Returns {@code true} when the query was not executed
-	 * (e.g. a previous statement in a multi-statement query failed).
+	 * Returns {@code true} when the query was not executed (e.g. a previous
+	 * statement in a multi-statement query failed).
 	 *
 	 * @return whether the detail kind is {@code NotExecuted}
 	 */
@@ -45,8 +46,8 @@ public class QueryException extends ServerException {
 	}
 
 	/**
-	 * Returns the timeout duration when the query timed out, as a map
-	 * containing {@code "secs"} and {@code "nanos"} keys.
+	 * Returns the timeout duration when the query timed out, as a map containing
+	 * {@code "secs"} and {@code "nanos"} keys.
 	 *
 	 * @return the timeout map, or {@code null}
 	 */

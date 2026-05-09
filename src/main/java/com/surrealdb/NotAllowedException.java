@@ -3,8 +3,9 @@ package com.surrealdb;
 /**
  * Permission denied, method not allowed, function or scripting blocked.
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link NotAllowedDetailKind}. Auth details further nest
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link NotAllowedDetailKind}. Auth details further nest
  * {@link AuthDetailKind} variants.
  *
  * @see ErrorKind#NOT_ALLOWED
@@ -35,7 +36,8 @@ public class NotAllowedException extends ServerException {
 	 * @return whether the detail matches {@code Auth -> TokenExpired}
 	 */
 	public boolean isTokenExpired() {
-		return AuthDetailKind.TOKEN_EXPIRED.equals(extractAuthKind(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
+		return AuthDetailKind.TOKEN_EXPIRED
+				.equals(extractAuthKind(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
 	}
 
 	/**
@@ -44,7 +46,8 @@ public class NotAllowedException extends ServerException {
 	 * @return whether the detail matches {@code Auth -> InvalidAuth}
 	 */
 	public boolean isInvalidAuth() {
-		return AuthDetailKind.INVALID_AUTH.equals(extractAuthKind(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
+		return AuthDetailKind.INVALID_AUTH
+				.equals(extractAuthKind(getDetailValue(getDetails(), NotAllowedDetailKind.AUTH)));
 	}
 
 	/**

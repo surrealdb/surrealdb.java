@@ -429,7 +429,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_queryWithBindings<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
