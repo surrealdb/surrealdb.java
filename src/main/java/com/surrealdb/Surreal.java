@@ -81,7 +81,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native long query(long ptr, String sql);
 
-	private static native long queryBind(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
 	private static native long createRecordIdValue(long ptr, long recordIdPtr, long valuePtr);
 
@@ -504,7 +504,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            a map containing parameter values to be bound to the SQL query
 	 * @return a Response object containing the results of the query
 	 */
-	public Response queryBind(String sql, Map<String, ?> params) {
+	public Response query(String sql, Map<String, ?> params) {
 		Map<String, ValueMut> valueMutMap = params.entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, entry -> ValueBuilder.convert(entry.getValue())));
 		String[] keys = valueMutMap.keySet().toArray(new String[0]);
@@ -512,7 +512,28 @@ public class Surreal extends Native implements AutoCloseable {
 		for (int i = 0; i < keys.length; i++) {
 			values[i] = valueMutMap.get(keys[i]).getPtr();
 		}
-		return new Response(queryBind(getPtr(), sql, keys, values));
+		return new Response(queryWithBindings(getPtr(), sql, keys, values));
+	}
+
+	/**
+	 * Executes a parameterized SurrealQL query on the database.
+	 * <p>
+	 * For more details, check the
+	 * <a href="https://surrealdb.com/docs/surrealql">SurrealQL documentation</a>.
+	 * <p>
+	 *
+	 * @param sql
+	 *            the SurrealQL query to be executed
+	 * @param params
+	 *            a map containing parameter values to be bound to the SQL query
+	 * @return a Response object containing the results of the query
+	 * @deprecated Since 2.0.2. Use {@link #query(String, Map)} instead. Java
+	 *             prefers method overloading over suffixing method names. This
+	 *             method is intended for removal in 3.0.0.
+	 */
+	@Deprecated
+	public Response queryBind(String sql, Map<String, ?> params) {
+		return query(sql, params);
 	}
 
 	/**

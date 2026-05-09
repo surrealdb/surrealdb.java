@@ -1,6 +1,8 @@
 package com.surrealdb;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Client-side transaction. Use {@link Surreal#beginTransaction()} to start a
@@ -20,6 +22,8 @@ public class Transaction extends Native {
 	private static native boolean cancel(long ptr);
 
 	private static native long query(long ptr, String sql);
+
+	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
 	/**
 	 * Commits the transaction. After this call, the transaction is completed and
@@ -56,6 +60,26 @@ public class Transaction extends Native {
 	 */
 	public Response query(String sql) {
 		return new Response(query(getPtr(), sql));
+	}
+
+	/**
+	 * Runs a parameterized SurrealQL query within this transaction.
+	 *
+	 * @param sql
+	 *            the SurrealQL query
+	 * @param params
+	 *            a map containing parameter values to be bound to the SQL query
+	 * @return the query response
+	 */
+	public Response query(String sql, Map<String, ?> params) {
+		Map<String, ValueMut> valueMutMap = params.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, entry -> ValueBuilder.convert(entry.getValue())));
+		String[] keys = valueMutMap.keySet().toArray(new String[0]);
+		long[] values = new long[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			values[i] = valueMutMap.get(keys[i]).getPtr();
+		}
+		return new Response(queryWithBindings(getPtr(), sql, keys, values));
 	}
 
 	@Override
