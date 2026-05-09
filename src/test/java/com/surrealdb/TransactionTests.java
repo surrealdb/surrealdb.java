@@ -1,5 +1,8 @@
 package com.surrealdb;
 
+import java.util.HashMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,12 +36,49 @@ public class TransactionTests {
 	}
 
 	@Test
+	void transaction_queryWithBindings_returnsResponse() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			Transaction txn = surreal.beginTransaction();
+			HashMap<String, String> map = new HashMap<>();
+			map.put("value", "hello");
+			map.put("value2", "world");
+			Response response = txn.query("RETURN $value;RETURN $value2", map);
+			assertNotNull(response);
+			assertEquals(2, response.size());
+			assertEquals("hello", response.take(0).getString());
+			assertEquals("world", response.take(1).getString());
+			txn.cancel();
+		}
+	}
+
+	@Test
 	void transaction_commit_succeeds() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			Transaction txn = surreal.beginTransaction();
 			txn.query("INFO FOR DB");
 			txn.commit();
+		}
+	}
+
+	@Test
+	void transaction_queryWithBindings_commitsBoundData() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			Transaction txn = surreal.beginTransaction();
+			HashMap<String, String> map = new HashMap<>();
+			map.put("name", "BoundTransaction");
+			Response create = txn.query("CREATE tx_bound SET name = $name", map);
+			assertNotNull(create);
+			assertTrue(create.size() >= 1);
+			txn.commit();
+			Response response = surreal.query("SELECT * FROM tx_bound WHERE name = 'BoundTransaction'");
+			assertNotNull(response);
+			Value first = response.take(0);
+			assertTrue(first.isArray());
+			assertEquals(1, first.getArray().len());
+			assertEquals("BoundTransaction", first.getArray().get(0).getObject().get("name").getString());
 		}
 	}
 
