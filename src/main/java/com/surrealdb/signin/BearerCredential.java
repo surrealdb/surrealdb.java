@@ -15,8 +15,7 @@ public class BearerCredential implements Credential {
 	 * Creates a bearer credential with the given access token.
 	 *
 	 * @param token
-	 * the access token (JWT) to use for authentication; must not be
-	 * null
+	 *            the access token (JWT) to use for authentication; must not be null
 	 */
 	public BearerCredential(String token) {
 		this.token = Objects.requireNonNull(token, "token");

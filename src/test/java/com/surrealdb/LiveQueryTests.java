@@ -82,8 +82,8 @@ public class LiveQueryTests {
 	}
 
 	/**
-	 * Reproduces issue #138: start a live query, block on next(), then CREATE
-	 * a record — the notification must arrive. The bug report claims it never does.
+	 * Reproduces issue #138: start a live query, block on next(), then CREATE a
+	 * record — the notification must arrive. The bug report claims it never does.
 	 */
 	@Test
 	void liveStreamReceivesCreateNotification() throws Exception {
@@ -108,31 +108,27 @@ public class LiveQueryTests {
 				consumer.setDaemon(true);
 				consumer.start();
 
-				assertTrue(consuming.await(2, TimeUnit.SECONDS),
-						"Consumer thread did not start in time");
+				assertTrue(consuming.await(2, TimeUnit.SECONDS), "Consumer thread did not start in time");
 				Thread.sleep(500);
 
 				surreal.create(new RecordId("person", 1), Helpers.tobie);
 
 				consumer.join(5000);
-				assertFalse(consumer.isAlive(),
-						"Consumer thread still blocked — next() never returned");
+				assertFalse(consumer.isAlive(), "Consumer thread still blocked — next() never returned");
 			}
 
 			if (error.get() != null) {
 				fail("next() threw an exception: " + error.get());
 			}
-			assertNotNull(received.get(),
-					"No notification received after CREATE");
+			assertNotNull(received.get(), "No notification received after CREATE");
 			assertEquals("CREATE", received.get().getAction().toUpperCase());
-			assertNotNull(received.get().getValue(),
-					"Notification value should contain the created record");
+			assertNotNull(received.get().getValue(), "Notification value should contain the created record");
 		}
 	}
 
 	/**
-	 * Reproduces issue #138 variant: live query + UPDATE should deliver
-	 * a notification to next().
+	 * Reproduces issue #138 variant: live query + UPDATE should deliver a
+	 * notification to next().
 	 */
 	@Test
 	void liveStreamReceivesUpdateNotification() throws Exception {
@@ -159,19 +155,17 @@ public class LiveQueryTests {
 				surreal.update(id, UpType.MERGE, Helpers.jaime);
 
 				consumer.join(5000);
-				assertFalse(consumer.isAlive(),
-						"Consumer thread still blocked — next() never returned after UPDATE");
+				assertFalse(consumer.isAlive(), "Consumer thread still blocked — next() never returned after UPDATE");
 			}
 
-			assertNotNull(received.get(),
-					"No notification received after UPDATE");
+			assertNotNull(received.get(), "No notification received after UPDATE");
 			assertEquals("UPDATE", received.get().getAction().toUpperCase());
 		}
 	}
 
 	/**
-	 * Tests issue #138 deadlock claim: close() from another thread must
-	 * unblock a thread that is blocked on next(), without deadlocking.
+	 * Tests issue #138 deadlock claim: close() from another thread must unblock a
+	 * thread that is blocked on next(), without deadlocking.
 	 */
 	@Test
 	void closeUnblocksBlockedNext() throws Exception {
@@ -207,8 +201,7 @@ public class LiveQueryTests {
 				fail("next() threw instead of returning empty: " + error.get());
 			}
 			assertNotNull(result.get(), "next() should have returned after close()");
-			assertFalse(result.get().isPresent(),
-					"next() should return empty after stream is closed");
+			assertFalse(result.get().isPresent(), "next() should return empty after stream is closed");
 		}
 	}
 
@@ -274,8 +267,8 @@ public class LiveQueryTests {
 	}
 
 	/**
-	 * Verifies that selectLive() surfaces subscription errors immediately
-	 * rather than deferring them to the first next() call.
+	 * Verifies that selectLive() surfaces subscription errors immediately rather
+	 * than deferring them to the first next() call.
 	 */
 	@Test
 	void selectLiveOnNonExistentTableThrowsImmediately() {

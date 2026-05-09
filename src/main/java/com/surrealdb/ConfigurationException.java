@@ -3,8 +3,9 @@ package com.surrealdb;
 /**
  * Feature or configuration not supported (e.g. live queries, GraphQL).
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link ConfigurationDetailKind}.
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link ConfigurationDetailKind}.
  *
  * @see ErrorKind#CONFIGURATION
  */
