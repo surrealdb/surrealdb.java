@@ -71,8 +71,13 @@ public class Transaction extends Native {
 	 * @return the query response
 	 */
 	public Response query(String sql, Map<String, ?> params) {
-		final ValueBuilder.BoundParams p = ValueBuilder.packParams(params);
-		return new Response(queryWithBindings(getPtr(), sql, p.keys, p.values));
+		final Map<String, ValueMut> valueMuts = ValueBuilder.convertParams(params);
+		final String[] keys = valueMuts.keySet().toArray(new String[0]);
+		final long[] values = new long[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			values[i] = valueMuts.get(keys[i]).getPtr();
+		}
+		return new Response(queryWithBindings(getPtr(), sql, keys, values));
 	}
 
 	@Override
