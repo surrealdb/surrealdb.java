@@ -507,14 +507,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a Response object containing the results of the query
 	 */
 	public Response query(String sql, Map<String, ?> params) {
-		Map<String, ValueMut> valueMutMap = params.entrySet().stream()
-				.collect(Collectors.toMap(Map.Entry::getKey, entry -> ValueBuilder.convert(entry.getValue())));
-		String[] keys = valueMutMap.keySet().toArray(new String[0]);
-		long[] values = new long[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			values[i] = valueMutMap.get(keys[i]).getPtr();
-		}
-		return new Response(queryWithBindings(getPtr(), sql, keys, values));
+		final ValueBuilder.BoundParams p = ValueBuilder.packParams(params);
+		return new Response(queryWithBindings(getPtr(), sql, p.keys, p.values));
 	}
 
 	/**

@@ -128,4 +128,25 @@ class ValueBuilder {
 		}
 	}
 
+	static BoundParams packParams(final Map<String, ?> params) {
+		final Map<String, ValueMut> valueMutMap = params.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, entry -> convert(entry.getValue())));
+		final String[] keys = valueMutMap.keySet().toArray(new String[0]);
+		final long[] values = new long[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			values[i] = valueMutMap.get(keys[i]).getPtr();
+		}
+		return new BoundParams(keys, values);
+	}
+
+	static final class BoundParams {
+		final String[] keys;
+		final long[] values;
+
+		BoundParams(final String[] keys, final long[] values) {
+			this.keys = keys;
+			this.values = values;
+		}
+	}
+
 }
