@@ -5,10 +5,11 @@ use std::sync::Arc;
 
 use crate::error::SurrealError;
 use crate::{
-    check_query_result, convert_up_type, get_long_array, get_rust_string, get_rust_string_array,
-    get_surreal_ref, get_value_instance, get_value_mut_instance, new_jlong_array, new_string,
-    release_instance, return_unexpected_result, return_value_array_first, return_value_array_iter,
-    return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME,
+    build_params_map, check_query_result, convert_up_type, get_long_array, get_rust_string,
+    get_rust_string_array, get_surreal_ref, get_value_instance, get_value_mut_instance,
+    new_jlong_array, new_string, release_instance, return_unexpected_result,
+    return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
+    take_one_result, JniTypes, TOKIO_RUNTIME,
 };
 use futures::StreamExt;
 use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString, JValue};
@@ -429,7 +430,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_queryWithBindings<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -437,21 +438,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_queryBind<'local>(
     params_keys: JObjectArray<'local>,
     params_values: JLongArray<'local>,
 ) -> jlong {
-    // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(&mut env, ptr, || 0);
-    // Retrieve the query
     let query = get_rust_string!(&mut env, &query, || 0);
-    let keys = get_rust_string_array!(&mut env, params_keys, || 0);
-    let value_ptrs = get_long_array!(&mut env, &params_values, || 0);
-    let mut params_map = BTreeMap::<String, Value>::new();
-    for (key, value_ptr) in keys.into_iter().zip(value_ptrs) {
-        let value = get_value_mut_instance!(&mut env, value_ptr, || 0);
-        params_map.insert(key, value.clone());
-    }
-
+    let params_map = build_params_map!(&mut env, params_keys, params_values, || 0);
     let res = surrealdb_query::<Value>(surreal, &query, Some(params_map));
     let res = check_query_result!(&mut env, res, || 0);
-    // Build a response instance
     JniTypes::new_response(Arc::new(Mutex::new(res)))
 }
 

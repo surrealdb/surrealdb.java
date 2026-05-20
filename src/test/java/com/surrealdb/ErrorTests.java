@@ -13,11 +13,12 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for the structured error handling classes.
- * These tests construct exceptions directly (no JNI) to verify the Java-side
- * class hierarchy, detail parsing, convenience getters, and cause chain traversal.
+ * Unit tests for the structured error handling classes. These tests construct
+ * exceptions directly (no JNI) to verify the Java-side class hierarchy, detail
+ * parsing, convenience getters, and cause chain traversal.
  *
- * <p>Each accessor is tested with both the new internally-tagged format
+ * <p>
+ * Each accessor is tested with both the new internally-tagged format
  * ({@code {"kind": "...", "details": ...}}) and the legacy externally-tagged
  * format ({@code "..." / {"...": ...}}).
  */
@@ -38,7 +39,9 @@ public class ErrorTests {
 		return m;
 	}
 
-	/** New format: newtype variant {@code {"kind": "X", "details": {"kind": "Y"}}}. */
+	/**
+	 * New format: newtype variant {@code {"kind": "X", "details": {"kind": "Y"}}}.
+	 */
 	private static Map<String, java.lang.Object> nfNested(String kind, String innerKind) {
 		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
 		inner.put("kind", innerKind);
@@ -228,7 +231,8 @@ public class ErrorTests {
 
 	@Test
 	void hierarchyServerException() {
-		ServerException e = new ServerException(ErrorKind.CONNECTION, null, "conn error", (java.lang.Object) null, null);
+		ServerException e = new ServerException(ErrorKind.CONNECTION, null, "conn error", (java.lang.Object) null,
+				null);
 		assertTrue(e instanceof SurrealException);
 		assertFalse(e instanceof InternalException);
 		assertEquals(ErrorKind.CONNECTION, e.getKindEnum());
@@ -256,7 +260,8 @@ public class ErrorTests {
 		}
 	}
 
-	// Detail structure is built on the native (Rust) side and passed as Object (Map/List/String/Number).
+	// Detail structure is built on the native (Rust) side and passed as Object
+	// (Map/List/String/Number).
 	// The tests below verify the Java detail helpers work with that structure.
 
 	// ---- detailKind / detailInner ----
@@ -960,7 +965,7 @@ public class ErrorTests {
 	@Test
 	void doubleWrappedDetailsManuallyUnwrapped() {
 		// After the Rust bridge unwraps, Java receives:
-		//   {"kind": "Record", "details": {"id": "person:dup"}}
+		// {"kind": "Record", "details": {"id": "person:dup"}}
 		Map<String, java.lang.Object> inner = new LinkedHashMap<>();
 		inner.put("id", "person:dup");
 		Map<String, java.lang.Object> details = new LinkedHashMap<>();

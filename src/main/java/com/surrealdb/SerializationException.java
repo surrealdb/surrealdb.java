@@ -3,8 +3,9 @@ package com.surrealdb;
 /**
  * Serialization or deserialization error.
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link SerializationDetailKind}.
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link SerializationDetailKind}.
  *
  * @see ErrorKind#SERIALIZATION
  */
@@ -15,8 +16,8 @@ public class SerializationException extends ServerException {
 	}
 
 	/**
-	 * Returns {@code true} when this is specifically a deserialization error
-	 * (as opposed to serialization).
+	 * Returns {@code true} when this is specifically a deserialization error (as
+	 * opposed to serialization).
 	 *
 	 * @return whether the detail kind is {@code Deserialization}
 	 */

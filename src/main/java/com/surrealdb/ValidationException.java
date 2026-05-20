@@ -3,8 +3,9 @@ package com.surrealdb;
 /**
  * Invalid input: parse error, invalid request or parameters, bad input values.
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link ValidationDetailKind}.
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link ValidationDetailKind}.
  *
  * @see ErrorKind#VALIDATION
  */
@@ -24,8 +25,8 @@ public class ValidationException extends ServerException {
 	}
 
 	/**
-	 * Returns the invalid parameter name, if this is an
-	 * {@code InvalidParameter} error.
+	 * Returns the invalid parameter name, if this is an {@code InvalidParameter}
+	 * error.
 	 *
 	 * @return the parameter name, or {@code null}
 	 */

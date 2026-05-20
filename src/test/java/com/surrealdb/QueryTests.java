@@ -392,7 +392,7 @@ public class QueryTests {
 	}
 
 	@Test
-	void queryBind() throws SurrealException {
+	void queryBindRegression() throws SurrealException {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			{
@@ -414,7 +414,29 @@ public class QueryTests {
 	}
 
 	@Test
-	void queryBindValues() throws SurrealException {
+	void queryWithBindings() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			{
+				final HashMap<String, String> map = new HashMap<>();
+				map.put("value", "hello");
+				map.put("value2", "world");
+				final String sql = "RETURN $value;RETURN $value2";
+				final Response response = surreal.query(sql, map);
+				{
+					final int size = response.size();
+					assertEquals(2, size);
+					final String res1 = response.take(0).getString();
+					assertEquals("hello", res1);
+					final String res2 = response.take(1).getString();
+					assertEquals("world", res2);
+				}
+			}
+		}
+	}
+
+	@Test
+	void queryWithBindingsValues() throws SurrealException {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			{
@@ -431,7 +453,7 @@ public class QueryTests {
 				map.put("null", null);
 				map.put("uuid", UUID.fromString("f8e238f2-e734-47b8-9a16-476b291bd78a"));
 				final String sql2 = "RETURN [$string, $long, $list, $map, $array, $object, $null, $uuid]";
-				final Response response2 = surreal.queryBind(sql2, map);
+				final Response response2 = surreal.query(sql2, map);
 				{
 					final Array results = response2.take(0).getArray();
 					assertEquals(8, results.len());
@@ -467,7 +489,7 @@ public class QueryTests {
 				map.put("null", ValueMut.createNull());
 				map.put("none", ValueMut.createNone());
 				final String sql = "RETURN $null;RETURN $none";
-				final Response response = surreal.queryBind(sql, map);
+				final Response response = surreal.query(sql, map);
 				{
 					final int size = response.size();
 					assertEquals(2, size);

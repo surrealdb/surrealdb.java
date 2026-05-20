@@ -387,3 +387,20 @@ macro_rules! convert_up_type {
         }
     };
 }
+
+/// Builds a BTreeMap<String, Value> from JNI parameter-key and value-pointer
+/// arrays. Used by the queryWithBindings JNI entrypoints on both Surreal and
+/// Transaction.
+#[macro_export]
+macro_rules! build_params_map {
+    ($env:expr, $keys:expr, $values:expr, $default_fn:expr) => {{
+        let keys = $crate::get_rust_string_array!($env, $keys, $default_fn);
+        let value_ptrs = $crate::get_long_array!($env, &$values, $default_fn);
+        let mut params_map = std::collections::BTreeMap::<String, surrealdb::types::Value>::new();
+        for (key, value_ptr) in keys.into_iter().zip(value_ptrs) {
+            let value = $crate::get_value_mut_instance!($env, value_ptr, $default_fn);
+            params_map.insert(key, value.clone());
+        }
+        params_map
+    }};
+}

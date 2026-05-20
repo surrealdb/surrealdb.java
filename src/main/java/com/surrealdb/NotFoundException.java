@@ -3,8 +3,9 @@ package com.surrealdb;
 /**
  * Resource not found (table, record, namespace, database, RPC method, session).
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link NotFoundDetailKind}.
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link NotFoundDetailKind}.
  *
  * @see ErrorKind#NOT_FOUND
  */

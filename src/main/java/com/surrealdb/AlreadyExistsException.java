@@ -3,8 +3,9 @@ package com.surrealdb;
 /**
  * Duplicate resource (table, record, namespace, database, session).
  *
- * <p>Details use the {@code {kind, details?}} format with variants defined
- * in {@link AlreadyExistsDetailKind}.
+ * <p>
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link AlreadyExistsDetailKind}.
  *
  * @see ErrorKind#ALREADY_EXISTS
  */
