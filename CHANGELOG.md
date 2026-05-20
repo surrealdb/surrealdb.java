@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2] - 2026-05-20
+- Add Java query binding overloads and transaction bindings [#148](https://github.com/surrealdb/surrealdb.java/pull/148).
+- Enforce spotless/cargo fmt on PRs and scope GITHUB_TOKEN permissions [#150](https://github.com/surrealdb/surrealdb.java/pull/150).
+- Bump rustls-webpki from 0.103.9 to 0.103.13 [#146](https://github.com/surrealdb/surrealdb.java/pull/146).
+- Bump rand from 0.8.5 to 0.8.6 [#145](https://github.com/surrealdb/surrealdb.java/pull/145).
+- Bump lz4_flex from 0.12.0 to 0.12.1 [#144](https://github.com/surrealdb/surrealdb.java/pull/144).
+
 ## [2.0.1] - 2026-04-28
 - Upgrade to SurrealDB SDK 3.0.5.
 - Fix JVM crash when accessing array-backed RecordId keys [#141](https://github.com/surrealdb/surrealdb.java/pull/141).
