@@ -100,26 +100,32 @@ loadScripts(document, 'script');</script>
 <span class="extends-implements">extends <a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></span></div>
 <div class="block">Base class for all exceptions originating from the SurrealDB server.
 
-<p>Carries structured error information: a machine-readable <a href="#getKind()"><code>kind</code></a>,
-optional <a href="#getDetails()"><code>details</code></a> using the <code>{kind, details?}</code> wire format,
-and an optional typed <a href="#getServerCause()"><code>cause</code></a> chain.
+<p>
+Carries structured error information: a machine-readable <a href="#getKind()"><code>kind</code></a>, optional <a href="#getDetails()"><code>details</code></a> using the <code>{kind,
+details?}</code> wire format, and an optional typed <a href="#getServerCause()"><code>cause</code></a>
+chain.
 
-<p>Details follow the internally-tagged format where each detail object has a
+<p>
+Details follow the internally-tagged format where each detail object has a
 <code>"kind"</code> field and an optional <code>"details"</code> field:
 <ul>
-  <li>Unit variant: <code>{"kind": "Parse"}</code></li>
-  <li>Newtype variant: <code>{"kind": "Auth", "details": {"kind": "TokenExpired"}}</code></li>
-  <li>Struct variant: <code>{"kind": "Table", "details": {"name": "users"}}</code></li>
+<li>Unit variant: <code>{"kind": "Parse"}</code></li>
+<li>Newtype variant: <code>{"kind": "Auth", "details": {"kind":
+"TokenExpired"}}</code></li>
+<li>Struct variant: <code>{"kind": "Table", "details": {"name":
+"users"}}</code></li>
 </ul>
 
-<p>For backward compatibility with older servers, the legacy externally-tagged
-format (<code>"Parse"</code>, <code>{"Auth": "TokenExpired"}</code>,
-<code>{"Table": {"name": "users"}}</code>) is also supported by all detail helpers.
+<p>
+For backward compatibility with older servers, the legacy externally-tagged
+format (<code>"Parse"</code>, <code>{"Auth": "TokenExpired"}</code>, <code>{"Table":
+{"name": "users"}}</code>) is also supported by all detail helpers.
 
-<p>Specific error kinds are represented by subclasses (e.g. <a href="NotAllowedException.html" title="class in com.surrealdb"><code>NotAllowedException</code></a>,
-<a href="NotFoundException.html" title="class in com.surrealdb"><code>NotFoundException</code></a>). When the server returns an unknown kind, a plain
-<code>ServerException</code> is used (not <a href="InternalException.html" title="class in com.surrealdb"><code>InternalException</code></a>) to preserve forward
-compatibility.</div>
+<p>
+Specific error kinds are represented by subclasses (e.g.
+<a href="NotAllowedException.html" title="class in com.surrealdb"><code>NotAllowedException</code></a>, <a href="NotFoundException.html" title="class in com.surrealdb"><code>NotFoundException</code></a>). When the server
+returns an unknown kind, a plain <code>ServerException</code> is used (not
+<a href="InternalException.html" title="class in com.surrealdb"><code>InternalException</code></a>) to preserve forward compatibility.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -147,13 +153,14 @@ compatibility.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ServerException.html" title="class in com.surrealdb">ServerException</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#findCause(com.surrealdb.ErrorKind)" class="member-name-link">findCause</a><wbr>(<a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a>&nbsp;kind)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Finds the first error in the cause chain (including this error) that has the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
+<div class="block">Finds the first error in the cause chain (including this error) that has the
+given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ServerException.html" title="class in com.surrealdb">ServerException</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#findCause(java.lang.String)" class="member-name-link">findCause</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;kind)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Finds the first error in the cause chain (including this error) that has
-the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kind</code></a>.</div>
+<div class="block">Finds the first error in the cause chain (including this error) that has the
+given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kind</code></a>.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getDetails()" class="member-name-link">getDetails</a>()</code></div>
@@ -178,7 +185,8 @@ the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kin
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hasKind(com.surrealdb.ErrorKind)" class="member-name-link">hasKind</a><wbr>(<a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a>&nbsp;kind)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Checks whether this error or any error in its cause chain has the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
+<div class="block">Checks whether this error or any error in its cause chain has the given
+<a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hasKind(java.lang.String)" class="member-name-link">hasKind</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;kind)</code></div>
@@ -212,7 +220,8 @@ the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kin
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getKind</span>()</div>
 <div class="block">Returns the machine-readable error kind string (e.g. <code>"NotAllowed"</code>).
-For unknown kinds this is the wire string; otherwise it matches <a href="#getKindEnum()"><code>getKindEnum()</code></a><code>.getRaw()</code>.</div>
+For unknown kinds this is the wire string; otherwise it matches
+<a href="#getKindEnum()"><code>getKindEnum()</code></a><code>.getRaw()</code>.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the error kind string, never <code>null</code></dd>
@@ -225,8 +234,9 @@ For unknown kinds this is the wire string; otherwise it matches <a href="#getKin
 <h3>getKindEnum</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a></span>&nbsp;<span class="element-name">getKindEnum</span>()</div>
-<div class="block">Returns the error kind as an enum for type-safe matching.
-Unknown kinds from newer servers map to <a href="ErrorKind.html#UNKNOWN"><code>ErrorKind.UNKNOWN</code></a>; the raw string is in <a href="#getKind()"><code>getKind()</code></a>.</div>
+<div class="block">Returns the error kind as an enum for type-safe matching. Unknown kinds from
+newer servers map to <a href="ErrorKind.html#UNKNOWN"><code>ErrorKind.UNKNOWN</code></a>; the raw string is in
+<a href="#getKind()"><code>getKind()</code></a>.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the error kind enum, never <code>null</code></dd>
@@ -241,16 +251,20 @@ Unknown kinds from newer servers map to <a href="ErrorKind.html#UNKNOWN"><code>E
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span>&nbsp;<span class="element-name">getDetails</span>()</div>
 <div class="block">Returns the optional structured details for this error.
 
-<p>Details use the <code>{kind, details?}</code> wire format. The value is either:
+<p>
+Details use the <code>{kind, details?}</code> wire format. The value is either:
 <ul>
-  <li><code>null</code> -- no details</li>
-  <li>a <code>Map&lt;String, Object&gt;</code> with a <code>"kind"</code> key and optional
-      <code>"details"</code> key (new internally-tagged format)</li>
-  <li>a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link"><code>String</code></a> -- a unit variant in the legacy format (e.g. <code>"Parse"</code>)</li>
-  <li>a <code>Map&lt;String, Object&gt;</code> without <code>"kind"</code> -- legacy externally-tagged format</li>
+<li><code>null</code> -- no details</li>
+<li>a <code>Map&lt;String, Object&gt;</code> with a <code>"kind"</code> key and optional
+<code>"details"</code> key (new internally-tagged format)</li>
+<li>a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link"><code>String</code></a> -- a unit variant in the legacy format (e.g.
+<code>"Parse"</code>)</li>
+<li>a <code>Map&lt;String, Object&gt;</code> without <code>"kind"</code> -- legacy
+externally-tagged format</li>
 </ul>
 
-<p>Prefer the typed convenience getters on subclasses (e.g.
+<p>
+Prefer the typed convenience getters on subclasses (e.g.
 <a href="NotFoundException.html#getTableName()"><code>NotFoundException.getTableName()</code></a>) over inspecting details directly.</div>
 <dl class="notes">
 <dt>Returns:</dt>
@@ -266,7 +280,8 @@ Unknown kinds from newer servers map to <a href="ErrorKind.html#UNKNOWN"><code>E
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ServerException.html" title="class in com.surrealdb">ServerException</a></span>&nbsp;<span class="element-name">getServerCause</span>()</div>
 <div class="block">Returns the typed server-side cause of this error, if any.
 
-<p>This is equivalent to calling <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Throwable.html#getCause()" title="class or interface in java.lang" class="external-link"><code>Throwable.getCause()</code></a> and casting to
+<p>
+This is equivalent to calling <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Throwable.html#getCause()" title="class or interface in java.lang" class="external-link"><code>Throwable.getCause()</code></a> and casting to
 <code>ServerException</code>, but avoids the cast.</div>
 <dl class="notes">
 <dt>Returns:</dt>
@@ -296,7 +311,8 @@ Unknown kinds from newer servers map to <a href="ErrorKind.html#UNKNOWN"><code>E
 <h3>hasKind</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">hasKind</span><wbr><span class="parameters">(<a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a>&nbsp;kind)</span></div>
-<div class="block">Checks whether this error or any error in its cause chain has the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
+<div class="block">Checks whether this error or any error in its cause chain has the given
+<a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
 </div>
 </section>
 </li>
@@ -305,8 +321,8 @@ Unknown kinds from newer servers map to <a href="ErrorKind.html#UNKNOWN"><code>E
 <h3>findCause</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ServerException.html" title="class in com.surrealdb">ServerException</a></span>&nbsp;<span class="element-name">findCause</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;kind)</span></div>
-<div class="block">Finds the first error in the cause chain (including this error) that has
-the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kind</code></a>.</div>
+<div class="block">Finds the first error in the cause chain (including this error) that has the
+given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kind</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>kind</code> - the kind to look for</dd>
@@ -321,7 +337,8 @@ the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>kin
 <h3>findCause</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ServerException.html" title="class in com.surrealdb">ServerException</a></span>&nbsp;<span class="element-name">findCause</span><wbr><span class="parameters">(<a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a>&nbsp;kind)</span></div>
-<div class="block">Finds the first error in the cause chain (including this error) that has the given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
+<div class="block">Finds the first error in the cause chain (including this error) that has the
+given <a href="ErrorKind.html" title="enum class in com.surrealdb"><code>ErrorKind</code></a>.</div>
 </div>
 </section>
 </li>

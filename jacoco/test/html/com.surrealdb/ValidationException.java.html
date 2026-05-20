@@ -3,16 +3,17 @@
 /**
  * Invalid input: parse error, invalid request or parameters, bad input values.
  *
- * &lt;p&gt;Details use the {@code {kind, details?}} format with variants defined
- * in {@link ValidationDetailKind}.
+ * &lt;p&gt;
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link ValidationDetailKind}.
  *
  * @see ErrorKind#VALIDATION
  */
 public class ValidationException extends ServerException {
 
 	ValidationException(String message, java.lang.Object details, ServerException cause) {
-<span class="fc" id="L14">		super(ErrorKind.VALIDATION, null, message, details, cause);</span>
-<span class="fc" id="L15">	}</span>
+<span class="fc" id="L15">		super(ErrorKind.VALIDATION, null, message, details, cause);</span>
+<span class="fc" id="L16">	}</span>
 
 	/**
 	 * Returns {@code true} when the error is a parse error.
@@ -20,17 +21,17 @@ public class ValidationException extends ServerException {
 	 * @return whether the detail kind is {@code Parse}
 	 */
 	public boolean isParseError() {
-<span class="fc" id="L23">		return hasDetailKey(getDetails(), ValidationDetailKind.PARSE);</span>
+<span class="fc" id="L24">		return hasDetailKey(getDetails(), ValidationDetailKind.PARSE);</span>
 	}
 
 	/**
-	 * Returns the invalid parameter name, if this is an
-	 * {@code InvalidParameter} error.
+	 * Returns the invalid parameter name, if this is an {@code InvalidParameter}
+	 * error.
 	 *
 	 * @return the parameter name, or {@code null}
 	 */
 	public String getParameterName() {
-<span class="fc" id="L33">		return detailField(getDetails(), ValidationDetailKind.INVALID_PARAMETER, &quot;name&quot;);</span>
+<span class="fc" id="L34">		return detailField(getDetails(), ValidationDetailKind.INVALID_PARAMETER, &quot;name&quot;);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

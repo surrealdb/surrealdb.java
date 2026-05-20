@@ -3,16 +3,17 @@
 /**
  * Duplicate resource (table, record, namespace, database, session).
  *
- * &lt;p&gt;Details use the {@code {kind, details?}} format with variants defined
- * in {@link AlreadyExistsDetailKind}.
+ * &lt;p&gt;
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link AlreadyExistsDetailKind}.
  *
  * @see ErrorKind#ALREADY_EXISTS
  */
 public class AlreadyExistsException extends ServerException {
 
 	AlreadyExistsException(String message, java.lang.Object details, ServerException cause) {
-<span class="fc" id="L14">		super(ErrorKind.ALREADY_EXISTS, null, message, details, cause);</span>
-<span class="fc" id="L15">	}</span>
+<span class="fc" id="L15">		super(ErrorKind.ALREADY_EXISTS, null, message, details, cause);</span>
+<span class="fc" id="L16">	}</span>
 
 	/**
 	 * Returns the record id, if this is a duplicate record error.
@@ -20,7 +21,7 @@ public class AlreadyExistsException extends ServerException {
 	 * @return the record id string, or {@code null}
 	 */
 	public String getRecordId() {
-<span class="fc" id="L23">		return detailField(getDetails(), AlreadyExistsDetailKind.RECORD, &quot;id&quot;);</span>
+<span class="fc" id="L24">		return detailField(getDetails(), AlreadyExistsDetailKind.RECORD, &quot;id&quot;);</span>
 	}
 
 	/**
@@ -29,7 +30,7 @@ public class AlreadyExistsException extends ServerException {
 	 * @return the table name, or {@code null}
 	 */
 	public String getTableName() {
-<span class="fc" id="L32">		return detailField(getDetails(), AlreadyExistsDetailKind.TABLE, &quot;name&quot;);</span>
+<span class="fc" id="L33">		return detailField(getDetails(), AlreadyExistsDetailKind.TABLE, &quot;name&quot;);</span>
 	}
 
 	/**
@@ -38,7 +39,7 @@ public class AlreadyExistsException extends ServerException {
 	 * @return the session id, or {@code null}
 	 */
 	public String getSessionId() {
-<span class="fc" id="L41">		return detailField(getDetails(), AlreadyExistsDetailKind.SESSION, &quot;id&quot;);</span>
+<span class="fc" id="L42">		return detailField(getDetails(), AlreadyExistsDetailKind.SESSION, &quot;id&quot;);</span>
 	}
 
 	/**
@@ -47,7 +48,7 @@ public class AlreadyExistsException extends ServerException {
 	 * @return the namespace name, or {@code null}
 	 */
 	public String getNamespaceName() {
-<span class="fc" id="L50">		return detailField(getDetails(), AlreadyExistsDetailKind.NAMESPACE, &quot;name&quot;);</span>
+<span class="fc" id="L51">		return detailField(getDetails(), AlreadyExistsDetailKind.NAMESPACE, &quot;name&quot;);</span>
 	}
 
 	/**
@@ -56,7 +57,7 @@ public class AlreadyExistsException extends ServerException {
 	 * @return the database name, or {@code null}
 	 */
 	public String getDatabaseName() {
-<span class="fc" id="L59">		return detailField(getDetails(), AlreadyExistsDetailKind.DATABASE, &quot;name&quot;);</span>
+<span class="fc" id="L60">		return detailField(getDetails(), AlreadyExistsDetailKind.DATABASE, &quot;name&quot;);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

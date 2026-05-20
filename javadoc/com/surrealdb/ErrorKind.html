@@ -101,11 +101,14 @@ loadScripts(document, 'script');</script>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public enum </span><span class="element-name type-name-label">ErrorKind</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Enum.html" title="class or interface in java.lang" class="external-link">Enum</a>&lt;<a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a>&gt;</span></div>
-<div class="block">Machine-readable error kind, aligned with the SurrealDB Rust SDK's <code>ErrorDetails</code> enum.
+<div class="block">Machine-readable error kind, aligned with the SurrealDB Rust SDK's
+<code>ErrorDetails</code> enum.
 
-<p>Returned by <a href="ServerException.html#getKindEnum()"><code>ServerException.getKindEnum()</code></a>. Use this for type-safe matching instead
-of <a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a> when the kind is known. For unknown (future) kinds,
-<a href="#UNKNOWN"><code>UNKNOWN</code></a> is used and the raw string is available via <a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
+<p>
+Returned by <a href="ServerException.html#getKindEnum()"><code>ServerException.getKindEnum()</code></a>. Use this for type-safe
+matching instead of <a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a> when the kind is known.
+For unknown (future) kinds, <a href="#UNKNOWN"><code>UNKNOWN</code></a> is used and the raw string is
+available via <a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
 </div>
 </section>
 <section class="summary">
@@ -147,7 +150,8 @@ of <a href="ServerException.html#getKind()"><code>ServerException.getKind()</cod
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code><a href="#UNKNOWN" class="member-name-link">UNKNOWN</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Unknown kind from a newer server; raw string is in <a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
+<div class="block">Unknown kind from a newer server; raw string is in
+<a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#VALIDATION" class="member-name-link">VALIDATION</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
@@ -291,7 +295,8 @@ the order they are declared.</div>
 <h3>UNKNOWN</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a></span>&nbsp;<span class="element-name">UNKNOWN</span></div>
-<div class="block">Unknown kind from a newer server; raw string is in <a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
+<div class="block">Unknown kind from a newer server; raw string is in
+<a href="ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
 </div>
 </section>
 </li>
@@ -343,8 +348,8 @@ not permitted.)</div>
 <h3>fromString</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ErrorKind.html" title="enum class in com.surrealdb">ErrorKind</a></span>&nbsp;<span class="element-name">fromString</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;kind)</span></div>
-<div class="block">Resolves a kind string from the wire to an enum constant.
-Unknown strings return <a href="#UNKNOWN"><code>UNKNOWN</code></a>.</div>
+<div class="block">Resolves a kind string from the wire to an enum constant. Unknown strings
+return <a href="#UNKNOWN"><code>UNKNOWN</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>kind</code> - the kind string (e.g. from the server)</dd>

@@ -3,25 +3,26 @@
 /**
  * Serialization or deserialization error.
  *
- * &lt;p&gt;Details use the {@code {kind, details?}} format with variants defined
- * in {@link SerializationDetailKind}.
+ * &lt;p&gt;
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link SerializationDetailKind}.
  *
  * @see ErrorKind#SERIALIZATION
  */
 public class SerializationException extends ServerException {
 
 	SerializationException(String message, java.lang.Object details, ServerException cause) {
-<span class="fc" id="L14">		super(ErrorKind.SERIALIZATION, null, message, details, cause);</span>
-<span class="fc" id="L15">	}</span>
+<span class="fc" id="L15">		super(ErrorKind.SERIALIZATION, null, message, details, cause);</span>
+<span class="fc" id="L16">	}</span>
 
 	/**
-	 * Returns {@code true} when this is specifically a deserialization error
-	 * (as opposed to serialization).
+	 * Returns {@code true} when this is specifically a deserialization error (as
+	 * opposed to serialization).
 	 *
 	 * @return whether the detail kind is {@code Deserialization}
 	 */
 	public boolean isDeserialization() {
-<span class="fc" id="L24">		return hasDetailKey(getDetails(), SerializationDetailKind.DESERIALIZATION);</span>
+<span class="fc" id="L25">		return hasDetailKey(getDetails(), SerializationDetailKind.DESERIALIZATION);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

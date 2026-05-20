@@ -5,25 +5,26 @@ import java.util.Map;
 /**
  * Query execution failure (not executed, timed out, cancelled).
  *
- * &lt;p&gt;Details use the {@code {kind, details?}} format with variants defined
- * in {@link QueryDetailKind}.
+ * &lt;p&gt;
+ * Details use the {@code {kind, details?}} format with variants defined in
+ * {@link QueryDetailKind}.
  *
  * @see ErrorKind#QUERY
  */
 public class QueryException extends ServerException {
 
 	QueryException(String message, java.lang.Object details, ServerException cause) {
-<span class="fc" id="L16">		super(ErrorKind.QUERY, null, message, details, cause);</span>
-<span class="fc" id="L17">	}</span>
+<span class="fc" id="L17">		super(ErrorKind.QUERY, null, message, details, cause);</span>
+<span class="fc" id="L18">	}</span>
 
 	/**
-	 * Returns {@code true} when the query was not executed
-	 * (e.g. a previous statement in a multi-statement query failed).
+	 * Returns {@code true} when the query was not executed (e.g. a previous
+	 * statement in a multi-statement query failed).
 	 *
 	 * @return whether the detail kind is {@code NotExecuted}
 	 */
 	public boolean isNotExecuted() {
-<span class="fc" id="L26">		return hasDetailKey(getDetails(), QueryDetailKind.NOT_EXECUTED);</span>
+<span class="fc" id="L27">		return hasDetailKey(getDetails(), QueryDetailKind.NOT_EXECUTED);</span>
 	}
 
 	/**
@@ -32,7 +33,7 @@ public class QueryException extends ServerException {
 	 * @return whether the detail kind is {@code TimedOut}
 	 */
 	public boolean isTimedOut() {
-<span class="fc" id="L35">		return hasDetailKey(getDetails(), QueryDetailKind.TIMED_OUT);</span>
+<span class="fc" id="L36">		return hasDetailKey(getDetails(), QueryDetailKind.TIMED_OUT);</span>
 	}
 
 	/**
@@ -41,25 +42,25 @@ public class QueryException extends ServerException {
 	 * @return whether the detail kind is {@code Cancelled}
 	 */
 	public boolean isCancelled() {
-<span class="fc" id="L44">		return hasDetailKey(getDetails(), QueryDetailKind.CANCELLED);</span>
+<span class="fc" id="L45">		return hasDetailKey(getDetails(), QueryDetailKind.CANCELLED);</span>
 	}
 
 	/**
-	 * Returns the timeout duration when the query timed out, as a map
-	 * containing {@code &quot;secs&quot;} and {@code &quot;nanos&quot;} keys.
+	 * Returns the timeout duration when the query timed out, as a map containing
+	 * {@code &quot;secs&quot;} and {@code &quot;nanos&quot;} keys.
 	 *
 	 * @return the timeout map, or {@code null}
 	 */
 	@SuppressWarnings(&quot;unchecked&quot;)
 	public Map&lt;String, java.lang.Object&gt; getTimeout() {
-<span class="fc" id="L55">		java.lang.Object inner = getDetailValue(getDetails(), QueryDetailKind.TIMED_OUT);</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">		if (inner instanceof Map) {</span>
-<span class="fc" id="L57">			java.lang.Object duration = ((Map&lt;String, java.lang.Object&gt;) inner).get(&quot;duration&quot;);</span>
-<span class="pc bpc" id="L58" title="1 of 2 branches missed.">			if (duration instanceof Map) {</span>
-<span class="fc" id="L59">				return (Map&lt;String, java.lang.Object&gt;) duration;</span>
+<span class="fc" id="L56">		java.lang.Object inner = getDetailValue(getDetails(), QueryDetailKind.TIMED_OUT);</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">		if (inner instanceof Map) {</span>
+<span class="fc" id="L58">			java.lang.Object duration = ((Map&lt;String, java.lang.Object&gt;) inner).get(&quot;duration&quot;);</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">			if (duration instanceof Map) {</span>
+<span class="fc" id="L60">				return (Map&lt;String, java.lang.Object&gt;) duration;</span>
 			}
 		}
-<span class="fc" id="L62">		return null;</span>
+<span class="fc" id="L63">		return null;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

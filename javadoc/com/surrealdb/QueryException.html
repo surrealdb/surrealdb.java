@@ -94,8 +94,9 @@ loadScripts(document, 'script');</script>
 <span class="extends-implements">extends <a href="ServerException.html" title="class in com.surrealdb">ServerException</a></span></div>
 <div class="block">Query execution failure (not executed, timed out, cancelled).
 
-<p>Details use the <code>{kind, details?}</code> format with variants defined
-in <a href="QueryDetailKind.html" title="class in com.surrealdb"><code>QueryDetailKind</code></a>.</div>
+<p>
+Details use the <code>{kind, details?}</code> format with variants defined in
+<a href="QueryDetailKind.html" title="class in com.surrealdb"><code>QueryDetailKind</code></a>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -123,8 +124,8 @@ in <a href="QueryDetailKind.html" title="class in com.surrealdb"><code>QueryDeta
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTimeout()" class="member-name-link">getTimeout</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the timeout duration when the query timed out, as a map
-containing <code>"secs"</code> and <code>"nanos"</code> keys.</div>
+<div class="block">Returns the timeout duration when the query timed out, as a map containing
+<code>"secs"</code> and <code>"nanos"</code> keys.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isCancelled()" class="member-name-link">isCancelled</a>()</code></div>
@@ -134,8 +135,7 @@ containing <code>"secs"</code> and <code>"nanos"</code> keys.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isNotExecuted()" class="member-name-link">isNotExecuted</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns <code>true</code> when the query was not executed
-(e.g.</div>
+<div class="block">Returns <code>true</code> when the query was not executed (e.g.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isTimedOut()" class="member-name-link">isTimedOut</a>()</code></div>
@@ -170,8 +170,8 @@ containing <code>"secs"</code> and <code>"nanos"</code> keys.</div>
 <h3>isNotExecuted</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isNotExecuted</span>()</div>
-<div class="block">Returns <code>true</code> when the query was not executed
-(e.g. a previous statement in a multi-statement query failed).</div>
+<div class="block">Returns <code>true</code> when the query was not executed (e.g. a previous
+statement in a multi-statement query failed).</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>whether the detail kind is <code>NotExecuted</code></dd>
@@ -210,8 +210,8 @@ containing <code>"secs"</code> and <code>"nanos"</code> keys.</div>
 <h3>getTimeout</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;</span>&nbsp;<span class="element-name">getTimeout</span>()</div>
-<div class="block">Returns the timeout duration when the query timed out, as a map
-containing <code>"secs"</code> and <code>"nanos"</code> keys.</div>
+<div class="block">Returns the timeout duration when the query timed out, as a map containing
+<code>"secs"</code> and <code>"nanos"</code> keys.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the timeout map, or <code>null</code></dd>

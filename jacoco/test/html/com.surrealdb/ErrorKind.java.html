@@ -4,49 +4,49 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Machine-readable error kind, aligned with the SurrealDB Rust SDK's {@code ErrorDetails} enum.
+ * Machine-readable error kind, aligned with the SurrealDB Rust SDK's
+ * {@code ErrorDetails} enum.
  *
- * &lt;p&gt;Returned by {@link ServerException#getKindEnum()}. Use this for type-safe matching instead
- * of {@link ServerException#getKind()} when the kind is known. For unknown (future) kinds,
- * {@link #UNKNOWN} is used and the raw string is available via {@link ServerException#getKind()}.
+ * &lt;p&gt;
+ * Returned by {@link ServerException#getKindEnum()}. Use this for type-safe
+ * matching instead of {@link ServerException#getKind()} when the kind is known.
+ * For unknown (future) kinds, {@link #UNKNOWN} is used and the raw string is
+ * available via {@link ServerException#getKind()}.
  */
-<span class="fc" id="L13">public enum ErrorKind {</span>
+<span class="fc" id="L16">public enum ErrorKind {</span>
 
-<span class="fc" id="L15">	VALIDATION(&quot;Validation&quot;),</span>
-<span class="fc" id="L16">	CONFIGURATION(&quot;Configuration&quot;),</span>
-<span class="fc" id="L17">	THROWN(&quot;Thrown&quot;),</span>
-<span class="fc" id="L18">	QUERY(&quot;Query&quot;),</span>
-<span class="fc" id="L19">	SERIALIZATION(&quot;Serialization&quot;),</span>
-<span class="fc" id="L20">	NOT_ALLOWED(&quot;NotAllowed&quot;),</span>
-<span class="fc" id="L21">	NOT_FOUND(&quot;NotFound&quot;),</span>
-<span class="fc" id="L22">	ALREADY_EXISTS(&quot;AlreadyExists&quot;),</span>
-<span class="fc" id="L23">	CONNECTION(&quot;Connection&quot;),</span>
-<span class="fc" id="L24">	INTERNAL(&quot;Internal&quot;),</span>
-	/** Unknown kind from a newer server; raw string is in {@link ServerException#getKind()}. */
-<span class="fc" id="L26">	UNKNOWN(null);</span>
+<span class="fc" id="L18">	VALIDATION(&quot;Validation&quot;), CONFIGURATION(&quot;Configuration&quot;), THROWN(&quot;Thrown&quot;), QUERY(&quot;Query&quot;), SERIALIZATION(</span>
+<span class="fc" id="L19">			&quot;Serialization&quot;), NOT_ALLOWED(&quot;NotAllowed&quot;), NOT_FOUND(</span>
+<span class="fc" id="L20">					&quot;NotFound&quot;), ALREADY_EXISTS(&quot;AlreadyExists&quot;), CONNECTION(&quot;Connection&quot;), INTERNAL(&quot;Internal&quot;),</span>
+	/**
+	 * Unknown kind from a newer server; raw string is in
+	 * {@link ServerException#getKind()}.
+	 */
+<span class="fc" id="L25">	UNKNOWN(null);</span>
 
 	private static final Map&lt;String, ErrorKind&gt; LOOKUP;
 
 	static {
-<span class="fc" id="L31">		LOOKUP = new HashMap&lt;&gt;();</span>
-<span class="fc bfc" id="L32" title="All 2 branches covered.">		for (ErrorKind k : values()) {</span>
-<span class="fc bfc" id="L33" title="All 2 branches covered.">			if (k.raw != null) {</span>
-<span class="fc" id="L34">				LOOKUP.put(k.raw, k);</span>
+<span class="fc" id="L30">		LOOKUP = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">		for (ErrorKind k : values()) {</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">			if (k.raw != null) {</span>
+<span class="fc" id="L33">				LOOKUP.put(k.raw, k);</span>
 			}
 		}
-<span class="fc" id="L37">	}</span>
+<span class="fc" id="L36">	}</span>
 
 	private final String raw;
 
-<span class="fc" id="L41">	ErrorKind(String raw) {</span>
-<span class="fc" id="L42">		this.raw = raw;</span>
-<span class="fc" id="L43">	}</span>
+<span class="fc" id="L40">	ErrorKind(String raw) {</span>
+<span class="fc" id="L41">		this.raw = raw;</span>
+<span class="fc" id="L42">	}</span>
 
 	/**
-	 * Resolves a kind string from the wire to an enum constant.
-	 * Unknown strings return {@link #UNKNOWN}.
+	 * Resolves a kind string from the wire to an enum constant. Unknown strings
+	 * return {@link #UNKNOWN}.
 	 *
-	 * @param kind the kind string (e.g. from the server)
+	 * @param kind
+	 *            the kind string (e.g. from the server)
 	 * @return the matching enum constant, or {@link #UNKNOWN}
 	 */
 	public static ErrorKind fromString(String kind) {

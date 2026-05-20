@@ -128,5 +128,10 @@ import java.util.stream.Collectors;
 		}
 	}
 
+	static Map&lt;String, ValueMut&gt; convertParams(final Map&lt;String, ?&gt; params) {
+<span class="fc" id="L132">		return params.entrySet().stream()</span>
+<span class="fc" id="L133">				.collect(Collectors.toMap(Map.Entry::getKey, entry -&gt; convert(entry.getValue())));</span>
+	}
+
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

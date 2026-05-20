@@ -60,6 +60,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#commit()" tabindex="0">commit()</a></li>
 <li><a href="#cancel()" tabindex="0">cancel()</a></li>
 <li><a href="#query(java.lang.String)" tabindex="0">query(String)</a></li>
+<li><a href="#query(java.lang.String,java.util.Map)" tabindex="0">query(String, Map)</a></li>
 </ol>
 </li>
 </ol>
@@ -112,6 +113,12 @@ transaction until <a href="#commit()"><code>commit()</code></a> or <a href="#can
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Runs a SurrealQL query within this transaction.</div>
 </div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Response.html" title="class in com.surrealdb">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String,java.util.Map)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr>?&gt;&nbsp;params)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Runs a parameterized SurrealQL query within this transaction.</div>
+</div>
 </div>
 </div>
 </div>
@@ -163,6 +170,23 @@ return value is only true on success.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>sql</code> - the SurrealQL query</dd>
+<dt>Returns:</dt>
+<dd>the query response</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="query(java.lang.String,java.util.Map)">
+<h3>query</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Response.html" title="class in com.surrealdb">Response</a></span>&nbsp;<span class="element-name">query</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr>?&gt;&nbsp;params)</span></div>
+<div class="block">Runs a parameterized SurrealQL query within this transaction.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>sql</code> - the SurrealQL query</dd>
+<dd><code>params</code> - a map containing parameter values to be bound to the SQL query</dd>
 <dt>Returns:</dt>
 <dd>the query response</dd>
 </dl>
