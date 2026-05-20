@@ -1,6 +1,8 @@
 package com.surrealdb;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -79,6 +81,60 @@ public class TransactionTests {
 			assertTrue(first.isArray());
 			assertEquals(1, first.getArray().len());
 			assertEquals("BoundTransaction", first.getArray().get(0).getObject().get("name").getString());
+		}
+	}
+
+	@Test
+	void transaction_queryWithBindings_typeMatrix() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final String sql1 = "RETURN [1, 2, 3];RETURN { foo: 'bar' }";
+			final Response response1 = surreal.query(sql1);
+			Transaction txn = surreal.beginTransaction();
+			final HashMap<String, java.lang.Object> map = new HashMap<>();
+			map.put("string", "hello_world");
+			map.put("long", 25565L);
+			map.put("list", Collections.singletonList("item1"));
+			map.put("map", Collections.singletonMap("foo", "bar"));
+			map.put("array", response1.take(0).getArray());
+			map.put("object", response1.take(1).getObject());
+			map.put("null", null);
+			map.put("uuid", UUID.fromString("f8e238f2-e734-47b8-9a16-476b291bd78a"));
+			final String sql2 = "RETURN [$string, $long, $list, $map, $array, $object, $null, $uuid]";
+			final Response response2 = txn.query(sql2, map);
+			final Array results = response2.take(0).getArray();
+			assertEquals(8, results.len());
+			assertEquals("hello_world", results.get(0).getString());
+			assertEquals(25565L, results.get(1).getLong());
+			final Array res3 = results.get(2).getArray();
+			assertEquals(1, res3.len());
+			assertEquals("item1", res3.get(0).getString());
+			final Object res4 = results.get(3).getObject();
+			assertEquals(1, res4.len());
+			assertEquals("bar", res4.get("foo").getString());
+			final Array res5 = results.get(4).getArray();
+			assertEquals("[1, 2, 3]", res5.toString());
+			final Object res6 = results.get(5).getObject();
+			assertEquals("{ foo: 'bar' }", res6.toString());
+			assertTrue(results.get(6).isNull());
+			assertEquals("f8e238f2-e734-47b8-9a16-476b291bd78a", results.get(7).getUuid().toString());
+			txn.cancel();
+		}
+	}
+
+	@Test
+	void transaction_queryWithBindings_valueMut() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			Transaction txn = surreal.beginTransaction();
+			final HashMap<String, ValueMut> map = new HashMap<>();
+			map.put("null", ValueMut.createNull());
+			map.put("none", ValueMut.createNone());
+			final Response response = txn.query("RETURN $null;RETURN $none", map);
+			assertEquals(2, response.size());
+			assertTrue(response.take(0).isNull());
+			assertTrue(response.take(1).isNone());
+			txn.cancel();
 		}
 	}
 
