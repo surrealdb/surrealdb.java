@@ -8,26 +8,33 @@ import java.util.Map;
 /**
  * Base class for all exceptions originating from the SurrealDB server.
  *
- * <p>Carries structured error information: a machine-readable {@link #getKind() kind},
- * optional {@link #getDetails() details} using the {@code {kind, details?}} wire format,
- * and an optional typed {@link #getServerCause() cause} chain.
+ * <p>
+ * Carries structured error information: a machine-readable {@link #getKind()
+ * kind}, optional {@link #getDetails() details} using the {@code {kind,
+ * details?}} wire format, and an optional typed {@link #getServerCause() cause}
+ * chain.
  *
- * <p>Details follow the internally-tagged format where each detail object has a
+ * <p>
+ * Details follow the internally-tagged format where each detail object has a
  * {@code "kind"} field and an optional {@code "details"} field:
  * <ul>
- *   <li>Unit variant: {@code {"kind": "Parse"}}</li>
- *   <li>Newtype variant: {@code {"kind": "Auth", "details": {"kind": "TokenExpired"}}}</li>
- *   <li>Struct variant: {@code {"kind": "Table", "details": {"name": "users"}}}</li>
+ * <li>Unit variant: {@code {"kind": "Parse"}}</li>
+ * <li>Newtype variant: {@code {"kind": "Auth", "details": {"kind":
+ * "TokenExpired"}}}</li>
+ * <li>Struct variant: {@code {"kind": "Table", "details": {"name":
+ * "users"}}}</li>
  * </ul>
  *
- * <p>For backward compatibility with older servers, the legacy externally-tagged
- * format ({@code "Parse"}, {@code {"Auth": "TokenExpired"}},
- * {@code {"Table": {"name": "users"}}}) is also supported by all detail helpers.
+ * <p>
+ * For backward compatibility with older servers, the legacy externally-tagged
+ * format ({@code "Parse"}, {@code {"Auth": "TokenExpired"}}, {@code {"Table":
+ * {"name": "users"}}}) is also supported by all detail helpers.
  *
- * <p>Specific error kinds are represented by subclasses (e.g. {@link NotAllowedException},
- * {@link NotFoundException}). When the server returns an unknown kind, a plain
- * {@code ServerException} is used (not {@link InternalException}) to preserve forward
- * compatibility.
+ * <p>
+ * Specific error kinds are represented by subclasses (e.g.
+ * {@link NotAllowedException}, {@link NotFoundException}). When the server
+ * returns an unknown kind, a plain {@code ServerException} is used (not
+ * {@link InternalException}) to preserve forward compatibility.
  *
  * @see ErrorKind
  */
@@ -39,14 +46,19 @@ public class ServerException extends SurrealException {
 	private final ServerException serverCause;
 
 	/**
-	 * Constructs a {@code ServerException} from an {@link ErrorKind} and optional raw kind string.
-	 * Used by the JNI bridge when the native side passes the enum. When {@code kind} is
-	 * {@link ErrorKind#UNKNOWN}, {@code rawKindIfUnknown} must be the wire string.
+	 * Constructs a {@code ServerException} from an {@link ErrorKind} and optional
+	 * raw kind string. Used by the JNI bridge when the native side passes the enum.
+	 * When {@code kind} is {@link ErrorKind#UNKNOWN}, {@code rawKindIfUnknown} must
+	 * be the wire string.
 	 *
-	 * @param kind             the error kind enum (from the Rust SDK's ErrorDetails)
-	 * @param rawKindIfUnknown when {@code kind} is {@link ErrorKind#UNKNOWN}, the wire string; otherwise {@code null}
+	 * @param kind
+	 *            the error kind enum (from the Rust SDK's ErrorDetails)
+	 * @param rawKindIfUnknown
+	 *            when {@code kind} is {@link ErrorKind#UNKNOWN}, the wire string;
+	 *            otherwise {@code null}
 	 */
-	ServerException(ErrorKind kind, String rawKindIfUnknown, String message, java.lang.Object details, ServerException cause) {
+	ServerException(ErrorKind kind, String rawKindIfUnknown, String message, java.lang.Object details,
+			ServerException cause) {
 		super(message, cause);
 		this.kindEnum = kind;
 		this.rawKind = kind == ErrorKind.UNKNOWN ? rawKindIfUnknown : null;
@@ -55,8 +67,9 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Constructs a {@code ServerException} from a kind string (for subclasses and tests).
-	 * The kind is resolved to an {@link ErrorKind} via {@link ErrorKind#fromString(String)}.
+	 * Constructs a {@code ServerException} from a kind string (for subclasses and
+	 * tests). The kind is resolved to an {@link ErrorKind} via
+	 * {@link ErrorKind#fromString(String)}.
 	 */
 	ServerException(String kind, String message, java.lang.Object details, ServerException cause) {
 		super(message, cause);
@@ -68,9 +81,11 @@ public class ServerException extends SurrealException {
 
 	/**
 	 * Extracts the {@code "kind"} string from a {@code {kind, details?}} detail
-	 * object. Returns {@code null} if the details are not in internally-tagged format.
+	 * object. Returns {@code null} if the details are not in internally-tagged
+	 * format.
 	 *
-	 * @param details the details object (may be {@code null})
+	 * @param details
+	 *            the details object (may be {@code null})
 	 * @return the kind string, or {@code null}
 	 */
 	@SuppressWarnings("unchecked")
@@ -86,9 +101,11 @@ public class ServerException extends SurrealException {
 
 	/**
 	 * Extracts the {@code "details"} value from a {@code {kind, details?}} detail
-	 * object. Returns {@code null} if not present or not in internally-tagged format.
+	 * object. Returns {@code null} if not present or not in internally-tagged
+	 * format.
 	 *
-	 * @param details the details object (may be {@code null})
+	 * @param details
+	 *            the details object (may be {@code null})
 	 * @return the inner details value, or {@code null}
 	 */
 	@SuppressWarnings("unchecked")
@@ -100,16 +117,18 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Checks whether the details object matches a given variant key.
-	 * Supports both new and old formats:
+	 * Checks whether the details object matches a given variant key. Supports both
+	 * new and old formats:
 	 * <ul>
-	 *   <li>New: {@code {"kind": "Parse"}} -- checks if {@code kind} equals key</li>
-	 *   <li>Old: {@code "Parse"} -- checks if the string equals key</li>
-	 *   <li>Old: {@code {"Parse": ...}} -- checks if the map contains key</li>
+	 * <li>New: {@code {"kind": "Parse"}} -- checks if {@code kind} equals key</li>
+	 * <li>Old: {@code "Parse"} -- checks if the string equals key</li>
+	 * <li>Old: {@code {"Parse": ...}} -- checks if the map contains key</li>
 	 * </ul>
 	 *
-	 * @param details the details object (may be {@code null})
-	 * @param key     the key to look for
+	 * @param details
+	 *            the details object (may be {@code null})
+	 * @param key
+	 *            the key to look for
 	 * @return {@code true} if the key is present
 	 */
 	@SuppressWarnings("unchecked")
@@ -134,16 +153,19 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Extracts the inner value for a given variant key.
-	 * Supports both new and old formats:
+	 * Extracts the inner value for a given variant key. Supports both new and old
+	 * formats:
 	 * <ul>
-	 *   <li>New: if {@code kind} equals key, returns {@code details["details"]}</li>
-	 *   <li>Old: if details is a map, returns {@code details[key]}</li>
-	 *   <li>Old: if details is a string matching key, returns {@code null} (unit variant)</li>
+	 * <li>New: if {@code kind} equals key, returns {@code details["details"]}</li>
+	 * <li>Old: if details is a map, returns {@code details[key]}</li>
+	 * <li>Old: if details is a string matching key, returns {@code null} (unit
+	 * variant)</li>
 	 * </ul>
 	 *
-	 * @param details the details object (may be {@code null})
-	 * @param key     the key to extract
+	 * @param details
+	 *            the details object (may be {@code null})
+	 * @param key
+	 *            the key to extract
 	 * @return the value, or {@code null}
 	 */
 	@SuppressWarnings("unchecked")
@@ -171,16 +193,20 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Extracts a string field from a variant's inner details.
-	 * Supports both new and old formats.
+	 * Extracts a string field from a variant's inner details. Supports both new and
+	 * old formats.
 	 *
-	 * <p>New: {@code {"kind": "Table", "details": {"name": "users"}}}
-	 * <br>Old: {@code {"Table": {"name": "users"}}}
-	 * <br>Both: {@code detailField(details, "Table", "name")} returns {@code "users"}.
+	 * <p>
+	 * New: {@code {"kind": "Table", "details": {"name": "users"}}} <br>
+	 * Old: {@code {"Table": {"name": "users"}}} <br>
+	 * Both: {@code detailField(details, "Table", "name")} returns {@code "users"}.
 	 *
-	 * @param details the details object
-	 * @param key     the variant key
-	 * @param field   the field name inside the inner object
+	 * @param details
+	 *            the details object
+	 * @param key
+	 *            the variant key
+	 * @param field
+	 *            the field name inside the inner object
 	 * @return the string value, or {@code null}
 	 */
 	@SuppressWarnings("unchecked")
@@ -194,16 +220,19 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Extracts a string from the inner details of a newtype variant.
-	 * Supports both new and old formats:
+	 * Extracts a string from the inner details of a newtype variant. Supports both
+	 * new and old formats:
 	 * <ul>
-	 *   <li>New: {@code {"kind": "Auth", "details": {"kind": "TokenExpired"}}}
-	 *       -- returns {@code "TokenExpired"}</li>
-	 *   <li>Old: {@code {"Auth": "TokenExpired"}} -- returns {@code "TokenExpired"}</li>
+	 * <li>New: {@code {"kind": "Auth", "details": {"kind": "TokenExpired"}}} --
+	 * returns {@code "TokenExpired"}</li>
+	 * <li>Old: {@code {"Auth": "TokenExpired"}} -- returns
+	 * {@code "TokenExpired"}</li>
 	 * </ul>
 	 *
-	 * @param details the details object
-	 * @param key     the variant key
+	 * @param details
+	 *            the details object
+	 * @param key
+	 *            the variant key
 	 * @return the string value, or {@code null}
 	 */
 	static String getDetailString(java.lang.Object details, String key) {
@@ -224,7 +253,8 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * @deprecated Use {@link #detailField(java.lang.Object, String, String)} instead.
+	 * @deprecated Use {@link #detailField(java.lang.Object, String, String)}
+	 *             instead.
 	 */
 	@SuppressWarnings("unchecked")
 	static String getNestedString(java.lang.Object details, String outerKey, String innerKey) {
@@ -232,7 +262,8 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * @deprecated Use {@link #getDetailString(java.lang.Object, String)} with an equality check instead.
+	 * @deprecated Use {@link #getDetailString(java.lang.Object, String)} with an
+	 *             equality check instead.
 	 */
 	static boolean isNewtypeValue(java.lang.Object details, String outerKey, String value) {
 		return value.equals(getDetailString(details, outerKey));
@@ -242,13 +273,15 @@ public class ServerException extends SurrealException {
 	//
 	// SurrealDB v3 uses a recursive { "kind": "...", "details": ... } format
 	// for error details (internally-tagged). Older servers used serde's
-	// externally-tagged format ("Parse" / {"Auth": "TokenExpired"} / {"Table": {"name": "users"}}).
+	// externally-tagged format ("Parse" / {"Auth": "TokenExpired"} / {"Table":
+	// {"name": "users"}}).
 	//
 	// All helpers support both formats for backward compatibility.
 
 	/**
 	 * Returns the machine-readable error kind string (e.g. {@code "NotAllowed"}).
-	 * For unknown kinds this is the wire string; otherwise it matches {@link #getKindEnum()}{@code .getRaw()}.
+	 * For unknown kinds this is the wire string; otherwise it matches
+	 * {@link #getKindEnum()}{@code .getRaw()}.
 	 *
 	 * @return the error kind string, never {@code null}
 	 */
@@ -257,8 +290,9 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Returns the error kind as an enum for type-safe matching.
-	 * Unknown kinds from newer servers map to {@link ErrorKind#UNKNOWN}; the raw string is in {@link #getKind()}.
+	 * Returns the error kind as an enum for type-safe matching. Unknown kinds from
+	 * newer servers map to {@link ErrorKind#UNKNOWN}; the raw string is in
+	 * {@link #getKind()}.
 	 *
 	 * @return the error kind enum, never {@code null}
 	 */
@@ -269,16 +303,20 @@ public class ServerException extends SurrealException {
 	/**
 	 * Returns the optional structured details for this error.
 	 *
-	 * <p>Details use the {@code {kind, details?}} wire format. The value is either:
+	 * <p>
+	 * Details use the {@code {kind, details?}} wire format. The value is either:
 	 * <ul>
-	 *   <li>{@code null} -- no details</li>
-	 *   <li>a {@code Map<String, Object>} with a {@code "kind"} key and optional
-	 *       {@code "details"} key (new internally-tagged format)</li>
-	 *   <li>a {@link String} -- a unit variant in the legacy format (e.g. {@code "Parse"})</li>
-	 *   <li>a {@code Map<String, Object>} without {@code "kind"} -- legacy externally-tagged format</li>
+	 * <li>{@code null} -- no details</li>
+	 * <li>a {@code Map<String, Object>} with a {@code "kind"} key and optional
+	 * {@code "details"} key (new internally-tagged format)</li>
+	 * <li>a {@link String} -- a unit variant in the legacy format (e.g.
+	 * {@code "Parse"})</li>
+	 * <li>a {@code Map<String, Object>} without {@code "kind"} -- legacy
+	 * externally-tagged format</li>
 	 * </ul>
 	 *
-	 * <p>Prefer the typed convenience getters on subclasses (e.g.
+	 * <p>
+	 * Prefer the typed convenience getters on subclasses (e.g.
 	 * {@link NotFoundException#getTableName()}) over inspecting details directly.
 	 *
 	 * @return the details object, or {@code null}
@@ -290,7 +328,8 @@ public class ServerException extends SurrealException {
 	/**
 	 * Returns the typed server-side cause of this error, if any.
 	 *
-	 * <p>This is equivalent to calling {@link #getCause()} and casting to
+	 * <p>
+	 * This is equivalent to calling {@link #getCause()} and casting to
 	 * {@code ServerException}, but avoids the cast.
 	 *
 	 * @return the server cause, or {@code null}
@@ -303,7 +342,8 @@ public class ServerException extends SurrealException {
 	 * Checks whether this error or any error in its cause chain has the given
 	 * {@link ErrorKind kind}.
 	 *
-	 * @param kind the kind to look for
+	 * @param kind
+	 *            the kind to look for
 	 * @return {@code true} if any error in the chain matches
 	 */
 	public boolean hasKind(String kind) {
@@ -311,7 +351,8 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Checks whether this error or any error in its cause chain has the given {@link ErrorKind}.
+	 * Checks whether this error or any error in its cause chain has the given
+	 * {@link ErrorKind}.
 	 */
 	public boolean hasKind(ErrorKind kind) {
 		return findCause(kind) != null;
@@ -320,10 +361,11 @@ public class ServerException extends SurrealException {
 	// ---- Legacy helpers (delegate to new ones for backward source compat) ----
 
 	/**
-	 * Finds the first error in the cause chain (including this error) that has
-	 * the given {@link ErrorKind kind}.
+	 * Finds the first error in the cause chain (including this error) that has the
+	 * given {@link ErrorKind kind}.
 	 *
-	 * @param kind the kind to look for
+	 * @param kind
+	 *            the kind to look for
 	 * @return the matching {@code ServerException}, or {@code null}
 	 */
 	public ServerException findCause(String kind) {
@@ -338,7 +380,8 @@ public class ServerException extends SurrealException {
 	}
 
 	/**
-	 * Finds the first error in the cause chain (including this error) that has the given {@link ErrorKind}.
+	 * Finds the first error in the cause chain (including this error) that has the
+	 * given {@link ErrorKind}.
 	 */
 	public ServerException findCause(ErrorKind kind) {
 		ServerException current = this;

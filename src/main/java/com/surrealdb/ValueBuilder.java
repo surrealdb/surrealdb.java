@@ -128,4 +128,9 @@ class ValueBuilder {
 		}
 	}
 
+	static Map<String, ValueMut> convertParams(final Map<String, ?> params) {
+		return params.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, entry -> convert(entry.getValue())));
+	}
+
 }

@@ -136,7 +136,8 @@ public class TypeTests {
 			// Starts an embedded in memory instance
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 
-			// Test 1: Create a new record with byte[] data from raw bytes (use RecordId for deterministic selection)
+			// Test 1: Create a new record with byte[] data from raw bytes (use RecordId for
+			// deterministic selection)
 			final ByteData byteData = new ByteData();
 			byteData.data = new byte[]{0x01, 0x02, 0x03, 0x04, 0x05};
 			final RecordId recordIdBytes = new RecordId("bytedata", "bytedata");
@@ -144,7 +145,8 @@ public class TypeTests {
 			// We check that the records are matching
 			assertEquals(created, byteData);
 
-			// Test 2: Create a new record with byte[] data converted from string (use RecordId for deterministic selection)
+			// Test 2: Create a new record with byte[] data converted from string (use
+			// RecordId for deterministic selection)
 			final ByteData byteDataFromString = new ByteData();
 			final String testString = "Hello";
 			byteDataFromString.data = testString.getBytes();
@@ -156,7 +158,8 @@ public class TypeTests {
 			final String retrievedString = new String(createdFromString.data);
 			assertEquals(retrievedString, testString);
 
-			// Test 3: Select from database by record id and verify byte[] is properly handled
+			// Test 3: Select from database by record id and verify byte[] is properly
+			// handled
 			final ByteData selectedRecord = surreal.select(ByteData.class, recordIdBytes)
 					.orElseThrow(() -> new AssertionError("Expected record to be present"));
 			// Compare the byte[] data content
@@ -169,7 +172,8 @@ public class TypeTests {
 			assertEquals(selectedRecord.data[0], 0x01);
 			assertEquals(selectedRecord.data[4], 0x05);
 
-			// Test 4: Select the string-converted record by record id and verify conversion back to
+			// Test 4: Select the string-converted record by record id and verify conversion
+			// back to
 			// string
 			final ByteData selectedStringRecord = surreal.select(ByteData.class, recordIdString)
 					.orElseThrow(() -> new AssertionError("Expected record to be present"));

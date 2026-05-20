@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
 /**
- * Integration tests that verify structured error information survives the
- * JNI bridge round-trip. These tests trigger real errors from the embedded
+ * Integration tests that verify structured error information survives the JNI
+ * bridge round-trip. These tests trigger real errors from the embedded
  * SurrealDB engine and check the exception type and properties.
  */
 public class ErrorIntegrationTests {
@@ -43,8 +43,7 @@ public class ErrorIntegrationTests {
 			} catch (SurrealException e) {
 				assertNotNull(e.getMessage());
 				// Should be a ServerException (not just a plain SurrealException)
-				assertTrue(e instanceof ServerException,
-						"Expected ServerException but got " + e.getClass().getName());
+				assertTrue(e instanceof ServerException, "Expected ServerException but got " + e.getClass().getName());
 			}
 		}
 	}

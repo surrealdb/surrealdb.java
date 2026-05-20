@@ -3,7 +3,8 @@ package com.surrealdb;
 /**
  * Detail kind constants for authentication errors.
  *
- * <p>These appear nested inside {@link NotAllowedDetailKind#AUTH} details.
+ * <p>
+ * These appear nested inside {@link NotAllowedDetailKind#AUTH} details.
  *
  * @see NotAllowedException
  */
