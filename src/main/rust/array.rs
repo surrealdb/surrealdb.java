@@ -2,14 +2,17 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::sync::Arc;
 
-use jni::objects::JClass;
+use jni::objects::{JClass, JLongArray};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
 use parking_lot::Mutex;
-use surrealdb::types::{ToSql, Value};
+use surrealdb::types::{Array, ToSql, Value};
 
 use crate::error::SurrealError;
-use crate::{get_value_instance, new_string, release_instance, JniTypes};
+use crate::{
+    get_long_array, get_value_instance, new_string, release_instance, take_value_mut_instance,
+    JniTypes,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Array_deleteInstance<'local>(
@@ -18,6 +21,22 @@ pub extern "system" fn Java_com_surrealdb_Array_deleteInstance<'local>(
     ptr: jlong,
 ) {
     release_instance::<Arc<Value>>(ptr);
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Array_newOf<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptrs: JLongArray<'local>,
+) -> jlong {
+    let ptrs = get_long_array!(&mut env, &ptrs, || 0);
+    let mut values = Vec::with_capacity(ptrs.len());
+    for ptr in ptrs {
+        let value = take_value_mut_instance!(&mut env, ptr, || 0);
+        values.push(value);
+    }
+    let value = Value::Array(Array::from(values));
+    JniTypes::new_value(value.into())
 }
 
 #[no_mangle]

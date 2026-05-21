@@ -2,13 +2,16 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ptr::null_mut;
 use std::str::FromStr;
 
-use jni::objects::{JClass, JString};
+use jni::objects::{JClass, JLongArray, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::JNIEnv;
-use surrealdb::types::{RecordId, RecordIdKey, ToSql, Uuid, Value};
+use surrealdb::types::{Array, RecordId, RecordIdKey, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
-use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
+use crate::{
+    get_long_array, get_rust_string, get_value_instance, new_string, take_value_mut_instance,
+    JniTypes,
+};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Id_newLongId<'local>(
@@ -44,6 +47,23 @@ pub extern "system" fn Java_com_surrealdb_Id_newUuidId<'local>(
     } else {
         SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
     }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Id_newArrayId<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    ptrs: JLongArray<'local>,
+) -> jlong {
+    let ptrs = get_long_array!(&mut env, &ptrs, || 0);
+    let mut values = Vec::with_capacity(ptrs.len());
+    for ptr in ptrs {
+        let value = take_value_mut_instance!(&mut env, ptr, || 0);
+        values.push(value);
+    }
+    let key = RecordIdKey::Array(Array::from(values));
+    let value = Value::RecordId(RecordId::new("", key));
+    JniTypes::new_value(value.into())
 }
 
 #[no_mangle]
