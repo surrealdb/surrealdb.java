@@ -26,10 +26,6 @@ import com.surrealdb.signin.Token;
  */
 public class Surreal extends Native implements AutoCloseable {
 
-	static {
-		Loader.loadNative();
-	}
-
 	// Current namespace and database set by useNs() / useDb() / useDefaults() (from
 	// server return value).
 	private String namespace;

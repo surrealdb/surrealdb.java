@@ -8,6 +8,10 @@ package com.surrealdb;
  */
 public abstract class Native {
 
+	static {
+		Loader.loadNative();
+	}
+
 	// Unique internal ptr used by the native library to locate the SurrealDB
 	// instance
 	private long ptr;
