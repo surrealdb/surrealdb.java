@@ -18,7 +18,8 @@ public class BooleanOptionalTests {
 	void allPresent() {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
-			final Booleans b = new Booleans(true, Boolean.TRUE, Optional.of(false), Optional.of(Arrays.asList("a", "b")));
+			final Booleans b = new Booleans(true, Boolean.TRUE, Optional.of(false),
+					Optional.of(Arrays.asList("a", "b")));
 			final RecordId rid = new RecordId("booleans", "all");
 			final Booleans created = surreal.create(Booleans.class, rid, b);
 			assertEquals(b, created);
