@@ -17,13 +17,17 @@ public class Array extends Native implements Iterable<Value> {
 	}
 
 	/**
-	 * Creates an Array from a heterogeneous list of Java values. Supported element
-	 * types include {@code null}, {@link String}, the boxed numeric types,
+	 * Creates an Array from a heterogeneous sequence of Java values. Supported
+	 * element types include {@code null}, {@link String}, the boxed numeric types,
 	 * {@link Boolean}, {@link java.math.BigDecimal}, {@link java.util.UUID},
 	 * {@link java.time.Duration}, {@link java.time.ZonedDateTime}, and the
 	 * SurrealDB wrappers {@link Array}, {@link Id}, {@link RecordId}, and
 	 * {@link com.surrealdb.Object}. Unsupported types raise
 	 * {@link IllegalArgumentException}.
+	 * <p>
+	 * To build a single-element {@code [null]} array, cast the argument:
+	 * {@code Array.of((java.lang.Object) null)}. A bare {@code Array.of(null)} is a
+	 * null varargs array and will throw {@link NullPointerException}.
 	 */
 	public static Array of(java.lang.Object... elements) {
 		Objects.requireNonNull(elements, "elements");
@@ -32,14 +36,11 @@ public class Array extends Native implements Iterable<Value> {
 
 	/**
 	 * List-based counterpart to {@link #of(java.lang.Object...)} for callers that
-	 * already hold a {@link List}.
+	 * already hold a {@link List}. Named distinctly from {@code of(...)} to avoid a
+	 * null-call overload ambiguity.
 	 */
-	public static Array of(List<?> elements) {
+	public static Array fromList(List<?> elements) {
 		Objects.requireNonNull(elements, "elements");
-		return fromList(elements);
-	}
-
-	private static Array fromList(List<?> elements) {
 		final long[] ptrs = new long[elements.size()];
 		final ValueMut[] muts = new ValueMut[elements.size()];
 		for (int i = 0; i < elements.size(); i++) {

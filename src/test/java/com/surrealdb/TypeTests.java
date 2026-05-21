@@ -140,13 +140,23 @@ public class TypeTests {
 	}
 
 	@Test
-	void testArrayOfList() {
+	void testArrayFromList() {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
-			final Array a = Array.of(Arrays.asList("a", "b"));
+			final Array a = Array.fromList(Arrays.asList("a", "b"));
 			assertEquals(2, a.len());
 			assertEquals("a", a.get(0).getString());
 			assertEquals("b", a.get(1).getString());
+		}
+	}
+
+	@Test
+	void testArrayOfSingleNullElement() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Array a = Array.of((java.lang.Object) null);
+			assertEquals(1, a.len());
+			assertFalse(a.get(0).isString());
 		}
 	}
 

@@ -30,6 +30,10 @@ public class Id extends Native {
 	/**
 	 * Creates an Id whose key is an array of Java values (composite key). See
 	 * {@link Array#of(java.lang.Object...)} for the supported element types.
+	 * <p>
+	 * To build a single-element {@code [null]} key, cast the argument:
+	 * {@code Id.from((java.lang.Object) null)}. A bare {@code Id.from(null)} is a
+	 * null varargs array and will throw {@link NullPointerException}.
 	 */
 	public static Id from(java.lang.Object... elements) {
 		Objects.requireNonNull(elements, "elements");
@@ -37,14 +41,11 @@ public class Id extends Native {
 	}
 
 	/**
-	 * List-based counterpart to {@link #from(java.lang.Object...)}.
+	 * List-based counterpart to {@link #from(java.lang.Object...)}. Named
+	 * distinctly from {@code from(...)} to avoid a null-call overload ambiguity.
 	 */
-	public static Id from(List<?> elements) {
+	public static Id fromList(List<?> elements) {
 		Objects.requireNonNull(elements, "elements");
-		return fromList(elements);
-	}
-
-	private static Id fromList(List<?> elements) {
 		final long[] ptrs = new long[elements.size()];
 		final ValueMut[] muts = new ValueMut[elements.size()];
 		for (int i = 0; i < elements.size(); i++) {
