@@ -5,10 +5,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -103,6 +107,121 @@ public class TypeTests {
 			Optional<Value> selected = surreal.select(rid);
 			assertTrue(selected.isPresent());
 			assertEquals(name.first, selected.get().get(Name.class).first);
+		}
+	}
+
+	@Test
+	void testArrayOfFromVarargs() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final UUID uuid = UUID.randomUUID();
+			final RecordId rid = new RecordId("doc", Array.of("myTenant", uuid));
+			Id id = rid.getId();
+			assertTrue(id.isArray());
+			Array idArray = id.getArray();
+			assertEquals(2, idArray.len());
+			assertEquals("myTenant", idArray.get(0).getString());
+			assertEquals(uuid, idArray.get(1).getUuid());
+			final Name name = new Name("of", "varargs");
+			surreal.create(rid, name);
+			Optional<Value> selected = surreal.select(rid);
+			assertTrue(selected.isPresent());
+			assertEquals(name.first, selected.get().get(Name.class).first);
+		}
+	}
+
+	@Test
+	void testArrayOfEmpty() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Array empty = Array.of();
+			assertEquals(0, empty.len());
+		}
+	}
+
+	@Test
+	void testArrayOfList() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Array a = Array.of(Arrays.asList("a", "b"));
+			assertEquals(2, a.len());
+			assertEquals("a", a.get(0).getString());
+			assertEquals("b", a.get(1).getString());
+		}
+	}
+
+	@Test
+	void testArrayOfMixedPrimitives() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Array a = Array.of("a", 1L, 2.5, true);
+			assertEquals(4, a.len());
+			assertEquals("a", a.get(0).getString());
+			assertEquals(1L, a.get(1).getLong());
+			assertEquals(2.5, a.get(2).getDouble());
+			assertTrue(a.get(3).getBoolean());
+		}
+	}
+
+	@Test
+	void testArrayOfWithNull() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Array a = Array.of("a", null, "b");
+			assertEquals(3, a.len());
+			assertEquals("a", a.get(0).getString());
+			assertFalse(a.get(1).isString());
+			assertEquals("b", a.get(2).getString());
+		}
+	}
+
+	@Test
+	void testArrayOfNested() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Array outer = Array.of("outer", Array.of("inner1", "inner2"));
+			assertEquals(2, outer.len());
+			assertEquals("outer", outer.get(0).getString());
+			assertTrue(outer.get(1).isArray());
+			Array inner = outer.get(1).getArray();
+			assertEquals(2, inner.len());
+			assertEquals("inner1", inner.get(0).getString());
+			assertEquals("inner2", inner.get(1).getString());
+		}
+	}
+
+	@Test
+	void testArrayOfWithWrappedTypes() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final UUID uuid = UUID.randomUUID();
+			final RecordId inner = new RecordId("inner", "k");
+			final Array a = Array.of(inner, uuid);
+			assertEquals(2, a.len());
+			assertTrue(a.get(0).isRecordId());
+			assertEquals(uuid, a.get(1).getUuid());
+		}
+	}
+
+	@Test
+	void testArrayOfRejectsUnsupportedType() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			assertThrows(IllegalArgumentException.class, () -> Array.of(new Date()));
+		}
+	}
+
+	@Test
+	void testIdFromArrayVarargs() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final UUID uuid = UUID.randomUUID();
+			final Id id = Id.from("myTenant", uuid);
+			assertTrue(id.isArray());
+			Array a = id.getArray();
+			assertEquals(2, a.len());
+			assertEquals("myTenant", a.get(0).getString());
+			assertEquals(uuid, a.get(1).getUuid());
 		}
 	}
 

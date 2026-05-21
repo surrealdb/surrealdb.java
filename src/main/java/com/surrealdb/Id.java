@@ -1,5 +1,8 @@
 package com.surrealdb;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -24,11 +27,44 @@ public class Id extends Native {
 		return new Id(newUuidId(id.toString()));
 	}
 
+	/**
+	 * Creates an Id whose key is an array of Java values (composite key). See
+	 * {@link Array#of(java.lang.Object...)} for the supported element types.
+	 */
+	public static Id from(java.lang.Object... elements) {
+		Objects.requireNonNull(elements, "elements");
+		return fromList(Arrays.asList(elements));
+	}
+
+	/**
+	 * List-based counterpart to {@link #from(java.lang.Object...)}.
+	 */
+	public static Id from(List<?> elements) {
+		Objects.requireNonNull(elements, "elements");
+		return fromList(elements);
+	}
+
+	private static Id fromList(List<?> elements) {
+		final long[] ptrs = new long[elements.size()];
+		final ValueMut[] muts = new ValueMut[elements.size()];
+		for (int i = 0; i < elements.size(); i++) {
+			muts[i] = ValueBoxing.box(elements.get(i));
+			ptrs[i] = muts[i].getPtr();
+		}
+		final Id id = new Id(newArrayId(ptrs));
+		for (final ValueMut m : muts) {
+			m.moved();
+		}
+		return id;
+	}
+
 	private static native long newLongId(long id);
 
 	private static native long newStringId(String id);
 
 	private static native long newUuidId(String id);
+
+	private static native long newArrayId(long[] valueMutPtrs);
 
 	private static native boolean isLong(long ptr);
 
