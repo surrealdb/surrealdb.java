@@ -3,17 +3,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - LiveQueryTests</title>
+<title>Test results - BooleanOptionalTests</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>LiveQueryTests</h1>
+<h1>BooleanOptionalTests</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
-<a href="../packages/com.surrealdb.html">com.surrealdb</a> &gt; LiveQueryTests</div>
+<a href="../packages/com.surrealdb.html">com.surrealdb</a> &gt; BooleanOptionalTests</div>
 <div id="summary">
 <table>
 <tr>
@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">10</div>
+<div class="counter">6</div>
 <p>tests</p>
 </div>
 </td>
@@ -35,13 +35,13 @@
 </td>
 <td>
 <div class="infoBox" id="ignored">
-<div class="counter">1</div>
+<div class="counter">0</div>
 <p>ignored</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">1.894s</div>
+<div class="counter">0.099s</div>
 <p>duration</p>
 </div>
 </td>
@@ -50,7 +50,7 @@
 </div>
 </td>
 <td>
-<div class="infoBox skipped" id="successRate">
+<div class="infoBox success" id="successRate">
 <div class="percent">100%</div>
 <p>successful</p>
 </div>
@@ -61,19 +61,9 @@
 <div class="tab-container">
 <ul class="tabLinks">
 <li>
-<a href="#">Ignored tests</a>
-</li>
-<li>
 <a href="#">Tests</a>
 </li>
 </ul>
-<div class="tab">
-<h2>Ignored tests</h2>
-<div class="test">
-<a name="killLiveQuery_byQueryId()"></a>
-<h3 class="skipped">killLiveQuery_byQueryId()</h3>
-</div>
-</div>
 <div class="tab">
 <h2>Tests</h2>
 <table>
@@ -85,53 +75,33 @@
 </tr>
 </thead>
 <tr>
-<td class="success">closeUnblocksBlockedNext()</td>
-<td class="success">0.508s</td>
+<td class="success">allPresent()</td>
+<td class="success">0.015s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">concurrentNextAndCloseDoesNotCrash()</td>
-<td class="success">0.111s</td>
+<td class="success">boxedFalseRoundTrip()</td>
+<td class="success">0.013s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="skipped">killLiveQuery_byQueryId()</td>
-<td class="skipped">-</td>
-<td class="skipped">ignored</td>
-</tr>
-<tr>
-<td class="success">liveStreamCloseReleases()</td>
-<td class="success">0.008s</td>
+<td class="success">boxedNullIsDropped()</td>
+<td class="success">0.012s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">liveStreamNextCanBlockAndClose()</td>
-<td class="success">0.511s</td>
+<td class="success">missingEntryDefaultsToOptionalEmpty()</td>
+<td class="success">0.023s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">liveStreamReceivesCreateNotification()</td>
-<td class="success">0.517s</td>
+<td class="success">optionalEmptyRoundTrip()</td>
+<td class="success">0.022s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">liveStreamReceivesUpdateNotification()</td>
-<td class="success">0.217s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">liveStreamTryWithResources()</td>
-<td class="success">0.008s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">selectLiveOnNonExistentTableThrowsImmediately()</td>
-<td class="success">0.006s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">selectLiveReturnsLiveStream()</td>
-<td class="success">0.008s</td>
+<td class="success">optionalListPresent()</td>
+<td class="success">0.014s</td>
 <td class="success">passed</td>
 </tr>
 </table>

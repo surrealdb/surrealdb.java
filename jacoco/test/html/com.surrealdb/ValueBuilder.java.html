@@ -73,9 +73,9 @@ import java.util.stream.Collectors;
 <span class="fc" id="L73">			}</span>
 <span class="fc" id="L74">			return ValueMut.createObject(entries);</span>
 		}
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">		if (object instanceof Optional) {</span>
-<span class="nc" id="L77">			final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
-<span class="nc" id="L78">			return optional.map(ValueBuilder::convert).orElse(null);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">		if (object instanceof Optional) {</span>
+<span class="fc" id="L77">			final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
+<span class="fc" id="L78">			return optional.map(ValueBuilder::convert).orElseGet(ValueMut::createNull);</span>
 		}
 <span class="fc bfc" id="L80" title="All 2 branches covered.">		if (object instanceof Id) {</span>
 <span class="fc" id="L81">			return ValueMut.createId((Id) object);</span>
