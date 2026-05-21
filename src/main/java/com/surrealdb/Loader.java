@@ -91,7 +91,7 @@ class Loader {
 
 	private static File extract(String path) throws IOException {
 		final String TargetsPath = "natives/" + path + "/" + SURREALDB_LIBNAME;
-		final URL Targets = Surreal.class.getClassLoader().getResource(TargetsPath);
+		final URL Targets = Native.class.getClassLoader().getResource(TargetsPath);
 		if (Targets == null) {
 			throw new RuntimeException("Couldn't find Targets: " + TargetsPath);
 		}

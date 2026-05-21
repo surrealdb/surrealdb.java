@@ -31,10 +31,6 @@ import java.util.Optional;
  */
 public class LiveStream implements AutoCloseable {
 
-	static {
-		Loader.loadNative();
-	}
-
 	/**
 	 * Pointer to the native {@code LiveStreamChannel}. Zeroed by {@link #close()}
 	 * after the native resources have been released. Declared {@code volatile} so
