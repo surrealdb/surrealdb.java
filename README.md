@@ -62,6 +62,10 @@ View the SDK documentation [here](https://surrealdb.com/docs/integration/librari
 
 ## How to install
 
+### Stable release
+
+Released to [Maven Central](https://central.sonatype.com/artifact/com.surrealdb/surrealdb).
+
 Gradle:
 
 ```groovy
@@ -77,11 +81,53 @@ dependencies {
 Maven:
 
 ```xml
-
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>surrealdb</artifactId>
     <version>2.0.2</version>
+</dependency>
+```
+
+### Snapshot release
+
+Published to the [Maven Central snapshots repository](https://central.sonatype.com/repository/maven-snapshots/) on every push to `main`. Use it to try out unreleased changes.
+
+Gradle:
+
+```groovy
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+        mavenContent { snapshotsOnly() }
+    }
+}
+
+ext {
+    surrealdbVersion = "2.0.3-SNAPSHOT"
+}
+
+dependencies {
+    implementation "com.surrealdb:surrealdb:${surrealdbVersion}"
+}
+```
+
+Maven:
+
+```xml
+<repositories>
+    <repository>
+        <id>central-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <releases><enabled>false</enabled></releases>
+        <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.surrealdb</groupId>
+    <artifactId>surrealdb</artifactId>
+    <version>2.0.3-SNAPSHOT</version>
 </dependency>
 ```
 

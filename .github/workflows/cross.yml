@@ -370,7 +370,11 @@ jobs:
     needs:
       - aggregated-jar
       - integration-tests
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_optional_task == 'true'
+    # Manual dispatch always publishes (snapshot or release, based on version in build.gradle).
+    # Push to main auto-publishes only when the version is a SNAPSHOT; releases must be triggered manually.
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run_optional_task == 'true') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -393,14 +397,31 @@ jobs:
           name: surrealdb
           path: native
 
-      - name: Publish Jar (Maven Central)
+      - name: Determine publish mode
+        id: mode
         run: |
           VERSION=$(grep '^version ' build.gradle | sed "s/version '\(.*\)'/\1/")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           if [[ "$VERSION" == *-SNAPSHOT ]]; then
-            echo "Publishing SNAPSHOT to snapshots repository..."
+            echo "IS_SNAPSHOT=true" >> $GITHUB_OUTPUT
+          else
+            echo "IS_SNAPSHOT=false" >> $GITHUB_OUTPUT
+          fi
+          if [[ "${{ github.event_name }}" == "push" && "$VERSION" != *-SNAPSHOT ]]; then
+            echo "Push to main but version '$VERSION' is not a SNAPSHOT — releases must be triggered manually via workflow_dispatch."
+            echo "SHOULD_PUBLISH=false" >> $GITHUB_OUTPUT
+          else
+            echo "SHOULD_PUBLISH=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish Jar (Maven Central)
+        if: steps.mode.outputs.SHOULD_PUBLISH == 'true'
+        run: |
+          if [[ "${{ steps.mode.outputs.IS_SNAPSHOT }}" == "true" ]]; then
+            echo "Publishing SNAPSHOT ${{ steps.mode.outputs.VERSION }} to snapshots repository..."
             ./gradlew publishAggregationToCentralSnapshots
           else
-            echo "Publishing release to Central Portal..."
+            echo "Publishing release ${{ steps.mode.outputs.VERSION }} to Central Portal..."
             ./gradlew publishAggregationToCentralPortal
           fi
         env:
@@ -410,6 +431,7 @@ jobs:
           SIGNING_KEY_PASS: ${{ secrets.SIGNING_KEY_PASS }}
 
       - name: Publish Jar (GitHub Packages)
+        if: steps.mode.outputs.SHOULD_PUBLISH == 'true'
         run: ./gradlew publishMavenJavaPublicationToGitHubPackagesRepository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
