@@ -24,7 +24,7 @@ public class Id extends Native {
 	}
 
 	public static Id from(UUID id) {
-<span class="nc" id="L27">		return new Id(newUuidId(id.toString()));</span>
+<span class="fc" id="L27">		return new Id(newUuidId(id.toString()));</span>
 	}
 
 	/**
@@ -108,19 +108,19 @@ public class Id extends Native {
 	}
 
 	final public boolean isString() {
-<span class="nc" id="L111">		return isString(getPtr());</span>
+<span class="fc" id="L111">		return isString(getPtr());</span>
 	}
 
 	final public String getString() {
-<span class="nc" id="L115">		return getString(getPtr());</span>
+<span class="fc" id="L115">		return getString(getPtr());</span>
 	}
 
 	final public boolean isUuid() {
-<span class="nc" id="L119">		return isUuid(getPtr());</span>
+<span class="fc" id="L119">		return isUuid(getPtr());</span>
 	}
 
 	final public UUID getUuid() {
-<span class="nc" id="L123">		return UUID.fromString(getUuid(getPtr()));</span>
+<span class="fc" id="L123">		return UUID.fromString(getUuid(getPtr()));</span>
 	}
 
 	final public boolean isArray() {
