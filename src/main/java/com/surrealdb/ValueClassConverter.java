@@ -1,6 +1,7 @@
 package com.surrealdb;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -50,7 +51,11 @@ class ValueClassConverter<T> {
 		if (value.isNull()) {
 			field.set(target, null);
 		} else if (value.isBoolean()) {
-			field.setBoolean(target, value.getBoolean());
+			final boolean b = value.getBoolean();
+			if (type == Boolean.TYPE)
+				field.setBoolean(target, b);
+			else
+				field.set(target, b);
 		} else if (value.isDouble()) {
 			final double d = value.getDouble();
 			if (type == Double.TYPE)
@@ -121,6 +126,7 @@ class ValueClassConverter<T> {
 
 	private static <T> T convert(Class<T> clazz, Object source) throws ReflectiveOperationException {
 		final T target = clazz.getConstructor().newInstance();
+		initOptionalFields(clazz, target);
 		for (final Entry entry : source) {
 			try {
 				final String key = entry.getKey();
@@ -203,6 +209,25 @@ class ValueClassConverter<T> {
 			}
 		} else {
 			setSingleValue(field, type, target, value);
+		}
+	}
+
+	private static <T> void initOptionalFields(Class<?> clazz, T target) throws IllegalAccessException {
+		Class<?> c = clazz;
+		while (c != null && c != java.lang.Object.class) {
+			for (final Field field : c.getDeclaredFields()) {
+				int mods = field.getModifiers();
+				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {
+					continue;
+				}
+				if (Optional.class.equals(field.getType())) {
+					field.setAccessible(true);
+					if (field.get(target) == null) {
+						field.set(target, Optional.empty());
+					}
+				}
+			}
+			c = c.getSuperclass();
 		}
 	}
 

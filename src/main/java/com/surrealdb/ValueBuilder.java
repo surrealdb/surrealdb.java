@@ -75,7 +75,7 @@ class ValueBuilder {
 		}
 		if (object instanceof Optional) {
 			final Optional<?> optional = (Optional<?>) object;
-			return optional.map(ValueBuilder::convert).orElse(null);
+			return optional.map(ValueBuilder::convert).orElseGet(ValueMut::createNull);
 		}
 		if (object instanceof Id) {
 			return ValueMut.createId((Id) object);
