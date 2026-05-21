@@ -65,11 +65,24 @@ sourceSets {
     integrationTest {
         java
     }
+    // Java-record-using tests live in their own source set so the main library
+    // and the standard test suite remain compilable with --release 8.
+    // The set is always created (so configuration-time references resolve);
+    // compilation and execution are conditional on JDK 16+ below.
+    recordTest {
+        java {
+            srcDirs 'src/recordTest/java'
+        }
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
 }
 
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+    recordTestImplementation.extendsFrom testImplementation
+    recordTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 ext.nativeJar = file("native/surrealdb-${version}.jar")
@@ -189,6 +202,46 @@ test {
         showStackTraces = true
         exceptionFormat = "full"
     }
+}
+
+// Records require JDK 16+ at compile time. Only wire up the recordTest task graph
+// when the build JDK supports them; on older JDKs the source set is created but
+// its compile/test tasks are disabled, so JDK 8/11 builds remain green.
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
+    tasks.named('compileRecordTestJava') {
+        options.release = 16
+    }
+
+    tasks.register('recordTest', Test) {
+        description = 'Runs the Java-record tests (requires JDK 16+).'
+        group = 'verification'
+        useJUnitPlatform()
+        dependsOn cargoBuild
+        testClassesDirs = sourceSets.recordTest.output.classesDirs
+        classpath = sourceSets.recordTest.runtimeClasspath
+        def nativeLibFile = file("target/debug/${nativeLibName}")
+        def nativeLibPath = nativeLibFile.absolutePath
+        systemProperty 'surrealdb.native.path', nativeLibPath
+        jvmArgs "-Dsurrealdb.native.path=${nativeLibPath}"
+        def debugDir = new File(projectDir, 'target/debug').absolutePath
+        def releaseDir = new File(projectDir, 'target/release').absolutePath
+        def libPath = debugDir + File.pathSeparator + releaseDir
+        systemProperty 'java.library.path', libPath
+        jvmArgs "-Djava.library.path=${libPath}"
+        systemProperty 'junit.jupiter.execution.timeout.default', '15s'
+        maxParallelForks = 1
+        testLogging {
+            events "passed", "failed", "skipped"
+            showStackTraces = true
+            exceptionFormat = "full"
+        }
+    }
+
+    tasks.named('check') { dependsOn 'recordTest' }
+} else {
+    // Disable the auto-generated tasks for the recordTest source set on older JDKs.
+    tasks.named('compileRecordTestJava') { enabled = false }
+    tasks.matching { it.name == 'processRecordTestResources' }.configureEach { enabled = false }
 }
 
 jacocoTestReport {
