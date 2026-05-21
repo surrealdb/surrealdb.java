@@ -187,7 +187,10 @@ class ValueClassConverter<T> {
 		}
 		// scalar value
 		if (Optional.class.equals(type)) {
-			final java.lang.Object converted = convertSingleValue(value);
+			final Class<?> innerType = firstTypeArgumentRaw(genericType);
+			final java.lang.Object converted = innerType == null
+					? convertSingleValue(value)
+					: convertSingleValueTyped(value, innerType);
 			return converted == null ? Optional.empty() : Optional.of(converted);
 		}
 		return convertSingleValueTyped(value, type);

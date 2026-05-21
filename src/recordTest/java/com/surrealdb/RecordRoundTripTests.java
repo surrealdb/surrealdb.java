@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.surrealdb.pojos.PersonRecord;
+import com.surrealdb.pojos.TypedOptionalRecord;
 
 public class RecordRoundTripTests {
 
@@ -78,6 +79,39 @@ public class RecordRoundTripTests {
 
 			final PersonRecord createdJaime = surreal.create(PersonRecord.class, "person", JAIME).get(0);
 			assertEquals(Optional.empty(), createdJaime.nickname());
+		}
+	}
+
+	@Test
+	void typedOptionalScalarsHydrateWithDeclaredType() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final TypedOptionalRecord input = new TypedOptionalRecord(Optional.of(42), Optional.of(3.14f),
+					Optional.of((short) 7), Optional.of(99L));
+			final TypedOptionalRecord readBack = surreal.create(TypedOptionalRecord.class, "tops", input).get(0);
+
+			// instanceof checks pin the boxed runtime type — without the typed
+			// Optional conversion fix, intOpt/floatOpt/shortOpt come back as
+			// Long/Double/Long, and the auto-unboxing assignments below would CCE.
+			assertTrue(readBack.intOpt().isPresent());
+			assertTrue(readBack.intOpt().get() instanceof Integer);
+			final int unboxedInt = readBack.intOpt().get();
+			assertEquals(42, unboxedInt);
+
+			assertTrue(readBack.floatOpt().isPresent());
+			assertTrue(readBack.floatOpt().get() instanceof Float);
+			final float unboxedFloat = readBack.floatOpt().get();
+			assertEquals(3.14f, unboxedFloat, 0.001f);
+
+			assertTrue(readBack.shortOpt().isPresent());
+			assertTrue(readBack.shortOpt().get() instanceof Short);
+			final short unboxedShort = readBack.shortOpt().get();
+			assertEquals((short) 7, unboxedShort);
+
+			assertTrue(readBack.longOpt().isPresent());
+			assertTrue(readBack.longOpt().get() instanceof Long);
+			final long unboxedLong = readBack.longOpt().get();
+			assertEquals(99L, unboxedLong);
 		}
 	}
 
