@@ -1,7 +1,5 @@
 package com.surrealdb;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -9,35 +7,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.surrealdb.RecordHelpers.JAIME;
+import static com.surrealdb.RecordHelpers.TOBIE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-import com.surrealdb.pojos.EmailRecord;
-import com.surrealdb.pojos.NameRecord;
 import com.surrealdb.pojos.PersonRecord;
 
 public class RecordRoundTripTests {
-
-	private static final PersonRecord TOBIE = new PersonRecord(null, "Tobie", Arrays.asList("CEO", "CTO"), 1L, true,
-			Collections.singletonList(new EmailRecord("tobie@example.com", new NameRecord("Tobie", "Foo"))),
-			Optional.of("toby"));
-
-	private static final PersonRecord JAIME = new PersonRecord(null, "Jaime", Collections.singletonList("COO"), 2L,
-			true, Collections.singletonList(new EmailRecord("jaime@example.com", new NameRecord("Jaime", "Bar"))),
-			Optional.empty());
 
 	private static <T> List<T> drain(Iterator<T> iterator) {
 		final Iterable<T> iterable = () -> iterator;
 		final Stream<T> stream = StreamSupport.stream(iterable.spliterator(), false);
 		return stream.collect(Collectors.toList());
-	}
-
-	// Records have final fields so we can't null out `id` like the POJO tests do.
-	// Compare records by erasing the id from the read-back instance.
-	private static PersonRecord withoutId(PersonRecord p) {
-		return new PersonRecord(null, p.name(), p.tags(), p.category(), p.active(), p.emails(), p.nickname());
 	}
 
 	@Test
@@ -78,7 +62,7 @@ public class RecordRoundTripTests {
 			final Iterator<PersonRecord> iterator = surreal.select(PersonRecord.class, "person");
 			final List<PersonRecord> people = drain(iterator);
 			assertEquals(2, people.size());
-			final List<PersonRecord> normalised = people.stream().map(RecordRoundTripTests::withoutId)
+			final List<PersonRecord> normalised = people.stream().map(RecordHelpers::withoutId)
 					.collect(Collectors.toList());
 			assertTrue(normalised.contains(TOBIE));
 			assertTrue(normalised.contains(JAIME));
