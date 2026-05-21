@@ -60,6 +60,8 @@ loadScripts(document, 'script');</script>
 <li><a href="#from(long)" tabindex="0">from(long)</a></li>
 <li><a href="#from(java.lang.String)" tabindex="0">from(String)</a></li>
 <li><a href="#from(java.util.UUID)" tabindex="0">from(UUID)</a></li>
+<li><a href="#from(java.lang.Object...)" tabindex="0">from(Object...)</a></li>
+<li><a href="#fromList(java.util.List)" tabindex="0">fromList(List)</a></li>
 <li><a href="#isLong()" tabindex="0">isLong()</a></li>
 <li><a href="#getLong()" tabindex="0">getLong()</a></li>
 <li><a href="#isString()" tabindex="0">isString()</a></li>
@@ -110,11 +112,21 @@ or a string.</div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#from(long)" class="member-name-link">from</a><wbr>(long&nbsp;id)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Id.html" title="class in com.surrealdb">Id</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#from(java.lang.String)" class="member-name-link">from</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#from(java.lang.Object...)" class="member-name-link">from</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>...&nbsp;elements)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Creates an Id whose key is an array of Java values (composite key).</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Id.html" title="class in com.surrealdb">Id</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#from(java.lang.String)" class="member-name-link">from</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Id.html" title="class in com.surrealdb">Id</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#from(java.util.UUID)" class="member-name-link">from</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;id)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Id.html" title="class in com.surrealdb">Id</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#from(java.util.UUID)" class="member-name-link">from</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;id)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fromList(java.util.List)" class="member-name-link">fromList</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;?&gt;&nbsp;elements)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">List-based counterpart to <a href="#from(java.lang.Object...)"><code>from(java.lang.Object...)</code></a>.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="Array.html" title="class in com.surrealdb">Array</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getArray()" class="member-name-link">getArray</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -186,6 +198,30 @@ or a string.</div>
 <h3>from</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Id.html" title="class in com.surrealdb">Id</a></span>&nbsp;<span class="element-name">from</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;id)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="from(java.lang.Object...)">
+<h3>from</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Id.html" title="class in com.surrealdb">Id</a></span>&nbsp;<span class="element-name">from</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>...&nbsp;elements)</span></div>
+<div class="block">Creates an Id whose key is an array of Java values (composite key). See
+<a href="Array.html#of(java.lang.Object...)"><code>Array.of(java.lang.Object...)</code></a> for the supported element types.
+<p>
+To build a single-element <code>[null]</code> key, cast the argument:
+<code>Id.from((java.lang.Object) null)</code>. A bare <code>Id.from(null)</code> is a
+null varargs array and will throw <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/NullPointerException.html" title="class or interface in java.lang" class="external-link"><code>NullPointerException</code></a>.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="fromList(java.util.List)">
+<h3>fromList</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Id.html" title="class in com.surrealdb">Id</a></span>&nbsp;<span class="element-name">fromList</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;?&gt;&nbsp;elements)</span></div>
+<div class="block">List-based counterpart to <a href="#from(java.lang.Object...)"><code>from(java.lang.Object...)</code></a>. Named
+distinctly from <code>from(...)</code> to avoid a null-call overload ambiguity.</div>
 </div>
 </section>
 </li>

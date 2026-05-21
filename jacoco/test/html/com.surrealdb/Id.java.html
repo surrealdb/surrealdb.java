@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Id.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">Id.java</span></div><h1>Id.java</h1><pre class="source lang-java linenums">package com.surrealdb;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -9,19 +12,51 @@ import java.util.UUID;
 public class Id extends Native {
 
 	Id(long ptr) {
-<span class="fc" id="L12">		super(ptr);</span>
-<span class="fc" id="L13">	}</span>
+<span class="fc" id="L15">		super(ptr);</span>
+<span class="fc" id="L16">	}</span>
 
 	public static Id from(long id) {
-<span class="fc" id="L16">		return new Id(newLongId(id));</span>
+<span class="fc" id="L19">		return new Id(newLongId(id));</span>
 	}
 
 	public static Id from(String id) {
-<span class="fc" id="L20">		return new Id(newStringId(id));</span>
+<span class="fc" id="L23">		return new Id(newStringId(id));</span>
 	}
 
 	public static Id from(UUID id) {
-<span class="nc" id="L24">		return new Id(newUuidId(id.toString()));</span>
+<span class="nc" id="L27">		return new Id(newUuidId(id.toString()));</span>
+	}
+
+	/**
+	 * Creates an Id whose key is an array of Java values (composite key). See
+	 * {@link Array#of(java.lang.Object...)} for the supported element types.
+	 * &lt;p&gt;
+	 * To build a single-element {@code [null]} key, cast the argument:
+	 * {@code Id.from((java.lang.Object) null)}. A bare {@code Id.from(null)} is a
+	 * null varargs array and will throw {@link NullPointerException}.
+	 */
+	public static Id from(java.lang.Object... elements) {
+<span class="fc" id="L39">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
+<span class="fc" id="L40">		return fromList(Arrays.asList(elements));</span>
+	}
+
+	/**
+	 * List-based counterpart to {@link #from(java.lang.Object...)}. Named
+	 * distinctly from {@code from(...)} to avoid a null-call overload ambiguity.
+	 */
+	public static Id fromList(List&lt;?&gt; elements) {
+<span class="fc" id="L48">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
+<span class="fc" id="L49">		final long[] ptrs = new long[elements.size()];</span>
+<span class="fc" id="L50">		final ValueMut[] muts = new ValueMut[elements.size()];</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">		for (int i = 0; i &lt; elements.size(); i++) {</span>
+<span class="fc" id="L52">			muts[i] = ValueBoxing.box(elements.get(i));</span>
+<span class="fc" id="L53">			ptrs[i] = muts[i].getPtr();</span>
+		}
+<span class="fc" id="L55">		final Id id = new Id(newArrayId(ptrs));</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		for (final ValueMut m : muts) {</span>
+<span class="fc" id="L57">			m.moved();</span>
+		}
+<span class="fc" id="L59">		return id;</span>
 	}
 
 	private static native long newLongId(long id);
@@ -29,6 +64,8 @@ public class Id extends Native {
 	private static native long newStringId(String id);
 
 	private static native long newUuidId(String id);
+
+	private static native long newArrayId(long[] valueMutPtrs);
 
 	private static native boolean isLong(long ptr);
 
@@ -63,43 +100,43 @@ public class Id extends Native {
 	final native void deleteInstance(long ptr);
 
 	final public boolean isLong() {
-<span class="fc" id="L66">		return isLong(getPtr());</span>
+<span class="fc" id="L103">		return isLong(getPtr());</span>
 	}
 
 	final public long getLong() {
-<span class="fc" id="L70">		return getLong(getPtr());</span>
+<span class="fc" id="L107">		return getLong(getPtr());</span>
 	}
 
 	final public boolean isString() {
-<span class="nc" id="L74">		return isString(getPtr());</span>
+<span class="nc" id="L111">		return isString(getPtr());</span>
 	}
 
 	final public String getString() {
-<span class="nc" id="L78">		return getString(getPtr());</span>
+<span class="nc" id="L115">		return getString(getPtr());</span>
 	}
 
 	final public boolean isUuid() {
-<span class="nc" id="L82">		return isUuid(getPtr());</span>
+<span class="nc" id="L119">		return isUuid(getPtr());</span>
 	}
 
 	final public UUID getUuid() {
-<span class="nc" id="L86">		return UUID.fromString(getUuid(getPtr()));</span>
+<span class="nc" id="L123">		return UUID.fromString(getUuid(getPtr()));</span>
 	}
 
 	final public boolean isArray() {
-<span class="fc" id="L90">		return isArray(getPtr());</span>
+<span class="fc" id="L127">		return isArray(getPtr());</span>
 	}
 
 	final public Array getArray() {
-<span class="fc" id="L94">		return new Array(getArray(getPtr()));</span>
+<span class="fc" id="L131">		return new Array(getArray(getPtr()));</span>
 	}
 
 	final public boolean isObject() {
-<span class="fc" id="L98">		return isObject(getPtr());</span>
+<span class="fc" id="L135">		return isObject(getPtr());</span>
 	}
 
 	final public Object getObject() {
-<span class="fc" id="L102">		return new Object(getObject(getPtr()));</span>
+<span class="fc" id="L139">		return new Object(getObject(getPtr()));</span>
 	}
 
 }
