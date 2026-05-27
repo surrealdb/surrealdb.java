@@ -51,10 +51,10 @@ public class IntegrationTest {
 	}
 
 	/**
-	 * Regression test for <a href=
-	 * "https://github.com/surrealdb/surrealdb.java/issues/160">#160</a>: looping
-	 * useDb + health on a reused WebSocket connection used to balloon the SDK's
-	 * per-session replay log and (on server 3.0.5) crash the server worker. A
+	 * Regression test for
+	 * <a href= "https://github.com/surrealdb/surrealdb.java/issues/160">#160</a>:
+	 * looping useDb + health on a reused WebSocket connection used to balloon the
+	 * SDK's per-session replay log and (on server 3.0.5) crash the server worker. A
 	 * fixed driver finishes the loop quickly with stable per-iteration latency.
 	 */
 	@Test
