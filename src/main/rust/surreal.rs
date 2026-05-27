@@ -89,7 +89,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_version<'local>(
     ptr: jlong,
 ) -> jstring {
     let surreal = get_surreal_ref!(&mut env, ptr, null_mut);
-    let version = match TOKIO_RUNTIME.block_on(async { surreal.clone().version().await }) {
+    let version = match TOKIO_RUNTIME.block_on(async { surreal.version().await }) {
         Ok(v) => v.to_string(),
         // Embedded / local: no server to ask; report library version (injected at build time)
         Err(_) => env!("SURREALDB_VERSION").into(),
@@ -104,7 +104,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_health<'local>(
     ptr: jlong,
 ) -> jboolean {
     let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
-    match TOKIO_RUNTIME.block_on(async { surreal.clone().health().await }) {
+    match TOKIO_RUNTIME.block_on(async { surreal.health().await }) {
         Ok(()) => true as jboolean,
         Err(e) => SurrealError::from(e).exception(&mut env, || false as jboolean),
     }
@@ -589,7 +589,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_exportSql<'local>(
     let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
     let path = get_rust_string!(&mut env, &path, || false as jboolean);
     let path = Path::new(&path).to_path_buf();
-    match TOKIO_RUNTIME.block_on(async { surreal.clone().export(path).await }) {
+    match TOKIO_RUNTIME.block_on(async { surreal.export(path).await }) {
         Ok(()) => true as jboolean,
         Err(e) => SurrealError::from(e).exception(&mut env, || false as jboolean),
     }
@@ -605,7 +605,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_importSql<'local>(
     let surreal = get_surreal_ref!(&mut env, ptr, || false as jboolean);
     let path = get_rust_string!(&mut env, &path, || false as jboolean);
     let path = Path::new(&path).to_path_buf();
-    match TOKIO_RUNTIME.block_on(async { surreal.clone().import(path).await }) {
+    match TOKIO_RUNTIME.block_on(async { surreal.import(path).await }) {
         Ok(()) => true as jboolean,
         Err(e) => SurrealError::from(e).exception(&mut env, || false as jboolean),
     }
