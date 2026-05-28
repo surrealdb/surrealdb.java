@@ -313,7 +313,7 @@ public class Surreal extends Native implements AutoCloseable {
 <span class="nc" id="L313">			return signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace());</span>
 <span class="fc bfc" id="L314" title="All 2 branches covered.">		} else if (credential instanceof RootCredential) {</span>
 <span class="fc" id="L315">			final RootCredential r = (RootCredential) credential;</span>
-<span class="nc" id="L316">			return signinRoot(getPtr(), r.getUsername(), r.getPassword());</span>
+<span class="fc" id="L316">			return signinRoot(getPtr(), r.getUsername(), r.getPassword());</span>
 <span class="fc bfc" id="L317" title="All 2 branches covered.">		} else if (credential instanceof RecordCredential) {</span>
 <span class="fc" id="L318">			final RecordCredential rec = (RecordCredential) credential;</span>
 <span class="fc bfc" id="L319" title="All 2 branches covered.">			String ns = rec.getNamespace() != null ? rec.getNamespace() : this.namespace;</span>
