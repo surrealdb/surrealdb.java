@@ -1,9 +1,32 @@
+/// Wraps a native-method body for the jni 0.22 `EnvUnowned` calling convention.
+///
+/// `$unowned` is the `EnvUnowned` first argument; `$env` is the identifier the body
+/// uses for the managed `&mut Env` (pass the same name the body already uses, i.e.
+/// `env`). The body is run inside an inner closure so its `return <jXxx>` statements
+/// (including those inside the `get_*!`/`new_*!` macros via `SurrealError::exception`)
+/// return the native value as before. See [`crate::resolve_outcome`] for how the
+/// outcome (incl. panics) is resolved.
+#[macro_export]
+macro_rules! with_env_body {
+    ($unowned:expr, $env:ident, $body:block) => {{
+        $crate::resolve_outcome($unowned.with_env(
+            |$env: &mut jni::Env| -> jni::errors::Result<_> {
+                // The inner closure lets the body's `return <jXxx>` statements (incl. those in
+                // the get_*!/new_*! macros) return the native value; we then wrap it in Ok.
+                #[allow(clippy::redundant_closure_call)]
+                let __out = (move || $body)();
+                std::result::Result::Ok(__out)
+            },
+        ))
+    }};
+}
+
 #[macro_export]
 macro_rules! get_rust_string {
     ($env:expr, $str:expr, $default_fn:expr) => {{
-        match $env.get_string(&$str) {
-            Ok(s) => String::from(s),
-            Err(e) => return SurrealError::from(e).exception(&mut $env, $default_fn),
+        match $str.try_to_string($env) {
+            Ok(s) => s,
+            Err(e) => return SurrealError::from(e).exception($env, $default_fn),
         }
     }};
 }
@@ -11,9 +34,9 @@ macro_rules! get_rust_string {
 #[macro_export]
 macro_rules! get_rust_string_array {
     ($env:expr, $strings:expr, $default_fn:expr) => {{
-        match $crate::read_string_array(&mut $env, $strings) {
+        match $crate::read_string_array($env, $strings) {
             Ok(r) => r,
-            Err(e) => return e.exception(&mut $env, $default_fn),
+            Err(e) => return e.exception($env, $default_fn),
         }
     }};
 }
@@ -189,12 +212,13 @@ macro_rules! new_string {
 #[macro_export]
 macro_rules! get_long_array {
     ($env:expr, $ptrs:expr, $default_fn:expr) => {{
-        let length = match $env.get_array_length($ptrs) {
+        // jni 0.22: array region/length APIs moved onto JPrimitiveArray; len() -> usize.
+        let length = match $ptrs.len($env) {
             Ok(l) => l,
             Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
         };
-        let mut long_ptrs: Vec<jlong> = vec![0; length as usize];
-        if let Err(e) = $env.get_long_array_region($ptrs, 0, &mut long_ptrs) {
+        let mut long_ptrs: Vec<jlong> = vec![0; length];
+        if let Err(e) = $ptrs.get_region($env, 0, &mut long_ptrs) {
             return $crate::SurrealError::from(e).exception($env, $default_fn);
         };
         long_ptrs
@@ -205,12 +229,12 @@ macro_rules! get_long_array {
 macro_rules! new_jlong_array {
     ($env:expr, $array:expr, $default_fn:expr) => {{
         // Create a new jlongArray with the appropriate length
-        let mut jarray = match $env.new_long_array($array.len() as jni::sys::jsize) {
+        let jarray = match jni::objects::JLongArray::new($env, $array.len()) {
             Ok(a) => a,
             Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
         };
         // Set the values of the jlongArray
-        if let Err(e) = $env.set_long_array_region(&mut jarray, 0, $array) {
+        if let Err(e) = jarray.set_region($env, 0, $array) {
             return $crate::SurrealError::from(e).exception($env, $default_fn);
         }
         // Return the populated jlongArray
@@ -221,12 +245,12 @@ macro_rules! new_jlong_array {
 #[macro_export]
 macro_rules! new_double_point {
     ($env:expr, $pt:expr, $default_fn:expr) => {{
-        let double_array = match $env.new_double_array(2) {
+        let double_array = match jni::objects::JDoubleArray::new($env, 2) {
             Ok(d) => d,
             Err(e) => return $crate::SurrealError::from(e).exception($env, $default_fn),
         };
         let coordinates: [jni::sys::jdouble; 2] = [$pt.x(), $pt.y()];
-        if let Err(e) = $env.set_double_array_region(&double_array, 0, &coordinates) {
+        if let Err(e) = double_array.set_region($env, 0, &coordinates) {
             return $crate::SurrealError::from(e).exception($env, $default_fn);
         }
         double_array.into_raw()
