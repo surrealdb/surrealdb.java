@@ -1,7 +1,13 @@
 # Changelog
 
-## [Unreleased]
-- Support Java `record` classes in `create` and `select` (JDK 16+ at runtime). Records are hydrated via their canonical constructor; POJO behaviour on JDK 8+ is unchanged.
+## [2.0.3] - 2026-05-29
+- Support Java `record` classes in `create` and `select` (JDK 16+ at runtime). Records are hydrated via their canonical constructor; POJO behaviour on JDK 8+ is unchanged [#156](https://github.com/surrealdb/surrealdb.java/pull/156).
+- Add `Array.of()` and `Id.from(Object...)` factories for composite keys [#154](https://github.com/surrealdb/surrealdb.java/pull/154).
+- Fix nullable `Boolean` and `Optional<T>` (de)serialization [#155](https://github.com/surrealdb/surrealdb.java/pull/155).
+- Auto-load the native library on first use of any Native-backed POJO [#157](https://github.com/surrealdb/surrealdb.java/pull/157).
+- Avoid spawning a new server session per health/version/export/import call [#161](https://github.com/surrealdb/surrealdb.java/pull/161).
+- Document snapshot installs and auto-publish snapshots from `main` [#158](https://github.com/surrealdb/surrealdb.java/pull/158).
+- Add LiveStream regression tests over WebSocket and `query()` variants [#159](https://github.com/surrealdb/surrealdb.java/pull/159).
 
 ## [2.0.2] - 2026-05-20
 - Add Java query binding overloads and transaction bindings [#148](https://github.com/surrealdb/surrealdb.java/pull/148).
