@@ -44,7 +44,7 @@ jobs:
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
-          surrealdb_version: v3.0.4
+          surrealdb_version: v3.0.5
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
