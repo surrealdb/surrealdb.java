@@ -104,7 +104,7 @@ repositories {
 }
 
 ext {
-    surrealdbVersion = "2.1.0-SNAPSHOT"
+    surrealdbVersion = "2.1.1-SNAPSHOT"
 }
 
 dependencies {
@@ -127,7 +127,7 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>surrealdb</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>2.1.1-SNAPSHOT</version>
 </dependency>
 ```
 
