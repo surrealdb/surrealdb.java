@@ -1,5 +1,7 @@
 # Changelog
 
+## [Unreleased]
+
 ## [2.1.0] - 2026-06-04
 - Upgrade the native layer to the `jni` crate 0.22.4; the Java/JNI ABI, public API, and JDK 8 minimum are unchanged [#166](https://github.com/surrealdb/surrealdb.java/pull/166).
 - Upgrade to SurrealDB SDK 3.1.3 and bump the Rust toolchain to 1.95 [#165](https://github.com/surrealdb/surrealdb.java/pull/165).
