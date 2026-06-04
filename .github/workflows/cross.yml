@@ -45,7 +45,7 @@ jobs:
 
       - name: Read Rust toolchain version
         id: rust-version
-        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+        run: echo "CHANNEL=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
@@ -98,7 +98,7 @@ jobs:
 
       - name: Read Rust toolchain version
         id: rust-version
-        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+        run: echo "CHANNEL=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
@@ -132,7 +132,7 @@ jobs:
       - name: Read Rust toolchain version
         id: rust-version
         shell: bash
-        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+        run: echo "CHANNEL=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
@@ -167,7 +167,7 @@ jobs:
 
       - name: Read Rust toolchain version
         id: rust-version
-        run: echo "CHANNEL=$(grep 'channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
+        run: echo "CHANNEL=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
@@ -310,7 +310,7 @@ jobs:
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
-          surrealdb_version: v3.0.4
+          surrealdb_version: v3.0.5
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
@@ -355,7 +355,7 @@ jobs:
         if: runner.os != 'Windows'
         uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
-          surrealdb_version: v3.0.4
+          surrealdb_version: v3.0.5
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
