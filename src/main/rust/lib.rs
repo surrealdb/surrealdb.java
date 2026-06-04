@@ -3,7 +3,7 @@ use crate::error::SurrealError;
 use dashmap::DashMap;
 use jni::objects::{JObjectArray, JString};
 use jni::sys::jlong;
-use jni::JNIEnv;
+use jni::{Env, EnvOutcome, Outcome};
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 use std::collections::btree_map::IntoIter as BIntoIter;
@@ -267,18 +267,34 @@ fn release_instance<T>(ptr: jlong) {
 }
 
 // Function to read a jobjectArray of Strings into a Vec<String>
-fn read_string_array(env: &mut JNIEnv, array: JObjectArray) -> Result<Vec<String>, SurrealError> {
-    // Get the array length
-    let len = env.get_array_length(&array)?;
-    let mut res = Vec::with_capacity(len as usize);
+fn read_string_array(
+    env: &mut Env,
+    array: JObjectArray<JString>,
+) -> Result<Vec<String>, SurrealError> {
+    // Get the array length (jni 0.22: methods moved onto the array type; len() -> usize)
+    let len = array.len(env)?;
+    let mut res = Vec::with_capacity(len);
     for i in 0..len {
-        // Get the element at index i (as JObject)
-        let elem = env.get_object_array_element(&array, i)?;
-        // Cast JObject to JString and convert to Rust String
-        let s = JString::from(elem);
-        let s = env.get_string(&s)?;
-        let s = String::from(s);
-        res.push(s);
+        // Typed element access yields a JString directly; convert to a Rust String
+        let s = array.get_element(env, i)?;
+        res.push(s.try_to_string(env)?);
     }
     Ok(res)
+}
+
+/// Resolves an [`EnvOutcome`] produced by `EnvUnowned::with_env` for a native-method
+/// body. The body always returns `Ok` (application errors are surfaced as Java
+/// exceptions inside the body via [`SurrealError::exception`]), so the `Err` arm is
+/// unreachable. Panics are re-raised so they abort at the `extern "system"` boundary,
+/// matching pre-migration behaviour. Using `into_outcome` here (rather than
+/// `EnvOutcome::resolve`) avoids a `T: Default` bound, letting the exports keep their
+/// existing raw `jobject`/`jstring`/`jlong` return types and the structured-exception sink.
+pub(crate) fn resolve_outcome<T>(outcome: EnvOutcome<'_, T, jni::errors::Error>) -> T {
+    match outcome.into_outcome() {
+        Outcome::Ok(v) => v,
+        Outcome::Err(_e) => {
+            unreachable!("JNI errors are surfaced as Java exceptions within the native body")
+        }
+        Outcome::Panic(p) => std::panic::resume_unwind(p),
+    }
 }

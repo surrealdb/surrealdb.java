@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
+use crate::with_env_body;
 use jni::objects::{JObject, JValue};
 use jni::sys::{jlong, jobject};
-use jni::JNIEnv;
+use jni::{jni_sig, jni_str, EnvUnowned};
 
 use crate::error::SurrealError;
 use crate::{get_instance, new_string, take_instance, JniTypes, LiveStreamChannel, TOKIO_RUNTIME};
@@ -27,51 +28,57 @@ use crate::{get_instance, new_string, take_instance, JniTypes, LiveStreamChannel
 /// been closed, guaranteeing `recv()` will have already returned.
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) -> jobject {
-    let (recv_mutex, _join_handle_mux, _shutdown_tx_mux, rx_mux) =
-        match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
-            Ok(r) => r,
-            Err(e) => return e.exception(&mut env, std::ptr::null_mut),
+    with_env_body!(env, env, {
+        let (recv_mutex, _join_handle_mux, _shutdown_tx_mux, rx_mux) =
+            match get_instance::<LiveStreamChannel>(handle_ptr, JniTypes::LiveStream) {
+                Ok(r) => r,
+                Err(e) => return e.exception(env, std::ptr::null_mut),
+            };
+        let _recv_guard = recv_mutex.lock();
+        let rx_opt_guard = rx_mux.lock();
+        let rx_ref = match rx_opt_guard.as_ref() {
+            Some(rx) => rx,
+            None => return JObject::null().into_raw(),
         };
-    let _recv_guard = recv_mutex.lock();
-    let rx_opt_guard = rx_mux.lock();
-    let rx_ref = match rx_opt_guard.as_ref() {
-        Some(rx) => rx,
-        None => return JObject::null().into_raw(),
-    };
-    let item = match TOKIO_RUNTIME.block_on(rx_ref.recv()) {
-        Ok(item) => item,
-        Err(_) => return JObject::null().into_raw(),
-    };
-    let notification = match item {
-        Ok(n) => n,
-        Err(e) => return SurrealError::from(e).exception(&mut env, std::ptr::null_mut),
-    };
-    let action_raw = new_string!(&mut env, notification.action.to_string(), || {
-        std::ptr::null_mut()
-    });
-    let action_str = unsafe { JObject::from_raw(action_raw) };
-    let value_ptr = JniTypes::new_value(Arc::new(notification.data));
-    let query_id_raw = new_string!(&mut env, notification.query_id.to_string(), || {
-        std::ptr::null_mut()
-    });
-    let query_id_str = unsafe { JObject::from_raw(query_id_raw) };
-    let class = match env.find_class("com/surrealdb/LiveNotification") {
-        Ok(c) => c,
-        Err(e) => return SurrealError::from(e).exception(&mut env, std::ptr::null_mut),
-    };
-    let args = [
-        JValue::Object(&action_str),
-        JValue::Long(value_ptr),
-        JValue::Object(&query_id_str),
-    ];
-    match env.new_object(class, "(Ljava/lang/String;JLjava/lang/String;)V", &args) {
-        Ok(obj) => obj.into_raw(),
-        Err(e) => SurrealError::from(e).exception(&mut env, std::ptr::null_mut),
-    }
+        let item = match TOKIO_RUNTIME.block_on(rx_ref.recv()) {
+            Ok(item) => item,
+            Err(_) => return JObject::null().into_raw(),
+        };
+        let notification = match item {
+            Ok(n) => n,
+            Err(e) => return SurrealError::from(e).exception(env, std::ptr::null_mut),
+        };
+        let action_raw = new_string!(env, notification.action.to_string(), || {
+            std::ptr::null_mut()
+        });
+        let action_str = unsafe { JObject::from_raw(env, action_raw) };
+        let value_ptr = JniTypes::new_value(Arc::new(notification.data));
+        let query_id_raw = new_string!(env, notification.query_id.to_string(), || {
+            std::ptr::null_mut()
+        });
+        let query_id_str = unsafe { JObject::from_raw(env, query_id_raw) };
+        let class = match env.find_class(jni_str!("com/surrealdb/LiveNotification")) {
+            Ok(c) => c,
+            Err(e) => return SurrealError::from(e).exception(env, std::ptr::null_mut),
+        };
+        let args = [
+            JValue::Object(&action_str),
+            JValue::Long(value_ptr),
+            JValue::Object(&query_id_str),
+        ];
+        match env.new_object(
+            class,
+            jni_sig!("(Ljava/lang/String;JLjava/lang/String;)V"),
+            &args,
+        ) {
+            Ok(obj) => obj.into_raw(),
+            Err(e) => SurrealError::from(e).exception(env, std::ptr::null_mut),
+        }
+    })
 }
 
 /// JNI implementation of `LiveStream.releaseNative(long handle)`.
@@ -97,7 +104,7 @@ pub extern "system" fn Java_com_surrealdb_LiveStream_nextNative<'local>(
 ///    call returns, preventing further native access.
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_LiveStream_releaseNative<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: jni::objects::JClass<'local>,
     handle_ptr: jlong,
 ) {

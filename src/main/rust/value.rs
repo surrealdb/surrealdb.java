@@ -3,9 +3,10 @@ use std::ops::Bound;
 use std::ptr::null_mut;
 use std::sync::Arc;
 
+use crate::with_env_body;
 use jni::objects::{AsJArrayRaw, JClass};
 use jni::sys::{jboolean, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
-use jni::JNIEnv;
+use jni::EnvUnowned;
 use surrealdb::types::{Number, ToSql, Value};
 
 use crate::error::SurrealError;
@@ -13,7 +14,7 @@ use crate::{get_value_instance, new_jlong_array, new_string, release_instance, J
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
@@ -23,466 +24,542 @@ pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isArray<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_array() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_array() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getArray<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if value.is_array() {
-        JniTypes::new_value(value)
-    } else {
-        SurrealError::NullPointerException("Array").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if value.is_array() {
+            JniTypes::new_value(value)
+        } else {
+            SurrealError::NullPointerException("Array").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isObject<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_object() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_object() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getObject<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if value.is_object() {
-        JniTypes::new_value(value)
-    } else {
-        SurrealError::NullPointerException("Object").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if value.is_object() {
+            JniTypes::new_value(value)
+        } else {
+            SurrealError::NullPointerException("Object").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isBoolean<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_bool() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_bool() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getBoolean<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Bool(b) = value.as_ref() {
-        *b as jboolean
-    } else {
-        SurrealError::NullPointerException("Boolean").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false);
+        if let Value::Bool(b) = value.as_ref() {
+            *b as jboolean
+        } else {
+            SurrealError::NullPointerException("Boolean").exception(env, || false)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isBytes<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_bytes() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_bytes() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getBytes<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jbyteArray {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Bytes(bytes) = value.as_ref() {
-        match env.byte_array_from_slice(bytes) {
-            Ok(a) => a.as_jarray_raw(),
-            Err(_) => null_mut(),
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::Bytes(bytes) = value.as_ref() {
+            match env.byte_array_from_slice(bytes) {
+                Ok(a) => a.as_jarray_raw(),
+                Err(_) => null_mut(),
+            }
+        } else {
+            SurrealError::NullPointerException("Bytes").exception(env, null_mut)
         }
-    } else {
-        SurrealError::NullPointerException("Bytes").exception(&mut env, null_mut)
-    }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isLong<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_int() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_int() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getLong<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Number(Number::Int(i)) = value.as_ref() {
-        *i
-    } else {
-        SurrealError::NullPointerException("Long").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Number(Number::Int(i)) = value.as_ref() {
+            *i
+        } else {
+            SurrealError::NullPointerException("Long").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isDateTime<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_datetime() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_datetime() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getDateTime<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlongArray {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Datetime(dt) = value.as_ref() {
-        let seconds = dt.timestamp();
-        let nanos = dt.timestamp_subsec_nanos() as i64;
-        let buf: [jlong; 2] = [seconds, nanos];
-        new_jlong_array!(&mut env, &buf, null_mut)
-    } else {
-        SurrealError::NullPointerException("Geometry").exception(&mut env, null_mut)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::Datetime(dt) = value.as_ref() {
+            let seconds = dt.timestamp();
+            let nanos = dt.timestamp_subsec_nanos() as i64;
+            let buf: [jlong; 2] = [seconds, nanos];
+            new_jlong_array!(env, &buf, null_mut)
+        } else {
+            SurrealError::NullPointerException("DateTime").exception(env, null_mut)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isDuration<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_duration() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_duration() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Duration(d) = value.as_ref() {
-        d.as_millis() as jlong
-    } else {
-        SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Duration(d) = value.as_ref() {
+            d.as_millis() as jlong
+        } else {
+            SurrealError::NullPointerException("Duration").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isBigDecimal<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_decimal() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_decimal() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getBigDecimal<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Number(Number::Decimal(d)) = value.as_ref() {
-        new_string!(&mut env, &d.to_string(), null_mut)
-    } else {
-        SurrealError::NullPointerException("BigDecimal").exception(&mut env, null_mut)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::Number(Number::Decimal(d)) = value.as_ref() {
+            new_string!(env, &d.to_string(), null_mut)
+        } else {
+            SurrealError::NullPointerException("BigDecimal").exception(env, null_mut)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isDouble<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_float() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_float() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getDouble<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jdouble {
-    let value = get_value_instance!(&mut env, ptr, || 0.0);
-    if let Value::Number(Number::Float(f)) = value.as_ref() {
-        *f
-    } else {
-        SurrealError::NullPointerException("Double").exception(&mut env, || 0.0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0.0);
+        if let Value::Number(Number::Float(f)) = value.as_ref() {
+            *f
+        } else {
+            SurrealError::NullPointerException("Double").exception(env, || 0.0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isGeometry<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_geometry() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_geometry() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getGeometry<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Geometry(_) = value.as_ref() {
-        JniTypes::new_value(value)
-    } else {
-        SurrealError::NullPointerException("Geometry").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Geometry(_) = value.as_ref() {
+            JniTypes::new_value(value)
+        } else {
+            SurrealError::NullPointerException("Geometry").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isNone<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_none() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_none() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isNull<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_null() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_null() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isString<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_string() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_string() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getString<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::String(s) = value.as_ref() {
-        new_string!(&mut env, s.clone(), null_mut)
-    } else {
-        SurrealError::NullPointerException("String").exception(&mut env, null_mut)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::String(s) = value.as_ref() {
+            new_string!(env, s.clone(), null_mut)
+        } else {
+            SurrealError::NullPointerException("String").exception(env, null_mut)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isRecordId<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    matches!(value.as_ref(), Value::RecordId(_)) as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        matches!(value.as_ref(), Value::RecordId(_)) as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getRecordId<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::RecordId(_) = value.as_ref() {
-        JniTypes::new_value(value)
-    } else {
-        SurrealError::NullPointerException("RecordId").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::RecordId(_) = value.as_ref() {
+            JniTypes::new_value(value)
+        } else {
+            SurrealError::NullPointerException("RecordId").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isUuid<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_uuid() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_uuid() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getUuid<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Uuid(uuid) = value.as_ref() {
-        new_string!(&mut env, uuid.to_string(), null_mut)
-    } else {
-        SurrealError::NullPointerException("Uuid").exception(&mut env, null_mut)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::Uuid(uuid) = value.as_ref() {
+            new_string!(env, uuid.to_string(), null_mut)
+        } else {
+            SurrealError::NullPointerException("Uuid").exception(env, null_mut)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isFile<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_file() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_file() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getFile<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if value.is_file() {
-        JniTypes::new_value(value)
-    } else {
-        SurrealError::NullPointerException("File").exception(&mut env, || 0)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if value.is_file() {
+            JniTypes::new_value(value)
+        } else {
+            SurrealError::NullPointerException("File").exception(env, || 0)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isRange<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_range() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_range() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getRangeStart<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Range(r) = value.as_ref() {
-        match &r.start {
-            Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
-            Bound::Unbounded => 0,
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Range(r) = value.as_ref() {
+            match &r.start {
+                Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
+                Bound::Unbounded => 0,
+            }
+        } else {
+            SurrealError::NullPointerException("Range").exception(env, || 0)
         }
-    } else {
-        SurrealError::NullPointerException("Range").exception(&mut env, || 0)
-    }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getRangeEnd<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jlong {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    if let Value::Range(r) = value.as_ref() {
-        match &r.end {
-            Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
-            Bound::Unbounded => 0,
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Range(r) = value.as_ref() {
+            match &r.end {
+                Bound::Included(v) | Bound::Excluded(v) => JniTypes::new_value(Arc::new(v.clone())),
+                Bound::Unbounded => 0,
+            }
+        } else {
+            SurrealError::NullPointerException("Range").exception(env, || 0)
         }
-    } else {
-        SurrealError::NullPointerException("Range").exception(&mut env, || 0)
-    }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isTable<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    let value = get_value_instance!(&mut env, ptr, || false as jboolean);
-    value.is_table() as jboolean
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_table() as jboolean
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_getTable<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    if let Value::Table(t) = value.as_ref() {
-        new_string!(&mut env, t.as_str().to_string(), null_mut)
-    } else {
-        SurrealError::NullPointerException("Table").exception(&mut env, null_mut)
-    }
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::Table(t) = value.as_ref() {
+            new_string!(env, t.as_str(), null_mut)
+        } else {
+            SurrealError::NullPointerException("Table").exception(env, null_mut)
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_toString<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jstring {
-    let value = get_value_instance!(&mut env, ptr, null_mut);
-    let s = value.to_sql();
-    new_string!(&mut env, s, null_mut)
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        let s = value.to_sql();
+        new_string!(env, s, null_mut)
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_hashCode<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jint {
-    let value = get_value_instance!(&mut env, ptr, || 0);
-    let mut hasher = DefaultHasher::new();
-    value.hash(&mut hasher);
-    let hash64 = hasher.finish();
-    (hash64 & 0xFFFFFFFF) as jint
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        let mut hasher = DefaultHasher::new();
+        value.hash(&mut hasher);
+        let hash64 = hasher.finish();
+        (hash64 & 0xFFFFFFFF) as jint
+    })
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_equals<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr1: jlong,
     ptr2: jlong,
 ) -> jboolean {
-    let v1 = get_value_instance!(&mut env, ptr1, || false as jboolean);
-    let v2 = get_value_instance!(&mut env, ptr2, || false as jboolean);
-    v1.eq(&v2) as jboolean
+    with_env_body!(env, env, {
+        let v1 = get_value_instance!(env, ptr1, || false as jboolean);
+        let v2 = get_value_instance!(env, ptr2, || false as jboolean);
+        v1.eq(&v2) as jboolean
+    })
 }

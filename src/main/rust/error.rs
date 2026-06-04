@@ -2,7 +2,8 @@ use std::error::Error as StdError;
 
 use jni::errors::Error;
 use jni::objects::{JObject, JThrowable, JValue};
-use jni::JNIEnv;
+use jni::strings::JNIString;
+use jni::{jni_sig, jni_str, Env};
 use surrealdb::types::{ErrorDetails, Number, SurrealValue, Value};
 
 pub(super) enum SurrealError {
@@ -42,47 +43,46 @@ fn details_value(error: &surrealdb::Error) -> Value {
 
 /// Builds a Java object (Map, String, Number, or null) from a SurrealDB Value via JNI.
 /// Used for error details only; supports objects, strings, numbers, null, and arrays.
-fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'a>> {
+fn value_to_jobject<'a>(env: &mut Env<'a>, value: &Value) -> Option<JObject<'a>> {
     match value {
         Value::None | Value::Null => Some(JObject::null()),
-        Value::String(s) => env.new_string(s.to_string()).ok().map(JObject::from),
+        Value::String(s) => env.new_string(s).ok().map(JObject::from),
         Value::Number(n) => number_to_jobject(env, n),
         Value::Bool(b) => {
-            let class = env.find_class("java/lang/Boolean").ok()?;
-            let z = if *b { 1u8 } else { 0u8 };
+            let class = env.find_class(jni_str!("java/lang/Boolean")).ok()?;
             env.call_static_method(
                 class,
-                "valueOf",
-                "(Z)Ljava/lang/Boolean;",
-                &[JValue::Bool(z)],
+                jni_str!("valueOf"),
+                jni_sig!("(Z)Ljava/lang/Boolean;"),
+                &[JValue::Bool(*b)],
             )
             .ok()
             .and_then(|v| v.l().ok())
         }
         Value::Object(map) => {
-            let class = env.find_class("java/util/LinkedHashMap").ok()?;
-            let map_obj = env.new_object(class, "()V", &[]).ok()?;
+            let class = env.find_class(jni_str!("java/util/LinkedHashMap")).ok()?;
+            let map_obj = env.new_object(class, jni_sig!("()V"), &[]).ok()?;
             for (k, v) in map.iter() {
                 let key_obj = env.new_string(k).ok().map(JObject::from)?;
                 let val_obj = value_to_jobject(env, v).unwrap_or(JObject::null());
                 let _ = env.call_method(
                     &map_obj,
-                    "put",
-                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+                    jni_str!("put"),
+                    jni_sig!("(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"),
                     &[JValue::Object(&key_obj), JValue::Object(&val_obj)],
                 );
             }
             Some(map_obj)
         }
         Value::Array(arr) => {
-            let class = env.find_class("java/util/ArrayList").ok()?;
-            let list_obj = env.new_object(class, "()V", &[]).ok()?;
+            let class = env.find_class(jni_str!("java/util/ArrayList")).ok()?;
+            let list_obj = env.new_object(class, jni_sig!("()V"), &[]).ok()?;
             for v in arr.iter() {
                 let elem = value_to_jobject(env, v).unwrap_or(JObject::null());
                 let _ = env.call_method(
                     &list_obj,
-                    "add",
-                    "(Ljava/lang/Object;)Z",
+                    jni_str!("add"),
+                    jni_sig!("(Ljava/lang/Object;)Z"),
                     &[JValue::Object(&elem)],
                 );
             }
@@ -92,32 +92,37 @@ fn value_to_jobject<'a>(env: &mut JNIEnv<'a>, value: &Value) -> Option<JObject<'
     }
 }
 
-fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>> {
+fn number_to_jobject<'a>(env: &mut Env<'a>, n: &Number) -> Option<JObject<'a>> {
     match n {
         Number::Int(i) => {
-            let class = env.find_class("java/lang/Long").ok()?;
-            env.call_static_method(class, "valueOf", "(J)Ljava/lang/Long;", &[JValue::Long(*i)])
-                .ok()
-                .and_then(|v| v.l().ok())
-        }
-        Number::Float(f) => {
-            let class = env.find_class("java/lang/Double").ok()?;
+            let class = env.find_class(jni_str!("java/lang/Long")).ok()?;
             env.call_static_method(
                 class,
-                "valueOf",
-                "(D)Ljava/lang/Double;",
+                jni_str!("valueOf"),
+                jni_sig!("(J)Ljava/lang/Long;"),
+                &[JValue::Long(*i)],
+            )
+            .ok()
+            .and_then(|v| v.l().ok())
+        }
+        Number::Float(f) => {
+            let class = env.find_class(jni_str!("java/lang/Double")).ok()?;
+            env.call_static_method(
+                class,
+                jni_str!("valueOf"),
+                jni_sig!("(D)Ljava/lang/Double;"),
                 &[JValue::Double(*f)],
             )
             .ok()
             .and_then(|v| v.l().ok())
         }
         Number::Decimal(d) => {
-            let class = env.find_class("java/lang/Double").ok()?;
+            let class = env.find_class(jni_str!("java/lang/Double")).ok()?;
             let f: f64 = d.to_string().parse().unwrap_or(0.0);
             env.call_static_method(
                 class,
-                "valueOf",
-                "(D)Ljava/lang/Double;",
+                jni_str!("valueOf"),
+                jni_sig!("(D)Ljava/lang/Double;"),
                 &[JValue::Double(f)],
             )
             .ok()
@@ -133,10 +138,7 @@ fn number_to_jobject<'a>(env: &mut JNIEnv<'a>, n: &Number) -> Option<JObject<'a>
 /// ErrorKind enum. Base ServerException uses (ErrorKind, String rawKindIfUnknown, message, details, cause);
 /// subclasses use (String message, Object details, ServerException cause).
 #[allow(clippy::redundant_closure)] // JObject::null as fn ptr produces 'static, breaking the 'a lifetime
-fn build_server_exception<'a>(
-    env: &mut JNIEnv<'a>,
-    error: &surrealdb::Error,
-) -> Option<JObject<'a>> {
+fn build_server_exception<'a>(env: &mut Env<'a>, error: &surrealdb::Error) -> Option<JObject<'a>> {
     // Recursively build the cause first (std::error::Error::source; cause chain when present)
     let java_cause: JObject = if let Some(source) = error.source() {
         if let Some(surreal_cause) = source.downcast_ref::<surrealdb::Error>() {
@@ -176,7 +178,7 @@ fn build_server_exception<'a>(
     };
     let is_base_class = class_name == SERVER_EXCEPTION;
 
-    let class = match env.find_class(class_name) {
+    let class = match env.find_class(JNIString::from(class_name)) {
         Ok(c) => c,
         Err(_) => return None,
     };
@@ -193,9 +195,13 @@ fn build_server_exception<'a>(
 
     if is_base_class {
         // ServerException(ErrorKind kind, String rawKindIfUnknown, String message, Object details, ServerException cause)
-        let enum_class = env.find_class("com/surrealdb/ErrorKind").ok()?;
+        let enum_class = env.find_class(jni_str!("com/surrealdb/ErrorKind")).ok()?;
         let enum_obj = env
-            .get_static_field(&enum_class, enum_name, "Lcom/surrealdb/ErrorKind;")
+            .get_static_field(
+                &enum_class,
+                JNIString::from(enum_name),
+                jni_sig!("Lcom/surrealdb/ErrorKind;"),
+            )
             .ok()?
             .l()
             .ok()?;
@@ -207,7 +213,6 @@ fn build_server_exception<'a>(
                 .unwrap_or(JObject::null()),
             None => JObject::null(),
         };
-        let sig = "(Lcom/surrealdb/ErrorKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
         let args = [
             JValue::Object(&enum_obj),
             JValue::Object(&raw_kind_jstr),
@@ -215,39 +220,52 @@ fn build_server_exception<'a>(
             JValue::Object(&details_obj),
             JValue::Object(&java_cause),
         ];
-        env.new_object(class, sig, &args).ok()
+        env.new_object(class, jni_sig!("(Lcom/surrealdb/ErrorKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V"), &args).ok()
     } else {
         // Subclass(String message, Object details, ServerException cause)
-        let sig = "(Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V";
         let args = [
             JValue::Object(&message_obj),
             JValue::Object(&details_obj),
             JValue::Object(&java_cause),
         ];
-        env.new_object(class, sig, &args).ok()
+        env.new_object(
+            class,
+            jni_sig!("(Ljava/lang/String;Ljava/lang/Object;Lcom/surrealdb/ServerException;)V"),
+            &args,
+        )
+        .ok()
     }
 }
 
 impl SurrealError {
-    pub(super) fn exception<T, F: FnOnce() -> T>(self, env: &mut JNIEnv, output: F) -> T {
-        if let Ok(b) = env.exception_check() {
-            // If there is already an exception thrown we don't add one
-            if !b {
-                match &self {
-                    Self::SurrealDB(e) => {
-                        // Build structured server exception via JNI
-                        if let Some(exc) = build_server_exception(env, e) {
-                            let throwable: JThrowable = exc.into();
+    pub(super) fn exception<T, F: FnOnce() -> T>(self, env: &mut Env, output: F) -> T {
+        // exception_check() is infallible in jni 0.22 (returns bool, not Result<bool>).
+        // If there is already an exception thrown we don't add one.
+        if !env.exception_check() {
+            match &self {
+                Self::SurrealDB(e) => {
+                    // Build a structured server exception via JNI. jni 0.22 no longer
+                    // converts JObject into JThrowable directly, so the cast is fallible;
+                    // if either building the exception or the cast fails, fall back to a
+                    // flat string so the error is never silently dropped.
+                    let throwable = build_server_exception(env, e)
+                        .and_then(|exc| env.cast_local::<JThrowable>(exc).ok());
+                    match throwable {
+                        Some(throwable) => {
                             let _ = env.throw(throwable);
-                        } else {
+                        }
+                        None => {
                             // Fallback: flat string
-                            let _ = env.throw_new(SURREAL_EXCEPTION, e.to_string());
+                            let _ = env.throw_new(
+                                JNIString::from(SURREAL_EXCEPTION),
+                                JNIString::from(e.to_string()),
+                            );
                         }
                     }
-                    _ => {
-                        let exc = self.into_exception();
-                        let _ = env.throw_new(exc.class, exc.msg);
-                    }
+                }
+                _ => {
+                    let exc = self.into_exception();
+                    let _ = env.throw_new(JNIString::from(exc.class), JNIString::from(exc.msg));
                 }
             }
         }
