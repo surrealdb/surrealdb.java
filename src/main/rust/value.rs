@@ -191,7 +191,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getDateTime<'local>(
             let buf: [jlong; 2] = [seconds, nanos];
             new_jlong_array!(env, &buf, null_mut)
         } else {
-            SurrealError::NullPointerException("Geometry").exception(env, null_mut)
+            SurrealError::NullPointerException("DateTime").exception(env, null_mut)
         }
     })
 }
@@ -219,7 +219,7 @@ pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
         if let Value::Duration(d) = value.as_ref() {
             d.as_millis() as jlong
         } else {
-            SurrealError::NullPointerException("Geometry").exception(env, || 0)
+            SurrealError::NullPointerException("Duration").exception(env, || 0)
         }
     })
 }

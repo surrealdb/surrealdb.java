@@ -244,19 +244,23 @@ impl SurrealError {
         if !env.exception_check() {
             match &self {
                 Self::SurrealDB(e) => {
-                    // Build structured server exception via JNI
-                    if let Some(exc) = build_server_exception(env, e) {
-                        // jni 0.22: JObject no longer converts into JThrowable directly;
-                        // use a checked cast (the object is always a Throwable subclass).
-                        if let Ok(throwable) = env.cast_local::<JThrowable>(exc) {
+                    // Build a structured server exception via JNI. jni 0.22 no longer
+                    // converts JObject into JThrowable directly, so the cast is fallible;
+                    // if either building the exception or the cast fails, fall back to a
+                    // flat string so the error is never silently dropped.
+                    let throwable = build_server_exception(env, e)
+                        .and_then(|exc| env.cast_local::<JThrowable>(exc).ok());
+                    match throwable {
+                        Some(throwable) => {
                             let _ = env.throw(throwable);
                         }
-                    } else {
-                        // Fallback: flat string
-                        let _ = env.throw_new(
-                            JNIString::from(SURREAL_EXCEPTION),
-                            JNIString::from(e.to_string()),
-                        );
+                        None => {
+                            // Fallback: flat string
+                            let _ = env.throw_new(
+                                JNIString::from(SURREAL_EXCEPTION),
+                                JNIString::from(e.to_string()),
+                            );
+                        }
                     }
                 }
                 _ => {
