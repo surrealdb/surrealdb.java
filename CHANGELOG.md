@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- Upgrade to SurrealDB SDK 3.1.3 and bump the Rust toolchain to 1.95 [#165](https://github.com/surrealdb/surrealdb.java/pull/165).
 
 ## [2.0.3] - 2026-05-29
 - Support Java `record` classes in `create` and `select` (JDK 16+ at runtime). Records are hydrated via their canonical constructor; POJO behaviour on JDK 8+ is unchanged [#156](https://github.com/surrealdb/surrealdb.java/pull/156).

@@ -1,5 +1,7 @@
-# This toolchain version should be aligned with the SurrealDB version
-# See: https://github.com/surrealdb/surrealdb/blob/v3.0.4/rust-toolchain.toml
+# This toolchain should be aligned with the Rust toolchain the matching
+# SurrealDB version is built with — currently 1.95 for SurrealDB 3.1.x.
+# Don't add a patch number to the channel (e.g. "1.95.1") — only the minor
+# version, otherwise rust-analyzer and other tooling break.
 [toolchain]
-channel = "1.91"
+channel = "1.95"
 components = ["rustfmt", "clippy"]
