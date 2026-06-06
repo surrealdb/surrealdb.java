@@ -3,7 +3,9 @@ package com.surrealdb;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 final class SurrealFieldNames {
 
@@ -39,29 +41,28 @@ final class SurrealFieldNames {
 
 	static Map<String, Field> inheritedFieldsBySurrealName(final Class<?> clazz) {
 		final Map<String, Field> fields = new HashMap<>();
+		final Set<String> seenJavaNames = new HashSet<>();
 		Class<?> c = clazz;
 		while (c != null && c != java.lang.Object.class) {
 			for (final Field field : c.getDeclaredFields()) {
 				if (!isSerializableField(field)) {
 					continue;
 				}
+				// Java field hiding is based on the declared Java name, not the
+				// resolved SurrealDB name. Keep hidden superclass fields out even
+				// when the subclass field is annotated to a different key.
+				if (!seenJavaNames.add(field.getName())) {
+					continue;
+				}
 				final String name = nameFor(field);
-				// Preserve existing field-hiding behavior for unannotated raw names:
-				// the concrete class wins over a same-named superclass field.
-				if (fields.containsKey(name) && !isPlainRawName(field, name)) {
+				if (fields.containsKey(name)) {
 					throw duplicateName(name, fields.get(name), field);
 				}
-				if (!fields.containsKey(name)) {
-					fields.put(name, field);
-				}
+				fields.put(name, field);
 			}
 			c = c.getSuperclass();
 		}
 		return fields;
-	}
-
-	private static boolean isPlainRawName(final Field field, final String name) {
-		return field.getAnnotation(SurrealName.class) == null && field.getName().equals(name);
 	}
 
 	private static void putUnique(final Map<String, Field> fields, final String name, final Field field) {

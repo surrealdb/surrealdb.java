@@ -14,6 +14,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -112,6 +113,21 @@ public class SurrealNameTests {
 		}
 	}
 
+	public static class HiddenBaseProfile {
+		private String id;
+
+		public HiddenBaseProfile() {
+		}
+	}
+
+	public static final class HiddenChildProfile extends HiddenBaseProfile {
+		@SurrealName("child_id")
+		private String id;
+
+		public HiddenChildProfile() {
+		}
+	}
+
 	@Test
 	void serializesAnnotatedFieldsUsingSurrealNames() {
 		try (final Surreal surreal = openMemoryDatabase()) {
@@ -160,6 +176,21 @@ public class SurrealNameTests {
 			assertAnnotatedProfile(value.get(AnnotatedProfile.class), "Grace", CREATED_AT, 11, true,
 					new BigDecimal("999.50"), Arrays.asList("snake", "case"), Optional.of("read from explicit name"),
 					"g");
+		}
+	}
+
+	@Test
+	void annotatedHiddenFieldKeepsSuperclassFieldOutOfRawNameLookup() {
+		try (final Surreal surreal = openMemoryDatabase()) {
+			final Map<String, java.lang.Object> values = new LinkedHashMap<>();
+			values.put("id", "raw id must not populate hidden superclass field");
+			values.put("child_id", "child");
+			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", values))
+					.take(0);
+
+			final HiddenChildProfile profile = value.get(HiddenChildProfile.class);
+			assertEquals("child", profile.id);
+			assertNull(((HiddenBaseProfile) profile).id);
 		}
 	}
 
