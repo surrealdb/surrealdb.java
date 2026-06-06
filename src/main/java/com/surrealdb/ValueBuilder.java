@@ -5,6 +5,9 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +55,18 @@ class ValueBuilder {
 		}
 		if (object instanceof ZonedDateTime) {
 			return ValueMut.createDatetime((ZonedDateTime) object);
+		}
+		if (object instanceof OffsetDateTime) {
+			return ValueMut.createDatetime((OffsetDateTime) object);
+		}
+		if (object instanceof LocalDateTime) {
+			return ValueMut.createDatetime((LocalDateTime) object);
+		}
+		if (object instanceof java.util.Date) {
+			return ValueMut.createDatetime((java.util.Date) object);
+		}
+		if (object instanceof Instant) {
+			return ValueMut.createDatetime((Instant) object);
 		}
 		if (object instanceof BigInteger) {
 			throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());
