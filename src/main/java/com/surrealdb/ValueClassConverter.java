@@ -258,21 +258,22 @@ class ValueClassConverter<T> {
 		}
 		final T target = clazz.getConstructor().newInstance();
 		initOptionalFields(clazz, target);
+		final Map<String, Field> fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);
 		for (final Entry entry : source) {
-			try {
-				final String key = entry.getKey();
-				final Value value = entry.getValue();
-				final Field field = getInheritedDeclaredField(clazz, key);
-				field.setAccessible(true);
-				final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());
-				if (converted == null && field.getType().isPrimitive()) {
-					// Leave primitive fields at their default value; setting null would throw.
-					continue;
-				}
-				field.set(target, converted);
-			} catch (NoSuchFieldException e) {
+			final String key = entry.getKey();
+			final Value value = entry.getValue();
+			final Field field = fields.get(key);
+			if (field == null) {
 				// Safe to ignore: source has a key with no matching field.
+				continue;
 			}
+			field.setAccessible(true);
+			final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());
+			if (converted == null && field.getType().isPrimitive()) {
+				// Leave primitive fields at their default value; setting null would throw.
+				continue;
+			}
+			field.set(target, converted);
 		}
 		return target;
 	}
@@ -290,10 +291,12 @@ class ValueClassConverter<T> {
 		final Type[] genericTypes = new Type[count];
 		for (int i = 0; i < count; i++) {
 			final java.lang.Object rc = componentsArray[i];
-			names[i] = (String) RC_GET_NAME.invoke(rc);
+			final String componentName = (String) RC_GET_NAME.invoke(rc);
+			names[i] = recordComponentSurrealName(clazz, componentName);
 			types[i] = (Class<?>) RC_GET_TYPE.invoke(rc);
 			genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);
 		}
+		ensureUniqueRecordComponentNames(clazz, names);
 
 		// Build a lookup of incoming entries keyed by name.
 		final Map<String, Value> entries = new HashMap<>();
@@ -320,6 +323,21 @@ class ValueClassConverter<T> {
 		final Constructor<T> ctor = clazz.getDeclaredConstructor(types);
 		ctor.setAccessible(true);
 		return ctor.newInstance(args);
+	}
+
+	private static String recordComponentSurrealName(final Class<?> clazz, final String componentName)
+			throws NoSuchFieldException {
+		return SurrealFieldNames.nameFor(clazz.getDeclaredField(componentName));
+	}
+
+	private static void ensureUniqueRecordComponentNames(final Class<?> clazz, final String[] names) {
+		final Map<String, Boolean> seen = new HashMap<>();
+		for (final String name : names) {
+			if (seen.put(name, Boolean.TRUE) != null) {
+				throw new SurrealException(
+						"Duplicate SurrealDB field name '" + name + "' on record " + clazz.getName());
+			}
+		}
 	}
 
 	private static java.lang.Object defaultForRecordComponent(final Class<?> type) {
@@ -364,17 +382,6 @@ class ValueClassConverter<T> {
 			}
 			c = c.getSuperclass();
 		}
-	}
-
-	static Field getInheritedDeclaredField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-		while (clazz != null) {
-			try {
-				return clazz.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException e) {
-				clazz = clazz.getSuperclass();
-			}
-		}
-		throw new NoSuchFieldException("Field '" + fieldName + "' not found in class hierarchy.");
 	}
 
 	final T convert(final Value value) {
