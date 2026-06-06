@@ -29,6 +29,15 @@ final class SurrealFieldNames {
 		return value;
 	}
 
+	static boolean hasDeclaredSurrealName(final Field[] fields) {
+		for (final Field field : fields) {
+			if (isSerializableField(field) && field.getAnnotation(SurrealName.class) != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static void ensureUniqueDeclaredNames(final Class<?> clazz) {
 		final Map<String, Field> fields = new HashMap<>();
 		for (final Field field : clazz.getDeclaredFields()) {

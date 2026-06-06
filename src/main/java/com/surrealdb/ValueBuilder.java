@@ -101,14 +101,17 @@ class ValueBuilder {
 		}
 		final Field[] fields = object.getClass().getDeclaredFields();
 		if (fields.length > 0) {
-			SurrealFieldNames.ensureUniqueDeclaredNames(object.getClass());
+			final boolean hasSurrealName = SurrealFieldNames.hasDeclaredSurrealName(fields);
+			if (hasSurrealName) {
+				SurrealFieldNames.ensureUniqueDeclaredNames(object.getClass());
+			}
 			final List<EntryMut> entries = new ArrayList<>(fields.length);
 			for (final Field field : fields) {
 				if (!SurrealFieldNames.isSerializableField(field)) {
 					continue;
 				}
 				field.setAccessible(true);
-				final String name = SurrealFieldNames.nameFor(field);
+				final String name = hasSurrealName ? SurrealFieldNames.nameFor(field) : field.getName();
 				final java.lang.Object value = field.get(object);
 				if (value != null) {
 					entries.add(EntryMut.newEntry(name, convert(value)));
