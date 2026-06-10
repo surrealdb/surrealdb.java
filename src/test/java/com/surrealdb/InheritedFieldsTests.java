@@ -3,10 +3,13 @@ package com.surrealdb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
@@ -84,6 +87,36 @@ public class InheritedFieldsTests {
 		public String code;
 
 		public CodedException() {
+		}
+	}
+
+	public static class CredentialBaseProfile {
+		public String password;
+
+		public CredentialBaseProfile() {
+		}
+	}
+
+	public static final class CredentialChildProfile extends CredentialBaseProfile {
+		public String name;
+		public transient String password;
+
+		public CredentialChildProfile() {
+		}
+	}
+
+	public static class CountedBaseProfile {
+		public String counter;
+
+		public CountedBaseProfile() {
+		}
+	}
+
+	public static final class CountedChildProfile extends CountedBaseProfile {
+		public String name;
+		public static String counter;
+
+		public CountedChildProfile() {
 		}
 	}
 
@@ -171,6 +204,46 @@ public class InheritedFieldsTests {
 			// (detailMessage, stackTrace, ...) stay out.
 			assertEquals(Collections.singletonList("error_code"), keys(value.getObject()));
 			assertFalse(keys(value.getObject()).contains("detailMessage"));
+		}
+	}
+
+	@Test
+	void transientSubclassFieldHidesSuperclassFieldOnWrite() {
+		try (final Surreal surreal = openMemoryDatabase()) {
+			final CredentialChildProfile profile = new CredentialChildProfile();
+			profile.name = "Ada";
+			((CredentialBaseProfile) profile).password = "secret";
+
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", profile)).take(0);
+
+			assertEquals(Collections.singletonList("name"), keys(value.getObject()));
+		}
+	}
+
+	@Test
+	void transientSubclassFieldHidesSuperclassFieldOnRead() {
+		try (final Surreal surreal = openMemoryDatabase()) {
+			final Map<String, java.lang.Object> values = new LinkedHashMap<>();
+			values.put("name", "Ada");
+			values.put("password", "from database");
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", values)).take(0);
+
+			final CredentialChildProfile read = value.get(CredentialChildProfile.class);
+			assertEquals("Ada", read.name);
+			assertNull(((CredentialBaseProfile) read).password);
+		}
+	}
+
+	@Test
+	void staticSubclassFieldHidesSuperclassFieldOnWrite() {
+		try (final Surreal surreal = openMemoryDatabase()) {
+			final CountedChildProfile profile = new CountedChildProfile();
+			profile.name = "Ada";
+			((CountedBaseProfile) profile).counter = "base value";
+
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", profile)).take(0);
+
+			assertEquals(Collections.singletonList("name"), keys(value.getObject()));
 		}
 	}
 

@@ -56,13 +56,15 @@ final class SurrealFieldNames {
 		Class<?> c = clazz;
 		while (c != null && !isJdkType(c)) {
 			for (final Field field : c.getDeclaredFields()) {
-				if (!isSerializableField(field)) {
+				// Java field hiding is based on the declared Java name, not the
+				// resolved SurrealDB name, and applies to every declared field
+				// (JLS 8.3) — including static and transient ones. Record the
+				// name before the serializability check so a non-serializable
+				// hider still keeps its hidden superclass field out.
+				if (!seenJavaNames.add(field.getName())) {
 					continue;
 				}
-				// Java field hiding is based on the declared Java name, not the
-				// resolved SurrealDB name. Keep hidden superclass fields out even
-				// when the subclass field is annotated to a different key.
-				if (!seenJavaNames.add(field.getName())) {
+				if (!isSerializableField(field)) {
 					continue;
 				}
 				final String name = nameFor(field);
