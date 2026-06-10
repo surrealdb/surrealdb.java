@@ -199,6 +199,12 @@ test {
     // afterTest { d, r -> logger.lifecycle("[{}] END   {} > {} => {}", System.currentTimeMillis(), d.className, d.name, r.resultType) }
     testLogging {
         events "passed", "failed", "skipped"
+        // Also emit the events at INFO level, otherwise `gradlew -i` (as used
+        // in CI) hides them: Gradle switches to the per-level event set, which
+        // is empty by default.
+        info {
+            events "passed", "failed", "skipped"
+        }
         showStackTraces = true
         exceptionFormat = "full"
     }
@@ -232,6 +238,9 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
         maxParallelForks = 1
         testLogging {
             events "passed", "failed", "skipped"
+            info {
+                events "passed", "failed", "skipped"
+            }
             showStackTraces = true
             exceptionFormat = "full"
         }
