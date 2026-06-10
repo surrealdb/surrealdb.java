@@ -53,6 +53,9 @@ class ValueBuilder {
 		if (object instanceof Duration) {
 			return ValueMut.createDuration((Duration) object);
 		}
+		if (object instanceof Instant) {
+			return ValueMut.createDatetime((Instant) object);
+		}
 		if (object instanceof ZonedDateTime) {
 			return ValueMut.createDatetime((ZonedDateTime) object);
 		}
@@ -64,9 +67,6 @@ class ValueBuilder {
 		}
 		if (object instanceof java.util.Date) {
 			return ValueMut.createDatetime((java.util.Date) object);
-		}
-		if (object instanceof Instant) {
-			return ValueMut.createDatetime((Instant) object);
 		}
 		if (object instanceof BigInteger) {
 			throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());

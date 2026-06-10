@@ -97,7 +97,8 @@ public class ValueMut extends Native {
 	}
 
 	/**
-	 * Creates a SurrealDB datetime from a local date-time by interpreting it as UTC.
+	 * Creates a SurrealDB datetime from a local date-time by interpreting it as
+	 * UTC.
 	 * <p>
 	 * Prefer {@link Instant}, {@link OffsetDateTime}, or {@link ZonedDateTime} when
 	 * the source value represents an absolute point in time or carries zone/offset
@@ -107,8 +108,21 @@ public class ValueMut extends Native {
 		return createDatetime(d.toInstant(ZoneOffset.UTC));
 	}
 
+	/**
+	 * Creates a SurrealDB datetime from a {@link java.util.Date}.
+	 * <p>
+	 * {@code java.sql.Timestamp} keeps its nanosecond precision.
+	 * {@code java.sql.Date} and {@code java.sql.Time} do not support
+	 * {@link java.util.Date#toInstant()}; they are converted through their
+	 * epoch-millisecond value instead.
+	 */
 	public static ValueMut createDatetime(java.util.Date d) {
-		return createDatetime(d.toInstant());
+		try {
+			return createDatetime(d.toInstant());
+		} catch (UnsupportedOperationException e) {
+			// java.sql.Date and java.sql.Time refuse toInstant()
+			return createDatetime(Instant.ofEpochMilli(d.getTime()));
+		}
 	}
 
 	public static ValueMut createUuid(UUID uuid) {

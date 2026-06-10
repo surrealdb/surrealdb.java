@@ -2,6 +2,9 @@ package com.surrealdb;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -52,8 +55,20 @@ final class ValueBoxing {
 		if (e instanceof Duration) {
 			return ValueMut.createDuration((Duration) e);
 		}
+		if (e instanceof Instant) {
+			return ValueMut.createDatetime((Instant) e);
+		}
 		if (e instanceof ZonedDateTime) {
 			return ValueMut.createDatetime((ZonedDateTime) e);
+		}
+		if (e instanceof OffsetDateTime) {
+			return ValueMut.createDatetime((OffsetDateTime) e);
+		}
+		if (e instanceof LocalDateTime) {
+			return ValueMut.createDatetime((LocalDateTime) e);
+		}
+		if (e instanceof java.util.Date) {
+			return ValueMut.createDatetime((java.util.Date) e);
 		}
 		if (e instanceof Array) {
 			return ValueMut.createArray((Array) e);
