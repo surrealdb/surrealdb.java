@@ -292,6 +292,10 @@ public class SurrealNameTests {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			assertThrows(SurrealException.class, () -> surreal.query("RETURN $profile",
 					Collections.singletonMap("profile", new DuplicateSurrealNameProfile())));
+			// The per-class metadata cache must rethrow the validation failure
+			// on every attempt, not only on the first one.
+			assertThrows(SurrealException.class, () -> surreal.query("RETURN $profile",
+					Collections.singletonMap("profile", new DuplicateSurrealNameProfile())));
 		}
 	}
 

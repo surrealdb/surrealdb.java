@@ -301,7 +301,6 @@ class ValueClassConverter<T> {
 				// Safe to ignore: source has a key with no matching field.
 				continue;
 			}
-			field.setAccessible(true);
 			final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());
 			if (converted == null && field.getType().isPrimitive()) {
 				// Leave primitive fields at their default value; setting null would throw.
@@ -312,25 +311,57 @@ class ValueClassConverter<T> {
 		return target;
 	}
 
+	// Record component metadata is immutable at runtime; resolve names, types,
+	// and the canonical constructor once per record class. See the matching
+	// ClassValue note in SurrealFieldNames for the failure semantics.
+	private static final ClassValue<RecordMeta> RECORD_META = new ClassValue<RecordMeta>() {
+		@Override
+		protected RecordMeta computeValue(final Class<?> clazz) {
+			try {
+				final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);
+				final int count = componentsArray.length;
+				final String[] names = new String[count];
+				final Class<?>[] types = new Class<?>[count];
+				final Type[] genericTypes = new Type[count];
+				for (int i = 0; i < count; i++) {
+					final java.lang.Object rc = componentsArray[i];
+					final String componentName = (String) RC_GET_NAME.invoke(rc);
+					names[i] = recordComponentSurrealName(clazz, componentName);
+					types[i] = (Class<?>) RC_GET_TYPE.invoke(rc);
+					genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);
+				}
+				ensureUniqueRecordComponentNames(clazz, names);
+				final Constructor<?> constructor = clazz.getDeclaredConstructor(types);
+				constructor.setAccessible(true);
+				return new RecordMeta(names, types, genericTypes, constructor);
+			} catch (ReflectiveOperationException e) {
+				throw new SurrealException("Failed to read record metadata for " + clazz.getName(), e);
+			}
+		}
+	};
+
+	private static final class RecordMeta {
+		final String[] names;
+		final Class<?>[] types;
+		final Type[] genericTypes;
+		final Constructor<?> constructor;
+
+		RecordMeta(String[] names, Class<?>[] types, Type[] genericTypes, Constructor<?> constructor) {
+			this.names = names;
+			this.types = types;
+			this.genericTypes = genericTypes;
+			this.constructor = constructor;
+		}
+	}
+
 	private static <T> T convertRecord(final Class<T> clazz, final Object source) throws ReflectiveOperationException {
 		if (GET_RECORD_COMPONENTS == null) {
 			// Should be unreachable: isRecord() returned true, so the JVM exposes
 			// RecordComponent.
 			throw new SurrealException("Record reflection APIs unavailable for " + clazz.getName());
 		}
-		final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);
-		final int count = componentsArray.length;
-		final String[] names = new String[count];
-		final Class<?>[] types = new Class<?>[count];
-		final Type[] genericTypes = new Type[count];
-		for (int i = 0; i < count; i++) {
-			final java.lang.Object rc = componentsArray[i];
-			final String componentName = (String) RC_GET_NAME.invoke(rc);
-			names[i] = recordComponentSurrealName(clazz, componentName);
-			types[i] = (Class<?>) RC_GET_TYPE.invoke(rc);
-			genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);
-		}
-		ensureUniqueRecordComponentNames(clazz, names);
+		final RecordMeta meta = RECORD_META.get(clazz);
+		final int count = meta.names.length;
 
 		// Build a lookup of incoming entries keyed by name.
 		final Map<String, Value> entries = new HashMap<>();
@@ -340,13 +371,13 @@ class ValueClassConverter<T> {
 
 		final java.lang.Object[] args = new java.lang.Object[count];
 		for (int i = 0; i < count; i++) {
-			final Value value = entries.get(names[i]);
-			final Class<?> type = types[i];
+			final Value value = entries.get(meta.names[i]);
+			final Class<?> type = meta.types[i];
 			if (value == null) {
 				args[i] = defaultForRecordComponent(type);
 				continue;
 			}
-			final java.lang.Object converted = convertValueToType(value, type, genericTypes[i]);
+			final java.lang.Object converted = convertValueToType(value, type, meta.genericTypes[i]);
 			if (converted == null) {
 				args[i] = defaultForRecordComponent(type);
 			} else {
@@ -354,9 +385,9 @@ class ValueClassConverter<T> {
 			}
 		}
 
-		final Constructor<T> ctor = clazz.getDeclaredConstructor(types);
-		ctor.setAccessible(true);
-		return ctor.newInstance(args);
+		@SuppressWarnings("unchecked")
+		final T instance = (T) meta.constructor.newInstance(args);
+		return instance;
 	}
 
 	private static String recordComponentSurrealName(final Class<?> clazz, final String componentName)
