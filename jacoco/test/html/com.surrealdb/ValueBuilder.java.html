@@ -5,6 +5,9 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,123 +17,135 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-<span class="nc" id="L17">class ValueBuilder {</span>
+<span class="nc" id="L20">class ValueBuilder {</span>
 
 	private static &lt;T&gt; ValueMut convertObject(final T object) throws IllegalAccessException {
-<span class="fc bfc" id="L20" title="All 2 branches covered.">		if (object == null) {</span>
-<span class="fc" id="L21">			return ValueMut.createNull();</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">		if (object == null) {</span>
+<span class="fc" id="L24">			return ValueMut.createNull();</span>
 		}
-<span class="fc bfc" id="L23" title="All 2 branches covered.">		if (object instanceof ValueMut) {</span>
-<span class="fc" id="L24">			return (ValueMut) object;</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">		if (object instanceof ValueMut) {</span>
+<span class="fc" id="L27">			return (ValueMut) object;</span>
 		}
-<span class="fc bfc" id="L26" title="All 2 branches covered.">		if (object instanceof String) {</span>
-<span class="fc" id="L27">			return ValueMut.createString((String) object);</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">		if (object instanceof String) {</span>
+<span class="fc" id="L30">			return ValueMut.createString((String) object);</span>
 		}
-<span class="fc bfc" id="L29" title="All 2 branches covered.">		if (object instanceof Double) {</span>
-<span class="fc" id="L30">			return ValueMut.createDouble((Double) object);</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">		if (object instanceof Double) {</span>
+<span class="fc" id="L33">			return ValueMut.createDouble((Double) object);</span>
 		}
-<span class="fc bfc" id="L32" title="All 2 branches covered.">		if (object instanceof Float) {</span>
-<span class="fc" id="L33">			return ValueMut.createDouble((Float) object);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">		if (object instanceof Float) {</span>
+<span class="fc" id="L36">			return ValueMut.createDouble((Float) object);</span>
 		}
-<span class="fc bfc" id="L35" title="All 2 branches covered.">		if (object instanceof Long) {</span>
-<span class="fc" id="L36">			return ValueMut.createLong((Long) object);</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">		if (object instanceof Long) {</span>
+<span class="fc" id="L39">			return ValueMut.createLong((Long) object);</span>
 		}
-<span class="fc bfc" id="L38" title="All 2 branches covered.">		if (object instanceof Integer) {</span>
-<span class="fc" id="L39">			return ValueMut.createLong((Integer) object);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">		if (object instanceof Integer) {</span>
+<span class="fc" id="L42">			return ValueMut.createLong((Integer) object);</span>
 		}
-<span class="fc bfc" id="L41" title="All 2 branches covered.">		if (object instanceof Short) {</span>
-<span class="fc" id="L42">			return ValueMut.createLong((Short) object);</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">		if (object instanceof Short) {</span>
+<span class="fc" id="L45">			return ValueMut.createLong((Short) object);</span>
 		}
-<span class="fc bfc" id="L44" title="All 2 branches covered.">		if (object instanceof Boolean) {</span>
-<span class="fc" id="L45">			return ValueMut.createBoolean((Boolean) object);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		if (object instanceof Boolean) {</span>
+<span class="fc" id="L48">			return ValueMut.createBoolean((Boolean) object);</span>
 		}
-<span class="fc bfc" id="L47" title="All 2 branches covered.">		if (object instanceof BigDecimal) {</span>
-<span class="fc" id="L48">			return ValueMut.createBigDecimal((BigDecimal) object);</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">		if (object instanceof BigDecimal) {</span>
+<span class="fc" id="L51">			return ValueMut.createBigDecimal((BigDecimal) object);</span>
 		}
-<span class="fc bfc" id="L50" title="All 2 branches covered.">		if (object instanceof Duration) {</span>
-<span class="fc" id="L51">			return ValueMut.createDuration((Duration) object);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (object instanceof Duration) {</span>
+<span class="fc" id="L54">			return ValueMut.createDuration((Duration) object);</span>
 		}
-<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (object instanceof ZonedDateTime) {</span>
-<span class="fc" id="L54">			return ValueMut.createDatetime((ZonedDateTime) object);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		if (object instanceof Instant) {</span>
+<span class="fc" id="L57">			return ValueMut.createDatetime((Instant) object);</span>
 		}
-<span class="pc bpc" id="L56" title="1 of 2 branches missed.">		if (object instanceof BigInteger) {</span>
-<span class="nc" id="L57">			throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getCanonicalName());</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		if (object instanceof ZonedDateTime) {</span>
+<span class="fc" id="L60">			return ValueMut.createDatetime((ZonedDateTime) object);</span>
 		}
-<span class="fc bfc" id="L59" title="All 2 branches covered.">		if (object instanceof Collection) {</span>
-<span class="fc" id="L60">			final Collection&lt;?&gt; collection = (Collection&lt;?&gt;) object;</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">		if (object instanceof OffsetDateTime) {</span>
+<span class="fc" id="L63">			return ValueMut.createDatetime((OffsetDateTime) object);</span>
+		}
+<span class="fc bfc" id="L65" title="All 2 branches covered.">		if (object instanceof LocalDateTime) {</span>
+<span class="fc" id="L66">			return ValueMut.createDatetime((LocalDateTime) object);</span>
+		}
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		if (object instanceof java.util.Date) {</span>
+<span class="fc" id="L69">			return ValueMut.createDatetime((java.util.Date) object);</span>
+		}
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">		if (object instanceof BigInteger) {</span>
+<span class="nc" id="L72">			throw new SurrealException(&quot;Type not supported: &quot; + object.getClass().getCanonicalName());</span>
+		}
+<span class="fc bfc" id="L74" title="All 2 branches covered.">		if (object instanceof Collection) {</span>
+<span class="fc" id="L75">			final Collection&lt;?&gt; collection = (Collection&lt;?&gt;) object;</span>
 			// Create a ValueMut for each element of the collection
-<span class="fc" id="L62">			final List&lt;ValueMut&gt; values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());</span>
-<span class="fc" id="L63">			return ValueMut.createArray(values);</span>
+<span class="fc" id="L77">			final List&lt;ValueMut&gt; values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());</span>
+<span class="fc" id="L78">			return ValueMut.createArray(values);</span>
 		}
-<span class="fc bfc" id="L65" title="All 2 branches covered.">		if (object instanceof Map) {</span>
-<span class="fc" id="L66">			final Map&lt;?, ?&gt; map = (Map&lt;?, ?&gt;) object;</span>
-<span class="fc" id="L67">			final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(map.size());</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">		if (object instanceof Map) {</span>
+<span class="fc" id="L81">			final Map&lt;?, ?&gt; map = (Map&lt;?, ?&gt;) object;</span>
+<span class="fc" id="L82">			final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(map.size());</span>
 			// Create a ValueMut for each value of the map
-<span class="fc bfc" id="L69" title="All 2 branches covered.">			for (final Map.Entry&lt;?, ?&gt; entry : map.entrySet()) {</span>
-<span class="fc" id="L70">				final String key = entry.getKey().toString();</span>
-<span class="fc" id="L71">				final ValueMut value = convert(entry.getValue());</span>
-<span class="fc" id="L72">				entries.add(EntryMut.newEntry(key, value));</span>
-<span class="fc" id="L73">			}</span>
-<span class="fc" id="L74">			return ValueMut.createObject(entries);</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">			for (final Map.Entry&lt;?, ?&gt; entry : map.entrySet()) {</span>
+<span class="fc" id="L85">				final String key = entry.getKey().toString();</span>
+<span class="fc" id="L86">				final ValueMut value = convert(entry.getValue());</span>
+<span class="fc" id="L87">				entries.add(EntryMut.newEntry(key, value));</span>
+<span class="fc" id="L88">			}</span>
+<span class="fc" id="L89">			return ValueMut.createObject(entries);</span>
 		}
-<span class="fc bfc" id="L76" title="All 2 branches covered.">		if (object instanceof Optional) {</span>
-<span class="fc" id="L77">			final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
-<span class="fc" id="L78">			return optional.map(ValueBuilder::convert).orElseGet(ValueMut::createNull);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">		if (object instanceof Optional) {</span>
+<span class="fc" id="L92">			final Optional&lt;?&gt; optional = (Optional&lt;?&gt;) object;</span>
+<span class="fc" id="L93">			return optional.map(ValueBuilder::convert).orElseGet(ValueMut::createNull);</span>
 		}
-<span class="fc bfc" id="L80" title="All 2 branches covered.">		if (object instanceof Id) {</span>
-<span class="fc" id="L81">			return ValueMut.createId((Id) object);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">		if (object instanceof Id) {</span>
+<span class="fc" id="L96">			return ValueMut.createId((Id) object);</span>
 		}
-<span class="fc bfc" id="L83" title="All 2 branches covered.">		if (object instanceof UUID) {</span>
-<span class="fc" id="L84">			return ValueMut.createUuid((UUID) object);</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">		if (object instanceof UUID) {</span>
+<span class="fc" id="L99">			return ValueMut.createUuid((UUID) object);</span>
 		}
-<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (object instanceof RecordId) {</span>
-<span class="fc" id="L87">			return ValueMut.createRecordId((RecordId) object);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (object instanceof RecordId) {</span>
+<span class="fc" id="L102">			return ValueMut.createRecordId((RecordId) object);</span>
 		}
-<span class="fc bfc" id="L89" title="All 2 branches covered.">		if (object instanceof byte[]) {</span>
-<span class="fc" id="L90">			final byte[] bytes = (byte[]) object;</span>
-<span class="fc" id="L91">			final List&lt;ValueMut&gt; values = new ArrayList&lt;&gt;(bytes.length);</span>
-<span class="fc bfc" id="L92" title="All 2 branches covered.">			for (final byte b : bytes) {</span>
-<span class="fc" id="L93">				values.add(ValueMut.createLong(b &amp; 0xFF));</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">		if (object instanceof byte[]) {</span>
+<span class="fc" id="L105">			final byte[] bytes = (byte[]) object;</span>
+<span class="fc" id="L106">			final List&lt;ValueMut&gt; values = new ArrayList&lt;&gt;(bytes.length);</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">			for (final byte b : bytes) {</span>
+<span class="fc" id="L108">				values.add(ValueMut.createLong(b &amp; 0xFF));</span>
 			}
-<span class="fc" id="L95">			return ValueMut.createArray(values);</span>
+<span class="fc" id="L110">			return ValueMut.createArray(values);</span>
 		}
-<span class="fc bfc" id="L97" title="All 2 branches covered.">		if (object instanceof Array) {</span>
-<span class="fc" id="L98">			return ValueMut.createArray((Array) object);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		if (object instanceof Array) {</span>
+<span class="fc" id="L113">			return ValueMut.createArray((Array) object);</span>
 		}
-<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (object instanceof Object) {</span>
-<span class="fc" id="L101">			return ValueMut.createObject((Object) object);</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">		if (object instanceof Object) {</span>
+<span class="fc" id="L116">			return ValueMut.createObject((Object) object);</span>
 		}
-<span class="fc" id="L103">		final Field[] fields = object.getClass().getDeclaredFields();</span>
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">		if (fields.length &gt; 0) {</span>
-<span class="fc" id="L105">			final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
-<span class="fc bfc" id="L106" title="All 2 branches covered.">			for (final Field field : fields) {</span>
-<span class="fc" id="L107">				int mods = field.getModifiers();</span>
-<span class="pc bpc" id="L108" title="1 of 4 branches missed.">				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
-<span class="nc" id="L109">					continue;</span>
+<span class="fc" id="L118">		final Field[] fields = object.getClass().getDeclaredFields();</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">		if (fields.length &gt; 0) {</span>
+<span class="fc" id="L120">			final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.length);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">			for (final Field field : fields) {</span>
+<span class="fc" id="L122">				int mods = field.getModifiers();</span>
+<span class="pc bpc" id="L123" title="1 of 4 branches missed.">				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
+<span class="nc" id="L124">					continue;</span>
 				}
-<span class="fc" id="L111">				field.setAccessible(true);</span>
-<span class="fc" id="L112">				final String name = field.getName();</span>
-<span class="fc" id="L113">				final java.lang.Object value = field.get(object);</span>
-<span class="fc bfc" id="L114" title="All 2 branches covered.">				if (value != null) {</span>
-<span class="fc" id="L115">					entries.add(EntryMut.newEntry(name, convert(value)));</span>
+<span class="fc" id="L126">				field.setAccessible(true);</span>
+<span class="fc" id="L127">				final String name = field.getName();</span>
+<span class="fc" id="L128">				final java.lang.Object value = field.get(object);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">				if (value != null) {</span>
+<span class="fc" id="L130">					entries.add(EntryMut.newEntry(name, convert(value)));</span>
 				}
 			}
-<span class="fc" id="L118">			return ValueMut.createObject(entries);</span>
+<span class="fc" id="L133">			return ValueMut.createObject(entries);</span>
 		}
-<span class="nc" id="L120">		throw new SurrealException(&quot;No field found: &quot; + object.getClass().getCanonicalName());</span>
+<span class="nc" id="L135">		throw new SurrealException(&quot;No field found: &quot; + object.getClass().getCanonicalName());</span>
 	}
 
 	static &lt;T&gt; ValueMut convert(final T object) {
 		try {
-<span class="fc" id="L125">			return convertObject(object);</span>
-<span class="nc" id="L126">		} catch (IllegalAccessException e) {</span>
-<span class="nc" id="L127">			throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
+<span class="fc" id="L140">			return convertObject(object);</span>
+<span class="nc" id="L141">		} catch (IllegalAccessException e) {</span>
+<span class="nc" id="L142">			throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
 		}
 	}
 
 	static Map&lt;String, ValueMut&gt; convertParams(final Map&lt;String, ?&gt; params) {
-<span class="fc" id="L132">		return params.entrySet().stream()</span>
-<span class="fc" id="L133">				.collect(Collectors.toMap(Map.Entry::getKey, entry -&gt; convert(entry.getValue())));</span>
+<span class="fc" id="L147">		return params.entrySet().stream()</span>
+<span class="fc" id="L148">				.collect(Collectors.toMap(Map.Entry::getKey, entry -&gt; convert(entry.getValue())));</span>
 	}
 
 }

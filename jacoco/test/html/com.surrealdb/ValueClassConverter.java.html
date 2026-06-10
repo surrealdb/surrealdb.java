@@ -6,6 +6,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,103 +29,133 @@ class ValueClassConverter&lt;T&gt; {
 	private static final Method RC_GET_GENERIC_TYPE;
 
 	static {
-<span class="fc" id="L28">		Method isRecord = null;</span>
-<span class="fc" id="L29">		Method getRecordComponents = null;</span>
-<span class="fc" id="L30">		Method rcGetName = null;</span>
-<span class="fc" id="L31">		Method rcGetType = null;</span>
-<span class="fc" id="L32">		Method rcGetGenericType = null;</span>
+<span class="fc" id="L32">		Method isRecord = null;</span>
+<span class="fc" id="L33">		Method getRecordComponents = null;</span>
+<span class="fc" id="L34">		Method rcGetName = null;</span>
+<span class="fc" id="L35">		Method rcGetType = null;</span>
+<span class="fc" id="L36">		Method rcGetGenericType = null;</span>
 		try {
-<span class="fc" id="L34">			isRecord = Class.class.getMethod(&quot;isRecord&quot;);</span>
-<span class="fc" id="L35">			getRecordComponents = Class.class.getMethod(&quot;getRecordComponents&quot;);</span>
-<span class="fc" id="L36">			final Class&lt;?&gt; rcClass = Class.forName(&quot;java.lang.reflect.RecordComponent&quot;);</span>
-<span class="fc" id="L37">			rcGetName = rcClass.getMethod(&quot;getName&quot;);</span>
-<span class="fc" id="L38">			rcGetType = rcClass.getMethod(&quot;getType&quot;);</span>
-<span class="fc" id="L39">			rcGetGenericType = rcClass.getMethod(&quot;getGenericType&quot;);</span>
-<span class="nc" id="L40">		} catch (ReflectiveOperationException ignored) {</span>
+<span class="fc" id="L38">			isRecord = Class.class.getMethod(&quot;isRecord&quot;);</span>
+<span class="fc" id="L39">			getRecordComponents = Class.class.getMethod(&quot;getRecordComponents&quot;);</span>
+<span class="fc" id="L40">			final Class&lt;?&gt; rcClass = Class.forName(&quot;java.lang.reflect.RecordComponent&quot;);</span>
+<span class="fc" id="L41">			rcGetName = rcClass.getMethod(&quot;getName&quot;);</span>
+<span class="fc" id="L42">			rcGetType = rcClass.getMethod(&quot;getType&quot;);</span>
+<span class="fc" id="L43">			rcGetGenericType = rcClass.getMethod(&quot;getGenericType&quot;);</span>
+<span class="nc" id="L44">		} catch (ReflectiveOperationException ignored) {</span>
 			// Pre-16 JVM: leave everything null and fall through to the POJO path.
-<span class="fc" id="L42">		}</span>
-<span class="fc" id="L43">		IS_RECORD = isRecord;</span>
-<span class="fc" id="L44">		GET_RECORD_COMPONENTS = getRecordComponents;</span>
-<span class="fc" id="L45">		RC_GET_NAME = rcGetName;</span>
-<span class="fc" id="L46">		RC_GET_TYPE = rcGetType;</span>
-<span class="fc" id="L47">		RC_GET_GENERIC_TYPE = rcGetGenericType;</span>
-<span class="fc" id="L48">	}</span>
+<span class="fc" id="L46">		}</span>
+<span class="fc" id="L47">		IS_RECORD = isRecord;</span>
+<span class="fc" id="L48">		GET_RECORD_COMPONENTS = getRecordComponents;</span>
+<span class="fc" id="L49">		RC_GET_NAME = rcGetName;</span>
+<span class="fc" id="L50">		RC_GET_TYPE = rcGetType;</span>
+<span class="fc" id="L51">		RC_GET_GENERIC_TYPE = rcGetGenericType;</span>
+<span class="fc" id="L52">	}</span>
 
 	private final Class&lt;T&gt; clazz;
 
-<span class="fc" id="L52">	ValueClassConverter(Class&lt;T&gt; clazz) {</span>
-<span class="fc" id="L53">		this.clazz = clazz;</span>
-<span class="fc" id="L54">	}</span>
+<span class="fc" id="L56">	ValueClassConverter(Class&lt;T&gt; clazz) {</span>
+<span class="fc" id="L57">		this.clazz = clazz;</span>
+<span class="fc" id="L58">	}</span>
 
 	private static boolean isRecord(Class&lt;?&gt; clazz) {
-<span class="pc bpc" id="L57" title="1 of 2 branches missed.">		if (IS_RECORD == null) {</span>
-<span class="nc" id="L58">			return false;</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">		if (IS_RECORD == null) {</span>
+<span class="nc" id="L62">			return false;</span>
 		}
 		try {
-<span class="fc" id="L61">			return (Boolean) IS_RECORD.invoke(clazz);</span>
-<span class="nc" id="L62">		} catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L63">			return false;</span>
+<span class="fc" id="L65">			return (Boolean) IS_RECORD.invoke(clazz);</span>
+<span class="nc" id="L66">		} catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L67">			return false;</span>
 		}
 	}
 
 	private static java.lang.Object convertSingleValue(final Value value) {
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		if (value.isNull())</span>
-<span class="nc" id="L69">			return null;</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">		if (value.isBoolean())</span>
-<span class="fc" id="L71">			return value.getBoolean();</span>
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">		if (value.isDouble())</span>
-<span class="nc" id="L73">			return value.getDouble();</span>
-<span class="fc bfc" id="L74" title="All 2 branches covered.">		if (value.isLong())</span>
-<span class="fc" id="L75">			return value.getLong();</span>
-<span class="fc bfc" id="L76" title="All 2 branches covered.">		if (value.isString())</span>
-<span class="fc" id="L77">			return value.getString();</span>
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		if (value.isRecordId())</span>
-<span class="nc" id="L79">			return value.getRecordId();</span>
-<span class="pc bpc" id="L80" title="1 of 2 branches missed.">		if (value.isGeometry())</span>
-<span class="nc" id="L81">			return value.getGeometry();</span>
-<span class="fc bfc" id="L82" title="All 2 branches covered.">		if (value.isBigDecimal())</span>
-<span class="fc" id="L83">			return value.getBigDecimal();</span>
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">		if (value.isBytes())</span>
-<span class="nc" id="L85">			return value.getBytes();</span>
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">		if (value.isUuid())</span>
-<span class="nc" id="L87">			return value.getUuid();</span>
-<span class="fc bfc" id="L88" title="All 2 branches covered.">		if (value.isDuration())</span>
-<span class="fc" id="L89">			return value.getDuration();</span>
-<span class="pc bpc" id="L90" title="1 of 2 branches missed.">		if (value.isDateTime())</span>
-<span class="fc" id="L91">			return value.getDateTime();</span>
-<span class="nc" id="L92">		throw new SurrealException(&quot;Unsupported value: &quot; + value);</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">		if (value.isNull())</span>
+<span class="nc" id="L73">			return null;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">		if (value.isBoolean())</span>
+<span class="fc" id="L75">			return value.getBoolean();</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">		if (value.isDouble())</span>
+<span class="nc" id="L77">			return value.getDouble();</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (value.isLong())</span>
+<span class="fc" id="L79">			return value.getLong();</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">		if (value.isString())</span>
+<span class="fc" id="L81">			return value.getString();</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">		if (value.isRecordId())</span>
+<span class="nc" id="L83">			return value.getRecordId();</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">		if (value.isGeometry())</span>
+<span class="nc" id="L85">			return value.getGeometry();</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (value.isBigDecimal())</span>
+<span class="fc" id="L87">			return value.getBigDecimal();</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">		if (value.isBytes())</span>
+<span class="nc" id="L89">			return value.getBytes();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">		if (value.isUuid())</span>
+<span class="nc" id="L91">			return value.getUuid();</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">		if (value.isDuration())</span>
+<span class="fc" id="L93">			return value.getDuration();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">		if (value.isDateTime())</span>
+<span class="nc" id="L95">			return value.getDateTime();</span>
+<span class="nc" id="L96">		throw new SurrealException(&quot;Unsupported value: &quot; + value);</span>
 	}
 
 	// Type-aware single-value conversion: returns the boxed Java object that
 	// Field.set / Constructor.newInstance will auto-unbox into the target slot.
 	private static java.lang.Object convertSingleValueTyped(final Value value, final Class&lt;?&gt; type) {
-<span class="fc bfc" id="L98" title="All 2 branches covered.">		if (value.isNull()) {</span>
-<span class="fc" id="L99">			return null;</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		if (value.isNull()) {</span>
+<span class="fc" id="L103">			return null;</span>
 		}
-<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (value.isDouble()) {</span>
-<span class="fc" id="L102">			final double d = value.getDouble();</span>
-<span class="fc bfc" id="L103" title="All 4 branches covered.">			if (type == Float.TYPE || type == Float.class) {</span>
-<span class="fc" id="L104">				return (float) d;</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">		if (value.isDouble()) {</span>
+<span class="fc" id="L106">			final double d = value.getDouble();</span>
+<span class="fc bfc" id="L107" title="All 4 branches covered.">			if (type == Float.TYPE || type == Float.class) {</span>
+<span class="fc" id="L108">				return (float) d;</span>
 			}
-<span class="fc" id="L106">			return d;</span>
+<span class="fc" id="L110">			return d;</span>
 		}
-<span class="fc bfc" id="L108" title="All 2 branches covered.">		if (value.isLong()) {</span>
-<span class="fc" id="L109">			final long l = value.getLong();</span>
-<span class="fc bfc" id="L110" title="All 4 branches covered.">			if (type == Integer.TYPE || type == Integer.class) {</span>
-<span class="fc" id="L111">				return (int) l;</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		if (value.isLong()) {</span>
+<span class="fc" id="L113">			final long l = value.getLong();</span>
+<span class="fc bfc" id="L114" title="All 4 branches covered.">			if (type == Integer.TYPE || type == Integer.class) {</span>
+<span class="fc" id="L115">				return (int) l;</span>
 			}
-<span class="fc bfc" id="L113" title="All 4 branches covered.">			if (type == Short.TYPE || type == Short.class) {</span>
-<span class="fc" id="L114">				return (short) l;</span>
+<span class="fc bfc" id="L117" title="All 4 branches covered.">			if (type == Short.TYPE || type == Short.class) {</span>
+<span class="fc" id="L118">				return (short) l;</span>
 			}
-<span class="fc" id="L116">			return l;</span>
+<span class="fc" id="L120">			return l;</span>
 		}
-<span class="fc bfc" id="L118" title="All 2 branches covered.">		if (value.isRecordId()) {</span>
-<span class="fc bfc" id="L119" title="All 2 branches covered.">			if (type == Id.class) {</span>
-<span class="fc" id="L120">				return value.getRecordId().getId();</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">		if (value.isRecordId()) {</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">			if (type == Id.class) {</span>
+<span class="fc" id="L124">				return value.getRecordId().getId();</span>
 			}
-<span class="fc" id="L122">			return value.getRecordId();</span>
+<span class="fc" id="L126">			return value.getRecordId();</span>
 		}
-<span class="fc" id="L124">		return convertSingleValue(value);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">		if (value.isDateTime()) {</span>
+			// Value.getDateTime() returns the datetime at UTC, so LocalDateTime
+			// keeps the same interpretation as the write side (ValueMut).
+<span class="fc" id="L131">			final ZonedDateTime dateTime = value.getDateTime();</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">			if (type == Instant.class) {</span>
+<span class="fc" id="L133">				return dateTime.toInstant();</span>
+			}
+<span class="fc bfc" id="L135" title="All 2 branches covered.">			if (type == OffsetDateTime.class) {</span>
+<span class="fc" id="L136">				return dateTime.toOffsetDateTime();</span>
+			}
+<span class="fc bfc" id="L138" title="All 2 branches covered.">			if (type == LocalDateTime.class) {</span>
+<span class="fc" id="L139">				return dateTime.toLocalDateTime();</span>
+			}
+<span class="fc bfc" id="L141" title="All 2 branches covered.">			if (type == java.util.Date.class) {</span>
+<span class="fc" id="L142">				return java.util.Date.from(dateTime.toInstant());</span>
+			}
+			// The java.sql types are matched by name first so that runtimes
+			// without the java.sql module never load these classes.
+<span class="fc" id="L146">			final String typeName = type.getName();</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">			if (&quot;java.sql.Timestamp&quot;.equals(typeName)) {</span>
+<span class="fc" id="L148">				return java.sql.Timestamp.from(dateTime.toInstant());</span>
+			}
+<span class="fc bfc" id="L150" title="All 2 branches covered.">			if (&quot;java.sql.Date&quot;.equals(typeName)) {</span>
+<span class="fc" id="L151">				return new java.sql.Date(dateTime.toInstant().toEpochMilli());</span>
+			}
+<span class="fc bfc" id="L153" title="All 2 branches covered.">			if (&quot;java.sql.Time&quot;.equals(typeName)) {</span>
+<span class="fc" id="L154">				return new java.sql.Time(dateTime.toInstant().toEpochMilli());</span>
+			}
+<span class="fc" id="L156">			return dateTime;</span>
+		}
+<span class="fc" id="L158">		return convertSingleValue(value);</span>
 	}
 
 	// Convert a Value into the Java object suitable for the given declared type.
@@ -129,265 +163,265 @@ class ValueClassConverter&lt;T&gt; {
 	// path.
 	private static java.lang.Object convertValueToType(final Value value, final Class&lt;?&gt; type, final Type genericType)
 			throws ReflectiveOperationException {
-<span class="fc bfc" id="L132" title="All 2 branches covered.">		if (Value.class.equals(type)) {</span>
-<span class="fc" id="L133">			return value;</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">		if (Value.class.equals(type)) {</span>
+<span class="fc" id="L167">			return value;</span>
 		}
-<span class="fc bfc" id="L135" title="All 2 branches covered.">		if (value.isArray()) {</span>
-<span class="fc" id="L136">			final Class&lt;?&gt; elementType = firstTypeArgumentRaw(genericType);</span>
-<span class="fc" id="L137">			final Type elementGenericType = firstTypeArgument(genericType);</span>
-<span class="fc" id="L138">			final List&lt;java.lang.Object&gt; list = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L139" title="All 2 branches covered.">			for (final Value element : value.getArray()) {</span>
-<span class="fc" id="L140">				list.add(convertArrayElement(element, elementType, elementGenericType));</span>
-<span class="fc" id="L141">			}</span>
-<span class="fc bfc" id="L142" title="All 2 branches covered.">			if (type == byte[].class) {</span>
-<span class="fc" id="L143">				final byte[] bytes = new byte[list.size()];</span>
-<span class="fc bfc" id="L144" title="All 2 branches covered.">				for (int i = 0; i &lt; list.size(); i++) {</span>
-<span class="fc" id="L145">					final java.lang.Object e = list.get(i);</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">					if (e instanceof Number) {</span>
-<span class="fc" id="L147">						bytes[i] = ((Number) e).byteValue();</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">		if (value.isArray()) {</span>
+<span class="fc" id="L170">			final Class&lt;?&gt; elementType = firstTypeArgumentRaw(genericType);</span>
+<span class="fc" id="L171">			final Type elementGenericType = firstTypeArgument(genericType);</span>
+<span class="fc" id="L172">			final List&lt;java.lang.Object&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">			for (final Value element : value.getArray()) {</span>
+<span class="fc" id="L174">				list.add(convertArrayElement(element, elementType, elementGenericType));</span>
+<span class="fc" id="L175">			}</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">			if (type == byte[].class) {</span>
+<span class="fc" id="L177">				final byte[] bytes = new byte[list.size()];</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">				for (int i = 0; i &lt; list.size(); i++) {</span>
+<span class="fc" id="L179">					final java.lang.Object e = list.get(i);</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">					if (e instanceof Number) {</span>
+<span class="fc" id="L181">						bytes[i] = ((Number) e).byteValue();</span>
 					} else {
-<span class="nc" id="L149">						throw new SurrealException(</span>
-<span class="nc bnc" id="L150" title="All 2 branches missed.">								&quot;Cannot convert &quot; + (e == null ? &quot;null&quot; : e.getClass()) + &quot; to byte&quot;);</span>
+<span class="nc" id="L183">						throw new SurrealException(</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">								&quot;Cannot convert &quot; + (e == null ? &quot;null&quot; : e.getClass()) + &quot; to byte&quot;);</span>
 					}
 				}
-<span class="fc" id="L153">				return bytes;</span>
+<span class="fc" id="L187">				return bytes;</span>
 			}
-<span class="fc bfc" id="L155" title="All 2 branches covered.">			if (Optional.class.equals(type)) {</span>
-<span class="fc" id="L156">				return Optional.of(list);</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">			if (Optional.class.equals(type)) {</span>
+<span class="fc" id="L190">				return Optional.of(list);</span>
 			}
-<span class="fc" id="L158">			return list;</span>
+<span class="fc" id="L192">			return list;</span>
 		}
-<span class="fc bfc" id="L160" title="All 2 branches covered.">		if (value.isObject()) {</span>
-<span class="fc bfc" id="L161" title="All 2 branches covered.">			if (Map.class.isAssignableFrom(type)) {</span>
-<span class="fc" id="L162">				final Class&lt;?&gt; valueType = secondTypeArgumentRaw(genericType);</span>
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">				if (valueType == null) {</span>
-<span class="nc" id="L164">					throw new SurrealException(&quot;Unsupported map type for: &quot; + genericType);</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">		if (value.isObject()) {</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">			if (Map.class.isAssignableFrom(type)) {</span>
+<span class="fc" id="L196">				final Class&lt;?&gt; valueType = secondTypeArgumentRaw(genericType);</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">				if (valueType == null) {</span>
+<span class="nc" id="L198">					throw new SurrealException(&quot;Unsupported map type for: &quot; + genericType);</span>
 				}
-<span class="fc" id="L166">				final Map&lt;String, java.lang.Object&gt; map = new HashMap&lt;&gt;();</span>
-<span class="fc bfc" id="L167" title="All 2 branches covered.">				for (final Entry mapEntry : value.getObject()) {</span>
-<span class="fc" id="L168">					final String entryKey = mapEntry.getKey();</span>
-<span class="fc" id="L169">					final Value entryValue = mapEntry.getValue();</span>
+<span class="fc" id="L200">				final Map&lt;String, java.lang.Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">				for (final Entry mapEntry : value.getObject()) {</span>
+<span class="fc" id="L202">					final String entryKey = mapEntry.getKey();</span>
+<span class="fc" id="L203">					final Value entryValue = mapEntry.getValue();</span>
 					// todo - array support inside maps
-<span class="fc bfc" id="L171" title="All 2 branches covered.">					if (entryValue.isObject()) {</span>
-<span class="fc" id="L172">						map.put(entryKey, convert(valueType, entryValue.getObject()));</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">					if (entryValue.isObject()) {</span>
+<span class="fc" id="L206">						map.put(entryKey, convert(valueType, entryValue.getObject()));</span>
 					} else {
-<span class="fc" id="L174">						map.put(entryKey, convertSingleValue(entryValue));</span>
+<span class="fc" id="L208">						map.put(entryKey, convertSingleValue(entryValue));</span>
 					}
-<span class="fc" id="L176">				}</span>
-<span class="fc" id="L177">				return map;</span>
+<span class="fc" id="L210">				}</span>
+<span class="fc" id="L211">				return map;</span>
 			}
-<span class="pc bpc" id="L179" title="1 of 2 branches missed.">			if (Optional.class.equals(type)) {</span>
-<span class="nc" id="L180">				final Class&lt;?&gt; innerType = firstTypeArgumentRaw(genericType);</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">				if (innerType == null) {</span>
-<span class="nc" id="L182">					throw new SurrealException(&quot;Unsupported Optional type for: &quot; + genericType);</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">			if (Optional.class.equals(type)) {</span>
+<span class="nc" id="L214">				final Class&lt;?&gt; innerType = firstTypeArgumentRaw(genericType);</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">				if (innerType == null) {</span>
+<span class="nc" id="L216">					throw new SurrealException(&quot;Unsupported Optional type for: &quot; + genericType);</span>
 				}
-<span class="nc" id="L184">				return Optional.of(convert(innerType, value.getObject()));</span>
+<span class="nc" id="L218">				return Optional.of(convert(innerType, value.getObject()));</span>
 			}
-<span class="fc" id="L186">			return convert(type, value.getObject());</span>
+<span class="fc" id="L220">			return convert(type, value.getObject());</span>
 		}
 		// scalar value
-<span class="fc bfc" id="L189" title="All 2 branches covered.">		if (Optional.class.equals(type)) {</span>
-<span class="fc" id="L190">			final Class&lt;?&gt; innerType = firstTypeArgumentRaw(genericType);</span>
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">			final java.lang.Object converted = innerType == null</span>
-<span class="nc" id="L192">					? convertSingleValue(value)</span>
-<span class="fc" id="L193">					: convertSingleValueTyped(value, innerType);</span>
-<span class="fc bfc" id="L194" title="All 2 branches covered.">			return converted == null ? Optional.empty() : Optional.of(converted);</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">		if (Optional.class.equals(type)) {</span>
+<span class="fc" id="L224">			final Class&lt;?&gt; innerType = firstTypeArgumentRaw(genericType);</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">			final java.lang.Object converted = innerType == null</span>
+<span class="nc" id="L226">					? convertSingleValue(value)</span>
+<span class="fc" id="L227">					: convertSingleValueTyped(value, innerType);</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">			return converted == null ? Optional.empty() : Optional.of(converted);</span>
 		}
-<span class="fc" id="L196">		return convertSingleValueTyped(value, type);</span>
+<span class="fc" id="L230">		return convertSingleValueTyped(value, type);</span>
 	}
 
 	private static java.lang.Object convertArrayElement(final Value value, final Class&lt;?&gt; elementType,
 			final Type elementGenericType) throws ReflectiveOperationException {
-<span class="fc bfc" id="L201" title="All 2 branches covered.">		if (value.isObject()) {</span>
-<span class="pc bpc" id="L202" title="1 of 2 branches missed.">			if (elementType == null) {</span>
-<span class="nc" id="L203">				throw new SurrealException(&quot;Unsupported element type for array&quot;);</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">		if (value.isObject()) {</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">			if (elementType == null) {</span>
+<span class="nc" id="L237">				throw new SurrealException(&quot;Unsupported element type for array&quot;);</span>
 			}
-<span class="fc" id="L205">			return convert(elementType, value.getObject());</span>
+<span class="fc" id="L239">			return convert(elementType, value.getObject());</span>
 		}
-<span class="pc bpc" id="L207" title="1 of 2 branches missed.">		if (value.isArray()) {</span>
-<span class="nc" id="L208">			final List&lt;java.lang.Object&gt; nested = new ArrayList&lt;&gt;();</span>
-<span class="nc bnc" id="L209" title="All 2 branches missed.">			for (final Value v : value.getArray()) {</span>
-<span class="nc" id="L210">				nested.add(convertArrayElement(v, elementType, elementGenericType));</span>
-<span class="nc" id="L211">			}</span>
-<span class="nc" id="L212">			return nested;</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">		if (value.isArray()) {</span>
+<span class="nc" id="L242">			final List&lt;java.lang.Object&gt; nested = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">			for (final Value v : value.getArray()) {</span>
+<span class="nc" id="L244">				nested.add(convertArrayElement(v, elementType, elementGenericType));</span>
+<span class="nc" id="L245">			}</span>
+<span class="nc" id="L246">			return nested;</span>
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
-<span class="fc" id="L215">		return convertSingleValue(value);</span>
+<span class="fc" id="L249">		return convertSingleValue(value);</span>
 	}
 
 	private static Type firstTypeArgument(final Type genericType) {
-<span class="fc bfc" id="L219" title="All 2 branches covered.">		if (genericType instanceof ParameterizedType) {</span>
-<span class="fc" id="L220">			final Type[] args = ((ParameterizedType) genericType).getActualTypeArguments();</span>
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">			if (args.length &gt; 0) {</span>
-<span class="fc" id="L222">				return args[0];</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">		if (genericType instanceof ParameterizedType) {</span>
+<span class="fc" id="L254">			final Type[] args = ((ParameterizedType) genericType).getActualTypeArguments();</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">			if (args.length &gt; 0) {</span>
+<span class="fc" id="L256">				return args[0];</span>
 			}
 		}
-<span class="fc" id="L225">		return null;</span>
+<span class="fc" id="L259">		return null;</span>
 	}
 
 	private static Class&lt;?&gt; firstTypeArgumentRaw(final Type genericType) {
-<span class="fc" id="L229">		return rawType(firstTypeArgument(genericType));</span>
+<span class="fc" id="L263">		return rawType(firstTypeArgument(genericType));</span>
 	}
 
 	private static Class&lt;?&gt; secondTypeArgumentRaw(final Type genericType) {
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">		if (genericType instanceof ParameterizedType) {</span>
-<span class="fc" id="L234">			final Type[] args = ((ParameterizedType) genericType).getActualTypeArguments();</span>
-<span class="pc bpc" id="L235" title="1 of 2 branches missed.">			if (args.length &gt; 1) {</span>
-<span class="fc" id="L236">				return rawType(args[1]);</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">		if (genericType instanceof ParameterizedType) {</span>
+<span class="fc" id="L268">			final Type[] args = ((ParameterizedType) genericType).getActualTypeArguments();</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">			if (args.length &gt; 1) {</span>
+<span class="fc" id="L270">				return rawType(args[1]);</span>
 			}
 		}
-<span class="nc" id="L239">		return null;</span>
+<span class="nc" id="L273">		return null;</span>
 	}
 
 	private static Class&lt;?&gt; rawType(final Type type) {
-<span class="fc bfc" id="L243" title="All 2 branches covered.">		if (type instanceof Class) {</span>
-<span class="fc" id="L244">			return (Class&lt;?&gt;) type;</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">		if (type instanceof Class) {</span>
+<span class="fc" id="L278">			return (Class&lt;?&gt;) type;</span>
 		}
-<span class="fc bfc" id="L246" title="All 2 branches covered.">		if (type instanceof ParameterizedType) {</span>
-<span class="fc" id="L247">			final Type raw = ((ParameterizedType) type).getRawType();</span>
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">			if (raw instanceof Class) {</span>
-<span class="fc" id="L249">				return (Class&lt;?&gt;) raw;</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">		if (type instanceof ParameterizedType) {</span>
+<span class="fc" id="L281">			final Type raw = ((ParameterizedType) type).getRawType();</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">			if (raw instanceof Class) {</span>
+<span class="fc" id="L283">				return (Class&lt;?&gt;) raw;</span>
 			}
 		}
-<span class="fc" id="L252">		return null;</span>
+<span class="fc" id="L286">		return null;</span>
 	}
 
 	private static &lt;T&gt; T convert(Class&lt;T&gt; clazz, Object source) throws ReflectiveOperationException {
-<span class="pc bpc" id="L256" title="1 of 2 branches missed.">		if (isRecord(clazz)) {</span>
-<span class="nc" id="L257">			return convertRecord(clazz, source);</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">		if (isRecord(clazz)) {</span>
+<span class="nc" id="L291">			return convertRecord(clazz, source);</span>
 		}
-<span class="fc" id="L259">		final T target = clazz.getConstructor().newInstance();</span>
-<span class="fc" id="L260">		initOptionalFields(clazz, target);</span>
-<span class="fc bfc" id="L261" title="All 2 branches covered.">		for (final Entry entry : source) {</span>
+<span class="fc" id="L293">		final T target = clazz.getConstructor().newInstance();</span>
+<span class="fc" id="L294">		initOptionalFields(clazz, target);</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">		for (final Entry entry : source) {</span>
 			try {
-<span class="fc" id="L263">				final String key = entry.getKey();</span>
-<span class="fc" id="L264">				final Value value = entry.getValue();</span>
-<span class="fc" id="L265">				final Field field = getInheritedDeclaredField(clazz, key);</span>
-<span class="fc" id="L266">				field.setAccessible(true);</span>
-<span class="fc" id="L267">				final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());</span>
-<span class="pc bpc" id="L268" title="3 of 4 branches missed.">				if (converted == null &amp;&amp; field.getType().isPrimitive()) {</span>
+<span class="fc" id="L297">				final String key = entry.getKey();</span>
+<span class="fc" id="L298">				final Value value = entry.getValue();</span>
+<span class="fc" id="L299">				final Field field = getInheritedDeclaredField(clazz, key);</span>
+<span class="fc" id="L300">				field.setAccessible(true);</span>
+<span class="fc" id="L301">				final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());</span>
+<span class="pc bpc" id="L302" title="3 of 4 branches missed.">				if (converted == null &amp;&amp; field.getType().isPrimitive()) {</span>
 					// Leave primitive fields at their default value; setting null would throw.
-<span class="nc" id="L270">					continue;</span>
+<span class="nc" id="L304">					continue;</span>
 				}
-<span class="fc" id="L272">				field.set(target, converted);</span>
-<span class="fc" id="L273">			} catch (NoSuchFieldException e) {</span>
+<span class="fc" id="L306">				field.set(target, converted);</span>
+<span class="fc" id="L307">			} catch (NoSuchFieldException e) {</span>
 				// Safe to ignore: source has a key with no matching field.
-<span class="fc" id="L275">			}</span>
-<span class="fc" id="L276">		}</span>
-<span class="fc" id="L277">		return target;</span>
+<span class="fc" id="L309">			}</span>
+<span class="fc" id="L310">		}</span>
+<span class="fc" id="L311">		return target;</span>
 	}
 
 	private static &lt;T&gt; T convertRecord(final Class&lt;T&gt; clazz, final Object source) throws ReflectiveOperationException {
-<span class="nc bnc" id="L281" title="All 2 branches missed.">		if (GET_RECORD_COMPONENTS == null) {</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">		if (GET_RECORD_COMPONENTS == null) {</span>
 			// Should be unreachable: isRecord() returned true, so the JVM exposes
 			// RecordComponent.
-<span class="nc" id="L284">			throw new SurrealException(&quot;Record reflection APIs unavailable for &quot; + clazz.getName());</span>
+<span class="nc" id="L318">			throw new SurrealException(&quot;Record reflection APIs unavailable for &quot; + clazz.getName());</span>
 		}
-<span class="nc" id="L286">		final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);</span>
-<span class="nc" id="L287">		final int count = componentsArray.length;</span>
-<span class="nc" id="L288">		final String[] names = new String[count];</span>
-<span class="nc" id="L289">		final Class&lt;?&gt;[] types = new Class&lt;?&gt;[count];</span>
-<span class="nc" id="L290">		final Type[] genericTypes = new Type[count];</span>
-<span class="nc bnc" id="L291" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
-<span class="nc" id="L292">			final java.lang.Object rc = componentsArray[i];</span>
-<span class="nc" id="L293">			names[i] = (String) RC_GET_NAME.invoke(rc);</span>
-<span class="nc" id="L294">			types[i] = (Class&lt;?&gt;) RC_GET_TYPE.invoke(rc);</span>
-<span class="nc" id="L295">			genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);</span>
+<span class="nc" id="L320">		final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);</span>
+<span class="nc" id="L321">		final int count = componentsArray.length;</span>
+<span class="nc" id="L322">		final String[] names = new String[count];</span>
+<span class="nc" id="L323">		final Class&lt;?&gt;[] types = new Class&lt;?&gt;[count];</span>
+<span class="nc" id="L324">		final Type[] genericTypes = new Type[count];</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
+<span class="nc" id="L326">			final java.lang.Object rc = componentsArray[i];</span>
+<span class="nc" id="L327">			names[i] = (String) RC_GET_NAME.invoke(rc);</span>
+<span class="nc" id="L328">			types[i] = (Class&lt;?&gt;) RC_GET_TYPE.invoke(rc);</span>
+<span class="nc" id="L329">			genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);</span>
 		}
 
 		// Build a lookup of incoming entries keyed by name.
-<span class="nc" id="L299">		final Map&lt;String, Value&gt; entries = new HashMap&lt;&gt;();</span>
-<span class="nc bnc" id="L300" title="All 2 branches missed.">		for (final Entry entry : source) {</span>
-<span class="nc" id="L301">			entries.put(entry.getKey(), entry.getValue());</span>
-<span class="nc" id="L302">		}</span>
+<span class="nc" id="L333">		final Map&lt;String, Value&gt; entries = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">		for (final Entry entry : source) {</span>
+<span class="nc" id="L335">			entries.put(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L336">		}</span>
 
-<span class="nc" id="L304">		final java.lang.Object[] args = new java.lang.Object[count];</span>
-<span class="nc bnc" id="L305" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
-<span class="nc" id="L306">			final Value value = entries.get(names[i]);</span>
-<span class="nc" id="L307">			final Class&lt;?&gt; type = types[i];</span>
-<span class="nc bnc" id="L308" title="All 2 branches missed.">			if (value == null) {</span>
-<span class="nc" id="L309">				args[i] = defaultForRecordComponent(type);</span>
-<span class="nc" id="L310">				continue;</span>
+<span class="nc" id="L338">		final java.lang.Object[] args = new java.lang.Object[count];</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
+<span class="nc" id="L340">			final Value value = entries.get(names[i]);</span>
+<span class="nc" id="L341">			final Class&lt;?&gt; type = types[i];</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">			if (value == null) {</span>
+<span class="nc" id="L343">				args[i] = defaultForRecordComponent(type);</span>
+<span class="nc" id="L344">				continue;</span>
 			}
-<span class="nc" id="L312">			final java.lang.Object converted = convertValueToType(value, type, genericTypes[i]);</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">			if (converted == null) {</span>
-<span class="nc" id="L314">				args[i] = defaultForRecordComponent(type);</span>
+<span class="nc" id="L346">			final java.lang.Object converted = convertValueToType(value, type, genericTypes[i]);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">			if (converted == null) {</span>
+<span class="nc" id="L348">				args[i] = defaultForRecordComponent(type);</span>
 			} else {
-<span class="nc" id="L316">				args[i] = converted;</span>
+<span class="nc" id="L350">				args[i] = converted;</span>
 			}
 		}
 
-<span class="nc" id="L320">		final Constructor&lt;T&gt; ctor = clazz.getDeclaredConstructor(types);</span>
-<span class="nc" id="L321">		ctor.setAccessible(true);</span>
-<span class="nc" id="L322">		return ctor.newInstance(args);</span>
+<span class="nc" id="L354">		final Constructor&lt;T&gt; ctor = clazz.getDeclaredConstructor(types);</span>
+<span class="nc" id="L355">		ctor.setAccessible(true);</span>
+<span class="nc" id="L356">		return ctor.newInstance(args);</span>
 	}
 
 	private static java.lang.Object defaultForRecordComponent(final Class&lt;?&gt; type) {
-<span class="nc bnc" id="L326" title="All 2 branches missed.">		if (Optional.class.equals(type)) {</span>
-<span class="nc" id="L327">			return Optional.empty();</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">		if (Optional.class.equals(type)) {</span>
+<span class="nc" id="L361">			return Optional.empty();</span>
 		}
-<span class="nc bnc" id="L329" title="All 2 branches missed.">		if (type.isPrimitive()) {</span>
-<span class="nc bnc" id="L330" title="All 2 branches missed.">			if (type == Boolean.TYPE)</span>
-<span class="nc" id="L331">				return Boolean.FALSE;</span>
-<span class="nc bnc" id="L332" title="All 2 branches missed.">			if (type == Byte.TYPE)</span>
-<span class="nc" id="L333">				return (byte) 0;</span>
-<span class="nc bnc" id="L334" title="All 2 branches missed.">			if (type == Short.TYPE)</span>
-<span class="nc" id="L335">				return (short) 0;</span>
-<span class="nc bnc" id="L336" title="All 2 branches missed.">			if (type == Integer.TYPE)</span>
-<span class="nc" id="L337">				return 0;</span>
-<span class="nc bnc" id="L338" title="All 2 branches missed.">			if (type == Long.TYPE)</span>
-<span class="nc" id="L339">				return 0L;</span>
-<span class="nc bnc" id="L340" title="All 2 branches missed.">			if (type == Float.TYPE)</span>
-<span class="nc" id="L341">				return 0f;</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">			if (type == Double.TYPE)</span>
-<span class="nc" id="L343">				return 0d;</span>
-<span class="nc bnc" id="L344" title="All 2 branches missed.">			if (type == Character.TYPE)</span>
-<span class="nc" id="L345">				return (char) 0;</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">		if (type.isPrimitive()) {</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">			if (type == Boolean.TYPE)</span>
+<span class="nc" id="L365">				return Boolean.FALSE;</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">			if (type == Byte.TYPE)</span>
+<span class="nc" id="L367">				return (byte) 0;</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">			if (type == Short.TYPE)</span>
+<span class="nc" id="L369">				return (short) 0;</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">			if (type == Integer.TYPE)</span>
+<span class="nc" id="L371">				return 0;</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">			if (type == Long.TYPE)</span>
+<span class="nc" id="L373">				return 0L;</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">			if (type == Float.TYPE)</span>
+<span class="nc" id="L375">				return 0f;</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">			if (type == Double.TYPE)</span>
+<span class="nc" id="L377">				return 0d;</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">			if (type == Character.TYPE)</span>
+<span class="nc" id="L379">				return (char) 0;</span>
 		}
-<span class="nc" id="L347">		return null;</span>
+<span class="nc" id="L381">		return null;</span>
 	}
 
 	private static &lt;T&gt; void initOptionalFields(Class&lt;?&gt; clazz, T target) throws IllegalAccessException {
-<span class="fc" id="L351">		Class&lt;?&gt; c = clazz;</span>
-<span class="pc bpc" id="L352" title="1 of 4 branches missed.">		while (c != null &amp;&amp; c != java.lang.Object.class) {</span>
-<span class="fc bfc" id="L353" title="All 2 branches covered.">			for (final Field field : c.getDeclaredFields()) {</span>
-<span class="fc" id="L354">				int mods = field.getModifiers();</span>
-<span class="pc bpc" id="L355" title="1 of 4 branches missed.">				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
-<span class="nc" id="L356">					continue;</span>
+<span class="fc" id="L385">		Class&lt;?&gt; c = clazz;</span>
+<span class="pc bpc" id="L386" title="1 of 4 branches missed.">		while (c != null &amp;&amp; c != java.lang.Object.class) {</span>
+<span class="fc bfc" id="L387" title="All 2 branches covered.">			for (final Field field : c.getDeclaredFields()) {</span>
+<span class="fc" id="L388">				int mods = field.getModifiers();</span>
+<span class="pc bpc" id="L389" title="1 of 4 branches missed.">				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
+<span class="nc" id="L390">					continue;</span>
 				}
-<span class="fc bfc" id="L358" title="All 2 branches covered.">				if (Optional.class.equals(field.getType())) {</span>
-<span class="fc" id="L359">					field.setAccessible(true);</span>
-<span class="pc bpc" id="L360" title="1 of 2 branches missed.">					if (field.get(target) == null) {</span>
-<span class="fc" id="L361">						field.set(target, Optional.empty());</span>
+<span class="fc bfc" id="L392" title="All 2 branches covered.">				if (Optional.class.equals(field.getType())) {</span>
+<span class="fc" id="L393">					field.setAccessible(true);</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">					if (field.get(target) == null) {</span>
+<span class="fc" id="L395">						field.set(target, Optional.empty());</span>
 					}
 				}
 			}
-<span class="fc" id="L365">			c = c.getSuperclass();</span>
+<span class="fc" id="L399">			c = c.getSuperclass();</span>
 		}
-<span class="fc" id="L367">	}</span>
+<span class="fc" id="L401">	}</span>
 
 	static Field getInheritedDeclaredField(Class&lt;?&gt; clazz, String fieldName) throws NoSuchFieldException {
-<span class="fc bfc" id="L370" title="All 2 branches covered.">		while (clazz != null) {</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">		while (clazz != null) {</span>
 			try {
-<span class="fc" id="L372">				return clazz.getDeclaredField(fieldName);</span>
-<span class="fc" id="L373">			} catch (NoSuchFieldException e) {</span>
-<span class="fc" id="L374">				clazz = clazz.getSuperclass();</span>
-<span class="fc" id="L375">			}</span>
+<span class="fc" id="L406">				return clazz.getDeclaredField(fieldName);</span>
+<span class="fc" id="L407">			} catch (NoSuchFieldException e) {</span>
+<span class="fc" id="L408">				clazz = clazz.getSuperclass();</span>
+<span class="fc" id="L409">			}</span>
 		}
-<span class="fc" id="L377">		throw new NoSuchFieldException(&quot;Field '&quot; + fieldName + &quot;' not found in class hierarchy.&quot;);</span>
+<span class="fc" id="L411">		throw new NoSuchFieldException(&quot;Field '&quot; + fieldName + &quot;' not found in class hierarchy.&quot;);</span>
 	}
 
 	final T convert(final Value value) {
 		try {
-<span class="pc bpc" id="L382" title="1 of 4 branches missed.">			if (value.isNone() || value.isNull())</span>
-<span class="fc" id="L383">				return null;</span>
+<span class="pc bpc" id="L416" title="1 of 4 branches missed.">			if (value.isNone() || value.isNull())</span>
+<span class="fc" id="L417">				return null;</span>
 
-<span class="pc bpc" id="L385" title="1 of 2 branches missed.">			if (!value.isObject())</span>
-<span class="nc" id="L386">				throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">			if (!value.isObject())</span>
+<span class="nc" id="L420">				throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
 
-<span class="fc" id="L388">			return convert(clazz, value.getObject());</span>
-<span class="nc" id="L389">		} catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L390">			throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
+<span class="fc" id="L422">			return convert(clazz, value.getObject());</span>
+<span class="nc" id="L423">		} catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L424">			throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
 		}
 	}
 }

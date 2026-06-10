@@ -2,6 +2,9 @@
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -16,58 +19,70 @@ final class ValueBoxing {
 	}
 
 	static ValueMut box(java.lang.Object e) {
-<span class="fc bfc" id="L19" title="All 2 branches covered.">		if (e == null) {</span>
-<span class="fc" id="L20">			return ValueMut.createNull();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">		if (e == null) {</span>
+<span class="fc" id="L23">			return ValueMut.createNull();</span>
 		}
-<span class="fc bfc" id="L22" title="All 2 branches covered.">		if (e instanceof String) {</span>
-<span class="fc" id="L23">			return ValueMut.createString((String) e);</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">		if (e instanceof String) {</span>
+<span class="fc" id="L26">			return ValueMut.createString((String) e);</span>
 		}
-<span class="fc bfc" id="L25" title="All 2 branches covered.">		if (e instanceof Long) {</span>
-<span class="fc" id="L26">			return ValueMut.createLong((Long) e);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">		if (e instanceof Long) {</span>
+<span class="fc" id="L29">			return ValueMut.createLong((Long) e);</span>
 		}
-<span class="pc bpc" id="L28" title="1 of 2 branches missed.">		if (e instanceof Integer) {</span>
-<span class="nc" id="L29">			return ValueMut.createLong(((Integer) e).longValue());</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">		if (e instanceof Integer) {</span>
+<span class="nc" id="L32">			return ValueMut.createLong(((Integer) e).longValue());</span>
 		}
-<span class="pc bpc" id="L31" title="1 of 2 branches missed.">		if (e instanceof Short) {</span>
-<span class="nc" id="L32">			return ValueMut.createLong(((Short) e).longValue());</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">		if (e instanceof Short) {</span>
+<span class="nc" id="L35">			return ValueMut.createLong(((Short) e).longValue());</span>
 		}
-<span class="pc bpc" id="L34" title="1 of 2 branches missed.">		if (e instanceof Byte) {</span>
-<span class="nc" id="L35">			return ValueMut.createLong(((Byte) e).longValue());</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">		if (e instanceof Byte) {</span>
+<span class="nc" id="L38">			return ValueMut.createLong(((Byte) e).longValue());</span>
 		}
-<span class="fc bfc" id="L37" title="All 2 branches covered.">		if (e instanceof Boolean) {</span>
-<span class="fc" id="L38">			return ValueMut.createBoolean((Boolean) e);</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">		if (e instanceof Boolean) {</span>
+<span class="fc" id="L41">			return ValueMut.createBoolean((Boolean) e);</span>
 		}
-<span class="fc bfc" id="L40" title="All 2 branches covered.">		if (e instanceof Double) {</span>
-<span class="fc" id="L41">			return ValueMut.createDouble((Double) e);</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		if (e instanceof Double) {</span>
+<span class="fc" id="L44">			return ValueMut.createDouble((Double) e);</span>
 		}
-<span class="pc bpc" id="L43" title="1 of 2 branches missed.">		if (e instanceof Float) {</span>
-<span class="nc" id="L44">			return ValueMut.createDouble(((Float) e).doubleValue());</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">		if (e instanceof Float) {</span>
+<span class="nc" id="L47">			return ValueMut.createDouble(((Float) e).doubleValue());</span>
 		}
-<span class="pc bpc" id="L46" title="1 of 2 branches missed.">		if (e instanceof BigDecimal) {</span>
-<span class="nc" id="L47">			return ValueMut.createBigDecimal((BigDecimal) e);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">		if (e instanceof BigDecimal) {</span>
+<span class="nc" id="L50">			return ValueMut.createBigDecimal((BigDecimal) e);</span>
 		}
-<span class="fc bfc" id="L49" title="All 2 branches covered.">		if (e instanceof UUID) {</span>
-<span class="fc" id="L50">			return ValueMut.createUuid((UUID) e);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">		if (e instanceof UUID) {</span>
+<span class="fc" id="L53">			return ValueMut.createUuid((UUID) e);</span>
 		}
-<span class="pc bpc" id="L52" title="1 of 2 branches missed.">		if (e instanceof Duration) {</span>
-<span class="nc" id="L53">			return ValueMut.createDuration((Duration) e);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">		if (e instanceof Duration) {</span>
+<span class="nc" id="L56">			return ValueMut.createDuration((Duration) e);</span>
 		}
-<span class="pc bpc" id="L55" title="1 of 2 branches missed.">		if (e instanceof ZonedDateTime) {</span>
-<span class="nc" id="L56">			return ValueMut.createDatetime((ZonedDateTime) e);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		if (e instanceof Instant) {</span>
+<span class="fc" id="L59">			return ValueMut.createDatetime((Instant) e);</span>
 		}
-<span class="fc bfc" id="L58" title="All 2 branches covered.">		if (e instanceof Array) {</span>
-<span class="fc" id="L59">			return ValueMut.createArray((Array) e);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (e instanceof ZonedDateTime) {</span>
+<span class="fc" id="L62">			return ValueMut.createDatetime((ZonedDateTime) e);</span>
 		}
-<span class="pc bpc" id="L61" title="1 of 2 branches missed.">		if (e instanceof Id) {</span>
-<span class="nc" id="L62">			return ValueMut.createId((Id) e);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">		if (e instanceof OffsetDateTime) {</span>
+<span class="fc" id="L65">			return ValueMut.createDatetime((OffsetDateTime) e);</span>
 		}
-<span class="fc bfc" id="L64" title="All 2 branches covered.">		if (e instanceof RecordId) {</span>
-<span class="fc" id="L65">			return ValueMut.createRecordId((RecordId) e);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">		if (e instanceof LocalDateTime) {</span>
+<span class="fc" id="L68">			return ValueMut.createDatetime((LocalDateTime) e);</span>
 		}
-<span class="pc bpc" id="L67" title="1 of 2 branches missed.">		if (e instanceof com.surrealdb.Object) {</span>
-<span class="nc" id="L68">			return ValueMut.createObject((com.surrealdb.Object) e);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">		if (e instanceof java.util.Date) {</span>
+<span class="fc" id="L71">			return ValueMut.createDatetime((java.util.Date) e);</span>
 		}
-<span class="fc" id="L70">		throw new IllegalArgumentException(&quot;unsupported element type &quot; + e.getClass().getName());</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">		if (e instanceof Array) {</span>
+<span class="fc" id="L74">			return ValueMut.createArray((Array) e);</span>
+		}
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">		if (e instanceof Id) {</span>
+<span class="nc" id="L77">			return ValueMut.createId((Id) e);</span>
+		}
+<span class="fc bfc" id="L79" title="All 2 branches covered.">		if (e instanceof RecordId) {</span>
+<span class="fc" id="L80">			return ValueMut.createRecordId((RecordId) e);</span>
+		}
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">		if (e instanceof com.surrealdb.Object) {</span>
+<span class="nc" id="L83">			return ValueMut.createObject((com.surrealdb.Object) e);</span>
+		}
+<span class="fc" id="L85">		throw new IllegalArgumentException(&quot;unsupported element type &quot; + e.getClass().getName());</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

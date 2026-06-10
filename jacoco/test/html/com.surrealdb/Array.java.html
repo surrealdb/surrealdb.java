@@ -20,8 +20,10 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 	 * Creates an Array from a heterogeneous sequence of Java values. Supported
 	 * element types include {@code null}, {@link String}, the boxed numeric types,
 	 * {@link Boolean}, {@link java.math.BigDecimal}, {@link java.util.UUID},
-	 * {@link java.time.Duration}, {@link java.time.ZonedDateTime}, and the
-	 * SurrealDB wrappers {@link Array}, {@link Id}, {@link RecordId}, and
+	 * {@link java.time.Duration}, {@link java.time.Instant},
+	 * {@link java.time.ZonedDateTime}, {@link java.time.OffsetDateTime},
+	 * {@link java.time.LocalDateTime} (interpreted as UTC), {@link java.util.Date},
+	 * and the SurrealDB wrappers {@link Array}, {@link Id}, {@link RecordId}, and
 	 * {@link com.surrealdb.Object}. Unsupported types raise
 	 * {@link IllegalArgumentException}.
 	 * &lt;p&gt;
@@ -30,8 +32,8 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 	 * null varargs array and will throw {@link NullPointerException}.
 	 */
 	public static Array of(java.lang.Object... elements) {
-<span class="fc" id="L33">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
-<span class="fc" id="L34">		return fromList(Arrays.asList(elements));</span>
+<span class="fc" id="L35">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
+<span class="fc" id="L36">		return fromList(Arrays.asList(elements));</span>
 	}
 
 	/**
@@ -40,18 +42,18 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 	 * null-call overload ambiguity.
 	 */
 	public static Array fromList(List&lt;?&gt; elements) {
-<span class="fc" id="L43">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
-<span class="fc" id="L44">		final long[] ptrs = new long[elements.size()];</span>
-<span class="fc" id="L45">		final ValueMut[] muts = new ValueMut[elements.size()];</span>
-<span class="fc bfc" id="L46" title="All 2 branches covered.">		for (int i = 0; i &lt; elements.size(); i++) {</span>
-<span class="fc" id="L47">			muts[i] = ValueBoxing.box(elements.get(i));</span>
-<span class="fc" id="L48">			ptrs[i] = muts[i].getPtr();</span>
+<span class="fc" id="L45">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
+<span class="fc" id="L46">		final long[] ptrs = new long[elements.size()];</span>
+<span class="fc" id="L47">		final ValueMut[] muts = new ValueMut[elements.size()];</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">		for (int i = 0; i &lt; elements.size(); i++) {</span>
+<span class="fc" id="L49">			muts[i] = ValueBoxing.box(elements.get(i));</span>
+<span class="fc" id="L50">			ptrs[i] = muts[i].getPtr();</span>
 		}
-<span class="fc" id="L50">		final Array array = new Array(newOf(ptrs));</span>
-<span class="fc bfc" id="L51" title="All 2 branches covered.">		for (final ValueMut m : muts) {</span>
-<span class="fc" id="L52">			m.moved();</span>
+<span class="fc" id="L52">		final Array array = new Array(newOf(ptrs));</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		for (final ValueMut m : muts) {</span>
+<span class="fc" id="L54">			m.moved();</span>
 		}
-<span class="fc" id="L54">		return array;</span>
+<span class="fc" id="L56">		return array;</span>
 	}
 
 	private static native long newOf(long[] valueMutPtrs);
@@ -74,11 +76,11 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 	final native boolean equals(long ptr1, long ptr2);
 
 	final public Value get(int idx) {
-<span class="fc" id="L77">		return new Value(get(getPtr(), idx));</span>
+<span class="fc" id="L79">		return new Value(get(getPtr(), idx));</span>
 	}
 
 	final public int len() {
-<span class="fc" id="L81">		return len(getPtr());</span>
+<span class="fc" id="L83">		return len(getPtr());</span>
 	}
 
 	@Override
@@ -86,19 +88,19 @@ public class Array extends Native implements Iterable&lt;Value&gt; {
 
 	@Override
 	final public Iterator&lt;Value&gt; iterator() {
-<span class="fc" id="L89">		return new ValueIterator(iterator(getPtr()));</span>
+<span class="fc" id="L91">		return new ValueIterator(iterator(getPtr()));</span>
 	}
 
 	final public &lt;T&gt; Iterator&lt;T&gt; iterator(Class&lt;T&gt; clazz) {
-<span class="fc" id="L93">		return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
+<span class="fc" id="L95">		return new ValueObjectIterator&lt;&gt;(clazz, iterator());</span>
 	}
 
 	final public Iterator&lt;Value&gt; synchronizedIterator() {
-<span class="fc" id="L97">		return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
+<span class="fc" id="L99">		return new SynchronizedValueIterator(synchronizedIterator(getPtr()));</span>
 	}
 
 	final public &lt;T&gt; Iterator&lt;T&gt; synchronizedIterator(Class&lt;T&gt; clazz) {
-<span class="nc" id="L101">		return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
+<span class="nc" id="L103">		return new ValueObjectIterator&lt;&gt;(clazz, synchronizedIterator());</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

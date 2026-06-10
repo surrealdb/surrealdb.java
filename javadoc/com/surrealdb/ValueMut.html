@@ -65,7 +65,11 @@ loadScripts(document, 'script');</script>
 <li><a href="#createLong(long)" tabindex="0">createLong(long)</a></li>
 <li><a href="#createBigDecimal(java.math.BigDecimal)" tabindex="0">createBigDecimal(BigDecimal)</a></li>
 <li><a href="#createDuration(java.time.Duration)" tabindex="0">createDuration(Duration)</a></li>
+<li><a href="#createDatetime(java.time.Instant)" tabindex="0">createDatetime(Instant)</a></li>
 <li><a href="#createDatetime(java.time.ZonedDateTime)" tabindex="0">createDatetime(ZonedDateTime)</a></li>
+<li><a href="#createDatetime(java.time.OffsetDateTime)" tabindex="0">createDatetime(OffsetDateTime)</a></li>
+<li><a href="#createDatetime(java.time.LocalDateTime)" tabindex="0">createDatetime(LocalDateTime)</a></li>
+<li><a href="#createDatetime(java.util.Date)" tabindex="0">createDatetime(Date)</a></li>
 <li><a href="#createUuid(java.util.UUID)" tabindex="0">createUuid(UUID)</a></li>
 <li><a href="#createId(com.surrealdb.Id)" tabindex="0">createId(Id)</a></li>
 <li><a href="#createRecordId(com.surrealdb.RecordId)" tabindex="0">createRecordId(RecordId)</a></li>
@@ -122,8 +126,25 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createBoolean(boolean)" class="member-name-link">createBoolean</a><wbr>(boolean&nbsp;b)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDatetime(java.time.ZonedDateTime)" class="member-name-link">createDatetime</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/ZonedDateTime.html" title="class or interface in java.time" class="external-link">ZonedDateTime</a>&nbsp;d)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDatetime(java.time.Instant)" class="member-name-link">createDatetime</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/Instant.html" title="class or interface in java.time" class="external-link">Instant</a>&nbsp;i)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDatetime(java.time.LocalDateTime)" class="member-name-link">createDatetime</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/LocalDateTime.html" title="class or interface in java.time" class="external-link">LocalDateTime</a>&nbsp;d)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Creates a SurrealDB datetime from a local date-time by interpreting it as
+UTC.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDatetime(java.time.OffsetDateTime)" class="member-name-link">createDatetime</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/OffsetDateTime.html" title="class or interface in java.time" class="external-link">OffsetDateTime</a>&nbsp;d)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDatetime(java.time.ZonedDateTime)" class="member-name-link">createDatetime</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/ZonedDateTime.html" title="class or interface in java.time" class="external-link">ZonedDateTime</a>&nbsp;d)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDatetime(java.util.Date)" class="member-name-link">createDatetime</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Date.html" title="class or interface in java.util" class="external-link">Date</a>&nbsp;d)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Creates a SurrealDB datetime from a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Date.html" title="class or interface in java.util" class="external-link"><code>Date</code></a>.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDouble(double)" class="member-name-link">createDouble</a><wbr>(double&nbsp;d)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
@@ -249,10 +270,54 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="createDatetime(java.time.Instant)">
+<h3>createDatetime</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createDatetime</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/Instant.html" title="class or interface in java.time" class="external-link">Instant</a>&nbsp;i)</span></div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="createDatetime(java.time.ZonedDateTime)">
 <h3>createDatetime</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createDatetime</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/ZonedDateTime.html" title="class or interface in java.time" class="external-link">ZonedDateTime</a>&nbsp;d)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="createDatetime(java.time.OffsetDateTime)">
+<h3>createDatetime</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createDatetime</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/OffsetDateTime.html" title="class or interface in java.time" class="external-link">OffsetDateTime</a>&nbsp;d)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="createDatetime(java.time.LocalDateTime)">
+<h3>createDatetime</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createDatetime</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/LocalDateTime.html" title="class or interface in java.time" class="external-link">LocalDateTime</a>&nbsp;d)</span></div>
+<div class="block">Creates a SurrealDB datetime from a local date-time by interpreting it as
+UTC.
+<p>
+Prefer <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/Instant.html" title="class or interface in java.time" class="external-link"><code>Instant</code></a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/OffsetDateTime.html" title="class or interface in java.time" class="external-link"><code>OffsetDateTime</code></a>, or <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/ZonedDateTime.html" title="class or interface in java.time" class="external-link"><code>ZonedDateTime</code></a> when
+the source value represents an absolute point in time or carries zone/offset
+information.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="createDatetime(java.util.Date)">
+<h3>createDatetime</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createDatetime</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Date.html" title="class or interface in java.util" class="external-link">Date</a>&nbsp;d)</span></div>
+<div class="block">Creates a SurrealDB datetime from a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Date.html" title="class or interface in java.util" class="external-link"><code>Date</code></a>.
+<p>
+<code>java.sql.Timestamp</code> keeps its nanosecond precision.
+<code>java.sql.Date</code> and <code>java.sql.Time</code> do not support
+<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Date.html#toInstant()" title="class or interface in java.util" class="external-link"><code>Date.toInstant()</code></a>; they are converted through their
+epoch-millisecond value instead.</div>
 </div>
 </section>
 </li>
