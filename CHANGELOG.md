@@ -6,6 +6,7 @@
 - Upgrade to SurrealDB SDK 3.1.4 [#177](https://github.com/surrealdb/surrealdb.java/pull/177).
 - Refresh `aws-lc-rs`/`aws-lc-sys` in the lockfile, clearing two high security advisories (GHSA-9f94-5g5w-gf6r, GHSA-394x-vwmw-crm3) [#177](https://github.com/surrealdb/surrealdb.java/pull/177).
 - Run CI against SurrealDB server v3.1.3, the first public 3.1.x server release [#177](https://github.com/surrealdb/surrealdb.java/pull/177).
+- Run the Java-record test suite in CI [#178](https://github.com/surrealdb/surrealdb.java/pull/178).
 
 ## [2.1.0] - 2026-06-04
 - Upgrade the native layer to the `jni` crate 0.22.4; the Java/JNI ABI, public API, and JDK 8 minimum are unchanged [#166](https://github.com/surrealdb/surrealdb.java/pull/166).
