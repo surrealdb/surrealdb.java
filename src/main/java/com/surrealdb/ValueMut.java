@@ -2,6 +2,10 @@ package com.surrealdb;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -80,8 +84,45 @@ public class ValueMut extends Native {
 		return new ValueMut(newDuration(d.toMillis()));
 	}
 
+	public static ValueMut createDatetime(Instant i) {
+		return new ValueMut(newDatetime(i.getEpochSecond(), i.getNano()));
+	}
+
 	public static ValueMut createDatetime(ZonedDateTime d) {
-		return new ValueMut(newDatetime(d.toEpochSecond(), d.getNano()));
+		return createDatetime(d.toInstant());
+	}
+
+	public static ValueMut createDatetime(OffsetDateTime d) {
+		return createDatetime(d.toInstant());
+	}
+
+	/**
+	 * Creates a SurrealDB datetime from a local date-time by interpreting it as
+	 * UTC.
+	 * <p>
+	 * Prefer {@link Instant}, {@link OffsetDateTime}, or {@link ZonedDateTime} when
+	 * the source value represents an absolute point in time or carries zone/offset
+	 * information.
+	 */
+	public static ValueMut createDatetime(LocalDateTime d) {
+		return createDatetime(d.toInstant(ZoneOffset.UTC));
+	}
+
+	/**
+	 * Creates a SurrealDB datetime from a {@link java.util.Date}.
+	 * <p>
+	 * {@code java.sql.Timestamp} keeps its nanosecond precision.
+	 * {@code java.sql.Date} and {@code java.sql.Time} do not support
+	 * {@link java.util.Date#toInstant()}; they are converted through their
+	 * epoch-millisecond value instead.
+	 */
+	public static ValueMut createDatetime(java.util.Date d) {
+		try {
+			return createDatetime(d.toInstant());
+		} catch (UnsupportedOperationException e) {
+			// java.sql.Date and java.sql.Time refuse toInstant()
+			return createDatetime(Instant.ofEpochMilli(d.getTime()));
+		}
 	}
 
 	public static ValueMut createUuid(UUID uuid) {

@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -217,7 +216,7 @@ public class TypeTests {
 	void testArrayOfRejectsUnsupportedType() {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
-			assertThrows(IllegalArgumentException.class, () -> Array.of(new Date()));
+			assertThrows(IllegalArgumentException.class, () -> Array.of(new java.lang.Object()));
 		}
 	}
 

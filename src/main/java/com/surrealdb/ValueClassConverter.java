@@ -6,6 +6,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,6 +124,36 @@ class ValueClassConverter<T> {
 				return value.getRecordId().getId();
 			}
 			return value.getRecordId();
+		}
+		if (value.isDateTime()) {
+			// Value.getDateTime() returns the datetime at UTC, so LocalDateTime
+			// keeps the same interpretation as the write side (ValueMut).
+			final ZonedDateTime dateTime = value.getDateTime();
+			if (type == Instant.class) {
+				return dateTime.toInstant();
+			}
+			if (type == OffsetDateTime.class) {
+				return dateTime.toOffsetDateTime();
+			}
+			if (type == LocalDateTime.class) {
+				return dateTime.toLocalDateTime();
+			}
+			if (type == java.util.Date.class) {
+				return java.util.Date.from(dateTime.toInstant());
+			}
+			// The java.sql types are matched by name first so that runtimes
+			// without the java.sql module never load these classes.
+			final String typeName = type.getName();
+			if ("java.sql.Timestamp".equals(typeName)) {
+				return java.sql.Timestamp.from(dateTime.toInstant());
+			}
+			if ("java.sql.Date".equals(typeName)) {
+				return new java.sql.Date(dateTime.toInstant().toEpochMilli());
+			}
+			if ("java.sql.Time".equals(typeName)) {
+				return new java.sql.Time(dateTime.toInstant().toEpochMilli());
+			}
+			return dateTime;
 		}
 		return convertSingleValue(value);
 	}
