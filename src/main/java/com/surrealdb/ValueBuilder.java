@@ -1,7 +1,6 @@
 package com.surrealdb;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -117,14 +116,17 @@ class ValueBuilder {
 		}
 		final Field[] fields = object.getClass().getDeclaredFields();
 		if (fields.length > 0) {
+			final boolean hasSurrealName = SurrealFieldNames.hasDeclaredSurrealName(fields);
+			if (hasSurrealName) {
+				SurrealFieldNames.ensureUniqueDeclaredNames(object.getClass());
+			}
 			final List<EntryMut> entries = new ArrayList<>(fields.length);
 			for (final Field field : fields) {
-				int mods = field.getModifiers();
-				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {
+				if (!SurrealFieldNames.isSerializableField(field)) {
 					continue;
 				}
 				field.setAccessible(true);
-				final String name = field.getName();
+				final String name = hasSurrealName ? SurrealFieldNames.nameFor(field) : field.getName();
 				final java.lang.Object value = field.get(object);
 				if (value != null) {
 					entries.add(EntryMut.newEntry(name, convert(value)));
