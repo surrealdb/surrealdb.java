@@ -29,7 +29,7 @@ public class SurrealNameRecordTests {
 	void serializesRecordComponentsUsingSurrealNames() {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			final AnnotatedRecord record = new AnnotatedRecord("Ada", 7, "ace");
-			final Value value = surreal.queryBind("RETURN $record", Collections.singletonMap("record", record)).take(0);
+			final Value value = surreal.query("RETURN $record", Collections.singletonMap("record", record)).take(0);
 
 			assertEquals(Arrays.asList("first_name", "login_count", "nickname"), keys(value.getObject()));
 		}
@@ -38,7 +38,7 @@ public class SurrealNameRecordTests {
 	@Test
 	void deserializesRecordComponentsFromSurrealNames() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			final Value value = surreal.queryBind("RETURN $record", Collections.singletonMap("record", annotatedMap()))
+			final Value value = surreal.query("RETURN $record", Collections.singletonMap("record", annotatedMap()))
 					.take(0);
 
 			assertEquals(new AnnotatedRecord("Grace", 11, "g"), value.get(AnnotatedRecord.class));
@@ -51,7 +51,7 @@ public class SurrealNameRecordTests {
 			final Map<String, java.lang.Object> values = annotatedMap();
 			values.put("firstName", "Raw");
 			values.put("loginCount", 1);
-			final Value value = surreal.queryBind("RETURN $record", Collections.singletonMap("record", values)).take(0);
+			final Value value = surreal.query("RETURN $record", Collections.singletonMap("record", values)).take(0);
 
 			assertEquals(new AnnotatedRecord("Grace", 11, "g"), value.get(AnnotatedRecord.class));
 		}
@@ -61,7 +61,7 @@ public class SurrealNameRecordTests {
 	void rejectsDuplicateSurrealNamesForRecords() {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			final Value value = surreal
-					.queryBind("RETURN $record",
+					.query("RETURN $record",
 							Collections.singletonMap("record", Collections.singletonMap("duplicated_name", "value")))
 					.take(0);
 
@@ -72,7 +72,7 @@ public class SurrealNameRecordTests {
 	@Test
 	void rejectsBlankSurrealNamesForRecords() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			final Value value = surreal.queryBind("RETURN $record",
+			final Value value = surreal.query("RETURN $record",
 					Collections.singletonMap("record", Collections.singletonMap("firstName", "Ada"))).take(0);
 
 			assertThrows(SurrealException.class, () -> value.get(BlankNameRecord.class));
@@ -83,7 +83,7 @@ public class SurrealNameRecordTests {
 	void keepsRawRecordComponentNamesForUnannotatedComponents() {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			final Value value = surreal
-					.queryBind("RETURN $record", Collections.singletonMap("record", new RawRecord("Ada", 7))).take(0);
+					.query("RETURN $record", Collections.singletonMap("record", new RawRecord("Ada", 7))).take(0);
 			final List<String> keys = keys(value.getObject());
 
 			assertEquals(Arrays.asList("firstName", "loginCount"), keys);

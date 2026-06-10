@@ -94,6 +94,15 @@ public class SurrealNameTests {
 		}
 	}
 
+	public static final class IgnoredMembersReadProfile {
+		private String instanceName;
+		private static String cachedName;
+		private transient String temporaryName;
+
+		public IgnoredMembersReadProfile() {
+		}
+	}
+
 	public static final class DuplicateSurrealNameProfile {
 		@SurrealName("duplicated_name")
 		private String firstName = "first";
@@ -131,7 +140,7 @@ public class SurrealNameTests {
 	@Test
 	void serializesAnnotatedFieldsUsingSurrealNames() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", profile()))
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", profile()))
 					.take(0);
 			final List<String> keys = keys(value.getObject());
 
@@ -150,8 +159,8 @@ public class SurrealNameTests {
 	@Test
 	void deserializesAnnotatedFieldsFromSurrealNames() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			final Value value = surreal
-					.queryBind("RETURN $profile", Collections.singletonMap("profile", annotatedMap())).take(0);
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", annotatedMap()))
+					.take(0);
 
 			assertAnnotatedProfile(value.get(AnnotatedProfile.class), "Grace", CREATED_AT, 11, true,
 					new BigDecimal("999.50"), Arrays.asList("snake", "case"), Optional.of("read from explicit name"),
@@ -170,8 +179,7 @@ public class SurrealNameTests {
 			values.put("creditLimit", new BigDecimal("1.00"));
 			values.put("tagNames", Collections.singletonList("raw"));
 			values.put("optionalNote", "raw note");
-			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", values))
-					.take(0);
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", values)).take(0);
 
 			assertAnnotatedProfile(value.get(AnnotatedProfile.class), "Grace", CREATED_AT, 11, true,
 					new BigDecimal("999.50"), Arrays.asList("snake", "case"), Optional.of("read from explicit name"),
@@ -185,8 +193,7 @@ public class SurrealNameTests {
 			final Map<String, java.lang.Object> values = new LinkedHashMap<>();
 			values.put("id", "raw id must not populate hidden superclass field");
 			values.put("child_id", "child");
-			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", values))
-					.take(0);
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", values)).take(0);
 
 			final HiddenChildProfile profile = value.get(HiddenChildProfile.class);
 			assertEquals("child", profile.id);
@@ -225,7 +232,7 @@ public class SurrealNameTests {
 	@Test
 	void keepsRawFieldNameBehaviorForUnannotatedFields() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", rawNameMap()))
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", rawNameMap()))
 					.take(0);
 			final RawNameProfile profile = value.get(RawNameProfile.class);
 
@@ -244,8 +251,7 @@ public class SurrealNameTests {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			final Map<String, java.lang.Object> values = annotatedMap();
 			values.put("unknown_name", "ignored");
-			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", values))
-					.take(0);
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", values)).take(0);
 
 			assertAnnotatedProfile(value.get(AnnotatedProfile.class), "Grace", CREATED_AT, 11, true,
 					new BigDecimal("999.50"), Arrays.asList("snake", "case"), Optional.of("read from explicit name"),
@@ -257,8 +263,7 @@ public class SurrealNameTests {
 	void keepsIgnoringStaticAndTransientFieldsEvenWhenAnnotated() {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			final IgnoredMembersProfile profile = new IgnoredMembersProfile("persisted", "temporary");
-			final Value value = surreal.queryBind("RETURN $profile", Collections.singletonMap("profile", profile))
-					.take(0);
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", profile)).take(0);
 			final List<String> keys = keys(value.getObject());
 
 			assertEquals(Collections.singletonList("instance_name"), keys);
@@ -266,9 +271,26 @@ public class SurrealNameTests {
 	}
 
 	@Test
+	void keepsStaticAndTransientFieldsUntouchedDuringDeserialization() {
+		try (final Surreal surreal = openMemoryDatabase()) {
+			IgnoredMembersReadProfile.cachedName = "untouched";
+			final Map<String, java.lang.Object> values = new LinkedHashMap<>();
+			values.put("instanceName", "persisted");
+			values.put("cachedName", "from database");
+			values.put("temporaryName", "from database");
+			final Value value = surreal.query("RETURN $profile", Collections.singletonMap("profile", values)).take(0);
+
+			final IgnoredMembersReadProfile profile = value.get(IgnoredMembersReadProfile.class);
+			assertEquals("persisted", profile.instanceName);
+			assertEquals("untouched", IgnoredMembersReadProfile.cachedName);
+			assertNull(profile.temporaryName);
+		}
+	}
+
+	@Test
 	void rejectsDuplicateSurrealNamesDuringSerialization() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			assertThrows(SurrealException.class, () -> surreal.queryBind("RETURN $profile",
+			assertThrows(SurrealException.class, () -> surreal.query("RETURN $profile",
 					Collections.singletonMap("profile", new DuplicateSurrealNameProfile())));
 		}
 	}
@@ -277,7 +299,7 @@ public class SurrealNameTests {
 	void rejectsDuplicateSurrealNamesDuringDeserialization() {
 		try (final Surreal surreal = openMemoryDatabase()) {
 			final Value value = surreal
-					.queryBind("RETURN $profile",
+					.query("RETURN $profile",
 							Collections.singletonMap("profile", Collections.singletonMap("duplicated_name", "value")))
 					.take(0);
 
@@ -288,7 +310,7 @@ public class SurrealNameTests {
 	@Test
 	void rejectsBlankSurrealNameDuringSerialization() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			assertThrows(SurrealException.class, () -> surreal.queryBind("RETURN $profile",
+			assertThrows(SurrealException.class, () -> surreal.query("RETURN $profile",
 					Collections.singletonMap("profile", new BlankSurrealNameProfile())));
 		}
 	}
@@ -296,7 +318,7 @@ public class SurrealNameTests {
 	@Test
 	void rejectsBlankSurrealNameDuringDeserialization() {
 		try (final Surreal surreal = openMemoryDatabase()) {
-			final Value value = surreal.queryBind("RETURN $profile",
+			final Value value = surreal.query("RETURN $profile",
 					Collections.singletonMap("profile", Collections.singletonMap("firstName", "Ada"))).take(0);
 
 			assertThrows(SurrealException.class, () -> value.get(BlankSurrealNameProfile.class));
