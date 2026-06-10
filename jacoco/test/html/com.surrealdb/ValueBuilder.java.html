@@ -115,57 +115,34 @@ import java.util.stream.Collectors;
 <span class="fc" id="L115">			return ValueMut.createObject((Object) object);</span>
 		}
 <span class="fc" id="L117">		final Class&lt;?&gt; clazz = object.getClass();</span>
-<span class="fc" id="L118">		final Field[] declaredFields = clazz.getDeclaredFields();</span>
-<span class="fc bfc" id="L119" title="All 4 branches covered.">		if (!SurrealFieldNames.hasUserSuperclass(clazz) &amp;&amp; !SurrealFieldNames.hasDeclaredSurrealName(declaredFields)) {</span>
-			// Fast path: a single user-defined class with raw Java names. Java
-			// forbids duplicate field names within one class, so there is
-			// nothing to validate.
-<span class="pc bpc" id="L123" title="1 of 2 branches missed.">			if (declaredFields.length &gt; 0) {</span>
-<span class="fc" id="L124">				final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(declaredFields.length);</span>
-<span class="fc bfc" id="L125" title="All 2 branches covered.">				for (final Field field : declaredFields) {</span>
-<span class="fc bfc" id="L126" title="All 2 branches covered.">					if (!SurrealFieldNames.isSerializableField(field)) {</span>
-<span class="fc" id="L127">						continue;</span>
-					}
-<span class="fc" id="L129">					field.setAccessible(true);</span>
-<span class="fc" id="L130">					final java.lang.Object value = field.get(object);</span>
-<span class="fc bfc" id="L131" title="All 2 branches covered.">					if (value != null) {</span>
-<span class="fc" id="L132">						entries.add(EntryMut.newEntry(field.getName(), convert(value)));</span>
-					}
-				}
-<span class="fc" id="L135">				return ValueMut.createObject(entries);</span>
-			}
-		} else {
-			// Mirror the read path (ValueClassConverter): walk the user-defined
-			// hierarchy with the same hiding, naming, and duplicate-rejection
-			// semantics so objects round-trip symmetrically.
-<span class="fc" id="L141">			final Map&lt;String, Field&gt; fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);</span>
-<span class="pc bpc" id="L142" title="3 of 4 branches missed.">			if (!fields.isEmpty() || declaredFields.length &gt; 0) {</span>
-<span class="fc" id="L143">				final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.size());</span>
-<span class="fc bfc" id="L144" title="All 2 branches covered.">				for (final Map.Entry&lt;String, Field&gt; fieldEntry : fields.entrySet()) {</span>
-<span class="fc" id="L145">					final Field field = fieldEntry.getValue();</span>
-<span class="fc" id="L146">					field.setAccessible(true);</span>
-<span class="fc" id="L147">					final java.lang.Object value = field.get(object);</span>
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">					if (value != null) {</span>
-<span class="fc" id="L149">						entries.add(EntryMut.newEntry(fieldEntry.getKey(), convert(value)));</span>
-					}
-<span class="fc" id="L151">				}</span>
-<span class="fc" id="L152">				return ValueMut.createObject(entries);</span>
-			}
+		// Mirror the read path (ValueClassConverter): the cached resolver walks
+		// the user-defined hierarchy with the same hiding, naming, and
+		// duplicate-rejection semantics so objects round-trip symmetrically.
+<span class="fc" id="L121">		final Map&lt;String, Field&gt; fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);</span>
+<span class="pc bpc" id="L122" title="3 of 4 branches missed.">		if (fields.isEmpty() &amp;&amp; clazz.getDeclaredFields().length == 0) {</span>
+<span class="nc" id="L123">			throw new SurrealException(&quot;No field found: &quot; + clazz.getCanonicalName());</span>
 		}
-<span class="nc" id="L155">		throw new SurrealException(&quot;No field found: &quot; + object.getClass().getCanonicalName());</span>
+<span class="fc" id="L125">		final List&lt;EntryMut&gt; entries = new ArrayList&lt;&gt;(fields.size());</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">		for (final Map.Entry&lt;String, Field&gt; fieldEntry : fields.entrySet()) {</span>
+<span class="fc" id="L127">			final java.lang.Object value = fieldEntry.getValue().get(object);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">			if (value != null) {</span>
+<span class="fc" id="L129">				entries.add(EntryMut.newEntry(fieldEntry.getKey(), convert(value)));</span>
+			}
+<span class="fc" id="L131">		}</span>
+<span class="fc" id="L132">		return ValueMut.createObject(entries);</span>
 	}
 
 	static &lt;T&gt; ValueMut convert(final T object) {
 		try {
-<span class="fc" id="L160">			return convertObject(object);</span>
-<span class="nc" id="L161">		} catch (IllegalAccessException e) {</span>
-<span class="nc" id="L162">			throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
+<span class="fc" id="L137">			return convertObject(object);</span>
+<span class="nc" id="L138">		} catch (IllegalAccessException e) {</span>
+<span class="nc" id="L139">			throw new SurrealException(&quot;Unable to convert object&quot;, e);</span>
 		}
 	}
 
 	static Map&lt;String, ValueMut&gt; convertParams(final Map&lt;String, ?&gt; params) {
-<span class="fc" id="L167">		return params.entrySet().stream()</span>
-<span class="fc" id="L168">				.collect(Collectors.toMap(Map.Entry::getKey, entry -&gt; convert(entry.getValue())));</span>
+<span class="fc" id="L144">		return params.entrySet().stream()</span>
+<span class="fc" id="L145">				.collect(Collectors.toMap(Map.Entry::getKey, entry -&gt; convert(entry.getValue())));</span>
 	}
 
 }

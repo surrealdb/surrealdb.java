@@ -49,7 +49,7 @@ class ValueClassConverter&lt;T&gt; {
 <span class="fc" id="L49">		RC_GET_NAME = rcGetName;</span>
 <span class="fc" id="L50">		RC_GET_TYPE = rcGetType;</span>
 <span class="fc" id="L51">		RC_GET_GENERIC_TYPE = rcGetGenericType;</span>
-<span class="fc" id="L52">	}</span>
+	}
 
 	private final Class&lt;T&gt; clazz;
 
@@ -301,134 +301,165 @@ class ValueClassConverter&lt;T&gt; {
 				// Safe to ignore: source has a key with no matching field.
 <span class="fc" id="L302">				continue;</span>
 			}
-<span class="fc" id="L304">			field.setAccessible(true);</span>
-<span class="fc" id="L305">			final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());</span>
-<span class="pc bpc" id="L306" title="3 of 4 branches missed.">			if (converted == null &amp;&amp; field.getType().isPrimitive()) {</span>
+<span class="fc" id="L304">			final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());</span>
+<span class="pc bpc" id="L305" title="3 of 4 branches missed.">			if (converted == null &amp;&amp; field.getType().isPrimitive()) {</span>
 				// Leave primitive fields at their default value; setting null would throw.
-<span class="nc" id="L308">				continue;</span>
+<span class="nc" id="L307">				continue;</span>
 			}
-<span class="fc" id="L310">			field.set(target, converted);</span>
-<span class="fc" id="L311">		}</span>
-<span class="fc" id="L312">		return target;</span>
+<span class="fc" id="L309">			field.set(target, converted);</span>
+<span class="fc" id="L310">		}</span>
+<span class="fc" id="L311">		return target;</span>
+	}
+
+	// Record component metadata is immutable at runtime; resolve names, types,
+	// and the canonical constructor once per record class. See the matching
+	// ClassValue note in SurrealFieldNames for the failure semantics.
+<span class="fc" id="L317">	private static final ClassValue&lt;RecordMeta&gt; RECORD_META = new ClassValue&lt;RecordMeta&gt;() {</span>
+		@Override
+		protected RecordMeta computeValue(final Class&lt;?&gt; clazz) {
+			try {
+<span class="nc" id="L321">				final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);</span>
+<span class="nc" id="L322">				final int count = componentsArray.length;</span>
+<span class="nc" id="L323">				final String[] names = new String[count];</span>
+<span class="nc" id="L324">				final Class&lt;?&gt;[] types = new Class&lt;?&gt;[count];</span>
+<span class="nc" id="L325">				final Type[] genericTypes = new Type[count];</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">				for (int i = 0; i &lt; count; i++) {</span>
+<span class="nc" id="L327">					final java.lang.Object rc = componentsArray[i];</span>
+<span class="nc" id="L328">					final String componentName = (String) RC_GET_NAME.invoke(rc);</span>
+<span class="nc" id="L329">					names[i] = recordComponentSurrealName(clazz, componentName);</span>
+<span class="nc" id="L330">					types[i] = (Class&lt;?&gt;) RC_GET_TYPE.invoke(rc);</span>
+<span class="nc" id="L331">					genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);</span>
+				}
+<span class="nc" id="L333">				ensureUniqueRecordComponentNames(clazz, names);</span>
+<span class="nc" id="L334">				final Constructor&lt;?&gt; constructor = clazz.getDeclaredConstructor(types);</span>
+<span class="nc" id="L335">				constructor.setAccessible(true);</span>
+<span class="nc" id="L336">				return new RecordMeta(names, types, genericTypes, constructor);</span>
+<span class="nc" id="L337">			} catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L338">				throw new SurrealException(&quot;Failed to read record metadata for &quot; + clazz.getName(), e);</span>
+			}
+		}
+	};
+
+	private static final class RecordMeta {
+		final String[] names;
+		final Class&lt;?&gt;[] types;
+		final Type[] genericTypes;
+		final Constructor&lt;?&gt; constructor;
+
+<span class="nc" id="L349">		RecordMeta(String[] names, Class&lt;?&gt;[] types, Type[] genericTypes, Constructor&lt;?&gt; constructor) {</span>
+<span class="nc" id="L350">			this.names = names;</span>
+<span class="nc" id="L351">			this.types = types;</span>
+<span class="nc" id="L352">			this.genericTypes = genericTypes;</span>
+<span class="nc" id="L353">			this.constructor = constructor;</span>
+<span class="nc" id="L354">		}</span>
 	}
 
 	private static &lt;T&gt; T convertRecord(final Class&lt;T&gt; clazz, final Object source) throws ReflectiveOperationException {
-<span class="nc bnc" id="L316" title="All 2 branches missed.">		if (GET_RECORD_COMPONENTS == null) {</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">		if (GET_RECORD_COMPONENTS == null) {</span>
 			// Should be unreachable: isRecord() returned true, so the JVM exposes
 			// RecordComponent.
-<span class="nc" id="L319">			throw new SurrealException(&quot;Record reflection APIs unavailable for &quot; + clazz.getName());</span>
+<span class="nc" id="L361">			throw new SurrealException(&quot;Record reflection APIs unavailable for &quot; + clazz.getName());</span>
 		}
-<span class="nc" id="L321">		final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);</span>
-<span class="nc" id="L322">		final int count = componentsArray.length;</span>
-<span class="nc" id="L323">		final String[] names = new String[count];</span>
-<span class="nc" id="L324">		final Class&lt;?&gt;[] types = new Class&lt;?&gt;[count];</span>
-<span class="nc" id="L325">		final Type[] genericTypes = new Type[count];</span>
-<span class="nc bnc" id="L326" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
-<span class="nc" id="L327">			final java.lang.Object rc = componentsArray[i];</span>
-<span class="nc" id="L328">			final String componentName = (String) RC_GET_NAME.invoke(rc);</span>
-<span class="nc" id="L329">			names[i] = recordComponentSurrealName(clazz, componentName);</span>
-<span class="nc" id="L330">			types[i] = (Class&lt;?&gt;) RC_GET_TYPE.invoke(rc);</span>
-<span class="nc" id="L331">			genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);</span>
-		}
-<span class="nc" id="L333">		ensureUniqueRecordComponentNames(clazz, names);</span>
+<span class="nc" id="L363">		final RecordMeta meta = RECORD_META.get(clazz);</span>
+<span class="nc" id="L364">		final int count = meta.names.length;</span>
 
 		// Build a lookup of incoming entries keyed by name.
-<span class="nc" id="L336">		final Map&lt;String, Value&gt; entries = new HashMap&lt;&gt;();</span>
-<span class="nc bnc" id="L337" title="All 2 branches missed.">		for (final Entry entry : source) {</span>
-<span class="nc" id="L338">			entries.put(entry.getKey(), entry.getValue());</span>
-<span class="nc" id="L339">		}</span>
+<span class="nc" id="L367">		final Map&lt;String, Value&gt; entries = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">		for (final Entry entry : source) {</span>
+<span class="nc" id="L369">			entries.put(entry.getKey(), entry.getValue());</span>
+<span class="nc" id="L370">		}</span>
 
-<span class="nc" id="L341">		final java.lang.Object[] args = new java.lang.Object[count];</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
-<span class="nc" id="L343">			final Value value = entries.get(names[i]);</span>
-<span class="nc" id="L344">			final Class&lt;?&gt; type = types[i];</span>
-<span class="nc bnc" id="L345" title="All 2 branches missed.">			if (value == null) {</span>
-<span class="nc" id="L346">				args[i] = defaultForRecordComponent(type);</span>
-<span class="nc" id="L347">				continue;</span>
+<span class="nc" id="L372">		final java.lang.Object[] args = new java.lang.Object[count];</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
+<span class="nc" id="L374">			final Value value = entries.get(meta.names[i]);</span>
+<span class="nc" id="L375">			final Class&lt;?&gt; type = meta.types[i];</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">			if (value == null) {</span>
+<span class="nc" id="L377">				args[i] = defaultForRecordComponent(type);</span>
+<span class="nc" id="L378">				continue;</span>
 			}
-<span class="nc" id="L349">			final java.lang.Object converted = convertValueToType(value, type, genericTypes[i]);</span>
-<span class="nc bnc" id="L350" title="All 2 branches missed.">			if (converted == null) {</span>
-<span class="nc" id="L351">				args[i] = defaultForRecordComponent(type);</span>
+<span class="nc" id="L380">			final java.lang.Object converted = convertValueToType(value, type, meta.genericTypes[i]);</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">			if (converted == null) {</span>
+<span class="nc" id="L382">				args[i] = defaultForRecordComponent(type);</span>
 			} else {
-<span class="nc" id="L353">				args[i] = converted;</span>
+<span class="nc" id="L384">				args[i] = converted;</span>
 			}
 		}
 
-<span class="nc" id="L357">		final Constructor&lt;T&gt; ctor = clazz.getDeclaredConstructor(types);</span>
-<span class="nc" id="L358">		ctor.setAccessible(true);</span>
-<span class="nc" id="L359">		return ctor.newInstance(args);</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L389">		final T instance = (T) meta.constructor.newInstance(args);</span>
+<span class="nc" id="L390">		return instance;</span>
 	}
 
 	private static String recordComponentSurrealName(final Class&lt;?&gt; clazz, final String componentName)
 			throws NoSuchFieldException {
-<span class="nc" id="L364">		return SurrealFieldNames.nameFor(clazz.getDeclaredField(componentName));</span>
+<span class="nc" id="L395">		return SurrealFieldNames.nameFor(clazz.getDeclaredField(componentName));</span>
 	}
 
 	private static void ensureUniqueRecordComponentNames(final Class&lt;?&gt; clazz, final String[] names) {
-<span class="nc" id="L368">		final Map&lt;String, Boolean&gt; seen = new HashMap&lt;&gt;();</span>
-<span class="nc bnc" id="L369" title="All 2 branches missed.">		for (final String name : names) {</span>
-<span class="nc bnc" id="L370" title="All 2 branches missed.">			if (seen.put(name, Boolean.TRUE) != null) {</span>
-<span class="nc" id="L371">				throw new SurrealException(</span>
-<span class="nc" id="L372">						&quot;Duplicate SurrealDB field name '&quot; + name + &quot;' on record &quot; + clazz.getName());</span>
+<span class="nc" id="L399">		final Map&lt;String, Boolean&gt; seen = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">		for (final String name : names) {</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">			if (seen.put(name, Boolean.TRUE) != null) {</span>
+<span class="nc" id="L402">				throw new SurrealException(</span>
+<span class="nc" id="L403">						&quot;Duplicate SurrealDB field name '&quot; + name + &quot;' on record &quot; + clazz.getName());</span>
 			}
 		}
-<span class="nc" id="L375">	}</span>
+<span class="nc" id="L406">	}</span>
 
 	private static java.lang.Object defaultForRecordComponent(final Class&lt;?&gt; type) {
-<span class="nc bnc" id="L378" title="All 2 branches missed.">		if (Optional.class.equals(type)) {</span>
-<span class="nc" id="L379">			return Optional.empty();</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">		if (Optional.class.equals(type)) {</span>
+<span class="nc" id="L410">			return Optional.empty();</span>
 		}
-<span class="nc bnc" id="L381" title="All 2 branches missed.">		if (type.isPrimitive()) {</span>
-<span class="nc bnc" id="L382" title="All 2 branches missed.">			if (type == Boolean.TYPE)</span>
-<span class="nc" id="L383">				return Boolean.FALSE;</span>
-<span class="nc bnc" id="L384" title="All 2 branches missed.">			if (type == Byte.TYPE)</span>
-<span class="nc" id="L385">				return (byte) 0;</span>
-<span class="nc bnc" id="L386" title="All 2 branches missed.">			if (type == Short.TYPE)</span>
-<span class="nc" id="L387">				return (short) 0;</span>
-<span class="nc bnc" id="L388" title="All 2 branches missed.">			if (type == Integer.TYPE)</span>
-<span class="nc" id="L389">				return 0;</span>
-<span class="nc bnc" id="L390" title="All 2 branches missed.">			if (type == Long.TYPE)</span>
-<span class="nc" id="L391">				return 0L;</span>
-<span class="nc bnc" id="L392" title="All 2 branches missed.">			if (type == Float.TYPE)</span>
-<span class="nc" id="L393">				return 0f;</span>
-<span class="nc bnc" id="L394" title="All 2 branches missed.">			if (type == Double.TYPE)</span>
-<span class="nc" id="L395">				return 0d;</span>
-<span class="nc bnc" id="L396" title="All 2 branches missed.">			if (type == Character.TYPE)</span>
-<span class="nc" id="L397">				return (char) 0;</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">		if (type.isPrimitive()) {</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">			if (type == Boolean.TYPE)</span>
+<span class="nc" id="L414">				return Boolean.FALSE;</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">			if (type == Byte.TYPE)</span>
+<span class="nc" id="L416">				return (byte) 0;</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">			if (type == Short.TYPE)</span>
+<span class="nc" id="L418">				return (short) 0;</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">			if (type == Integer.TYPE)</span>
+<span class="nc" id="L420">				return 0;</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">			if (type == Long.TYPE)</span>
+<span class="nc" id="L422">				return 0L;</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">			if (type == Float.TYPE)</span>
+<span class="nc" id="L424">				return 0f;</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">			if (type == Double.TYPE)</span>
+<span class="nc" id="L426">				return 0d;</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">			if (type == Character.TYPE)</span>
+<span class="nc" id="L428">				return (char) 0;</span>
 		}
-<span class="nc" id="L399">		return null;</span>
+<span class="nc" id="L430">		return null;</span>
 	}
 
 	private static &lt;T&gt; void initOptionalFields(Class&lt;?&gt; clazz, T target) throws IllegalAccessException {
-<span class="fc" id="L403">		Class&lt;?&gt; c = clazz;</span>
-<span class="pc bpc" id="L404" title="1 of 4 branches missed.">		while (c != null &amp;&amp; c != java.lang.Object.class) {</span>
-<span class="fc bfc" id="L405" title="All 2 branches covered.">			for (final Field field : c.getDeclaredFields()) {</span>
-<span class="fc" id="L406">				int mods = field.getModifiers();</span>
-<span class="fc bfc" id="L407" title="All 4 branches covered.">				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
-<span class="fc" id="L408">					continue;</span>
+<span class="fc" id="L434">		Class&lt;?&gt; c = clazz;</span>
+<span class="pc bpc" id="L435" title="1 of 4 branches missed.">		while (c != null &amp;&amp; c != java.lang.Object.class) {</span>
+<span class="fc bfc" id="L436" title="All 2 branches covered.">			for (final Field field : c.getDeclaredFields()) {</span>
+<span class="fc" id="L437">				int mods = field.getModifiers();</span>
+<span class="fc bfc" id="L438" title="All 4 branches covered.">				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {</span>
+<span class="fc" id="L439">					continue;</span>
 				}
-<span class="fc bfc" id="L410" title="All 2 branches covered.">				if (Optional.class.equals(field.getType())) {</span>
-<span class="fc" id="L411">					field.setAccessible(true);</span>
-<span class="pc bpc" id="L412" title="1 of 2 branches missed.">					if (field.get(target) == null) {</span>
-<span class="fc" id="L413">						field.set(target, Optional.empty());</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">				if (Optional.class.equals(field.getType())) {</span>
+<span class="fc" id="L442">					field.setAccessible(true);</span>
+<span class="pc bpc" id="L443" title="1 of 2 branches missed.">					if (field.get(target) == null) {</span>
+<span class="fc" id="L444">						field.set(target, Optional.empty());</span>
 					}
 				}
 			}
-<span class="fc" id="L417">			c = c.getSuperclass();</span>
+<span class="fc" id="L448">			c = c.getSuperclass();</span>
 		}
-<span class="fc" id="L419">	}</span>
+<span class="fc" id="L450">	}</span>
 
 	final T convert(final Value value) {
 		try {
-<span class="pc bpc" id="L423" title="1 of 4 branches missed.">			if (value.isNone() || value.isNull())</span>
-<span class="fc" id="L424">				return null;</span>
+<span class="pc bpc" id="L454" title="1 of 4 branches missed.">			if (value.isNone() || value.isNull())</span>
+<span class="fc" id="L455">				return null;</span>
 
-<span class="pc bpc" id="L426" title="1 of 2 branches missed.">			if (!value.isObject())</span>
-<span class="nc" id="L427">				throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">			if (!value.isObject())</span>
+<span class="nc" id="L458">				throw new SurrealException(&quot;Unexpected value: &quot; + value);</span>
 
-<span class="fc" id="L429">			return convert(clazz, value.getObject());</span>
-<span class="nc" id="L430">		} catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L431">			throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
+<span class="fc" id="L460">			return convert(clazz, value.getObject());</span>
+<span class="nc" id="L461">		} catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L462">			throw new SurrealException(&quot;Failed to create instance of &quot; + clazz.getName(), e);</span>
 		}
 	}
 }
