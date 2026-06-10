@@ -3,17 +3,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - ExampleTests</title>
+<title>Test results - InheritedFieldsTests</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>ExampleTests</h1>
+<h1>InheritedFieldsTests</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
-<a href="../packages/com.surrealdb.html">com.surrealdb</a> &gt; ExampleTests</div>
+<a href="../packages/com.surrealdb.html">com.surrealdb</a> &gt; InheritedFieldsTests</div>
 <div id="summary">
 <table>
 <tr>
@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">1</div>
+<div class="counter">9</div>
 <p>tests</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.069s</div>
+<div class="counter">0.540s</div>
 <p>duration</p>
 </div>
 </td>
@@ -63,9 +63,6 @@
 <li>
 <a href="#">Tests</a>
 </li>
-<li>
-<a href="#">Standard output</a>
-</li>
 </ul>
 <div class="tab">
 <h2>Tests</h2>
@@ -78,19 +75,51 @@
 </tr>
 </thead>
 <tr>
-<td class="success">example()</td>
-<td class="success">0.069s</td>
+<td class="success">doesNotWriteHiddenSuperclassFields()</td>
+<td class="success">0.060s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">honorsSurrealNameOnInheritedFields()</td>
+<td class="success">0.058s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">rejectsDuplicateResolvedNamesAcrossHierarchyDuringSerialization()</td>
+<td class="success">0.063s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">roundTripsInheritedFieldsThroughCreateAndSelect()</td>
+<td class="success">0.059s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">staticSubclassFieldHidesSuperclassFieldOnWrite()</td>
+<td class="success">0.062s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">stopsHierarchyWalkAtJdkClasses()</td>
+<td class="success">0.059s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">transientSubclassFieldHidesSuperclassFieldOnRead()</td>
+<td class="success">0.058s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">transientSubclassFieldHidesSuperclassFieldOnWrite()</td>
+<td class="success">0.062s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">writeIncludesInheritedFields()</td>
+<td class="success">0.059s</td>
 <td class="success">passed</td>
 </tr>
 </table>
-</div>
-<div class="tab">
-<h2>Standard output</h2>
-<span class="code">
-<pre>Tobie = [Person{id='person:n2x8no3qeez1eurh2pzx', title='Founder &amp; CEO', firstName='Tobie', lastName='Morgan Hitchcock', marketing=true}]
-people = Person{id='person:n2x8no3qeez1eurh2pzx', title='Founder &amp; CEO', firstName='Tobie', lastName='Morgan Hitchcock', marketing=true}
-</pre>
-</span>
 </div>
 </div>
 <div id="footer">
