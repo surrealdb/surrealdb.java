@@ -2,8 +2,8 @@ package com.surrealdb;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,21 +38,23 @@ final class SurrealFieldNames {
 		return false;
 	}
 
-	static void ensureUniqueDeclaredNames(final Class<?> clazz) {
-		final Map<String, Field> fields = new HashMap<>();
-		for (final Field field : clazz.getDeclaredFields()) {
-			if (!isSerializableField(field)) {
-				continue;
-			}
-			putUnique(fields, nameFor(field), field);
-		}
+	static boolean hasUserSuperclass(final Class<?> clazz) {
+		final Class<?> superclass = clazz.getSuperclass();
+		return superclass != null && !isJdkType(superclass);
 	}
 
+	/**
+	 * Maps resolved SurrealDB keys to their fields, walking the user-defined part
+	 * of the class hierarchy (subclass first, in declaration order). The walk stops
+	 * at the first JDK class so JDK internals (e.g. {@code java.lang.Enum.name},
+	 * {@code Throwable.detailMessage}) are never serialized or reflectively
+	 * assigned.
+	 */
 	static Map<String, Field> inheritedFieldsBySurrealName(final Class<?> clazz) {
-		final Map<String, Field> fields = new HashMap<>();
+		final Map<String, Field> fields = new LinkedHashMap<>();
 		final Set<String> seenJavaNames = new HashSet<>();
 		Class<?> c = clazz;
-		while (c != null && c != java.lang.Object.class) {
+		while (c != null && !isJdkType(c)) {
 			for (final Field field : c.getDeclaredFields()) {
 				if (!isSerializableField(field)) {
 					continue;
@@ -74,11 +76,10 @@ final class SurrealFieldNames {
 		return fields;
 	}
 
-	private static void putUnique(final Map<String, Field> fields, final String name, final Field field) {
-		final Field previous = fields.put(name, field);
-		if (previous != null) {
-			throw duplicateName(name, previous, field);
-		}
+	private static boolean isJdkType(final Class<?> clazz) {
+		final String name = clazz.getName();
+		return name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("jdk.")
+				|| name.startsWith("sun.") || name.startsWith("com.sun.");
 	}
 
 	private static SurrealException duplicateName(final String name, final Field first, final Field second) {
