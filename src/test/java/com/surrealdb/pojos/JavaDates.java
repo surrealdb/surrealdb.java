@@ -11,11 +11,14 @@ public class JavaDates {
 	public OffsetDateTime offsetDateTime;
 	public LocalDateTime localDateTime;
 	public Date date;
+	public java.sql.Timestamp timestamp;
+	public java.sql.Date sqlDate;
+	public java.sql.Time sqlTime;
 
 	@Override
 	public String toString() {
 		return "instant: " + instant + ", offsetDateTime: " + offsetDateTime + ", localDateTime: " + localDateTime
-				+ ", date: " + date;
+				+ ", date: " + date + ", timestamp: " + timestamp + ", sqlDate: " + sqlDate + ", sqlTime: " + sqlTime;
 	}
 
 }

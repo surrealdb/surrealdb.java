@@ -141,6 +141,18 @@ class ValueClassConverter<T> {
 			if (type == java.util.Date.class) {
 				return java.util.Date.from(dateTime.toInstant());
 			}
+			// The java.sql types are matched by name first so that runtimes
+			// without the java.sql module never load these classes.
+			final String typeName = type.getName();
+			if ("java.sql.Timestamp".equals(typeName)) {
+				return java.sql.Timestamp.from(dateTime.toInstant());
+			}
+			if ("java.sql.Date".equals(typeName)) {
+				return new java.sql.Date(dateTime.toInstant().toEpochMilli());
+			}
+			if ("java.sql.Time".equals(typeName)) {
+				return new java.sql.Time(dateTime.toInstant().toEpochMilli());
+			}
 			return dateTime;
 		}
 		return convertSingleValue(value);

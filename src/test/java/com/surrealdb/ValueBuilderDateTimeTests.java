@@ -102,6 +102,9 @@ public class ValueBuilderDateTimeTests {
 			dates.offsetDateTime = OffsetDateTime.parse("2026-06-06T10:09:10.123456789+02:00");
 			dates.localDateTime = LocalDateTime.of(2026, 6, 6, 8, 9, 10, 123456789);
 			dates.date = Date.from(Instant.parse("2026-06-06T08:09:10.123Z"));
+			dates.timestamp = java.sql.Timestamp.from(Instant.parse("2026-06-06T08:09:10.123456789Z"));
+			dates.sqlDate = new java.sql.Date(Instant.parse("2026-06-06T08:09:10.123Z").toEpochMilli());
+			dates.sqlTime = new java.sql.Time(Instant.parse("2026-06-06T08:09:10.123Z").toEpochMilli());
 
 			final JavaDates created = surreal.create(JavaDates.class, "java_dates", dates).get(0);
 
@@ -110,6 +113,9 @@ public class ValueBuilderDateTimeTests {
 			assertEquals(dates.offsetDateTime.toInstant(), created.offsetDateTime.toInstant());
 			assertEquals(dates.localDateTime, created.localDateTime);
 			assertEquals(dates.date, created.date);
+			assertEquals(dates.timestamp, created.timestamp);
+			assertEquals(dates.sqlDate, created.sqlDate);
+			assertEquals(dates.sqlTime, created.sqlTime);
 		}
 	}
 
