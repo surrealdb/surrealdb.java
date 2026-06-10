@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.1.1] - 2026-06-10
 - Cache per-class field metadata in the value converters [#180](https://github.com/surrealdb/surrealdb.java/pull/180).
 - Support more Java datetime types in value conversion: `Instant`, `OffsetDateTime`, `LocalDateTime` (interpreted as UTC), `java.util.Date`, and the `java.sql` date types, in query bindings, `Array.of()`/`Id.from()`, and POJO/record round trips [#172](https://github.com/surrealdb/surrealdb.java/pull/172).
 - Add `@SurrealName` to map Java fields and record components to explicit SurrealDB object keys, honored in both serialization and deserialization [#173](https://github.com/surrealdb/surrealdb.java/pull/173).
