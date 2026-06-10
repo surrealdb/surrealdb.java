@@ -242,6 +242,15 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
     // Disable the auto-generated tasks for the recordTest source set on older JDKs.
     tasks.named('compileRecordTestJava') { enabled = false }
     tasks.matching { it.name == 'processRecordTestResources' }.configureEach { enabled = false }
+
+    // Disabled placeholder so `gradlew recordTest` is invocable on every JDK
+    // (the CI matrix runs it on all legs); it reports SKIPPED instead of
+    // failing with "task not found".
+    tasks.register('recordTest') {
+        description = 'Runs the Java-record tests (requires JDK 16+; skipped on this JDK).'
+        group = 'verification'
+        enabled = false
+    }
 }
 
 jacocoTestReport {
