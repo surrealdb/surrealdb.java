@@ -3,17 +3,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - UpsertTests</title>
+<title>Test results - SurrealNameTests</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>UpsertTests</h1>
+<h1>SurrealNameTests</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
-<a href="../packages/com.surrealdb.html">com.surrealdb</a> &gt; UpsertTests</div>
+<a href="../packages/com.surrealdb.html">com.surrealdb</a> &gt; SurrealNameTests</div>
 <div id="summary">
 <table>
 <tr>
@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">6</div>
+<div class="counter">13</div>
 <p>tests</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.343s</div>
+<div class="counter">0.705s</div>
 <p>duration</p>
 </div>
 </td>
@@ -75,33 +75,68 @@
 </tr>
 </thead>
 <tr>
-<td class="success">upsertRecordIdObject()</td>
-<td class="success">0.060s</td>
+<td class="success">annotatedHiddenFieldKeepsSuperclassFieldOutOfRawNameLookup()</td>
+<td class="success">0.051s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">upsertRecordIdValue()</td>
+<td class="success">deserializesAnnotatedFieldsFromSurrealNames()</td>
+<td class="success">0.052s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">explicitSurrealNameWinsWhenRawAndExplicitKeysAreBothPresent()</td>
+<td class="success">0.069s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">keepsIgnoringStaticAndTransientFieldsEvenWhenAnnotated()</td>
+<td class="success">0.051s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">keepsIgnoringUnknownDatabaseKeysForAnnotatedTypes()</td>
+<td class="success">0.053s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">keepsRawFieldNameBehaviorForUnannotatedFields()</td>
+<td class="success">0.053s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">keepsStaticAndTransientFieldsUntouchedDuringDeserialization()</td>
 <td class="success">0.054s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">upsertTableObjects()</td>
-<td class="success">0.058s</td>
+<td class="success">rejectsBlankSurrealNameDuringDeserialization()</td>
+<td class="success">0.054s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">upsertTableObjectsSync()</td>
-<td class="success">0.058s</td>
+<td class="success">rejectsBlankSurrealNameDuringSerialization()</td>
+<td class="success">0.051s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">upsertTableValues()</td>
+<td class="success">rejectsDuplicateSurrealNamesDuringDeserialization()</td>
+<td class="success">0.053s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">rejectsDuplicateSurrealNamesDuringSerialization()</td>
+<td class="success">0.056s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">roundTripsAnnotatedObjectThroughCreateAndSelectUsingSurrealNames()</td>
 <td class="success">0.055s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">upsertTableValuesSync()</td>
-<td class="success">0.058s</td>
+<td class="success">serializesAnnotatedFieldsUsingSurrealNames()</td>
+<td class="success">0.053s</td>
 <td class="success">passed</td>
 </tr>
 </table>
