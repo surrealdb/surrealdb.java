@@ -115,44 +115,21 @@ class ValueBuilder {
 			return ValueMut.createObject((Object) object);
 		}
 		final Class<?> clazz = object.getClass();
-		final Field[] declaredFields = clazz.getDeclaredFields();
-		if (!SurrealFieldNames.hasUserSuperclass(clazz) && !SurrealFieldNames.hasDeclaredSurrealName(declaredFields)) {
-			// Fast path: a single user-defined class with raw Java names. Java
-			// forbids duplicate field names within one class, so there is
-			// nothing to validate.
-			if (declaredFields.length > 0) {
-				final List<EntryMut> entries = new ArrayList<>(declaredFields.length);
-				for (final Field field : declaredFields) {
-					if (!SurrealFieldNames.isSerializableField(field)) {
-						continue;
-					}
-					field.setAccessible(true);
-					final java.lang.Object value = field.get(object);
-					if (value != null) {
-						entries.add(EntryMut.newEntry(field.getName(), convert(value)));
-					}
-				}
-				return ValueMut.createObject(entries);
-			}
-		} else {
-			// Mirror the read path (ValueClassConverter): walk the user-defined
-			// hierarchy with the same hiding, naming, and duplicate-rejection
-			// semantics so objects round-trip symmetrically.
-			final Map<String, Field> fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);
-			if (!fields.isEmpty() || declaredFields.length > 0) {
-				final List<EntryMut> entries = new ArrayList<>(fields.size());
-				for (final Map.Entry<String, Field> fieldEntry : fields.entrySet()) {
-					final Field field = fieldEntry.getValue();
-					field.setAccessible(true);
-					final java.lang.Object value = field.get(object);
-					if (value != null) {
-						entries.add(EntryMut.newEntry(fieldEntry.getKey(), convert(value)));
-					}
-				}
-				return ValueMut.createObject(entries);
+		// Mirror the read path (ValueClassConverter): the cached resolver walks
+		// the user-defined hierarchy with the same hiding, naming, and
+		// duplicate-rejection semantics so objects round-trip symmetrically.
+		final Map<String, Field> fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);
+		if (fields.isEmpty() && clazz.getDeclaredFields().length == 0) {
+			throw new SurrealException("No field found: " + clazz.getCanonicalName());
+		}
+		final List<EntryMut> entries = new ArrayList<>(fields.size());
+		for (final Map.Entry<String, Field> fieldEntry : fields.entrySet()) {
+			final java.lang.Object value = fieldEntry.getValue().get(object);
+			if (value != null) {
+				entries.add(EntryMut.newEntry(fieldEntry.getKey(), convert(value)));
 			}
 		}
-		throw new SurrealException("No field found: " + object.getClass().getCanonicalName());
+		return ValueMut.createObject(entries);
 	}
 
 	static <T> ValueMut convert(final T object) {

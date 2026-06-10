@@ -2,6 +2,7 @@ package com.surrealdb;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,12 +10,20 @@ import java.util.Set;
 
 final class SurrealFieldNames {
 
-	private SurrealFieldNames() {
-	}
+	// Field metadata is immutable at runtime (declared fields and annotations
+	// cannot change), so the resolved map is computed once per class. ClassValue
+	// ties the cache entry to the class lifetime, so classes remain unloadable
+	// (no static Map<Class, ...> leak). If computeValue throws (blank or
+	// duplicate @SurrealName), nothing is installed and the same exception is
+	// thrown again on the next attempt.
+	private static final ClassValue<Map<String, Field>> FIELDS_BY_SURREAL_NAME = new ClassValue<Map<String, Field>>() {
+		@Override
+		protected Map<String, Field> computeValue(final Class<?> clazz) {
+			return Collections.unmodifiableMap(buildFieldsBySurrealName(clazz));
+		}
+	};
 
-	static boolean isSerializableField(final Field field) {
-		final int mods = field.getModifiers();
-		return !Modifier.isStatic(mods) && !Modifier.isTransient(mods);
+	private SurrealFieldNames() {
 	}
 
 	static String nameFor(final Field field) {
@@ -29,28 +38,21 @@ final class SurrealFieldNames {
 		return value;
 	}
 
-	static boolean hasDeclaredSurrealName(final Field[] fields) {
-		for (final Field field : fields) {
-			if (isSerializableField(field) && field.getAnnotation(SurrealName.class) != null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	static boolean hasUserSuperclass(final Class<?> clazz) {
-		final Class<?> superclass = clazz.getSuperclass();
-		return superclass != null && !isJdkType(superclass);
-	}
-
 	/**
 	 * Maps resolved SurrealDB keys to their fields, walking the user-defined part
 	 * of the class hierarchy (subclass first, in declaration order). The walk stops
 	 * at the first JDK class so JDK internals (e.g. {@code java.lang.Enum.name},
 	 * {@code Throwable.detailMessage}) are never serialized or reflectively
 	 * assigned.
+	 * <p>
+	 * The returned map is cached per class and unmodifiable; its fields are already
+	 * accessible.
 	 */
 	static Map<String, Field> inheritedFieldsBySurrealName(final Class<?> clazz) {
+		return FIELDS_BY_SURREAL_NAME.get(clazz);
+	}
+
+	private static Map<String, Field> buildFieldsBySurrealName(final Class<?> clazz) {
 		final Map<String, Field> fields = new LinkedHashMap<>();
 		final Set<String> seenJavaNames = new HashSet<>();
 		Class<?> c = clazz;
@@ -71,11 +73,17 @@ final class SurrealFieldNames {
 				if (fields.containsKey(name)) {
 					throw duplicateName(name, fields.get(name), field);
 				}
+				field.setAccessible(true);
 				fields.put(name, field);
 			}
 			c = c.getSuperclass();
 		}
 		return fields;
+	}
+
+	private static boolean isSerializableField(final Field field) {
+		final int mods = field.getModifiers();
+		return !Modifier.isStatic(mods) && !Modifier.isTransient(mods);
 	}
 
 	private static boolean isJdkType(final Class<?> clazz) {
