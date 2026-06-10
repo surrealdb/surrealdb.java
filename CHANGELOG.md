@@ -1,14 +1,15 @@
 # Changelog
 
 ## [2.1.1] - 2026-06-10
-- Cache per-class field metadata in the value converters [#180](https://github.com/surrealdb/surrealdb.java/pull/180).
 - Support more Java datetime types in value conversion: `Instant`, `OffsetDateTime`, `LocalDateTime` (interpreted as UTC), `java.util.Date`, and the `java.sql` date types, in query bindings, `Array.of()`/`Id.from()`, and POJO/record round trips [#172](https://github.com/surrealdb/surrealdb.java/pull/172).
 - Add `@SurrealName` to map Java fields and record components to explicit SurrealDB object keys, honored in both serialization and deserialization [#173](https://github.com/surrealdb/surrealdb.java/pull/173).
+- Deserialization no longer assigns database keys to `static` or `transient` fields; such keys are now ignored, mirroring the write path [#173](https://github.com/surrealdb/surrealdb.java/pull/173).
 - Upgrade to SurrealDB SDK 3.1.4 [#177](https://github.com/surrealdb/surrealdb.java/pull/177).
 - Refresh `aws-lc-rs`/`aws-lc-sys` in the lockfile, clearing two high security advisories (GHSA-9f94-5g5w-gf6r, GHSA-394x-vwmw-crm3) [#177](https://github.com/surrealdb/surrealdb.java/pull/177).
 - Run CI against SurrealDB server v3.1.3, the first public 3.1.x server release [#177](https://github.com/surrealdb/surrealdb.java/pull/177).
-- Run the Java-record test suite in CI [#178](https://github.com/surrealdb/surrealdb.java/pull/178).
-- Serialize inherited POJO fields: writes now walk the user-defined class hierarchy with the same hiding, naming, and validation semantics as reads [#179](https://github.com/surrealdb/surrealdb.java/pull/179).
+- Run the Java-record test suite in CI, and emit per-test events at INFO level so they appear in CI logs [#178](https://github.com/surrealdb/surrealdb.java/pull/178).
+- Serialize inherited POJO fields, which were previously silently dropped on write: both conversion paths now walk the user-defined class hierarchy with the same semantics. The walk stops at the first JDK class (JDK internals such as `java.lang.Enum.name` are never serialized), and per JLS 8.3 a `static` or `transient` subclass field hides its same-named superclass field on both paths [#179](https://github.com/surrealdb/surrealdb.java/pull/179).
+- Cache per-class field metadata in the value converters; conversion no longer re-resolves fields, annotations, and record components for every object [#180](https://github.com/surrealdb/surrealdb.java/pull/180).
 
 ## [2.1.0] - 2026-06-04
 - Upgrade the native layer to the `jni` crate 0.22.4; the Java/JNI ABI, public API, and JDK 8 minimum are unchanged [#166](https://github.com/surrealdb/surrealdb.java/pull/166).
