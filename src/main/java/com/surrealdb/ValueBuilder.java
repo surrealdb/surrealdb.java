@@ -1,10 +1,12 @@
 package com.surrealdb;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,8 +52,20 @@ class ValueBuilder {
 		if (object instanceof Duration) {
 			return ValueMut.createDuration((Duration) object);
 		}
+		if (object instanceof Instant) {
+			return ValueMut.createDatetime((Instant) object);
+		}
 		if (object instanceof ZonedDateTime) {
 			return ValueMut.createDatetime((ZonedDateTime) object);
+		}
+		if (object instanceof OffsetDateTime) {
+			return ValueMut.createDatetime((OffsetDateTime) object);
+		}
+		if (object instanceof LocalDateTime) {
+			return ValueMut.createDatetime((LocalDateTime) object);
+		}
+		if (object instanceof java.util.Date) {
+			return ValueMut.createDatetime((java.util.Date) object);
 		}
 		if (object instanceof BigInteger) {
 			throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());
@@ -103,24 +117,22 @@ class ValueBuilder {
 		if (object instanceof Object) {
 			return ValueMut.createObject((Object) object);
 		}
-		final Field[] fields = object.getClass().getDeclaredFields();
-		if (fields.length > 0) {
-			final List<EntryMut> entries = new ArrayList<>(fields.length);
-			for (final Field field : fields) {
-				int mods = field.getModifiers();
-				if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) {
-					continue;
-				}
-				field.setAccessible(true);
-				final String name = field.getName();
-				final java.lang.Object value = field.get(object);
-				if (value != null) {
-					entries.add(EntryMut.newEntry(name, convert(value)));
-				}
-			}
-			return ValueMut.createObject(entries);
+		final Class<?> clazz = object.getClass();
+		// Mirror the read path (ValueClassConverter): the cached resolver walks
+		// the user-defined hierarchy with the same hiding, naming, and
+		// duplicate-rejection semantics so objects round-trip symmetrically.
+		final Map<String, Field> fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);
+		if (fields.isEmpty() && clazz.getDeclaredFields().length == 0) {
+			throw new SurrealException("No field found: " + clazz.getCanonicalName());
 		}
-		throw new SurrealException("No field found: " + object.getClass().getCanonicalName());
+		final List<EntryMut> entries = new ArrayList<>(fields.size());
+		for (final Map.Entry<String, Field> fieldEntry : fields.entrySet()) {
+			final java.lang.Object value = fieldEntry.getValue().get(object);
+			if (value != null) {
+				entries.add(EntryMut.newEntry(fieldEntry.getKey(), convert(value)));
+			}
+		}
+		return ValueMut.createObject(entries);
 	}
 
 	static <T> ValueMut convert(final T object) {

@@ -38,7 +38,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_11)) {
 }
 
 group 'com.surrealdb'
-version '2.1.1-SNAPSHOT'
+version '2.1.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -199,6 +199,12 @@ test {
     // afterTest { d, r -> logger.lifecycle("[{}] END   {} > {} => {}", System.currentTimeMillis(), d.className, d.name, r.resultType) }
     testLogging {
         events "passed", "failed", "skipped"
+        // Also emit the events at INFO level, otherwise `gradlew -i` (as used
+        // in CI) hides them: Gradle switches to the per-level event set, which
+        // is empty by default.
+        info {
+            events "passed", "failed", "skipped"
+        }
         showStackTraces = true
         exceptionFormat = "full"
     }
@@ -232,6 +238,9 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
         maxParallelForks = 1
         testLogging {
             events "passed", "failed", "skipped"
+            info {
+                events "passed", "failed", "skipped"
+            }
             showStackTraces = true
             exceptionFormat = "full"
         }
@@ -242,6 +251,15 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
     // Disable the auto-generated tasks for the recordTest source set on older JDKs.
     tasks.named('compileRecordTestJava') { enabled = false }
     tasks.matching { it.name == 'processRecordTestResources' }.configureEach { enabled = false }
+
+    // Disabled placeholder so `gradlew recordTest` is invocable on every JDK
+    // (the CI matrix runs it on all legs); it reports SKIPPED instead of
+    // failing with "task not found".
+    tasks.register('recordTest') {
+        description = 'Runs the Java-record tests (requires JDK 16+; skipped on this JDK).'
+        group = 'verification'
+        enabled = false
+    }
 }
 
 jacocoTestReport {

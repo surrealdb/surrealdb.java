@@ -20,8 +20,10 @@ public class Array extends Native implements Iterable<Value> {
 	 * Creates an Array from a heterogeneous sequence of Java values. Supported
 	 * element types include {@code null}, {@link String}, the boxed numeric types,
 	 * {@link Boolean}, {@link java.math.BigDecimal}, {@link java.util.UUID},
-	 * {@link java.time.Duration}, {@link java.time.ZonedDateTime}, and the
-	 * SurrealDB wrappers {@link Array}, {@link Id}, {@link RecordId}, and
+	 * {@link java.time.Duration}, {@link java.time.Instant},
+	 * {@link java.time.ZonedDateTime}, {@link java.time.OffsetDateTime},
+	 * {@link java.time.LocalDateTime} (interpreted as UTC), {@link java.util.Date},
+	 * and the SurrealDB wrappers {@link Array}, {@link Id}, {@link RecordId}, and
 	 * {@link com.surrealdb.Object}. Unsupported types raise
 	 * {@link IllegalArgumentException}.
 	 * <p>

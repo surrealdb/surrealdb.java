@@ -6,6 +6,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,6 +124,36 @@ class ValueClassConverter<T> {
 				return value.getRecordId().getId();
 			}
 			return value.getRecordId();
+		}
+		if (value.isDateTime()) {
+			// Value.getDateTime() returns the datetime at UTC, so LocalDateTime
+			// keeps the same interpretation as the write side (ValueMut).
+			final ZonedDateTime dateTime = value.getDateTime();
+			if (type == Instant.class) {
+				return dateTime.toInstant();
+			}
+			if (type == OffsetDateTime.class) {
+				return dateTime.toOffsetDateTime();
+			}
+			if (type == LocalDateTime.class) {
+				return dateTime.toLocalDateTime();
+			}
+			if (type == java.util.Date.class) {
+				return java.util.Date.from(dateTime.toInstant());
+			}
+			// The java.sql types are matched by name first so that runtimes
+			// without the java.sql module never load these classes.
+			final String typeName = type.getName();
+			if ("java.sql.Timestamp".equals(typeName)) {
+				return java.sql.Timestamp.from(dateTime.toInstant());
+			}
+			if ("java.sql.Date".equals(typeName)) {
+				return new java.sql.Date(dateTime.toInstant().toEpochMilli());
+			}
+			if ("java.sql.Time".equals(typeName)) {
+				return new java.sql.Time(dateTime.toInstant().toEpochMilli());
+			}
+			return dateTime;
 		}
 		return convertSingleValue(value);
 	}
@@ -258,23 +292,66 @@ class ValueClassConverter<T> {
 		}
 		final T target = clazz.getConstructor().newInstance();
 		initOptionalFields(clazz, target);
+		final Map<String, Field> fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);
 		for (final Entry entry : source) {
-			try {
-				final String key = entry.getKey();
-				final Value value = entry.getValue();
-				final Field field = getInheritedDeclaredField(clazz, key);
-				field.setAccessible(true);
-				final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());
-				if (converted == null && field.getType().isPrimitive()) {
-					// Leave primitive fields at their default value; setting null would throw.
-					continue;
-				}
-				field.set(target, converted);
-			} catch (NoSuchFieldException e) {
+			final String key = entry.getKey();
+			final Value value = entry.getValue();
+			final Field field = fields.get(key);
+			if (field == null) {
 				// Safe to ignore: source has a key with no matching field.
+				continue;
 			}
+			final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());
+			if (converted == null && field.getType().isPrimitive()) {
+				// Leave primitive fields at their default value; setting null would throw.
+				continue;
+			}
+			field.set(target, converted);
 		}
 		return target;
+	}
+
+	// Record component metadata is immutable at runtime; resolve names, types,
+	// and the canonical constructor once per record class. See the matching
+	// ClassValue note in SurrealFieldNames for the failure semantics.
+	private static final ClassValue<RecordMeta> RECORD_META = new ClassValue<RecordMeta>() {
+		@Override
+		protected RecordMeta computeValue(final Class<?> clazz) {
+			try {
+				final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);
+				final int count = componentsArray.length;
+				final String[] names = new String[count];
+				final Class<?>[] types = new Class<?>[count];
+				final Type[] genericTypes = new Type[count];
+				for (int i = 0; i < count; i++) {
+					final java.lang.Object rc = componentsArray[i];
+					final String componentName = (String) RC_GET_NAME.invoke(rc);
+					names[i] = recordComponentSurrealName(clazz, componentName);
+					types[i] = (Class<?>) RC_GET_TYPE.invoke(rc);
+					genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);
+				}
+				ensureUniqueRecordComponentNames(clazz, names);
+				final Constructor<?> constructor = clazz.getDeclaredConstructor(types);
+				constructor.setAccessible(true);
+				return new RecordMeta(names, types, genericTypes, constructor);
+			} catch (ReflectiveOperationException e) {
+				throw new SurrealException("Failed to read record metadata for " + clazz.getName(), e);
+			}
+		}
+	};
+
+	private static final class RecordMeta {
+		final String[] names;
+		final Class<?>[] types;
+		final Type[] genericTypes;
+		final Constructor<?> constructor;
+
+		RecordMeta(String[] names, Class<?>[] types, Type[] genericTypes, Constructor<?> constructor) {
+			this.names = names;
+			this.types = types;
+			this.genericTypes = genericTypes;
+			this.constructor = constructor;
+		}
 	}
 
 	private static <T> T convertRecord(final Class<T> clazz, final Object source) throws ReflectiveOperationException {
@@ -283,17 +360,8 @@ class ValueClassConverter<T> {
 			// RecordComponent.
 			throw new SurrealException("Record reflection APIs unavailable for " + clazz.getName());
 		}
-		final java.lang.Object[] componentsArray = (java.lang.Object[]) GET_RECORD_COMPONENTS.invoke(clazz);
-		final int count = componentsArray.length;
-		final String[] names = new String[count];
-		final Class<?>[] types = new Class<?>[count];
-		final Type[] genericTypes = new Type[count];
-		for (int i = 0; i < count; i++) {
-			final java.lang.Object rc = componentsArray[i];
-			names[i] = (String) RC_GET_NAME.invoke(rc);
-			types[i] = (Class<?>) RC_GET_TYPE.invoke(rc);
-			genericTypes[i] = (Type) RC_GET_GENERIC_TYPE.invoke(rc);
-		}
+		final RecordMeta meta = RECORD_META.get(clazz);
+		final int count = meta.names.length;
 
 		// Build a lookup of incoming entries keyed by name.
 		final Map<String, Value> entries = new HashMap<>();
@@ -303,13 +371,13 @@ class ValueClassConverter<T> {
 
 		final java.lang.Object[] args = new java.lang.Object[count];
 		for (int i = 0; i < count; i++) {
-			final Value value = entries.get(names[i]);
-			final Class<?> type = types[i];
+			final Value value = entries.get(meta.names[i]);
+			final Class<?> type = meta.types[i];
 			if (value == null) {
 				args[i] = defaultForRecordComponent(type);
 				continue;
 			}
-			final java.lang.Object converted = convertValueToType(value, type, genericTypes[i]);
+			final java.lang.Object converted = convertValueToType(value, type, meta.genericTypes[i]);
 			if (converted == null) {
 				args[i] = defaultForRecordComponent(type);
 			} else {
@@ -317,9 +385,24 @@ class ValueClassConverter<T> {
 			}
 		}
 
-		final Constructor<T> ctor = clazz.getDeclaredConstructor(types);
-		ctor.setAccessible(true);
-		return ctor.newInstance(args);
+		@SuppressWarnings("unchecked")
+		final T instance = (T) meta.constructor.newInstance(args);
+		return instance;
+	}
+
+	private static String recordComponentSurrealName(final Class<?> clazz, final String componentName)
+			throws NoSuchFieldException {
+		return SurrealFieldNames.nameFor(clazz.getDeclaredField(componentName));
+	}
+
+	private static void ensureUniqueRecordComponentNames(final Class<?> clazz, final String[] names) {
+		final Map<String, Boolean> seen = new HashMap<>();
+		for (final String name : names) {
+			if (seen.put(name, Boolean.TRUE) != null) {
+				throw new SurrealException(
+						"Duplicate SurrealDB field name '" + name + "' on record " + clazz.getName());
+			}
+		}
 	}
 
 	private static java.lang.Object defaultForRecordComponent(final Class<?> type) {
@@ -364,17 +447,6 @@ class ValueClassConverter<T> {
 			}
 			c = c.getSuperclass();
 		}
-	}
-
-	static Field getInheritedDeclaredField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-		while (clazz != null) {
-			try {
-				return clazz.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException e) {
-				clazz = clazz.getSuperclass();
-			}
-		}
-		throw new NoSuchFieldException("Field '" + fieldName + "' not found in class hierarchy.");
 	}
 
 	final T convert(final Value value) {
