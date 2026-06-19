@@ -200,6 +200,8 @@ UTC.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createFile(java.lang.String,java.lang.String)" class="member-name-link">createFile(String, String)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/ValueMut.html#createGeometry(com.surrealdb.Geometry)" class="member-name-link">createGeometry(Geometry)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createId(com.surrealdb.Id)" class="member-name-link">createId(Id)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createLong(long)" class="member-name-link">createLong(long)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
@@ -334,6 +336,10 @@ already hold a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.
 <h2 class="title" id="I:G">G</h2>
 <dl class="index">
 <dt><a href="com/surrealdb/Geometry.html" class="type-name-link" title="class in com.surrealdb">Geometry</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
+<dd>
+<div class="block">A SurrealDB geometry value.</div>
+</dd>
+<dt><a href="com/surrealdb/Geometry.html#geometryCollection(java.util.List)" class="member-name-link">geometryCollection(List)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Array.html#get(int)" class="member-name-link">get(int)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Array.html" title="class in com.surrealdb">Array</a></dt>
 <dd>&nbsp;</dd>
@@ -409,6 +415,8 @@ response).</div>
 </dd>
 <dt><a href="com/surrealdb/Value.html#getGeometry()" class="member-name-link">getGeometry()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#getGeometryCollection()" class="member-name-link">getGeometryCollection()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/RecordId.html#getId()" class="member-name-link">getId()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordId.html" title="class in com.surrealdb">RecordId</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Entry.html#getKey()" class="member-name-link">getKey()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Entry.html" title="class in com.surrealdb">Entry</a></dt>
@@ -425,6 +433,8 @@ response).</div>
 <dd>
 <div class="block">Returns the error kind as an enum for type-safe matching.</div>
 </dd>
+<dt><a href="com/surrealdb/Geometry.html#getLineString()" class="member-name-link">getLineString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Id.html#getLong()" class="member-name-link">getLong()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#getLong()" class="member-name-link">getLong()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
@@ -437,6 +447,12 @@ response).</div>
 <dd>
 <div class="block">Returns the method name, if this is a method-not-found error.</div>
 </dd>
+<dt><a href="com/surrealdb/Geometry.html#getMultiLineString()" class="member-name-link">getMultiLineString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#getMultiPoint()" class="member-name-link">getMultiPoint()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#getMultiPolygon()" class="member-name-link">getMultiPolygon()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/NsDb.html#getNamespace()" class="member-name-link">getNamespace()</a> - Method in class com.surrealdb.<a href="com/surrealdb/NsDb.html" title="class in com.surrealdb">NsDb</a></dt>
 <dd>
 <div class="block">Returns the current namespace.</div>
@@ -474,6 +490,10 @@ error.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Geometry.html#getPoint()" class="member-name-link">getPoint()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#getPolygon()" class="member-name-link">getPolygon()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>
+<div class="block">Returns the polygon's rings.</div>
+</dd>
 <dt><a href="com/surrealdb/LiveNotification.html#getQueryId()" class="member-name-link">getQueryId()</a> - Method in class com.surrealdb.<a href="com/surrealdb/LiveNotification.html" title="class in com.surrealdb">LiveNotification</a></dt>
 <dd>
 <div class="block">The live query UUID this notification belongs to.</div>
@@ -556,6 +576,12 @@ error.</div>
 <dt><a href="com/surrealdb/signin/Token.html#getToken()" class="member-name-link">getToken()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/Token.html" title="class in com.surrealdb.signin">Token</a></dt>
 <dd>
 <div class="block">Returns the access token.</div>
+</dd>
+<dt><a href="com/surrealdb/Geometry.html#getType()" class="member-name-link">getType()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>
+<div class="block">Returns the geometry type: one of <code>"Point"</code>, <code>"LineString"</code>,
+<code>"Polygon"</code>, <code>"MultiPoint"</code>, <code>"MultiLineString"</code>,
+<code>"MultiPolygon"</code>, or <code>"GeometryCollection"</code>.</div>
 </dd>
 <dt><a href="com/surrealdb/signin/RootCredential.html#getUsername()" class="member-name-link">getUsername()</a> - Method in class com.surrealdb.signin.<a href="com/surrealdb/signin/RootCredential.html" title="class in com.surrealdb.signin">RootCredential</a></dt>
 <dd>&nbsp;</dd>
@@ -708,10 +734,14 @@ opposed to serialization).</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isGeometry()" class="member-name-link">isGeometry()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#isGeometryCollection()" class="member-name-link">isGeometryCollection()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/NotAllowedException.html#isInvalidAuth()" class="member-name-link">isInvalidAuth()</a> - Method in exception class com.surrealdb.<a href="com/surrealdb/NotAllowedException.html" title="class in com.surrealdb">NotAllowedException</a></dt>
 <dd>
 <div class="block">Returns <code>true</code> when authentication failed (invalid credentials).</div>
 </dd>
+<dt><a href="com/surrealdb/Geometry.html#isLineString()" class="member-name-link">isLineString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ConfigurationException.html#isLiveQueryNotSupported()" class="member-name-link">isLiveQueryNotSupported()</a> - Method in exception class com.surrealdb.<a href="com/surrealdb/ConfigurationException.html" title="class in com.surrealdb">ConfigurationException</a></dt>
 <dd>
 <div class="block">Returns <code>true</code> when the error indicates that live queries are not
@@ -720,6 +750,12 @@ supported.</div>
 <dt><a href="com/surrealdb/Id.html#isLong()" class="member-name-link">isLong()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isLong()" class="member-name-link">isLong()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#isMultiLineString()" class="member-name-link">isMultiLineString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#isMultiPoint()" class="member-name-link">isMultiPoint()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#isMultiPolygon()" class="member-name-link">isMultiPolygon()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isNone()" class="member-name-link">isNone()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
@@ -738,6 +774,8 @@ supported.</div>
 <div class="block">Returns <code>true</code> when the error is a parse error.</div>
 </dd>
 <dt><a href="com/surrealdb/Geometry.html#isPoint()" class="member-name-link">isPoint()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#isPolygon()" class="member-name-link">isPolygon()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isRange()" class="member-name-link">isRange()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
@@ -778,6 +816,8 @@ supported.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Object.html#len()" class="member-name-link">len()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Object.html" title="class in com.surrealdb">Object</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#lineString(java.util.List)" class="member-name-link">lineString(List)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ConfigurationDetailKind.html#LIVE_QUERY_NOT_SUPPORTED" class="member-name-link">LIVE_QUERY_NOT_SUPPORTED</a> - Static variable in class com.surrealdb.<a href="com/surrealdb/ConfigurationDetailKind.html" title="class in com.surrealdb">ConfigurationDetailKind</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/LiveNotification.html" class="type-name-link" title="class in com.surrealdb">LiveNotification</a> - Class in <a href="com/surrealdb/package-summary.html">com.surrealdb</a></dt>
@@ -805,6 +845,12 @@ supported.</div>
 <dt><a href="com/surrealdb/NotFoundDetailKind.html#METHOD" class="member-name-link">METHOD</a> - Static variable in class com.surrealdb.<a href="com/surrealdb/NotFoundDetailKind.html" title="class in com.surrealdb">NotFoundDetailKind</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/AuthDetailKind.html#MISSING_USER_OR_PASS" class="member-name-link">MISSING_USER_OR_PASS</a> - Static variable in class com.surrealdb.<a href="com/surrealdb/AuthDetailKind.html" title="class in com.surrealdb">AuthDetailKind</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#multiLineString(java.util.List)" class="member-name-link">multiLineString(List)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#multiPoint(java.util.List)" class="member-name-link">multiPoint(List)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#multiPolygon(java.util.List)" class="member-name-link">multiPolygon(List)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
 <dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:N">N</h2>
@@ -899,6 +945,14 @@ namespace, database, and authentication state.</div>
 <dt><a href="com/surrealdb/UpType.html#PATCH" class="member-name-link">PATCH</a> - Enum constant in enum class com.surrealdb.<a href="com/surrealdb/UpType.html" title="enum class in com.surrealdb">UpType</a></dt>
 <dd>
 <div class="block">Represents a patch update operation.</div>
+</dd>
+<dt><a href="com/surrealdb/Geometry.html#point(double,double)" class="member-name-link">point(double, double)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#point(java.awt.geom.Point2D.Double)" class="member-name-link">point(Point2D.Double)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Geometry.html#polygon(java.util.List)" class="member-name-link">polygon(List)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/Geometry.html" title="class in com.surrealdb">Geometry</a></dt>
+<dd>
+<div class="block">Builds a polygon.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:Q">Q</h2>

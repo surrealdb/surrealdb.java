@@ -73,6 +73,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#createUuid(java.util.UUID)" tabindex="0">createUuid(UUID)</a></li>
 <li><a href="#createId(com.surrealdb.Id)" tabindex="0">createId(Id)</a></li>
 <li><a href="#createRecordId(com.surrealdb.RecordId)" tabindex="0">createRecordId(RecordId)</a></li>
+<li><a href="#createGeometry(com.surrealdb.Geometry)" tabindex="0">createGeometry(Geometry)</a></li>
 <li><a href="#createArray(com.surrealdb.Array)" tabindex="0">createArray(Array)</a></li>
 <li><a href="#createArray(java.util.List)" tabindex="0">createArray(List)</a></li>
 <li><a href="#createObject(com.surrealdb.Object)" tabindex="0">createObject(Object)</a></li>
@@ -156,35 +157,38 @@ UTC.</div>
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;key)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createId(com.surrealdb.Id)" class="member-name-link">createId</a><wbr>(<a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;id)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createGeometry(com.surrealdb.Geometry)" class="member-name-link">createGeometry</a><wbr>(<a href="Geometry.html" title="class in com.surrealdb">Geometry</a>&nbsp;geometry)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createLong(long)" class="member-name-link">createLong</a><wbr>(long&nbsp;l)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createId(com.surrealdb.Id)" class="member-name-link">createId</a><wbr>(<a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;id)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createNone()" class="member-name-link">createNone</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createLong(long)" class="member-name-link">createLong</a><wbr>(long&nbsp;l)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createNull()" class="member-name-link">createNull</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createNone()" class="member-name-link">createNone</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createObject(com.surrealdb.Object)" class="member-name-link">createObject</a><wbr>(<a href="Object.html" title="class in com.surrealdb">Object</a>&nbsp;object)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createNull()" class="member-name-link">createNull</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createObject(java.util.List)" class="member-name-link">createObject</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="EntryMut.html" title="class in com.surrealdb">EntryMut</a>&gt;&nbsp;entries)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createObject(com.surrealdb.Object)" class="member-name-link">createObject</a><wbr>(<a href="Object.html" title="class in com.surrealdb">Object</a>&nbsp;object)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createRecordId(com.surrealdb.RecordId)" class="member-name-link">createRecordId</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createObject(java.util.List)" class="member-name-link">createObject</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="EntryMut.html" title="class in com.surrealdb">EntryMut</a>&gt;&nbsp;entries)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createString(java.lang.String)" class="member-name-link">createString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;s)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createRecordId(com.surrealdb.RecordId)" class="member-name-link">createRecordId</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createTable(java.lang.String)" class="member-name-link">createTable</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createString(java.lang.String)" class="member-name-link">createString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;s)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createUuid(java.util.UUID)" class="member-name-link">createUuid</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;uuid)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createTable(java.lang.String)" class="member-name-link">createTable</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createUuid(java.util.UUID)" class="member-name-link">createUuid</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;uuid)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -342,6 +346,14 @@ epoch-millisecond value instead.</div>
 <h3>createRecordId</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createRecordId</span><wbr><span class="parameters">(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="createGeometry(com.surrealdb.Geometry)">
+<h3>createGeometry</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createGeometry</span><wbr><span class="parameters">(<a href="Geometry.html" title="class in com.surrealdb">Geometry</a>&nbsp;geometry)</span></div>
 </div>
 </section>
 </li>
