@@ -111,6 +111,9 @@ class ValueBuilder {
 		if (object instanceof Array) {
 			return ValueMut.createArray((Array) object);
 		}
+		if (object instanceof Geometry) {
+			return ValueMut.createGeometry((Geometry) object);
+		}
 		if (object instanceof Object) {
 			return ValueMut.createObject((Object) object);
 		}

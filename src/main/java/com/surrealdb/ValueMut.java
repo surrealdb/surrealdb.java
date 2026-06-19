@@ -40,6 +40,8 @@ public class ValueMut extends Native {
 
 	private static native long newRecordId(long ptr);
 
+	private static native long newGeometry(long ptr);
+
 	private static native long newArray(long ptr);
 
 	private static native long newArrayOf(long[] ptrs);
@@ -135,6 +137,10 @@ public class ValueMut extends Native {
 
 	public static ValueMut createRecordId(RecordId recordId) {
 		return new ValueMut(newRecordId(recordId.getPtr()));
+	}
+
+	public static ValueMut createGeometry(Geometry geometry) {
+		return new ValueMut(newGeometry(geometry.getPtr()));
 	}
 
 	public static ValueMut createArray(Array array) {
