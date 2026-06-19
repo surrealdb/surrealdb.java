@@ -568,6 +568,17 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
         // take(0) also surfaces subscription errors (e.g. the table does not exist).
         let uuid_str = match res.take::<Value>(0) {
             Ok(Value::Uuid(uuid)) => uuid.to_string(),
+            // Some servers/protocols return the live-query id wrapped in a one-element
+            // array; unwrap it, mirroring the SDK's `.select(table).live()` builder.
+            Ok(Value::Array(mut arr)) if arr.len() == 1 => match arr.pop() {
+                Some(Value::Uuid(uuid)) => uuid.to_string(),
+                other => {
+                    return SurrealError::SurrealDBJni(format!(
+                        "LIVE SELECT did not return a UUID: {other:?}"
+                    ))
+                    .exception(env, null_mut);
+                }
+            },
             Ok(other) => {
                 return SurrealError::SurrealDBJni(format!(
                     "LIVE SELECT did not return a UUID: {}",
