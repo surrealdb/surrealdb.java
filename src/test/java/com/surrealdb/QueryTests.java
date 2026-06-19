@@ -248,8 +248,7 @@ public class QueryTests {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			// Exterior ring + one interior hole.
 			final Geometry g = literalGeometry(surreal, "polygon",
-					"{ type: \"Polygon\", coordinates: ["
-							+ "[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]], "
+					"{ type: \"Polygon\", coordinates: [" + "[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]], "
 							+ "[[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]" + "] }");
 			assertEquals("Polygon", g.getType());
 			assertTrue(g.isPolygon());
@@ -307,8 +306,7 @@ public class QueryTests {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			final Geometry g = literalGeometry(surreal, "collection",
-					"{ type: \"GeometryCollection\", geometries: ["
-							+ "{ type: \"Point\", coordinates: [0, 0] }, "
+					"{ type: \"GeometryCollection\", geometries: [" + "{ type: \"Point\", coordinates: [0, 0] }, "
 							+ "{ type: \"LineString\", coordinates: [[1, 1], [2, 2]] }" + "] }");
 			assertEquals("GeometryCollection", g.getType());
 			assertTrue(g.isGeometryCollection());
@@ -338,28 +336,30 @@ public class QueryTests {
 			final Geometry point = Geometry.point(1.5, 2.5);
 			assertEquals(point, roundTripBoundParam(surreal, point));
 
-			final Geometry line = Geometry.lineString(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
+			final Geometry line = Geometry
+					.lineString(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
 			final Geometry lineRead = roundTripBoundParam(surreal, line);
 			assertEquals("LineString", lineRead.getType());
 			assertEquals(line, lineRead);
 			assertEquals(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)), lineRead.getLineString());
 
-			final Geometry polygon = Geometry.polygon(Collections.singletonList(Arrays.asList(
-					new Point2D.Double(0, 0), new Point2D.Double(4, 0), new Point2D.Double(4, 4),
-					new Point2D.Double(0, 4), new Point2D.Double(0, 0))));
+			final Geometry polygon = Geometry
+					.polygon(Collections.singletonList(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(4, 0),
+							new Point2D.Double(4, 4), new Point2D.Double(0, 4), new Point2D.Double(0, 0))));
 			assertEquals(polygon, roundTripBoundParam(surreal, polygon));
 
-			final Geometry multiPoint = Geometry.multiPoint(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
+			final Geometry multiPoint = Geometry
+					.multiPoint(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
 			assertEquals(multiPoint, roundTripBoundParam(surreal, multiPoint));
 
-			final Geometry multiLine = Geometry.multiLineString(Arrays.asList(
-					Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)),
-					Arrays.asList(new Point2D.Double(2, 2), new Point2D.Double(3, 3))));
+			final Geometry multiLine = Geometry
+					.multiLineString(Arrays.asList(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)),
+							Arrays.asList(new Point2D.Double(2, 2), new Point2D.Double(3, 3))));
 			assertEquals(multiLine, roundTripBoundParam(surreal, multiLine));
 
-			final Geometry multiPolygon = Geometry.multiPolygon(Collections.singletonList(Collections.singletonList(
-					Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 0), new Point2D.Double(1, 1),
-							new Point2D.Double(0, 1), new Point2D.Double(0, 0)))));
+			final Geometry multiPolygon = Geometry.multiPolygon(Collections.singletonList(
+					Collections.singletonList(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 0),
+							new Point2D.Double(1, 1), new Point2D.Double(0, 1), new Point2D.Double(0, 0)))));
 			final Geometry multiPolygonRead = roundTripBoundParam(surreal, multiPolygon);
 			assertEquals("MultiPolygon", multiPolygonRead.getType());
 			assertEquals(multiPolygon, multiPolygonRead);
@@ -395,7 +395,8 @@ public class QueryTests {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			final Geometry point = Geometry.point(1, 2);
-			final Geometry line = Geometry.lineString(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
+			final Geometry line = Geometry
+					.lineString(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
 			final Geometry inner = Geometry.geometryCollection(Arrays.asList(point, line));
 			// A collection nested inside another collection.
 			final Geometry nested = Geometry.geometryCollection(Arrays.asList(point, inner));

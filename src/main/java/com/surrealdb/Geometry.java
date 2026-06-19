@@ -6,15 +6,17 @@ import java.util.List;
 
 /**
  * A SurrealDB geometry value. Supports all GeoJSON-style types: {@code Point},
- * {@code LineString}, {@code Polygon}, {@code MultiPoint}, {@code MultiLineString},
- * {@code MultiPolygon}, and {@code GeometryCollection}.
+ * {@code LineString}, {@code Polygon}, {@code MultiPoint},
+ * {@code MultiLineString}, {@code MultiPolygon}, and
+ * {@code GeometryCollection}.
  * <p>
  * Coordinates use {@link java.awt.geom.Point2D.Double} where {@code x} is the
  * longitude and {@code y} is the latitude (GeoJSON ordering). Multi-coordinate
  * types are exposed as nested {@link List}s of points.
  * <p>
- * Instances can be read from query results (via {@link Value#getGeometry()}) and
- * constructed with the static factory methods to be sent back to the database.
+ * Instances can be read from query results (via {@link Value#getGeometry()})
+ * and constructed with the static factory methods to be sent back to the
+ * database.
  */
 public class Geometry extends Native {
 
