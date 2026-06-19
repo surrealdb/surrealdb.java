@@ -660,7 +660,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_kill<'local>(
         let mut params = BTreeMap::new();
         params.insert("id".to_string(), Value::Uuid(uuid));
         let res = surrealdb_query::<Value>(surreal, "KILL $id", Some(params));
-        let _ = check_query_result!(env, res, || ());
+        let mut res = check_query_result!(env, res, || ());
+        // Surface per-statement KILL failures (e.g. unknown or not-owned live query),
+        // which are stored at index 0 even when the outer query result is Ok.
+        let _ = take_one_result!(env, res, || ());
     })
 }
 
