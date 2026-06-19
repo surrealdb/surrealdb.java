@@ -45,6 +45,7 @@ View the SDK documentation [here](https://surrealdb.com/docs/integration/librari
 - Support of 'memory' (embedded SurrealDB).
 - Support of remote connection to SurrealDB.
 - Mutable POJOs (Java 8+) and immutable `record` classes (JDK 16+) for `create` / `select`.
+- All geometry types (Point, LineString, Polygon, their multi-variants, and GeometryCollection) for reading and writing.
 - Supported on JAVA JDK 8, 11, 17, 21, 25.
 - Supported architectures:
     - Linux (ARM) aarch64
@@ -192,6 +193,42 @@ public class Example {
 }
 ```
 
+### Geometry
+
+All GeoJSON-style geometry types are supported — `Point`, `LineString`, `Polygon`,
+`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection` — for both
+reading and writing. Coordinates use `java.awt.geom.Point2D.Double`, where `x` is the
+longitude and `y` is the latitude.
+
+```java
+import com.surrealdb.Geometry;
+import com.surrealdb.Surreal;
+import com.surrealdb.Value;
+
+import java.awt.geom.Point2D;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+try (final Surreal driver = new Surreal()) {
+    driver.connect("memory").useNs("test").useDb("test");
+
+    // Build a geometry in Java and store it via a bound parameter
+    Geometry route = Geometry.lineString(Arrays.asList(
+            new Point2D.Double(-0.118, 51.51),
+            new Point2D.Double(-0.121, 51.50)));
+    Map<String, Object> params = new HashMap<>();
+    params.put("route", route);
+    driver.query("UPSERT path:1 SET route = $route", params);
+
+    // Read it back
+    Value value = driver.query("SELECT VALUE route FROM path:1").take(0).getArray().get(0);
+    Geometry geom = value.getGeometry();
+    System.out.println(geom.getType());        // LineString
+    System.out.println(geom.getLineString());  // [Point2D.Double[...], Point2D.Double[...]]
+}
+```
+
 ### Reports
 
 - [Javadoc](https://surrealdb.github.io/surrealdb.java/javadoc/)
@@ -216,9 +253,7 @@ cargo build
 
 ### Planned Features
 
-- All Geometry types (actually only points)
-- Ranges
-- Future
-- Live queries
+- Futures
+- Killing live queries by ID
 
 [Open an issue for feature requests](https://github.com/surrealdb/surrealdb.java/issues)

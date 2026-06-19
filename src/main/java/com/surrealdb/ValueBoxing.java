@@ -67,6 +67,9 @@ final class ValueBoxing {
 		if (e instanceof com.surrealdb.Object) {
 			return ValueMut.createObject((com.surrealdb.Object) e);
 		}
+		if (e instanceof Geometry) {
+			return ValueMut.createGeometry((Geometry) e);
+		}
 		throw new IllegalArgumentException("unsupported element type " + e.getClass().getName());
 	}
 }

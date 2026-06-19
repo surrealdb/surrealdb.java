@@ -4111,6 +4111,7 @@ dependencies = [
  "chrono",
  "dashmap",
  "futures",
+ "geo",
  "jni 0.22.4",
  "once_cell",
  "parking_lot",

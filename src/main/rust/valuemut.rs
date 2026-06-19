@@ -186,6 +186,22 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newRecordId<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newGeometry<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if matches!(value.as_ref(), Value::Geometry(_)) {
+            // Clone (not move) so the Java Geometry stays valid and reusable.
+            return JniTypes::new_value_mut(value.as_ref().clone());
+        }
+        SurrealError::NullPointerException("Geometry").exception(env, || 0)
+    })
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newArray<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,

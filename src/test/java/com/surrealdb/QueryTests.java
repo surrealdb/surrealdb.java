@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -217,6 +219,195 @@ public class QueryTests {
 							rowObject.get("pt").getGeometry().getPoint());
 				}
 			}
+		}
+	}
+
+	// Reads a geometry literal of the given SurrealQL subtype directly via RETURN.
+	private static Geometry literalGeometry(Surreal surreal, String subType, String geoJson) {
+		final Value value = surreal.query("RETURN <geometry<" + subType + ">> " + geoJson).take(0);
+		assertTrue(value.isGeometry());
+		return value.getGeometry();
+	}
+
+	@Test
+	void queryGeometryLineString() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Geometry g = literalGeometry(surreal, "line",
+					"{ type: \"LineString\", coordinates: [[0, 0], [1, 1], [2, 0]] }");
+			assertEquals("LineString", g.getType());
+			assertTrue(g.isLineString());
+			assertEquals(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1), new Point2D.Double(2, 0)),
+					g.getLineString());
+		}
+	}
+
+	@Test
+	void queryGeometryPolygon() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			// Exterior ring + one interior hole.
+			final Geometry g = literalGeometry(surreal, "polygon",
+					"{ type: \"Polygon\", coordinates: ["
+							+ "[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]], "
+							+ "[[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]" + "] }");
+			assertEquals("Polygon", g.getType());
+			assertTrue(g.isPolygon());
+			final List<List<Point2D.Double>> rings = g.getPolygon();
+			assertEquals(2, rings.size());
+			assertEquals(new Point2D.Double(0, 0), rings.get(0).get(0));
+			assertEquals(new Point2D.Double(1, 1), rings.get(1).get(0));
+		}
+	}
+
+	@Test
+	void queryGeometryMultiPoint() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Geometry g = literalGeometry(surreal, "multipoint",
+					"{ type: \"MultiPoint\", coordinates: [[0, 0], [1, 1]] }");
+			assertEquals("MultiPoint", g.getType());
+			assertTrue(g.isMultiPoint());
+			assertEquals(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)), g.getMultiPoint());
+		}
+	}
+
+	@Test
+	void queryGeometryMultiLineString() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Geometry g = literalGeometry(surreal, "multiline",
+					"{ type: \"MultiLineString\", coordinates: [[[0, 0], [1, 1]], [[2, 2], [3, 3]]] }");
+			assertEquals("MultiLineString", g.getType());
+			assertTrue(g.isMultiLineString());
+			final List<List<Point2D.Double>> lines = g.getMultiLineString();
+			assertEquals(2, lines.size());
+			assertEquals(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)), lines.get(0));
+			assertEquals(Arrays.asList(new Point2D.Double(2, 2), new Point2D.Double(3, 3)), lines.get(1));
+		}
+	}
+
+	@Test
+	void queryGeometryMultiPolygon() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Geometry g = literalGeometry(surreal, "multipolygon",
+					"{ type: \"MultiPolygon\", coordinates: [[[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]] }");
+			assertEquals("MultiPolygon", g.getType());
+			assertTrue(g.isMultiPolygon());
+			final List<List<List<Point2D.Double>>> polys = g.getMultiPolygon();
+			assertEquals(1, polys.size());
+			assertEquals(1, polys.get(0).size());
+			assertEquals(new Point2D.Double(0, 0), polys.get(0).get(0).get(0));
+		}
+	}
+
+	@Test
+	void queryGeometryCollection() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Geometry g = literalGeometry(surreal, "collection",
+					"{ type: \"GeometryCollection\", geometries: ["
+							+ "{ type: \"Point\", coordinates: [0, 0] }, "
+							+ "{ type: \"LineString\", coordinates: [[1, 1], [2, 2]] }" + "] }");
+			assertEquals("GeometryCollection", g.getType());
+			assertTrue(g.isGeometryCollection());
+			final List<Geometry> children = g.getGeometryCollection();
+			assertEquals(2, children.size());
+			assertTrue(children.get(0).isPoint());
+			assertEquals(new Point2D.Double(0, 0), children.get(0).getPoint());
+			assertTrue(children.get(1).isLineString());
+			assertEquals(Arrays.asList(new Point2D.Double(1, 1), new Point2D.Double(2, 2)),
+					children.get(1).getLineString());
+		}
+	}
+
+	// Stores a geometry via a bound parameter and reads it back from the database.
+	private static Geometry roundTripBoundParam(Surreal surreal, Geometry geometry) {
+		final Map<String, java.lang.Object> params = new HashMap<>();
+		params.put("g", geometry);
+		surreal.query("UPSERT geo:1 SET shape = $g", params);
+		return surreal.query("SELECT VALUE shape FROM geo:1").take(0).getArray().get(0).getGeometry();
+	}
+
+	@Test
+	void geometryRoundTripViaBoundParam() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+
+			final Geometry point = Geometry.point(1.5, 2.5);
+			assertEquals(point, roundTripBoundParam(surreal, point));
+
+			final Geometry line = Geometry.lineString(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
+			final Geometry lineRead = roundTripBoundParam(surreal, line);
+			assertEquals("LineString", lineRead.getType());
+			assertEquals(line, lineRead);
+			assertEquals(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)), lineRead.getLineString());
+
+			final Geometry polygon = Geometry.polygon(Collections.singletonList(Arrays.asList(
+					new Point2D.Double(0, 0), new Point2D.Double(4, 0), new Point2D.Double(4, 4),
+					new Point2D.Double(0, 4), new Point2D.Double(0, 0))));
+			assertEquals(polygon, roundTripBoundParam(surreal, polygon));
+
+			final Geometry multiPoint = Geometry.multiPoint(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
+			assertEquals(multiPoint, roundTripBoundParam(surreal, multiPoint));
+
+			final Geometry multiLine = Geometry.multiLineString(Arrays.asList(
+					Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)),
+					Arrays.asList(new Point2D.Double(2, 2), new Point2D.Double(3, 3))));
+			assertEquals(multiLine, roundTripBoundParam(surreal, multiLine));
+
+			final Geometry multiPolygon = Geometry.multiPolygon(Collections.singletonList(Collections.singletonList(
+					Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 0), new Point2D.Double(1, 1),
+							new Point2D.Double(0, 1), new Point2D.Double(0, 0)))));
+			final Geometry multiPolygonRead = roundTripBoundParam(surreal, multiPolygon);
+			assertEquals("MultiPolygon", multiPolygonRead.getType());
+			assertEquals(multiPolygon, multiPolygonRead);
+			assertEquals(new Point2D.Double(0, 0), multiPolygonRead.getMultiPolygon().get(0).get(0).get(0));
+		}
+	}
+
+	@Test
+	void geometryRoundTripViaContent() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			// Polygon with a hole, stored as a field of a created record (exercises the
+			// Map content path in ValueBuilder).
+			final Geometry polygon = Geometry.polygon(Arrays.asList(
+					Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(4, 0), new Point2D.Double(4, 4),
+							new Point2D.Double(0, 4), new Point2D.Double(0, 0)),
+					Arrays.asList(new Point2D.Double(1, 1), new Point2D.Double(2, 1), new Point2D.Double(2, 2),
+							new Point2D.Double(1, 2), new Point2D.Double(1, 1))));
+			final Map<String, java.lang.Object> content = new HashMap<>();
+			content.put("area", polygon);
+			surreal.create(new RecordId("place", 1), content);
+
+			final Value row = surreal.select(new RecordId("place", 1)).get();
+			final Geometry read = row.getObject().get("area").getGeometry();
+			assertEquals("Polygon", read.getType());
+			assertEquals(2, read.getPolygon().size());
+			assertEquals(polygon, read);
+		}
+	}
+
+	@Test
+	void geometryCollectionRoundTrip() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Geometry point = Geometry.point(1, 2);
+			final Geometry line = Geometry.lineString(Arrays.asList(new Point2D.Double(0, 0), new Point2D.Double(1, 1)));
+			final Geometry inner = Geometry.geometryCollection(Arrays.asList(point, line));
+			// A collection nested inside another collection.
+			final Geometry nested = Geometry.geometryCollection(Arrays.asList(point, inner));
+
+			final Geometry read = roundTripBoundParam(surreal, nested);
+			assertEquals("GeometryCollection", read.getType());
+			final List<Geometry> children = read.getGeometryCollection();
+			assertEquals(2, children.size());
+			assertTrue(children.get(0).isPoint());
+			assertTrue(children.get(1).isGeometryCollection());
+			assertEquals(2, children.get(1).getGeometryCollection().size());
+			assertEquals(nested, read);
 		}
 	}
 
