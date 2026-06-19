@@ -251,7 +251,3 @@ On Windows:
 cargo build
 ./gradlew.bat -i test
 ```
-
-### Planned Features
-
-[Open an issue for feature requests](https://github.com/surrealdb/surrealdb.java/issues)
