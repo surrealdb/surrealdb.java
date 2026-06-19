@@ -39,8 +39,15 @@ public class LiveStream implements AutoCloseable {
 	 */
 	private volatile long handle;
 
-	LiveStream(long handle) {
+	/**
+	 * The live query UUID. Available immediately (before the first notification)
+	 * and unaffected by {@link #close()}.
+	 */
+	private final String queryId;
+
+	LiveStream(long handle, String queryId) {
 		this.handle = handle;
+		this.queryId = queryId;
 	}
 
 	/**
@@ -78,6 +85,21 @@ public class LiveStream implements AutoCloseable {
 			releaseNative(handle);
 			handle = 0;
 		}
+	}
+
+	/**
+	 * Returns the UUID of this live query.
+	 *
+	 * <p>
+	 * The id is available immediately after {@link Surreal#selectLive(String)}
+	 * returns — before any notification arrives — and can be passed to
+	 * {@link Surreal#kill(String)} to stop the live query. It is also carried by
+	 * every {@link LiveNotification} (see {@link LiveNotification#getQueryId()}).
+	 *
+	 * @return the live query UUID as a string
+	 */
+	public String getQueryId() {
+		return queryId;
 	}
 
 	private static native LiveNotification nextNative(long handle);
