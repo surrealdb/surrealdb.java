@@ -147,7 +147,9 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean importSql(long ptr, String path);
 
-	private static native long selectLive(long ptr, String table);
+	private static native LiveStream selectLive(long ptr, String table);
+
+	private static native void kill(long ptr, String queryId);
 
 	@Override
 	final String toString(long ptr) {
@@ -284,7 +286,45 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             the subscription fails
 	 */
 	public LiveStream selectLive(String table) {
-		return new LiveStream(selectLive(getPtr(), table));
+		return selectLive(getPtr(), table);
+	}
+
+	/**
+	 * Stops the live query with the given id. After the server processes the kill,
+	 * the query delivers no further notifications.
+	 *
+	 * <p>
+	 * The id is the UUID returned by {@link LiveStream#getQueryId()} (or carried by
+	 * each {@link LiveNotification}). A kill does not by itself close a local
+	 * {@link LiveStream}: a thread blocked in {@link LiveStream#next()} keeps
+	 * waiting (no further notifications arrive, on both the embedded and WebSocket
+	 * engines). Call {@link LiveStream#close()} to release a local stream and
+	 * unblock {@code next()}. Use {@code kill} for a live query you only hold the
+	 * id of (e.g. one started elsewhere or read from a notification).
+	 *
+	 * <p>
+	 * This is best-effort: the SurrealDB client does not report a server-side KILL
+	 * rejection (e.g. a live query owned by another session), so only an invalid
+	 * UUID or a connection failure raises.
+	 *
+	 * @param queryId
+	 *            the live query UUID to terminate
+	 * @throws SurrealException
+	 *             if the id is not a valid UUID or the request cannot be sent
+	 */
+	public void kill(String queryId) {
+		kill(getPtr(), queryId);
+	}
+
+	/**
+	 * Stops the live query with the given id.
+	 *
+	 * @param queryId
+	 *            the live query UUID to terminate
+	 * @see #kill(String)
+	 */
+	public void kill(java.util.UUID queryId) {
+		kill(getPtr(), queryId.toString());
 	}
 
 	/**

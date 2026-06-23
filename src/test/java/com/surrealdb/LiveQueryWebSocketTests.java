@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.Test;
 
@@ -226,6 +227,58 @@ public class LiveQueryWebSocketTests {
 			assertFalse(consumer.isAlive(), "next() did not return after close() over WS");
 			assertNotNull(got.get(), "next() returned null Optional");
 			assertFalse(got.get().isPresent(), "next() should return empty after close()");
+		}
+	}
+
+	/**
+	 * {@link Surreal#kill(String)} over a WebSocket connection terminates the live
+	 * query: a create before the kill is delivered, one after is not. (As on the
+	 * embedded engine, the kill does not close the client stream; {@code close()}
+	 * does that.)
+	 */
+	@Test
+	void selectLive_overWebSocket_kill_stopsNotifications() throws Exception {
+		Surreal surreal = tryConnectWs();
+		assumeTrue(surreal != null, "SurrealDB not reachable at " + WS_URL);
+		java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger();
+		AtomicReference<Throwable> err = new AtomicReference<>();
+		CountDownLatch started = new CountDownLatch(1);
+		try (Surreal s = surreal) {
+			s.query("REMOVE TABLE IF EXISTS ws_person; DEFINE TABLE ws_person SCHEMALESS");
+			try (LiveStream stream = s.selectLive("ws_person")) {
+				String queryId = stream.getQueryId();
+				assertNotNull(queryId, "Live query id should be available up front");
+				Thread consumer = new Thread(() -> {
+					try {
+						started.countDown();
+						Optional<LiveNotification> n;
+						while ((n = stream.next()).isPresent()) {
+							count.incrementAndGet();
+						}
+					} catch (Throwable t) {
+						err.set(t);
+					}
+				});
+				consumer.setDaemon(true);
+				consumer.start();
+				started.await(2, TimeUnit.SECONDS);
+				Thread.sleep(300);
+
+				// A create before the kill is delivered.
+				s.create(new RecordId("ws_person", 1), Helpers.tobie);
+				Thread.sleep(700);
+				assertEquals(1, count.get(), "Notification before kill should be delivered over WS");
+
+				// After the kill, a further create must NOT be delivered.
+				s.kill(queryId);
+				Thread.sleep(300);
+				s.create(new RecordId("ws_person", 2), Helpers.jaime);
+				Thread.sleep(900);
+				assertEquals(1, count.get(), "No notifications should be delivered after kill over WS");
+			}
+			if (err.get() != null) {
+				fail("next() threw an exception: " + err.get());
+			}
 		}
 	}
 }

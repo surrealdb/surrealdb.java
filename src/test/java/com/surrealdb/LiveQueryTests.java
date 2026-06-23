@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.surrealdb.pojos.Person;
@@ -279,15 +279,81 @@ public class LiveQueryTests {
 	}
 
 	/**
-	 * Placeholder for future Surreal.kill(liveQueryId) support. The query ID is
-	 * available from {@link LiveNotification#getQueryId()}, but the Java client
-	 * does not yet expose kill(). Use {@link LiveStream#close()} to stop a live
-	 * query.
+	 * The live query UUID is available from {@link LiveStream#getQueryId()}
+	 * immediately, before any notification arrives, and is a valid UUID.
 	 */
 	@Test
-	@Disabled("Surreal.kill(liveQueryId) not yet in Java API")
-	void killLiveQuery_byQueryId() {
-		// When kill(uuid) is added: start live query, get queryId from first
-		// notification or API, call surreal.kill(queryId), assert stream ends.
+	void selectLiveExposesQueryIdUpFront() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			surreal.query("DEFINE TABLE person SCHEMALESS");
+			try (LiveStream stream = surreal.selectLive("person")) {
+				String queryId = stream.getQueryId();
+				assertNotNull(queryId, "Live query id should be available before any notification");
+				// Round-trips through java.util.UUID, i.e. it is a canonical UUID string.
+				assertEquals(queryId, java.util.UUID.fromString(queryId).toString());
+			}
+		}
+	}
+
+	/**
+	 * {@link Surreal#kill(String)} terminates a live query by its id, after which
+	 * the query delivers no further notifications.
+	 *
+	 * <p>
+	 * The kill does not push a "killed" event to an existing client stream (on
+	 * either the embedded or WebSocket engine), so {@link LiveStream#next()} keeps
+	 * blocking rather than returning empty; use {@link LiveStream#close()} to
+	 * release a local stream. Here we assert the contract that matters: no
+	 * notifications are delivered after the kill.
+	 */
+	@Test
+	void killLiveQuery_byQueryId() throws Exception {
+		AtomicReference<Throwable> error = new AtomicReference<>();
+		AtomicInteger count = new AtomicInteger();
+		CountDownLatch consuming = new CountDownLatch(1);
+
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			surreal.query("DEFINE TABLE person SCHEMALESS");
+
+			try (LiveStream stream = surreal.selectLive("person")) {
+				String queryId = stream.getQueryId();
+				assertNotNull(queryId, "Live query id should be available up front");
+
+				Thread consumer = new Thread(() -> {
+					try {
+						consuming.countDown();
+						Optional<LiveNotification> n;
+						while ((n = stream.next()).isPresent()) {
+							count.incrementAndGet();
+						}
+					} catch (Throwable t) {
+						error.set(t);
+					}
+				});
+				consumer.setDaemon(true);
+				consumer.start();
+
+				assertTrue(consuming.await(2, TimeUnit.SECONDS), "Consumer thread did not start in time");
+				Thread.sleep(500);
+
+				// A create before the kill is delivered.
+				surreal.create(new RecordId("person", 1), Helpers.tobie);
+				Thread.sleep(500);
+				assertEquals(1, count.get(), "Notification before kill should be delivered");
+
+				// After the kill, a further create must NOT be delivered.
+				surreal.kill(queryId);
+				Thread.sleep(300);
+				surreal.create(new RecordId("person", 2), Helpers.jaime);
+				Thread.sleep(800);
+				assertEquals(1, count.get(), "No notifications should be delivered after kill");
+			}
+
+			if (error.get() != null) {
+				fail("next() threw an exception: " + error.get());
+			}
+		}
 	}
 }
