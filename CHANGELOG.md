@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+- Upgrade to SurrealDB SDK 3.1.5 [#185](https://github.com/surrealdb/surrealdb.java/pull/185).
+- Run CI against SurrealDB server v3.1.5, matching the embedded SDK; previously v3.1.3 [#185](https://github.com/surrealdb/surrealdb.java/pull/185).
+- Align the declared `tokio` (1.52.1) and `rust_decimal` (1.41.0) minimums in `Cargo.toml` with SurrealDB 3.1.5's workspace; resolved lockfile versions are unchanged [#185](https://github.com/surrealdb/surrealdb.java/pull/185).
 
 ## [2.1.1] - 2026-06-10
 - Support more Java datetime types in value conversion: `Instant`, `OffsetDateTime`, `LocalDateTime` (interpreted as UTC), `java.util.Date`, and the `java.sql` date types, in query bindings, `Array.of()`/`Id.from()`, and POJO/record round trips [#172](https://github.com/surrealdb/surrealdb.java/pull/172).
