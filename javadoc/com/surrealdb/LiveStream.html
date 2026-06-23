@@ -59,6 +59,7 @@ loadScripts(document, 'script');</script>
 <ol class="toc-list">
 <li><a href="#next()" tabindex="0">next()</a></li>
 <li><a href="#close()" tabindex="0">close()</a></li>
+<li><a href="#getQueryId()" tabindex="0">getQueryId()</a></li>
 </ol>
 </li>
 </ol>
@@ -125,9 +126,14 @@ native layer.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Releases the live query and stops receiving notifications.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a><wbr>&lt;<a href="LiveNotification.html" title="class in com.surrealdb">LiveNotification</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#next()" class="member-name-link">next</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getQueryId()" class="member-name-link">getQueryId</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the UUID of this live query.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a><wbr>&lt;<a href="LiveNotification.html" title="class in com.surrealdb">LiveNotification</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#next()" class="member-name-link">next</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Blocks until the next notification is available, or the stream ends.</div>
 </div>
 </div>
@@ -182,6 +188,25 @@ more than once has no effect.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html#close()" title="class or interface in java.lang" class="external-link">close</a></code>&nbsp;in interface&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getQueryId()">
+<h3>getQueryId</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getQueryId</span>()</div>
+<div class="block">Returns the UUID of this live query.
+
+<p>
+The id is available immediately after <a href="Surreal.html#selectLive(java.lang.String)"><code>Surreal.selectLive(String)</code></a>
+returns — before any notification arrives — and can be passed to
+<a href="Surreal.html#kill(java.lang.String)"><code>Surreal.kill(String)</code></a> to stop the live query. It is also carried by
+every <a href="LiveNotification.html" title="class in com.surrealdb"><code>LiveNotification</code></a> (see <a href="LiveNotification.html#getQueryId()"><code>LiveNotification.getQueryId()</code></a>).</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the live query UUID as a string</dd>
 </dl>
 </div>
 </section>

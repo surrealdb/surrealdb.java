@@ -70,6 +70,8 @@ loadScripts(document, 'script');</script>
 <li><a href="#exportSql(java.lang.String)" tabindex="0">exportSql(String)</a></li>
 <li><a href="#importSql(java.lang.String)" tabindex="0">importSql(String)</a></li>
 <li><a href="#selectLive(java.lang.String)" tabindex="0">selectLive(String)</a></li>
+<li><a href="#kill(java.lang.String)" tabindex="0">kill(String)</a></li>
+<li><a href="#kill(java.util.UUID)" tabindex="0">kill(UUID)</a></li>
 <li><a href="#signin(com.surrealdb.signin.Credential)" tabindex="0">signin(Credential)</a></li>
 <li><a href="#signup(com.surrealdb.signin.RecordCredential)" tabindex="0">signup(RecordCredential)</a></li>
 <li><a href="#authenticate(java.lang.String)" tabindex="0">authenticate(String)</a></li>
@@ -338,6 +340,16 @@ as the values.</div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#invalidate()" class="member-name-link">invalidate</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Invalidates the authentication for the current connection.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#kill(java.lang.String)" class="member-name-link">kill</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;queryId)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Stops the live query with the given id.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#kill(java.util.UUID)" class="member-name-link">kill</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;queryId)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Stops the live query with the given id.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#newSession()" class="member-name-link">newSession</a>()</code></div>
@@ -840,6 +852,55 @@ Call <a href="LiveStream.html#next()"><code>LiveStream.next()</code></a> in a lo
 <dt>Throws:</dt>
 <dd><code><a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></code> - if live queries are not supported, the table does not exist, or
             the subscription fails</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="kill(java.lang.String)">
+<h3>kill</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">kill</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;queryId)</span></div>
+<div class="block">Stops the live query with the given id. After the server processes the kill,
+the query delivers no further notifications.
+
+<p>
+The id is the UUID returned by <a href="LiveStream.html#getQueryId()"><code>LiveStream.getQueryId()</code></a> (or carried by
+each <a href="LiveNotification.html" title="class in com.surrealdb"><code>LiveNotification</code></a>). A kill does not by itself close a local
+<a href="LiveStream.html" title="class in com.surrealdb"><code>LiveStream</code></a>: a thread blocked in <a href="LiveStream.html#next()"><code>LiveStream.next()</code></a> keeps
+waiting (no further notifications arrive, on both the embedded and WebSocket
+engines). Call <a href="LiveStream.html#close()"><code>LiveStream.close()</code></a> to release a local stream and
+unblock <code>next()</code>. Use <code>kill</code> for a live query you only hold the
+id of (e.g. one started elsewhere or read from a notification).
+
+<p>
+This is best-effort: the SurrealDB client does not report a server-side KILL
+rejection (e.g. a live query owned by another session), so only an invalid
+UUID or a connection failure raises.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>queryId</code> - the live query UUID to terminate</dd>
+<dt>Throws:</dt>
+<dd><code><a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></code> - if the id is not a valid UUID or the request cannot be sent</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="kill(java.util.UUID)">
+<h3>kill</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">kill</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;queryId)</span></div>
+<div class="block">Stops the live query with the given id.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>queryId</code> - the live query UUID to terminate</dd>
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="#kill(java.lang.String)"><code>kill(String)</code></a></li>
+</ul>
+</dd>
 </dl>
 </div>
 </section>
