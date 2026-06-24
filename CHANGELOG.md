@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [2.1.2] - 2026-06-24
+- Add full geometry-type support for reading and writing all seven types — Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection — via `Geometry` type-discrimination accessors (`getType()`, `isPolygon()`, …), readers returning `java.awt.geom.Point2D.Double` coordinates (x = longitude, y = latitude), and factory methods that serialize through `create`/`update` content and bound parameters. Also fixes an `UnsatisfiedLinkError` thrown when a `Geometry` was finalized (the native `deleteInstance` had no matching Rust symbol) [#183](https://github.com/surrealdb/surrealdb.java/pull/183).
+- Add `Surreal.kill(String)` / `Surreal.kill(java.util.UUID)` to terminate a live query by id, and `LiveStream.getQueryId()` to read the live-query UUID immediately, before the first notification; `selectLive` now starts the subscription through the public `LIVE SELECT` query path so the id is available up front. `kill()` stops notifications but does not close a local `LiveStream` — use `LiveStream.close()` to release a blocked `next()` [#184](https://github.com/surrealdb/surrealdb.java/pull/184).
 - Upgrade to SurrealDB SDK 3.1.5 [#185](https://github.com/surrealdb/surrealdb.java/pull/185).
 - Run CI against SurrealDB server v3.1.5, matching the embedded SDK; previously v3.1.3 [#185](https://github.com/surrealdb/surrealdb.java/pull/185).
 - Align the declared `tokio` (1.52.1) and `rust_decimal` (1.41.0) minimums in `Cargo.toml` with SurrealDB 3.1.5's workspace; resolved lockfile versions are unchanged [#185](https://github.com/surrealdb/surrealdb.java/pull/185).
