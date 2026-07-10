@@ -515,7 +515,81 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
 
 /// JNI implementation of `Surreal.selectLive(long ptr, String table)`.
 ///
-/// Starts a live query on `table` and returns a fully-constructed Java
+/// Starts an unfiltered live query on `table`. See [`start_live_select`] for
+/// the shared architecture (eager error surfacing, up-front UUID, notification
+/// thread).
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    table: JString<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let table = get_rust_string!(env, &table, null_mut);
+
+        // Run the LIVE SELECT synchronously on the calling thread. type::table($tb)
+        // binds the table name safely (no SQL injection).
+        let mut params = BTreeMap::new();
+        params.insert("tb".to_string(), Value::String(table));
+        match start_live_select(env, surreal, "LIVE SELECT * FROM type::table($tb)", params) {
+            Ok(obj) => obj,
+            Err(e) => e.exception(env, null_mut),
+        }
+    })
+}
+
+/// JNI implementation of `Surreal.selectLiveWhere(long ptr, String table,
+/// String where, String[] paramsKey, long[] valuePtrs)`, backing the filtered
+/// `Surreal.selectLive(table, where[, params])` overloads (parity with the JS
+/// SDK's `live(table).where(expr)`).
+///
+/// The `where` clause is raw SurrealQL appended verbatim to the generated
+/// statement — the same trust model as `query()` — so values must be injected
+/// via the `params` bindings (built exactly like `queryWithBindings`). The
+/// table name itself remains safely bound through `type::table($tb)`; the
+/// binding name `tb` is therefore reserved. An invalid `where` expression
+/// fails the statement synchronously and is surfaced as an eager exception,
+/// like every other subscription error in [`start_live_select`].
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_selectLiveWhere<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    table: JString<'local>,
+    where_clause: JString<'local>,
+    params_keys: JObjectArray<'local, JString<'local>>,
+    params_values: JLongArray<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let table = get_rust_string!(env, &table, null_mut);
+        let where_clause = get_rust_string!(env, &where_clause, null_mut);
+        let mut params = build_params_map!(env, params_keys, params_values, null_mut);
+        if params.contains_key("tb") {
+            return SurrealError::SurrealDBJni(
+                "The parameter name 'tb' is reserved by selectLive (it binds the table name); use a different binding name".to_string(),
+            )
+            .exception(env, null_mut);
+        }
+        params.insert("tb".to_string(), Value::String(table));
+        // Deliberate contract (also documented on the Java `selectLive` overloads):
+        // the `where` predicate is raw SurrealQL trusted exactly like `query(String)`
+        // input — it is concatenated, not bound. Values must go through the `params`
+        // bindings above; only the table name is bound (`$tb`). Passing the clause as
+        // a positional `format!` argument keeps it inert to `format!` itself.
+        let sql = format!("LIVE SELECT * FROM type::table($tb) WHERE {}", where_clause);
+        match start_live_select(env, surreal, &sql, params) {
+            Ok(obj) => obj,
+            Err(e) => e.exception(env, null_mut),
+        }
+    })
+}
+
+/// Shared implementation behind the `selectLive` JNI entry points.
+///
+/// Runs the given `LIVE SELECT` statement and returns a fully-constructed Java
 /// `LiveStream` object carrying both the native `LiveStreamChannel` handle and
 /// the live-query UUID.
 ///
@@ -537,110 +611,97 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
 ///
 /// Unlike the `.select(table).live()` builder (whose query id is private), the
 /// raw `LIVE SELECT` runs synchronously on the calling thread, so subscription
-/// errors (e.g. the table does not exist) are surfaced eagerly via `take(0)`
-/// rather than deferred to `next()`.  The statement returns a `Value::Uuid`,
-/// which we read up front so it is available from `LiveStream.getQueryId()`
-/// before any notification arrives.  A dedicated OS thread then drives the
-/// notification stream on the shared tokio runtime, forwarding notifications
-/// through an unbounded `async_channel` that the Java side reads via
-/// `nextNative`.  `take(0)` and `stream(0)` read independent maps, so reading
-/// the UUID does not consume the stream.
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
-    mut env: EnvUnowned<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-    table: JString<'local>,
-) -> jobject {
-    with_env_body!(env, env, {
-        let surreal = get_surreal_ref!(env, ptr, null_mut);
-        let table = get_rust_string!(env, &table, null_mut);
+/// errors (e.g. the table does not exist, or an invalid WHERE clause) are
+/// surfaced eagerly via `take(0)` rather than deferred to `next()`.  The
+/// statement returns a `Value::Uuid`, which we read up front so it is
+/// available from `LiveStream.getQueryId()` before any notification arrives.
+/// A dedicated OS thread then drives the notification stream on the shared
+/// tokio runtime, forwarding notifications through an unbounded
+/// `async_channel` that the Java side reads via `nextNative`.  `take(0)` and
+/// `stream(0)` read independent maps, so reading the UUID does not consume the
+/// stream.
+fn start_live_select(
+    env: &mut Env,
+    surreal: &Surreal<Any>,
+    sql: &str,
+    params: BTreeMap<String, Value>,
+) -> StdResult<jobject, SurrealError> {
+    let mut res =
+        surrealdb_query::<Value>(surreal, sql, Some(params)).map_err(SurrealError::SurrealDB)?;
 
-        // Run the LIVE SELECT synchronously on the calling thread. type::table($tb)
-        // binds the table name safely (no SQL injection).
-        let mut params = BTreeMap::new();
-        params.insert("tb".to_string(), Value::String(table));
-        let res =
-            surrealdb_query::<Value>(surreal, "LIVE SELECT * FROM type::table($tb)", Some(params));
-        let mut res = check_query_result!(env, res, null_mut);
-
-        // The statement result at index 0 is the live-query UUID. Reading it via
-        // take(0) also surfaces subscription errors (e.g. the table does not exist).
-        let uuid_str = match res.take::<Value>(0) {
-            Ok(Value::Uuid(uuid)) => uuid.to_string(),
-            // Some servers/protocols return the live-query id wrapped in a one-element
-            // array; unwrap it, mirroring the SDK's `.select(table).live()` builder.
-            Ok(Value::Array(mut arr)) if arr.len() == 1 => match arr.pop() {
-                Some(Value::Uuid(uuid)) => uuid.to_string(),
-                other => {
-                    return SurrealError::SurrealDBJni(format!(
-                        "LIVE SELECT did not return a UUID: {other:?}"
-                    ))
-                    .exception(env, null_mut);
-                }
-            },
-            Ok(other) => {
-                return SurrealError::SurrealDBJni(format!(
-                    "LIVE SELECT did not return a UUID: {}",
-                    other.to_sql()
-                ))
-                .exception(env, null_mut);
+    // The statement result at index 0 is the live-query UUID. Reading it via
+    // take(0) also surfaces subscription errors (e.g. the table does not exist).
+    let uuid_str = match res.take::<Value>(0) {
+        Ok(Value::Uuid(uuid)) => uuid.to_string(),
+        // Some servers/protocols return the live-query id wrapped in a one-element
+        // array; unwrap it, mirroring the SDK's `.select(table).live()` builder.
+        Ok(Value::Array(mut arr)) if arr.len() == 1 => match arr.pop() {
+            Some(Value::Uuid(uuid)) => uuid.to_string(),
+            other => {
+                return Err(SurrealError::SurrealDBJni(format!(
+                    "LIVE SELECT did not return a UUID: {other:?}"
+                )));
             }
-            Err(e) => return SurrealError::SurrealDB(e).exception(env, null_mut),
-        };
-
-        // The notification stream lives in a separate map from the results, so the
-        // take(0) above does not disturb it.
-        let qstream = match res.stream::<Value>(0) {
-            Ok(s) => s,
-            Err(e) => return SurrealError::SurrealDB(e).exception(env, null_mut),
-        };
-
-        // Notification channel: background thread produces, nextNative consumes.
-        let (tx, rx) = async_channel::unbounded();
-        // Shutdown channel: dropping shutdown_tx signals the background thread to exit.
-        let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(1);
-
-        let tx_thread = tx.clone();
-        let join_handle = std::thread::spawn(move || {
-            TOKIO_RUNTIME.block_on(async move {
-                let mut qstream = qstream;
-                loop {
-                    tokio::select! {
-                        _ = shutdown_rx.recv() => break,
-                        item = qstream.next() => match item {
-                            Some(i) => {
-                                let _ = tx_thread.send(i).await;
-                            }
-                            None => break,
-                        },
-                    }
-                }
-            });
-        });
-
-        let recv_mutex = std::sync::Arc::new(parking_lot::Mutex::new(()));
-        let handle = JniTypes::new_live_stream((
-            recv_mutex,
-            parking_lot::Mutex::new(Some(join_handle)),
-            parking_lot::Mutex::new(Some(shutdown_tx)),
-            parking_lot::Mutex::new(Some(rx)),
-        ));
-
-        // Construct and return a LiveStream(handle, queryId), mirroring how live.rs
-        // builds a LiveNotification.
-        let uuid_raw = new_string!(env, uuid_str, null_mut);
-        let uuid_jstr = unsafe { JObject::from_raw(env, uuid_raw) };
-        let class = match env.find_class(jni_str!("com/surrealdb/LiveStream")) {
-            Ok(c) => c,
-            Err(e) => return SurrealError::from(e).exception(env, null_mut),
-        };
-        let args = [JValue::Long(handle), JValue::Object(&uuid_jstr)];
-        match env.new_object(class, jni_sig!("(JLjava/lang/String;)V"), &args) {
-            Ok(obj) => obj.into_raw(),
-            Err(e) => SurrealError::from(e).exception(env, null_mut),
+        },
+        Ok(other) => {
+            return Err(SurrealError::SurrealDBJni(format!(
+                "LIVE SELECT did not return a UUID: {}",
+                other.to_sql()
+            )));
         }
-    })
+        Err(e) => return Err(SurrealError::SurrealDB(e)),
+    };
+
+    // The notification stream lives in a separate map from the results, so the
+    // take(0) above does not disturb it.
+    let qstream = res.stream::<Value>(0).map_err(SurrealError::SurrealDB)?;
+
+    // Notification channel: background thread produces, nextNative consumes.
+    let (tx, rx) = async_channel::unbounded();
+    // Shutdown channel: dropping shutdown_tx signals the background thread to exit.
+    let (shutdown_tx, shutdown_rx) = async_channel::bounded::<()>(1);
+
+    let tx_thread = tx.clone();
+    let join_handle = std::thread::spawn(move || {
+        TOKIO_RUNTIME.block_on(async move {
+            let mut qstream = qstream;
+            loop {
+                tokio::select! {
+                    _ = shutdown_rx.recv() => break,
+                    item = qstream.next() => match item {
+                        Some(i) => {
+                            let _ = tx_thread.send(i).await;
+                        }
+                        None => break,
+                    },
+                }
+            }
+        });
+    });
+
+    let recv_mutex = std::sync::Arc::new(parking_lot::Mutex::new(()));
+    let handle = JniTypes::new_live_stream((
+        recv_mutex,
+        parking_lot::Mutex::new(Some(join_handle)),
+        parking_lot::Mutex::new(Some(shutdown_tx)),
+        parking_lot::Mutex::new(Some(rx)),
+    ));
+
+    // Construct and return a LiveStream(handle, queryId), mirroring how live.rs
+    // builds a LiveNotification.
+    let uuid_raw = env
+        .new_string(uuid_str)
+        .map_err(SurrealError::from)?
+        .into_raw();
+    let uuid_jstr = unsafe { JObject::from_raw(env, uuid_raw) };
+    let class = env
+        .find_class(jni_str!("com/surrealdb/LiveStream"))
+        .map_err(SurrealError::from)?;
+    let args = [JValue::Long(handle), JValue::Object(&uuid_jstr)];
+    let obj = env
+        .new_object(class, jni_sig!("(JLjava/lang/String;)V"), &args)
+        .map_err(SurrealError::from)?;
+    Ok(obj.into_raw())
 }
 
 /// JNI implementation of `Surreal.kill(long ptr, String queryId)`.

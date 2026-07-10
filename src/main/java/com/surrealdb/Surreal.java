@@ -149,6 +149,9 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native LiveStream selectLive(long ptr, String table);
 
+	private static native LiveStream selectLiveWhere(long ptr, String table, String where, String[] paramsKey,
+			long[] valuePtrs);
+
 	private static native void kill(long ptr, String queryId);
 
 	@Override
@@ -287,6 +290,98 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public LiveStream selectLive(String table) {
 		return selectLive(getPtr(), table);
+	}
+
+	/**
+	 * Starts a filtered live query on the given table and returns a blocking stream
+	 * of notifications (CREATE, UPDATE, DELETE) for the records that match the
+	 * given {@code WHERE} condition. This mirrors the JS SDK's
+	 * {@code live(table).where(expr)}.
+	 *
+	 * <p>
+	 * The {@code where} argument is a raw SurrealQL expression appended verbatim to
+	 * the generated {@code LIVE SELECT * FROM type::table($tb) WHERE ...} statement
+	 * — the same trust model as {@link #query(String)}. Never concatenate untrusted
+	 * values into it; use {@link #selectLive(String, String, Map)} to bind values
+	 * safely.
+	 *
+	 * <p>
+	 * Like {@link #selectLive(String)}, this method blocks until the live query
+	 * subscription is fully established on the server, and subscription errors
+	 * (e.g. the table does not exist, or the {@code where} expression is invalid)
+	 * are thrown immediately as a {@link SurrealException} rather than being
+	 * deferred to the first {@link LiveStream#next()} call.
+	 *
+	 * @param table
+	 *            table name to watch (must already exist)
+	 * @param where
+	 *            raw SurrealQL condition (without the {@code WHERE} keyword), e.g.
+	 *            {@code "age > 18"}
+	 * @return a LiveStream delivering only matching notifications; the caller must
+	 *         call {@link LiveStream#close()} when done
+	 * @throws SurrealException
+	 *             if live queries are not supported, the table does not exist, the
+	 *             condition is invalid, or the subscription fails
+	 * @see #selectLive(String, String, Map)
+	 */
+	public LiveStream selectLive(String table, String where) {
+		return selectLive(table, where, java.util.Collections.emptyMap());
+	}
+
+	/**
+	 * Starts a filtered live query on the given table with parameter bindings and
+	 * returns a blocking stream of notifications (CREATE, UPDATE, DELETE) for the
+	 * records that match the given {@code WHERE} condition. This mirrors the JS
+	 * SDK's {@code live(table).where(expr)}.
+	 *
+	 * <p>
+	 * The {@code where} argument is a raw SurrealQL expression appended verbatim to
+	 * the generated {@code LIVE SELECT * FROM type::table($tb) WHERE ...} statement
+	 * — the same trust model as {@link #query(String, Map)}. Values should be
+	 * referenced as {@code $name} placeholders and supplied through {@code params}
+	 * (bound exactly like {@link #query(String, Map)}), which is the safe way to
+	 * inject values:
+	 *
+	 * <pre>{@code
+	 * Map<String, Object> params = new HashMap<>();
+	 * params.put("minAge", 18);
+	 * try (LiveStream stream = surreal.selectLive("person", "age > $minAge", params)) {
+	 * 	...
+	 * }
+	 * }</pre>
+	 *
+	 * <p>
+	 * The parameter name {@code tb} is reserved (it binds the table name) and is
+	 * rejected. Like {@link #selectLive(String)}, subscription errors (e.g. the
+	 * table does not exist, or the {@code where} expression is invalid) are thrown
+	 * immediately as a {@link SurrealException} rather than being deferred to the
+	 * first {@link LiveStream#next()} call.
+	 *
+	 * @param table
+	 *            table name to watch (must already exist)
+	 * @param where
+	 *            raw SurrealQL condition (without the {@code WHERE} keyword),
+	 *            referencing {@code params} as {@code $name} placeholders
+	 * @param params
+	 *            parameter values to bind to the condition
+	 * @return a LiveStream delivering only matching notifications; the caller must
+	 *         call {@link LiveStream#close()} when done
+	 * @throws SurrealException
+	 *             if the condition is null or empty, a reserved parameter name is
+	 *             used, live queries are not supported, the table does not exist,
+	 *             the condition is invalid, or the subscription fails
+	 */
+	public LiveStream selectLive(String table, String where, Map<String, ?> params) {
+		if (where == null || where.trim().isEmpty()) {
+			throw new SurrealException("The where condition must not be null or empty");
+		}
+		final Map<String, ValueMut> valueMuts = ValueBuilder.convertParams(params);
+		final String[] keys = valueMuts.keySet().toArray(new String[0]);
+		final long[] values = new long[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			values[i] = valueMuts.get(keys[i]).getPtr();
+		}
+		return selectLiveWhere(getPtr(), table, where, keys, values);
 	}
 
 	/**
