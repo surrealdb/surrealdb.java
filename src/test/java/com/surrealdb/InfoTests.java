@@ -33,7 +33,15 @@ public class InfoTests {
 	 * access, then signs up a record user with the given email.
 	 */
 	private static Token signupUser(Surreal surreal, String email) {
-		surreal.query("DEFINE TABLE user SCHEMALESS PERMISSIONS FOR select WHERE id = $auth.id");
+		return signupUser(surreal, email, "WHERE id = $auth.id");
+	}
+
+	/**
+	 * Defines a `user` table with the given select permission clause and a record
+	 * access, then signs up a record user with the given email.
+	 */
+	private static Token signupUser(Surreal surreal, String email, String selectPermission) {
+		surreal.query("DEFINE TABLE user SCHEMALESS PERMISSIONS FOR select " + selectPermission);
 		surreal.query("DEFINE ACCESS user ON DATABASE TYPE RECORD "
 				+ "SIGNUP ( CREATE user SET email = $email, pass = crypto::argon2::generate($pass) ) "
 				+ "SIGNIN ( SELECT * FROM user WHERE email = $email AND crypto::argon2::compare(pass, $pass) ) "
@@ -76,6 +84,22 @@ public class InfoTests {
 	void info_unauthenticated_returnsEmpty() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			assertFalse(surreal.info().isPresent());
+			assertFalse(surreal.info(User.class).isPresent());
+		}
+	}
+
+	@Test
+	void info_recordNotVisibleToUser_returnsEmpty() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			// The table's select permission excludes the record user's own record
+			Token token = signupUser(surreal, "denied@example.com", "NONE");
+			assertNotNull(token.getAccess());
+			// The session is authenticated: $auth points to the record user...
+			RecordId auth = surreal.query("RETURN $auth").take(0).getRecordId();
+			assertEquals("user", auth.getTable());
+			// ...but the record is not visible to it, so info() is empty
 			assertFalse(surreal.info().isPresent());
 			assertFalse(surreal.info(User.class).isPresent());
 		}
