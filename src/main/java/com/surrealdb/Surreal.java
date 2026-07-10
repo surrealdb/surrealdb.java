@@ -69,6 +69,10 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean invalidate(long ptr);
 
+	private static native boolean set(long ptr, String key, long valuePtr);
+
+	private static native boolean unset(long ptr, String key);
+
 	private static native NsDb useNs(long ptr, String ns);
 
 	private static native NsDb useDb(long ptr, String db);
@@ -422,8 +426,10 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Creates a new session that shares the same connection but has its own
-	 * namespace, database, and authentication state. Use this for multi-session
-	 * support.
+	 * namespace, database, authentication state, and session variables (the new
+	 * session starts with a snapshot of the variables defined via
+	 * {@link #set(String, java.lang.Object)} at the time of the call). Use this for
+	 * multi-session support.
 	 *
 	 * @return a new Surreal instance representing a separate session
 	 */
@@ -442,6 +448,61 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Transaction beginTransaction() {
 		return new Transaction(beginTransaction(getPtr()));
+	}
+
+	/**
+	 * Defines a variable on the current session, making it available as
+	 * {@code $key} in every subsequent query on this session until it is removed
+	 * with {@link #unset(String)}.
+	 * <p>
+	 * Unlike a {@code LET} statement, whose variable only lives for the remaining
+	 * statements of the same {@link #query(String)} call, a variable defined with
+	 * this method persists across separate {@code query()} calls. The value is
+	 * converted the same way as query bindings (primitives, collections, maps,
+	 * POJOs, {@link RecordId}, etc.).
+	 * <p>
+	 * Sessions created with {@link #newSession()} start with a snapshot of the
+	 * variables defined on the current session at that point; afterwards each
+	 * session's variables evolve independently (a {@code set} or {@code unset} on
+	 * one session is not visible on the other).
+	 * <p>
+	 * For more details, check the
+	 * <a href="https://surrealdb.com/docs/surrealdb/integration/rpc#let">RPC
+	 * documentation</a>.
+	 *
+	 * @param key
+	 *            the name of the variable (referenced as {@code $key} in queries)
+	 * @param value
+	 *            the value to assign to the variable
+	 * @return this instance for chaining
+	 * @throws SurrealException
+	 *             if the variable cannot be set
+	 */
+	public Surreal set(String key, java.lang.Object value) {
+		final ValueMut valueMut = ValueBuilder.convert(value);
+		set(getPtr(), key, valueMut.getPtr());
+		return this;
+	}
+
+	/**
+	 * Removes a variable previously defined on the current session with
+	 * {@link #set(String, java.lang.Object)}. Afterwards {@code $key} evaluates to
+	 * {@code NONE} in subsequent queries on this session. Removing a variable that
+	 * is not defined is a no-op.
+	 * <p>
+	 * For more details, check the
+	 * <a href="https://surrealdb.com/docs/surrealdb/integration/rpc#unset">RPC
+	 * documentation</a>.
+	 *
+	 * @param key
+	 *            the name of the variable to remove
+	 * @return this instance for chaining
+	 * @throws SurrealException
+	 *             if the variable cannot be removed
+	 */
+	public Surreal unset(String key) {
+		unset(getPtr(), key);
+		return this;
 	}
 
 	/**
