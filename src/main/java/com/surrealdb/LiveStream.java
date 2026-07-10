@@ -4,7 +4,8 @@ import java.util.Optional;
 
 /**
  * Blocking iterator over live query notifications returned by
- * {@link Surreal#selectLive(String)}.
+ * {@link Surreal#selectLive(String)} and its filtered
+ * {@link Surreal#selectLive(String, String, java.util.Map)} overloads.
  *
  * <p>
  * Typical usage:
