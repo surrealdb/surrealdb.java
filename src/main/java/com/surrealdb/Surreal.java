@@ -69,6 +69,8 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean invalidate(long ptr);
 
+	private static native long info(long ptr);
+
 	private static native NsDb useNs(long ptr, String ns);
 
 	private static native NsDb useDb(long ptr, String db);
@@ -418,6 +420,51 @@ public class Surreal extends Native implements AutoCloseable {
 	public Surreal invalidate() {
 		invalidate(getPtr());
 		return this;
+	}
+
+	/**
+	 * Returns the record of the currently-authenticated record user, i.e. the
+	 * record pointed to by the {@code $auth} parameter (implemented as
+	 * {@code SELECT * FROM $auth}). This matches the {@code info} RPC method and
+	 * the JavaScript SDK's {@code auth()} (called {@code info()} in the v1 JS SDK).
+	 * <p>
+	 * A record user can only read its own record when the table permissions allow
+	 * it (e.g.
+	 * {@code DEFINE TABLE user PERMISSIONS FOR select WHERE id = $auth.id}).
+	 * <p>
+	 * For more details, check the <a href=
+	 * "https://surrealdb.com/docs/surrealdb/security/authentication#record-users">authentication
+	 * documentation</a>.
+	 *
+	 * @return an Optional containing the authenticated record user's Value, or an
+	 *         empty Optional when the session is not authenticated as a record user
+	 *         (e.g. unauthenticated, invalidated, or a system user) or the record
+	 *         is not visible to it
+	 * @throws SurrealException
+	 *             if the request fails
+	 */
+	public Optional<Value> info() {
+		final long valuePtr = info(getPtr());
+		if (valuePtr == 0) {
+			return Optional.empty();
+		}
+		return Optional.of(new Value(valuePtr));
+	}
+
+	/**
+	 * Returns the record of the currently-authenticated record user, converted to
+	 * an instance of the specified type.
+	 *
+	 * @param <T>
+	 *            the type of the instance to be returned
+	 * @param type
+	 *            the class type to convert the authenticated record to
+	 * @return an Optional containing the authenticated record user converted to the
+	 *         specified type, otherwise an empty Optional
+	 * @see #info()
+	 */
+	public <T> Optional<T> info(Class<T> type) {
+		return info().map(v -> v.get(type));
 	}
 
 	/**

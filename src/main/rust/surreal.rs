@@ -384,6 +384,42 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
     })
 }
 
+/// JNI implementation of `Surreal.info(long ptr)`.
+///
+/// Fetches the record of the currently-authenticated record user by running
+/// `SELECT * FROM $auth`. The non-`ONLY` form is used deliberately: when the
+/// session is not authenticated as a record user, `$auth` is NONE and the
+/// query yields an empty array (mapped to 0, i.e. `Optional.empty()`),
+/// whereas `SELECT * FROM ONLY $auth` would raise "Expected a single result
+/// output when using the ONLY keyword".
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_info<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        // Retrieve the Surreal instance
+        let surreal = get_surreal_ref!(env, ptr, || 0);
+        // Execute the query
+        let res = surrealdb_query::<()>(surreal, "SELECT * FROM $auth", None);
+        // Check the result
+        let mut res = check_query_result!(env, res, || 0);
+        // There is only one statement
+        let mut res = take_one_result!(env, res, || 0);
+        // There should be at most one result
+        return_value_array_first!(res);
+        // If the array is empty, return null (0) for Optional.empty()
+        if let Value::Array(ref a) = res {
+            if a.is_empty() {
+                return 0;
+            }
+        }
+        // Otherwise throw an error
+        return_unexpected_result!(env, res.to_sql(), || 0)
+    })
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     mut env: EnvUnowned<'local>,
