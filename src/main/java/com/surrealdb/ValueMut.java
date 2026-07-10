@@ -196,8 +196,9 @@ public class ValueMut extends Native {
 	 * {@code 1..=10}), suitable for use as a query parameter.
 	 * <p>
 	 * Pass {@code null} for {@code start} or {@code end} to leave that side
-	 * unbounded. The bound values are moved into the range and must not be reused
-	 * afterwards.
+	 * unbounded; an unbounded side has no inclusivity, so the corresponding
+	 * {@code startIncluded}/{@code endIncluded} flag is ignored. The bound values
+	 * are moved into the range and must not be reused afterwards.
 	 *
 	 * @param start
 	 *            lower bound value, or {@code null} for unbounded

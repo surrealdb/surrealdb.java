@@ -181,6 +181,20 @@ public class ValueTypesTests {
 	}
 
 	@Test
+	void valueRangeBindParamExclusiveStart() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			// Bind the equivalent of 1>..=10 (exclusive start, inclusive end)
+			ValueMut range = ValueMut.createRange(ValueMut.createLong(1), ValueMut.createLong(10), false, true);
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", range)).take(0);
+			assertTrue(v.isRange());
+			assertEquals(1L, v.getRangeStart().get().getLong());
+			assertEquals(10L, v.getRangeEnd().get().getLong());
+			assertEquals("1>..=10", v.toString());
+		}
+	}
+
+	@Test
 	void valueRangeBindParamUnbounded() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");
