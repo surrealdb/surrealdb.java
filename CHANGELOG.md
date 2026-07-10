@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- Support collections nested inside `Map` fields when deserializing POJOs and records: map entry values that are arrays (e.g. `Map<String, List<String>>`, `Map<String, List<Pojo>>`) previously threw `Unsupported value`, and nested maps (`Map<String, Map<String, String>>`) failed trying to instantiate the `Map` interface. Entry values now hydrate through the same type-aware recursion as top-level fields, using the map's full generic value type [#189](https://github.com/surrealdb/surrealdb.java/pull/189).
+
 ## [2.1.2] - 2026-06-24
 - Add full geometry-type support for reading and writing all seven types — Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection — via `Geometry` type-discrimination accessors (`getType()`, `isPolygon()`, …), readers returning `java.awt.geom.Point2D.Double` coordinates (x = longitude, y = latitude), and factory methods that serialize through `create`/`update` content and bound parameters. Also fixes an `UnsatisfiedLinkError` thrown when a `Geometry` was finalized (the native `deleteInstance` had no matching Rust symbol) [#183](https://github.com/surrealdb/surrealdb.java/pull/183).
 - Add `Surreal.kill(String)` / `Surreal.kill(java.util.UUID)` to terminate a live query by id, and `LiveStream.getQueryId()` to read the live-query UUID immediately, before the first notification; `selectLive` now starts the subscription through the public `LIVE SELECT` query path so the id is available up front. `kill()` stops notifications but does not close a local `LiveStream` — use `LiveStream.close()` to release a blocked `next()` [#184](https://github.com/surrealdb/surrealdb.java/pull/184).
