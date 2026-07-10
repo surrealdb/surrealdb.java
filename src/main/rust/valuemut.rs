@@ -103,6 +103,9 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDuration<'local>(
     nanos: jint,
 ) -> jlong {
     with_env_body!(env, env, {
+        // The `nanos < 0` disjunct is unreachable via the public Java API — the only
+        // caller passes `Duration.getNano()`, which is always 0..=999_999_999. It is
+        // kept as defense-in-depth against direct native misuse.
         if seconds < 0 || nanos < 0 {
             SurrealError::SurrealDBJni(format!(
                 "SurrealDB durations cannot be negative (seconds: {seconds}, nanos: {nanos})"

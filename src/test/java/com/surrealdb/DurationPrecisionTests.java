@@ -99,6 +99,22 @@ public class DurationPrecisionTests {
 	}
 
 	@Test
+	void serverSideDurationBeyondJavaRangeIsRejectedOnRead() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			// 10^19 seconds exceeds Long.MAX_VALUE (~9.22 * 10^18), so this duration is
+			// representable by SurrealDB (u64 seconds) but not by java.time.Duration.
+			// Java cannot construct such a value; it can only arrive from the server.
+			final Response response = surreal.query("RETURN 10000000000000000000s");
+			final Value value = response.take(0);
+			assertTrue(value.isDuration());
+			final SurrealException e = assertThrows(SurrealException.class, value::getDuration);
+			assertEquals("Duration of 10000000000000000000 seconds exceeds the range of java.time.Duration",
+					e.getMessage());
+		}
+	}
+
+	@Test
 	void veryLargeDurationRoundTrips() {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");

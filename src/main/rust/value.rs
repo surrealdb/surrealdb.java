@@ -218,6 +218,8 @@ pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
         let value = get_value_instance!(env, ptr, null_mut);
         if let Value::Duration(d) = value.as_ref() {
             let seconds = d.as_secs();
+            // Only reachable from a server-side duration exceeding i64::MAX seconds
+            // (e.g. the literal `10000000000000000000s`); Java cannot construct one.
             if seconds > i64::MAX as u64 {
                 SurrealError::SurrealDBJni(format!(
                     "Duration of {seconds} seconds exceeds the range of java.time.Duration"
