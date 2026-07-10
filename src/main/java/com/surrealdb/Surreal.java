@@ -480,6 +480,9 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Surreal set(String key, java.lang.Object value) {
 		final ValueMut valueMut = ValueBuilder.convert(value);
+		// The native side only clones the value; the ValueMut wrapper keeps ownership
+		// and is reclaimed by its finalizer (same as create/run/signup and query
+		// bindings).
 		set(getPtr(), key, valueMut.getPtr());
 		return this;
 	}
