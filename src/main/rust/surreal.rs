@@ -574,6 +574,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLiveWhere<'local>(
             .exception(env, null_mut);
         }
         params.insert("tb".to_string(), Value::String(table));
+        // Deliberate contract (also documented on the Java `selectLive` overloads):
+        // the `where` predicate is raw SurrealQL trusted exactly like `query(String)`
+        // input — it is concatenated, not bound. Values must go through the `params`
+        // bindings above; only the table name is bound (`$tb`). Passing the clause as
+        // a positional `format!` argument keeps it inert to `format!` itself.
         let sql = format!("LIVE SELECT * FROM type::table($tb) WHERE {}", where_clause);
         match start_live_select(env, surreal, &sql, params) {
             Ok(obj) => obj,
