@@ -384,6 +384,51 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
     })
 }
 
+/// JNI implementation of `Surreal.set(long ptr, String key, long valuePtr)`.
+///
+/// Defines a session variable on this connection via the SDK's `set` method,
+/// making it available as `$key` in all subsequent queries on the same
+/// session until it is removed with `unset`.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_set<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    key: JString<'local>,
+    value_ptr: jlong,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
+        let key = get_rust_string!(env, key, || false as jboolean);
+        let value = get_value_mut_instance!(env, value_ptr, || false as jboolean);
+        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.set(key, value.clone()).await }) {
+            return SurrealError::from(err).exception(env, || false as jboolean);
+        }
+        true as jboolean
+    })
+}
+
+/// JNI implementation of `Surreal.unset(long ptr, String key)`.
+///
+/// Removes a session variable previously defined with `set`; afterwards
+/// `$key` evaluates to NONE in subsequent queries on this session.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_unset<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    key: JString<'local>,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
+        let key = get_rust_string!(env, key, || false as jboolean);
+        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.unset(key).await }) {
+            return SurrealError::from(err).exception(env, || false as jboolean);
+        }
+        true as jboolean
+    })
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     mut env: EnvUnowned<'local>,
