@@ -193,20 +193,17 @@ class ValueClassConverter<T> {
 		}
 		if (value.isObject()) {
 			if (Map.class.isAssignableFrom(type)) {
-				final Class<?> valueType = secondTypeArgumentRaw(genericType);
+				// Keep the full generic Type of the map values so that nested
+				// collections (List<X>, Map<K, V>, ...) hydrate their element
+				// types through the same recursion as top-level fields.
+				final Type valueGenericType = secondTypeArgument(genericType);
+				final Class<?> valueType = rawType(valueGenericType);
 				if (valueType == null) {
 					throw new SurrealException("Unsupported map type for: " + genericType);
 				}
 				final Map<String, java.lang.Object> map = new HashMap<>();
 				for (final Entry mapEntry : value.getObject()) {
-					final String entryKey = mapEntry.getKey();
-					final Value entryValue = mapEntry.getValue();
-					// todo - array support inside maps
-					if (entryValue.isObject()) {
-						map.put(entryKey, convert(valueType, entryValue.getObject()));
-					} else {
-						map.put(entryKey, convertSingleValue(entryValue));
-					}
+					map.put(mapEntry.getKey(), convertValueToType(mapEntry.getValue(), valueType, valueGenericType));
 				}
 				return map;
 			}
@@ -263,11 +260,11 @@ class ValueClassConverter<T> {
 		return rawType(firstTypeArgument(genericType));
 	}
 
-	private static Class<?> secondTypeArgumentRaw(final Type genericType) {
+	private static Type secondTypeArgument(final Type genericType) {
 		if (genericType instanceof ParameterizedType) {
 			final Type[] args = ((ParameterizedType) genericType).getActualTypeArguments();
 			if (args.length > 1) {
-				return rawType(args[1]);
+				return args[1];
 			}
 		}
 		return null;
