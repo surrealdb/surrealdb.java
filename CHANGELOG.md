@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- Add `Surreal.set(String, Object)` / `Surreal.unset(String)` to define and remove session variables usable as `$key` in subsequent queries, matching the JS SDK's `set`/`unset`. Unlike a `LET` statement, which only lives for the remaining statements of the same `query()` call, a variable defined with `set` persists across separate `query()` calls until it is removed. `newSession()` starts with a snapshot of the variables defined at the time of the call; afterwards each session's variables evolve independently [#191](https://github.com/surrealdb/surrealdb.java/pull/191).
+
 ## [2.1.2] - 2026-06-24
 - Add full geometry-type support for reading and writing all seven types — Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection — via `Geometry` type-discrimination accessors (`getType()`, `isPolygon()`, …), readers returning `java.awt.geom.Point2D.Double` coordinates (x = longitude, y = latitude), and factory methods that serialize through `create`/`update` content and bound parameters. Also fixes an `UnsatisfiedLinkError` thrown when a `Geometry` was finalized (the native `deleteInstance` had no matching Rust symbol) [#183](https://github.com/surrealdb/surrealdb.java/pull/183).
 - Add `Surreal.kill(String)` / `Surreal.kill(java.util.UUID)` to terminate a live query by id, and `LiveStream.getQueryId()` to read the live-query UUID immediately, before the first notification; `selectLive` now starts the subscription through the public `LIVE SELECT` query path so the id is available up front. `kill()` stops notifications but does not close a local `LiveStream` — use `LiveStream.close()` to release a blocked `next()` [#184](https://github.com/surrealdb/surrealdb.java/pull/184).
