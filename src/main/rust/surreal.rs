@@ -22,6 +22,7 @@ use serde::Serialize;
 use std::ops::Bound;
 use std::result::Result as StdResult;
 use surrealdb::engine::any::Any;
+use surrealdb::method::{Export, ExportConfig};
 use surrealdb::opt::auth::{Database, Namespace, Record as AuthRecord, Root};
 use surrealdb::types::{RecordId, RecordIdKey, RecordIdKeyRange, SurrealValue, ToSql, Uuid, Value};
 use surrealdb::{IndexedResults, Result, Surreal};
@@ -694,6 +695,111 @@ pub extern "system" fn Java_com_surrealdb_Surreal_exportSql<'local>(
         match TOKIO_RUNTIME.block_on(async { surreal.export(path).await }) {
             Ok(()) => true as jboolean,
             Err(e) => SurrealError::from(e).exception(env, || false as jboolean),
+        }
+    })
+}
+
+// Export option flag bits. Keep in sync with the FLAG_* constants in
+// src/main/java/com/surrealdb/ExportOptions.java.
+const EXPORT_FLAG_USERS: jint = 1;
+const EXPORT_FLAG_ACCESSES: jint = 1 << 1;
+const EXPORT_FLAG_PARAMS: jint = 1 << 2;
+const EXPORT_FLAG_FUNCTIONS: jint = 1 << 3;
+const EXPORT_FLAG_ANALYZERS: jint = 1 << 4;
+const EXPORT_FLAG_APIS: jint = 1 << 5;
+const EXPORT_FLAG_BUCKETS: jint = 1 << 6;
+const EXPORT_FLAG_MODULES: jint = 1 << 7;
+const EXPORT_FLAG_CONFIGS: jint = 1 << 8;
+const EXPORT_FLAG_VERSIONS: jint = 1 << 9;
+const EXPORT_FLAG_RECORDS: jint = 1 << 10;
+const EXPORT_FLAG_TABLES: jint = 1 << 11;
+
+/// Applies the export options (encoded as flag bits plus an optional explicit
+/// table list) to an export builder. When `tables` is `Some`, the list wins
+/// over the `EXPORT_FLAG_TABLES` all-or-nothing bit.
+fn apply_export_config<R>(
+    export: Export<'_, Any, R>,
+    flags: jint,
+    tables: Option<Vec<String>>,
+) -> Export<'_, Any, R, ExportConfig> {
+    let export = export
+        .with_config()
+        .users(flags & EXPORT_FLAG_USERS != 0)
+        .accesses(flags & EXPORT_FLAG_ACCESSES != 0)
+        .params(flags & EXPORT_FLAG_PARAMS != 0)
+        .functions(flags & EXPORT_FLAG_FUNCTIONS != 0)
+        .analyzers(flags & EXPORT_FLAG_ANALYZERS != 0)
+        .apis(flags & EXPORT_FLAG_APIS != 0)
+        .buckets(flags & EXPORT_FLAG_BUCKETS != 0)
+        .modules(flags & EXPORT_FLAG_MODULES != 0)
+        .configs(flags & EXPORT_FLAG_CONFIGS != 0)
+        .versions(flags & EXPORT_FLAG_VERSIONS != 0)
+        .records(flags & EXPORT_FLAG_RECORDS != 0);
+    match tables {
+        Some(tables) => export.tables(tables),
+        None => export.tables(flags & EXPORT_FLAG_TABLES != 0),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_exportSqlOptions<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    path: JString<'local>,
+    flags: jint,
+    tables: JObjectArray<'local, JString<'local>>,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
+        let path = get_rust_string!(env, &path, || false as jboolean);
+        let tables = if tables.as_raw().is_null() {
+            None
+        } else {
+            Some(get_rust_string_array!(env, tables, || false as jboolean))
+        };
+        let path = Path::new(&path).to_path_buf();
+        let export = apply_export_config(surreal.export(path), flags, tables);
+        match TOKIO_RUNTIME.block_on(async { export.await }) {
+            Ok(()) => true as jboolean,
+            Err(e) => SurrealError::from(e).exception(env, || false as jboolean),
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_exportSqlString<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    flags: jint,
+    tables: JObjectArray<'local, JString<'local>>,
+) -> jstring {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let tables = if tables.as_raw().is_null() {
+            None
+        } else {
+            Some(get_rust_string_array!(env, tables, null_mut))
+        };
+        // Export to memory: `export(())` resolves to a stream of byte chunks,
+        // which we collect into a single buffer.
+        let export = apply_export_config(surreal.export(()), flags, tables);
+        let res: Result<Vec<u8>> = TOKIO_RUNTIME.block_on(async {
+            let mut backup = export.await?;
+            let mut buf = Vec::new();
+            while let Some(chunk) = backup.next().await {
+                buf.extend(chunk?);
+            }
+            Ok(buf)
+        });
+        match res {
+            Ok(bytes) => match String::from_utf8(bytes) {
+                Ok(sql) => new_string!(env, sql, null_mut),
+                Err(e) => SurrealError::SurrealDBJni(format!("Export is not valid UTF-8: {e}"))
+                    .exception(env, null_mut),
+            },
+            Err(e) => SurrealError::from(e).exception(env, null_mut),
         }
     })
 }
