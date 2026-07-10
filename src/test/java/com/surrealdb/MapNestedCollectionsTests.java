@@ -11,9 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.surrealdb.pojos.Inventory;
+import com.surrealdb.pojos.Leaderboard;
 import com.surrealdb.pojos.Name;
 import com.surrealdb.pojos.Team;
 import com.surrealdb.pojos.Translations;
+import com.surrealdb.pojos.Warehouse;
 
 public class MapNestedCollectionsTests {
 
@@ -78,6 +80,83 @@ public class MapNestedCollectionsTests {
 			assertTrue(selected.isPresent());
 			selected.get().id = null;
 			assertEquals(translations, selected.get());
+		}
+	}
+
+	@Test
+	void roundTripMapOfListsOfMaps() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Map<String, String> shelfA = new HashMap<>();
+			shelfA.put("sku", "A-1");
+			shelfA.put("label", "bolts");
+			final Map<String, String> shelfB = new HashMap<>();
+			shelfB.put("sku", "B-2");
+			shelfB.put("label", "nuts");
+			final Map<String, java.util.List<Map<String, String>>> sections = new HashMap<>();
+			sections.put("hardware", Arrays.asList(shelfA, shelfB));
+			final Map<String, java.util.List<Integer>> stock = new HashMap<>();
+			stock.put("hardware", Arrays.asList(7, 12));
+			final Warehouse warehouse = new Warehouse(sections, new HashMap<>(), stock);
+			// Write path
+			final Warehouse created = surreal.create(Warehouse.class, "warehouse", warehouse).get(0);
+			assertNotNull(created.id);
+			// Read path
+			final Optional<Warehouse> selected = surreal.select(Warehouse.class, created.id);
+			assertTrue(selected.isPresent());
+			// Scalar elements hydrate with the declared element type.
+			assertEquals(Integer.class, selected.get().stock.get("hardware").get(0).getClass());
+			selected.get().id = null;
+			assertEquals(warehouse, selected.get());
+		}
+	}
+
+	@Test
+	void roundTripMapOfListsOfPojoLists() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final Map<String, java.util.List<java.util.List<Name>>> shifts = new HashMap<>();
+			shifts.put("monday",
+					Arrays.asList(
+							Arrays.asList(new Name("Tobie", "Morgan Hitchcock"), new Name("Jaime", "Morgan Hitchcock")),
+							Arrays.asList(new Name("Ada", "Lovelace"))));
+			final Warehouse warehouse = new Warehouse(new HashMap<>(), shifts, new HashMap<>());
+			// Write path
+			final Warehouse created = surreal.create(Warehouse.class, "warehouse", warehouse).get(0);
+			assertNotNull(created.id);
+			// Read path
+			final Optional<Warehouse> selected = surreal.select(Warehouse.class, created.id);
+			assertTrue(selected.isPresent());
+			selected.get().id = null;
+			assertEquals(warehouse, selected.get());
+		}
+	}
+
+	@Test
+	void roundTripConcreteAndSortedMapFieldTypes() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final java.util.TreeMap<String, Long> scores = new java.util.TreeMap<>();
+			scores.put("alice", 3L);
+			scores.put("bob", 5L);
+			final java.util.LinkedHashMap<String, String> labels = new java.util.LinkedHashMap<>();
+			labels.put("alice", "gold");
+			labels.put("bob", "silver");
+			final java.util.TreeMap<String, Long> ranks = new java.util.TreeMap<>();
+			ranks.put("alice", 2L);
+			ranks.put("bob", 1L);
+			final Leaderboard leaderboard = new Leaderboard(scores, labels, ranks);
+			// Write path
+			final Leaderboard created = surreal.create(Leaderboard.class, "leaderboard", leaderboard).get(0);
+			assertNotNull(created.id);
+			// Read path: the declared map types must be honoured on set.
+			final Optional<Leaderboard> selected = surreal.select(Leaderboard.class, created.id);
+			assertTrue(selected.isPresent());
+			assertEquals(java.util.TreeMap.class, selected.get().scores.getClass());
+			assertEquals(java.util.LinkedHashMap.class, selected.get().labels.getClass());
+			assertTrue(selected.get().ranks instanceof java.util.SortedMap);
+			selected.get().id = null;
+			assertEquals(leaderboard, selected.get());
 		}
 	}
 

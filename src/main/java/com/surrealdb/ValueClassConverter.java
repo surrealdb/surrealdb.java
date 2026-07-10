@@ -201,7 +201,7 @@ class ValueClassConverter<T> {
 				if (valueType == null) {
 					throw new SurrealException("Unsupported map type for: " + genericType);
 				}
-				final Map<String, java.lang.Object> map = new HashMap<>();
+				final Map<String, java.lang.Object> map = newMapInstance(type);
 				for (final Entry mapEntry : value.getObject()) {
 					map.put(mapEntry.getKey(), convertValueToType(mapEntry.getValue(), valueType, valueGenericType));
 				}
@@ -229,21 +229,53 @@ class ValueClassConverter<T> {
 
 	private static java.lang.Object convertArrayElement(final Value value, final Class<?> elementType,
 			final Type elementGenericType) throws ReflectiveOperationException {
-		if (value.isObject()) {
-			if (elementType == null) {
+		if (elementType == null) {
+			// No generic element information (raw or untyped collection):
+			// objects cannot be hydrated, nested arrays stay untyped lists,
+			// and scalars keep the historical type-agnostic conversion.
+			if (value.isObject()) {
 				throw new SurrealException("Unsupported element type for array");
 			}
-			return convert(elementType, value.getObject());
-		}
-		if (value.isArray()) {
-			final List<java.lang.Object> nested = new ArrayList<>();
-			for (final Value v : value.getArray()) {
-				nested.add(convertArrayElement(v, elementType, elementGenericType));
+			if (value.isArray()) {
+				final List<java.lang.Object> nested = new ArrayList<>();
+				for (final Value v : value.getArray()) {
+					nested.add(convertArrayElement(v, null, null));
+				}
+				return nested;
 			}
-			return nested;
+			return convertSingleValue(value);
 		}
-		// Preserve the historical behaviour: scalar array elements are type-agnostic.
-		return convertSingleValue(value);
+		// Delegate to the shared recursion so maps, optionals, and type-aware
+		// scalars behave the same at any nesting depth, and nested arrays
+		// descend one type argument per level through the isArray branch of
+		// convertValueToType instead of reusing the outer element type.
+		return convertValueToType(value, elementType, elementGenericType);
+	}
+
+	// Honour the declared map type: instantiate concrete classes
+	// (LinkedHashMap, TreeMap, ...) so Field.set and the record constructor
+	// accept the instance, and pick a matching implementation for the JDK
+	// map interfaces. Plain Map (and unknown abstractions) fall back to
+	// HashMap, preserving the historical behaviour.
+	@SuppressWarnings("unchecked")
+	private static Map<String, java.lang.Object> newMapInstance(final Class<?> type)
+			throws ReflectiveOperationException {
+		if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
+			if (java.util.concurrent.ConcurrentNavigableMap.class.isAssignableFrom(type)) {
+				return new java.util.concurrent.ConcurrentSkipListMap<>();
+			}
+			if (java.util.concurrent.ConcurrentMap.class.isAssignableFrom(type)) {
+				return new java.util.concurrent.ConcurrentHashMap<>();
+			}
+			if (java.util.SortedMap.class.isAssignableFrom(type)) {
+				return new java.util.TreeMap<>();
+			}
+			return new HashMap<>();
+		}
+		if (HashMap.class.equals(type)) {
+			return new HashMap<>();
+		}
+		return (Map<String, java.lang.Object>) type.getDeclaredConstructor().newInstance();
 	}
 
 	private static Type firstTypeArgument(final Type genericType) {
