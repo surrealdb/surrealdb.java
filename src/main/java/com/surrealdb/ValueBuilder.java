@@ -25,6 +25,9 @@ class ValueBuilder {
 		if (object instanceof ValueMut) {
 			return (ValueMut) object;
 		}
+		if (object instanceof Value) {
+			return ValueMut.createValue((Value) object);
+		}
 		if (object instanceof String) {
 			return ValueMut.createString((String) object);
 		}
@@ -99,6 +102,9 @@ class ValueBuilder {
 		}
 		if (object instanceof RecordId) {
 			return ValueMut.createRecordId((RecordId) object);
+		}
+		if (object instanceof RecordIdRange) {
+			return ValueMut.createRecordIdRange((RecordIdRange) object);
 		}
 		if (object instanceof byte[]) {
 			final byte[] bytes = (byte[]) object;

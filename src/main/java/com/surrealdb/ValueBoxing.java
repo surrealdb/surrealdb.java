@@ -79,6 +79,12 @@ final class ValueBoxing {
 		if (e instanceof RecordId) {
 			return ValueMut.createRecordId((RecordId) e);
 		}
+		if (e instanceof RecordIdRange) {
+			return ValueMut.createRecordIdRange((RecordIdRange) e);
+		}
+		if (e instanceof Value) {
+			return ValueMut.createValue((Value) e);
+		}
 		if (e instanceof com.surrealdb.Object) {
 			return ValueMut.createObject((com.surrealdb.Object) e);
 		}

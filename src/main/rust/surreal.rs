@@ -1282,7 +1282,7 @@ fn value_to_record_id_key(value: &Value) -> std::result::Result<RecordIdKey, Sur
 }
 
 /// Builds the range record id value for SELECT/DELETE/UPDATE/UPSERT $_range.
-fn build_range_value(
+pub(crate) fn build_range_value(
     _env: &mut Env,
     table: &str,
     start_ptr: jlong,
