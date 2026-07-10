@@ -3,6 +3,7 @@ package com.surrealdb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -160,5 +161,81 @@ public class JdbcConnectionUrlTests {
 	@Test
 	void nullInputThrows() {
 		assertThrows(IllegalArgumentException.class, () -> JdbcConnectionUrl.parse(null));
+	}
+
+	@Test
+	void missingHostThrows() {
+		final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> JdbcConnectionUrl.parse("jdbc:surrealdb://"));
+		// The error message should echo back the URL the caller actually passed, not
+		// an internally-rewritten form (e.g. with a default scheme spliced in).
+		assertTrue(ex.getMessage().contains("jdbc:surrealdb://"));
+	}
+
+	@Test
+	void missingHostWithExplicitSchemeThrows() {
+		assertThrows(IllegalArgumentException.class, () -> JdbcConnectionUrl.parse("jdbc:surrealdb:wss://"));
+	}
+
+	@Test
+	void emptyNamespaceSegmentThrows() {
+		// "//db" (empty namespace, non-empty database) must not silently be treated
+		// as namespace="" - that would later cause a confusing useNs("") call.
+		assertThrows(IllegalArgumentException.class,
+				() -> JdbcConnectionUrl.parse("jdbc:surrealdb://localhost:8000//db"));
+	}
+
+	@Test
+	void emptyDatabaseSegmentThrows() {
+		// Two segments where the second (database) is empty - not to be confused
+		// with a single trailing slash ("/ns"), which legitimately means "namespace
+		// only, no database" (see trailingSlashAfterNamespaceOnlyIsAllowed).
+		assertThrows(IllegalArgumentException.class,
+				() -> JdbcConnectionUrl.parse("jdbc:surrealdb://localhost:8000/ns//"));
+	}
+
+	@Test
+	void trailingSlashAfterNamespaceOnlyIsAllowed() {
+		// A single trailing slash with no database segment is fine (not the same as
+		// an empty database segment): "ns/" means "namespace=ns, no database".
+		JdbcConnectionUrl parsed = JdbcConnectionUrl.parse("jdbc:surrealdb://localhost:8000/ns");
+		assertEquals("ns", parsed.getNamespace());
+		assertNull(parsed.getDatabase());
+	}
+
+	@Test
+	void ipv6HostLiteral() {
+		JdbcConnectionUrl parsed = JdbcConnectionUrl.parse("jdbc:surrealdb://[::1]:8000/ns/db");
+		assertEquals("ws://[::1]:8000", parsed.getNativeConnectString());
+		assertEquals("ns", parsed.getNamespace());
+		assertEquals("db", parsed.getDatabase());
+	}
+
+	@Test
+	void percentEncodedPasswordWithSpecialCharacters() {
+		// Password "p@ss/w:ord" percent-encoded so the reserved delimiter characters
+		// ('@', '/', ':') don't get misinterpreted as URL structure.
+		JdbcConnectionUrl parsed = JdbcConnectionUrl.parse("jdbc:surrealdb://user:p%40ss%2Fw%3Aord@localhost:8000");
+		assertEquals("user", parsed.getUsername());
+		assertEquals("p@ss/w:ord", parsed.getPassword());
+	}
+
+	@Test
+	void uppercaseSchemeIsNormalizedToLowercaseForNativeConnect() {
+		// The underlying native "any" engine dispatch matches scheme tokens
+		// case-sensitively (lowercase only), so an upper/mixed-case scheme in the
+		// JDBC URL must be normalized before being handed to the native connect()
+		// call, or the connection will be rejected outright even though this
+		// parser accepts the scheme token case-insensitively.
+		JdbcConnectionUrl parsed = JdbcConnectionUrl.parse("jdbc:surrealdb:WSS://root:root@localhost:8000");
+		assertEquals("wss://localhost:8000", parsed.getNativeConnectString());
+	}
+
+	@Test
+	void uppercaseDefaultSchemeIsNormalizedToLowercase() {
+		JdbcConnectionUrl parsed = JdbcConnectionUrl.parse("JDBC:SURREALDB://LOCALHOST:8000");
+		// Host casing is left untouched (hostnames may legitimately be mixed-case),
+		// only the synthesized scheme token must be lowercase.
+		assertEquals("ws://LOCALHOST:8000", parsed.getNativeConnectString());
 	}
 }

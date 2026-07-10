@@ -127,13 +127,13 @@ final class JdbcConnectionUrl {
 
 		if (startsWithIgnoreCase(restLower, "ws://") || startsWithIgnoreCase(restLower, "wss://")
 				|| startsWithIgnoreCase(restLower, "http://") || startsWithIgnoreCase(restLower, "https://")) {
-			return parseRemote(rest);
+			return parseRemote(url, rest);
 		}
 		// "jdbc:surrealdb://host..." with no explicit scheme token defaults to ws://,
 		// mirroring the common JDBC convention where the subprotocol name doubles as
 		// the transport (e.g. "jdbc:postgresql://host/db").
 		if (restLower.startsWith("//")) {
-			return parseRemote("ws:" + rest);
+			return parseRemote(url, "ws:" + rest);
 		}
 		if (restLower.equals("memory") || startsWithIgnoreCase(restLower, "mem://")) {
 			return parseMemory(rest);
@@ -149,10 +149,23 @@ final class JdbcConnectionUrl {
 	 * Parses a remote-engine URL: {@code scheme://[user[:password]@]host[:port]
 	 * [/namespace[/database]][?params]}. The native connect string produced is just
 	 * {@code scheme://host[:port]}, with no userinfo, path, or query.
+	 *
+	 * @param url
+	 *            the original, unmodified URL as passed to {@link #parse(String)},
+	 *            used only to build accurate error messages (the {@code rest}
+	 *            parameter may have an implicit {@code ws:} scheme prepended and
+	 *            would otherwise produce a confusing error message).
+	 * @param rest
+	 *            everything after the {@code "jdbc:surrealdb:"} prefix
 	 */
-	private static JdbcConnectionUrl parseRemote(String rest) {
+	private static JdbcConnectionUrl parseRemote(String url, String rest) {
 		final int schemeEnd = rest.indexOf("://");
-		final String scheme = rest.substring(0, schemeEnd);
+		// Normalized to lowercase: the native "any" engine dispatch is case-sensitive
+		// (it matches on literal lowercase tokens such as "ws"/"http"), so passing
+		// through a differently-cased scheme (e.g. "WS://...") would cause the native
+		// side to fail to recognize it and reject the connection, even though this
+		// parser itself recognizes scheme tokens case-insensitively.
+		final String scheme = rest.substring(0, schemeEnd).toLowerCase(Locale.ROOT);
 		String remainder = rest.substring(schemeEnd + 3);
 
 		// Split off the query string first, if any.
@@ -188,7 +201,7 @@ final class JdbcConnectionUrl {
 			}
 		}
 		if (hostPort.isEmpty()) {
-			throw new IllegalArgumentException("Invalid JDBC connection URL (missing host): jdbc:surrealdb:" + rest);
+			throw new IllegalArgumentException("Invalid JDBC connection URL (missing host): " + url);
 		}
 
 		String pathNamespace = null;
@@ -201,14 +214,22 @@ final class JdbcConnectionUrl {
 					: segments.length;
 			if (segmentCount > 2) {
 				throw new IllegalArgumentException(
-						"Invalid JDBC connection URL (at most two path segments, namespace/database, are allowed): jdbc:surrealdb:"
-								+ rest);
+						"Invalid JDBC connection URL (at most two path segments, namespace/database, are allowed): "
+								+ url);
 			}
 			if (segmentCount >= 1) {
 				pathNamespace = decode(segments[0]);
+				if (pathNamespace.isEmpty()) {
+					throw new IllegalArgumentException(
+							"Invalid JDBC connection URL (namespace path segment must not be empty): " + url);
+				}
 			}
 			if (segmentCount >= 2) {
 				pathDatabase = decode(segments[1]);
+				if (pathDatabase.isEmpty()) {
+					throw new IllegalArgumentException(
+							"Invalid JDBC connection URL (database path segment must not be empty): " + url);
+				}
 			}
 		}
 

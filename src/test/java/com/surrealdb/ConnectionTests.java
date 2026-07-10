@@ -129,6 +129,35 @@ public class ConnectionTests {
 	}
 
 	@Test
+	void jdbcConnectWebsocketUppercaseScheme() throws Exception {
+		// Regression test: the native "any" engine dispatch matches scheme tokens
+		// case-sensitively, so an uppercase scheme in the JDBC URL must be
+		// normalized to lowercase before being handed to the native connect() call,
+		// or this would fail with "Invalid URL: ...".
+		try (Surreal surreal = new Surreal()) {
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			try {
+				Future<Void> future = executor.submit(new Callable<Void>() {
+					@Override
+					public Void call() throws SurrealException {
+						surreal.connect("jdbc:surrealdb:WS://root:root@localhost:8000/test/test");
+						assertEquals("test", surreal.getNamespace());
+						assertEquals("test", surreal.getDatabase());
+						assertNotNull(surreal.version());
+						return null;
+					}
+				});
+				future.get(10, TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				fail("connect() blocked for 10s (is a SurrealDB server running at ws://localhost:8000?)");
+			} finally {
+				executor.shutdownNow();
+				executor.awaitTermination(2, TimeUnit.SECONDS);
+			}
+		}
+	}
+
+	@Test
 	void jdbcConnectMemory() throws SurrealException {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect("jdbc:surrealdb:memory?ns=test_ns&db=test_db");
