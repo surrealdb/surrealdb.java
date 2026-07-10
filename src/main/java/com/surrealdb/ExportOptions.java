@@ -205,13 +205,21 @@ public class ExportOptions {
 	}
 
 	/**
-	 * Restricts the export to the given tables.
+	 * Restricts the export to the given tables. Calling this with no arguments is
+	 * equivalent to {@code tables(true)}: all tables are exported. Replaces any
+	 * setting previously made via {@link #tables(boolean)} or this method.
 	 *
 	 * @param tables
-	 *            the names of the tables to export
+	 *            the names of the tables to export; empty means all tables
 	 * @return this instance for chaining
 	 */
 	public ExportOptions tables(String... tables) {
+		if (tables.length == 0) {
+			return tables(true);
+		}
+		// Clear the all-tables flag so FLAG_TABLES is never set alongside an
+		// explicit list (the native layer gives the list precedence anyway).
+		this.allTables = false;
 		this.tables = Arrays.copyOf(tables, tables.length);
 		return this;
 	}

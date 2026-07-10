@@ -6,6 +6,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +59,28 @@ public class ExportOptionsTests {
 			assertTrue(export.contains("person:tobie"), export);
 			assertFalse(export.contains("DEFINE TABLE city"), export);
 			assertFalse(export.contains("city:london"), export);
+		}
+	}
+
+	@Test
+	void tablesEmptyVarargs_exportsAllTables() {
+		try (Surreal surreal = new Surreal()) {
+			createFixture(surreal);
+			// Zero-arg tables() means "all tables", even after a narrower setting.
+			String export = surreal.exportSql(new ExportOptions().tables("person").tables());
+			assertTrue(export.contains("DEFINE TABLE person"), export);
+			assertTrue(export.contains("DEFINE TABLE city"), export);
+			assertTrue(export.contains("person:tobie"), export);
+			assertTrue(export.contains("city:london"), export);
+		}
+	}
+
+	@Test
+	void nullOptions_throwNullPointerException() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			assertThrows(NullPointerException.class, () -> surreal.exportSql((ExportOptions) null));
+			assertThrows(NullPointerException.class, () -> surreal.exportSql("unused.surql", (ExportOptions) null));
 		}
 	}
 

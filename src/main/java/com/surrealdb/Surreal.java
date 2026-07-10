@@ -263,14 +263,25 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return true on success
 	 * @throws SurrealException
 	 *             if export fails or backups are not supported
+	 * @throws NullPointerException
+	 *             if options is null
 	 */
 	public boolean exportSql(String path, ExportOptions options) {
+		Objects.requireNonNull(options, "options");
 		return exportSqlOptions(getPtr(), path, options.flags(), options.tableList());
 	}
 
 	/**
 	 * Exports the database and returns it as a string, without going through a
 	 * file. Supported by HTTP and local engines; not by WebSocket.
+	 *
+	 * <p>
+	 * The whole export is buffered in memory: it is collected into a native byte
+	 * buffer and then copied into a Java {@code String} (UTF-16), so the peak
+	 * memory usage is roughly three times the export size. There is no size guard,
+	 * and exports larger than 2 GB cannot be represented as a single Java string.
+	 * For large databases, export to a file with {@link #exportSql(String)}
+	 * instead.
 	 *
 	 * @return the export content
 	 * @throws SurrealException
@@ -285,13 +296,24 @@ public class Surreal extends Native implements AutoCloseable {
 	 * string, without going through a file. Supported by HTTP and local engines;
 	 * not by WebSocket.
 	 *
+	 * <p>
+	 * The whole export is buffered in memory: it is collected into a native byte
+	 * buffer and then copied into a Java {@code String} (UTF-16), so the peak
+	 * memory usage is roughly three times the export size. There is no size guard,
+	 * and exports larger than 2 GB cannot be represented as a single Java string.
+	 * For large databases, export to a file with
+	 * {@link #exportSql(String, ExportOptions)} instead.
+	 *
 	 * @param options
 	 *            the export options controlling what is included
 	 * @return the export content
 	 * @throws SurrealException
 	 *             if export fails or backups are not supported
+	 * @throws NullPointerException
+	 *             if options is null
 	 */
 	public String exportSql(ExportOptions options) {
+		Objects.requireNonNull(options, "options");
 		return exportSqlString(getPtr(), options.flags(), options.tableList());
 	}
 
