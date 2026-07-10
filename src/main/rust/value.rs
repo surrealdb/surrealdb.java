@@ -213,13 +213,24 @@ pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jlong {
+) -> jlongArray {
     with_env_body!(env, env, {
-        let value = get_value_instance!(env, ptr, || 0);
+        let value = get_value_instance!(env, ptr, null_mut);
         if let Value::Duration(d) = value.as_ref() {
-            d.as_millis() as jlong
+            let seconds = d.as_secs();
+            // Only reachable from a server-side duration exceeding i64::MAX seconds
+            // (e.g. the literal `10000000000000000000s`); Java cannot construct one.
+            if seconds > i64::MAX as u64 {
+                SurrealError::SurrealDBJni(format!(
+                    "Duration of {seconds} seconds exceeds the range of java.time.Duration"
+                ))
+                .exception(env, null_mut)
+            } else {
+                let buf: [jlong; 2] = [seconds as jlong, d.subsec_nanos() as jlong];
+                new_jlong_array!(env, &buf, null_mut)
+            }
         } else {
-            SurrealError::NullPointerException("Duration").exception(env, || 0)
+            SurrealError::NullPointerException("Duration").exception(env, null_mut)
         }
     })
 }

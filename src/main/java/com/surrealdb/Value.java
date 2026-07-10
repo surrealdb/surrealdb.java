@@ -65,7 +65,7 @@ public class Value extends Native {
 
 	private static native boolean isDuration(long ptr);
 
-	private static native long getDuration(long ptr);
+	private static native long[] getDuration(long ptr);
 
 	private static native boolean isBytes(long ptr);
 
@@ -250,9 +250,16 @@ public class Value extends Native {
 		return isDuration(getPtr());
 	}
 
+	/**
+	 * Returns this duration value with full nanosecond precision.
+	 *
+	 * @throws SurrealException
+	 *             if the stored duration exceeds the range of {@link Duration}
+	 *             (more than {@link Long#MAX_VALUE} seconds)
+	 */
 	public Duration getDuration() {
-		final long durationMillis = getDuration(getPtr());
-		return Duration.ofMillis(durationMillis);
+		final long[] duration = getDuration(getPtr());
+		return Duration.ofSeconds(duration[0], duration[1]);
 	}
 
 	public <T> T get(Class<T> type) {
