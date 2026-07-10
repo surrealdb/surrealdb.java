@@ -22,7 +22,8 @@ import java.util.Locale;
  * {@code user}/{@code username}, {@code pass}/{@code password},
  * {@code ns}/{@code namespace}, and {@code db}/{@code database}. When a field
  * is supplied both in the userinfo/path and in the query string, the
- * userinfo/path value wins.</li>
+ * userinfo/path value wins (field by field, so one source may complete the
+ * other, e.g. {@code jdbc:surrealdb://root@host?pass=secret}).</li>
  * <li>Embedded memory engine: {@code jdbc:surrealdb:memory[?param=value&...]}
  * or {@code jdbc:surrealdb:mem://...[?param=value&...]}, using the same query
  * parameter names as above.</li>
@@ -32,6 +33,18 @@ import java.util.Locale;
  * path), other than stripping an optional trailing {@code ?param=value&...}
  * suffix using the same query parameter names as above.</li>
  * </ul>
+ * Percent-encoded octets ({@code %XX}, including multi-byte UTF-8) are decoded
+ * in the userinfo, path segments, and query values. A literal {@code '+'} is
+ * preserved in the userinfo and path (per RFC 3986) but decodes to a space in
+ * query values (per {@code application/x-www-form-urlencoded}); write
+ * {@code %2B} for a literal plus in a query value.
+ * <p>
+ * After merging both sources, half-specified combinations are rejected with an
+ * {@link IllegalArgumentException} rather than silently dropped: a username
+ * requires a password (and vice versa), and a database requires a namespace. An
+ * empty userinfo ({@code jdbc:surrealdb://@host}) is treated as absent, not as
+ * empty credentials.
+ * <p>
  * This class is package-private: it is an implementation detail of
  * {@link Surreal#connect(String)} and is not part of the public API.
  */
@@ -125,20 +138,41 @@ final class JdbcConnectionUrl {
 		final String rest = url.substring(JDBC_PREFIX.length());
 		final String restLower = rest.toLowerCase(Locale.ROOT);
 
+		final JdbcConnectionUrl parsed;
 		if (startsWithIgnoreCase(restLower, "ws://") || startsWithIgnoreCase(restLower, "wss://")
 				|| startsWithIgnoreCase(restLower, "http://") || startsWithIgnoreCase(restLower, "https://")) {
-			return parseRemote(url, rest);
+			parsed = parseRemote(url, rest);
+		} else if (restLower.startsWith("//")) {
+			// "jdbc:surrealdb://host..." with no explicit scheme token defaults to
+			// ws://, mirroring the common JDBC convention where the subprotocol name
+			// doubles as the transport (e.g. "jdbc:postgresql://host/db").
+			parsed = parseRemote(url, "ws:" + rest);
+		} else if (restLower.equals("memory") || startsWithIgnoreCase(restLower, "mem://")) {
+			parsed = parseMemory(rest);
+		} else {
+			parsed = parseEmbedded(rest);
 		}
-		// "jdbc:surrealdb://host..." with no explicit scheme token defaults to ws://,
-		// mirroring the common JDBC convention where the subprotocol name doubles as
-		// the transport (e.g. "jdbc:postgresql://host/db").
-		if (restLower.startsWith("//")) {
-			return parseRemote(url, "ws:" + rest);
+
+		// Validate cross-field consistency after the userinfo/path and query-string
+		// sources have been merged, so that one source may legitimately complete the
+		// other (e.g. "ws://root@host?pass=secret"). Half-specified combinations are
+		// rejected here rather than silently dropped or passed through: a username
+		// without a password would fail at sign-in with an unhelpful native error,
+		// a password alone can never be used, and SurrealDB cannot select a
+		// database without a namespace.
+		if (parsed.username != null && parsed.password == null) {
+			throw new IllegalArgumentException(
+					"Invalid JDBC connection URL (username supplied without a password): " + url);
 		}
-		if (restLower.equals("memory") || startsWithIgnoreCase(restLower, "mem://")) {
-			return parseMemory(rest);
+		if (parsed.password != null && parsed.username == null) {
+			throw new IllegalArgumentException(
+					"Invalid JDBC connection URL (password supplied without a username): " + url);
 		}
-		return parseEmbedded(rest);
+		if (parsed.database != null && parsed.namespace == null) {
+			throw new IllegalArgumentException(
+					"Invalid JDBC connection URL (database supplied without a namespace): " + url);
+		}
+		return parsed;
 	}
 
 	private static boolean startsWithIgnoreCase(String lowerCaseHaystack, String lowerCaseNeedle) {
@@ -192,12 +226,21 @@ final class JdbcConnectionUrl {
 		if (atIdx >= 0) {
 			final String userinfo = remainder.substring(0, atIdx);
 			hostPort = remainder.substring(atIdx + 1);
-			final int colonIdx = userinfo.indexOf(':');
-			if (colonIdx >= 0) {
-				userinfoUser = decode(userinfo.substring(0, colonIdx));
-				userinfoPassword = decode(userinfo.substring(colonIdx + 1));
-			} else {
-				userinfoUser = decode(userinfo);
+			// An empty userinfo ("@host" or ":@host") carries no credentials:
+			// normalize it to null (no sign-in attempt) rather than treating it as
+			// user "" with password "".
+			if (!userinfo.isEmpty() && !userinfo.equals(":")) {
+				final int colonIdx = userinfo.indexOf(':');
+				if (colonIdx >= 0) {
+					final String user = percentDecode(userinfo.substring(0, colonIdx));
+					// ":pass@host" supplies a password but no username; leave the
+					// username null so parse() rejects it unless the query string
+					// fills it in.
+					userinfoUser = user.isEmpty() ? null : user;
+					userinfoPassword = percentDecode(userinfo.substring(colonIdx + 1));
+				} else {
+					userinfoUser = percentDecode(userinfo);
+				}
 			}
 		}
 		if (hostPort.isEmpty()) {
@@ -218,14 +261,14 @@ final class JdbcConnectionUrl {
 								+ url);
 			}
 			if (segmentCount >= 1) {
-				pathNamespace = decode(segments[0]);
+				pathNamespace = percentDecode(segments[0]);
 				if (pathNamespace.isEmpty()) {
 					throw new IllegalArgumentException(
 							"Invalid JDBC connection URL (namespace path segment must not be empty): " + url);
 				}
 			}
 			if (segmentCount >= 2) {
-				pathDatabase = decode(segments[1]);
+				pathDatabase = percentDecode(segments[1]);
 				if (pathDatabase.isEmpty()) {
 					throw new IllegalArgumentException(
 							"Invalid JDBC connection URL (database path segment must not be empty): " + url);
@@ -287,6 +330,11 @@ final class JdbcConnectionUrl {
 		return preferred != null ? preferred : fallback;
 	}
 
+	/**
+	 * Decodes an {@code application/x-www-form-urlencoded} query-string value:
+	 * {@code %XX} octets are expanded and {@code '+'} means space. Only correct for
+	 * query values - use {@link #percentDecode} for userinfo and path components.
+	 */
 	private static String decode(String value) {
 		try {
 			return URLDecoder.decode(value, "UTF-8");
@@ -294,6 +342,19 @@ final class JdbcConnectionUrl {
 			// UTF-8 is always supported; this should be unreachable.
 			throw new IllegalStateException(e);
 		}
+	}
+
+	/**
+	 * Decodes percent-encoded octets ({@code %XX}, including multi-byte UTF-8
+	 * sequences) in a URI userinfo or path component. Unlike {@link #decode}, a
+	 * literal {@code '+'} is preserved: the plus-means-space rule is specific to
+	 * form-encoded query values and does not apply to these components (RFC 3986),
+	 * where {@code '+'} is an ordinary character - and a common one in passwords.
+	 */
+	private static String percentDecode(String value) {
+		// Re-encoding literal '+' as %2B first lets URLDecoder handle the actual
+		// %XX (and multi-byte UTF-8) expansion while leaving pluses intact.
+		return decode(value.replace("+", "%2B"));
 	}
 
 	/**

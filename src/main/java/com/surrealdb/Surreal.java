@@ -197,7 +197,10 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the current instance of the {@code Surreal} class
 	 * @throws IllegalArgumentException
 	 *             if the input starts with {@code "jdbc:"} but is not a valid
-	 *             {@code jdbc:surrealdb:...} connection URL
+	 *             {@code jdbc:surrealdb:...} connection URL, including
+	 *             half-specified combinations: a username without a password (or
+	 *             vice versa) and a database without a namespace are rejected
+	 *             rather than silently ignored
 	 */
 	public Surreal connect(String connect) {
 		if (connect != null && connect.length() >= 5 && connect.substring(0, 5).equalsIgnoreCase("jdbc:")) {
@@ -206,13 +209,16 @@ public class Surreal extends Native implements AutoCloseable {
 			namespace = null;
 			database = null;
 			if (parsed.getUsername() != null) {
+				// The parser guarantees a password accompanies the username.
 				signin(new RootCredential(parsed.getUsername(), parsed.getPassword()));
 			}
 			if (parsed.getNamespace() != null) {
 				useNs(parsed.getNamespace());
-				if (parsed.getDatabase() != null) {
-					useDb(parsed.getDatabase());
-				}
+			}
+			if (parsed.getDatabase() != null) {
+				// The parser rejects a database without a namespace, so this always
+				// follows a useNs() above; the parameter cannot be silently dropped.
+				useDb(parsed.getDatabase());
 			}
 			return this;
 		}
