@@ -1,6 +1,7 @@
 package com.surrealdb;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -149,6 +150,79 @@ public class ValueTypesTests {
 			assertTrue(end.get().isLong());
 			assertEquals(1L, start.get().getLong());
 			assertEquals(10L, end.get().getLong());
+		}
+	}
+
+	@Test
+	void valueRangeBindParam() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			// Bind the equivalent of 1..10 (inclusive start, exclusive end)
+			ValueMut range = ValueMut.createRange(ValueMut.createLong(1), ValueMut.createLong(10), true, false);
+			Response r = surreal.query("RETURN $r", Collections.singletonMap("r", range));
+			Value v = r.take(0);
+			assertTrue(v.isRange());
+			assertEquals(1L, v.getRangeStart().get().getLong());
+			assertEquals(10L, v.getRangeEnd().get().getLong());
+			assertEquals("1..10", v.toString());
+		}
+	}
+
+	@Test
+	void valueRangeBindParamInclusiveEnd() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			// Bind the equivalent of 1..=10 (inclusive bounds)
+			ValueMut range = ValueMut.createRange(ValueMut.createLong(1), ValueMut.createLong(10), true, true);
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", range)).take(0);
+			assertTrue(v.isRange());
+			assertEquals("1..=10", v.toString());
+		}
+	}
+
+	@Test
+	void valueRangeBindParamExclusiveStart() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			// Bind the equivalent of 1>..=10 (exclusive start, inclusive end)
+			ValueMut range = ValueMut.createRange(ValueMut.createLong(1), ValueMut.createLong(10), false, true);
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", range)).take(0);
+			assertTrue(v.isRange());
+			assertEquals(1L, v.getRangeStart().get().getLong());
+			assertEquals(10L, v.getRangeEnd().get().getLong());
+			assertEquals("1>..=10", v.toString());
+		}
+	}
+
+	@Test
+	void valueRangeBindParamUnbounded() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			// Bind the equivalent of ..10 (unbounded start, exclusive end)
+			ValueMut range = ValueMut.createRange(null, ValueMut.createLong(10), false, false);
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", range)).take(0);
+			assertTrue(v.isRange());
+			assertFalse(v.getRangeStart().isPresent());
+			assertEquals(10L, v.getRangeEnd().get().getLong());
+			assertEquals("..10", v.toString());
+		}
+	}
+
+	@Test
+	void valueRangeRoundTripBindParam() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			// Read a range from a query result, then bind it back as a parameter
+			Value original = surreal.query("RETURN 1..10").take(0);
+			assertTrue(original.isRange());
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", original)).take(0);
+			assertTrue(v.isRange());
+			assertEquals(1L, v.getRangeStart().get().getLong());
+			assertEquals(10L, v.getRangeEnd().get().getLong());
+			assertEquals("1..10", v.toString());
+			// The original Value stays valid and reusable
+			assertTrue(original.isRange());
+			assertEquals("1..10", original.toString());
 		}
 	}
 }

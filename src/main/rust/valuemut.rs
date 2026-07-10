@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
+use std::ops::Bound;
 use std::ptr::null_mut;
 use std::str::FromStr;
 
@@ -10,7 +11,7 @@ use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::EnvUnowned;
 use rust_decimal::Decimal;
 use surrealdb::types::{
-    Array, Datetime, Duration, File, Number, Object, Table, ToSql, Uuid, Value,
+    Array, Datetime, Duration, File, Number, Object, Range, Table, ToSql, Uuid, Value,
 };
 
 use crate::error::SurrealError;
@@ -279,6 +280,71 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newFile<'local>(
         let key = get_rust_string!(env, key, || 0);
         let value = Value::File(File::new(bucket, key));
         JniTypes::new_value_mut(value)
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newRange<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    start_ptr: jlong,
+    end_ptr: jlong,
+    start_included: jboolean,
+    end_included: jboolean,
+) -> jlong {
+    with_env_body!(env, env, {
+        let start = if start_ptr == 0 {
+            Bound::Unbounded
+        } else {
+            let value = take_value_mut_instance!(env, start_ptr, || 0);
+            if start_included {
+                Bound::Included(value)
+            } else {
+                Bound::Excluded(value)
+            }
+        };
+        let end = if end_ptr == 0 {
+            Bound::Unbounded
+        } else {
+            let value = take_value_mut_instance!(env, end_ptr, || 0);
+            if end_included {
+                Bound::Included(value)
+            } else {
+                Bound::Excluded(value)
+            }
+        };
+        let value = Value::Range(Box::new(Range::new(start, end)));
+        JniTypes::new_value_mut(value)
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newRecordIdRange<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    table: JString<'local>,
+    start_id_ptr: jlong,
+    end_id_ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let table = get_rust_string!(env, table, || 0);
+        match crate::surreal::build_range_value(env, &table, start_id_ptr, end_id_ptr) {
+            Ok(value) => JniTypes::new_value_mut(value),
+            Err(e) => e.exception(env, || 0),
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newValue<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        // Clone (not move) so the Java Value stays valid and reusable.
+        JniTypes::new_value_mut(value.as_ref().clone())
     })
 }
 

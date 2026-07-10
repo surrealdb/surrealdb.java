@@ -54,6 +54,12 @@ public class ValueMut extends Native {
 
 	private static native long newTable(String name);
 
+	private static native long newRange(long startPtr, long endPtr, boolean startIncluded, boolean endIncluded);
+
+	private static native long newRecordIdRange(String table, long startIdPtr, long endIdPtr);
+
+	private static native long newValue(long ptr);
+
 	public static ValueMut createNone() {
 		return new ValueMut(newNone());
 	}
@@ -183,6 +189,62 @@ public class ValueMut extends Native {
 
 	public static ValueMut createTable(String name) {
 		return new ValueMut(newTable(name));
+	}
+
+	/**
+	 * Creates a range value with the given bounds (e.g. {@code 1..10} or
+	 * {@code 1..=10}), suitable for use as a query parameter.
+	 * <p>
+	 * Pass {@code null} for {@code start} or {@code end} to leave that side
+	 * unbounded; an unbounded side has no inclusivity, so the corresponding
+	 * {@code startIncluded}/{@code endIncluded} flag is ignored. The bound values
+	 * are moved into the range and must not be reused afterwards.
+	 *
+	 * @param start
+	 *            lower bound value, or {@code null} for unbounded
+	 * @param end
+	 *            upper bound value, or {@code null} for unbounded
+	 * @param startIncluded
+	 *            whether the start bound is inclusive
+	 * @param endIncluded
+	 *            whether the end bound is inclusive
+	 */
+	public static ValueMut createRange(ValueMut start, ValueMut end, boolean startIncluded, boolean endIncluded) {
+		final long startPtr = start != null ? start.getPtr() : 0;
+		final long endPtr = end != null ? end.getPtr() : 0;
+		final ValueMut value = new ValueMut(newRange(startPtr, endPtr, startIncluded, endIncluded));
+		// The bound values have been moved
+		if (start != null) {
+			start.moved();
+		}
+		if (end != null) {
+			end.moved();
+		}
+		return value;
+	}
+
+	/**
+	 * Creates a record ID range value over the given table (e.g.
+	 * {@code person:1..=100}), suitable for use as a query parameter:
+	 * {@code SELECT * FROM $range}.
+	 * <p>
+	 * Bounds are inclusive, and a {@code null} start or end is unbounded — the same
+	 * semantics as {@link Surreal#select(RecordIdRange)}. The {@link RecordIdRange}
+	 * and its {@link Id} bounds remain valid and reusable afterwards.
+	 */
+	public static ValueMut createRecordIdRange(RecordIdRange range) {
+		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+		return new ValueMut(newRecordIdRange(range.getTable(), startPtr, endPtr));
+	}
+
+	/**
+	 * Creates a mutable copy of an immutable {@link Value}, allowing a value read
+	 * from a query result (e.g. a range) to be bound again as a query parameter.
+	 * The source {@link Value} remains valid and reusable.
+	 */
+	public static ValueMut createValue(Value value) {
+		return new ValueMut(newValue(value.getPtr()));
 	}
 
 	@Override

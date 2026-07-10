@@ -1,5 +1,6 @@
 package com.surrealdb;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +90,88 @@ public class RecordIdRangeTests {
 			surreal.upsert(range, UpType.CONTENT, jaime);
 			List<Value> after = surreal.select(range);
 			assertTrue(after.size() >= 1);
+		}
+	}
+
+	private static List<String> ids(List<Value> values) {
+		return values.stream().map(v -> v.get(Person.class).id.toString()).sorted().collect(Collectors.toList());
+	}
+
+	private static List<String> ids(Value array) {
+		assertTrue(array.isArray());
+		final List<String> ids = new ArrayList<>();
+		for (final Value v : array.getArray()) {
+			ids.add(v.get(Person.class).id.toString());
+		}
+		Collections.sort(ids);
+		return ids;
+	}
+
+	@Test
+	void bindRecordIdRangeParamMatchesSelect() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			for (long i = 1; i <= 5; i++) {
+				surreal.create(Person.class, new RecordId("person", i), tobie);
+			}
+			RecordIdRange range = new RecordIdRange("person", Id.from(2L), Id.from(4L));
+			List<String> viaSelect = ids(surreal.select(range));
+			assertEquals(3, viaSelect.size());
+			Value viaQuery = surreal.query("SELECT * FROM $r", Collections.singletonMap("r", range)).take(0);
+			assertEquals(viaSelect, ids(viaQuery));
+			// The range and its bounds stay reusable after being bound
+			assertEquals(viaSelect, ids(surreal.select(range)));
+		}
+	}
+
+	@Test
+	void bindRecordIdRangeParamUnboundedStart() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			for (long i = 1; i <= 5; i++) {
+				surreal.create(Person.class, new RecordId("person", i), tobie);
+			}
+			RecordIdRange range = new RecordIdRange("person", null, Id.from(2L));
+			Value viaQuery = surreal.query("SELECT * FROM $r", Collections.singletonMap("r", range)).take(0);
+			assertEquals(ids(surreal.select(range)), ids(viaQuery));
+			assertEquals(2, ids(viaQuery).size());
+		}
+	}
+
+	@Test
+	void bindRecordIdRangeParamUnboundedEnd() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			for (long i = 1; i <= 5; i++) {
+				surreal.create(Person.class, new RecordId("person", i), tobie);
+			}
+			RecordIdRange range = new RecordIdRange("person", Id.from(4L), null);
+			Value viaQuery = surreal.query("SELECT * FROM $r", Collections.singletonMap("r", range)).take(0);
+			assertEquals(ids(surreal.select(range)), ids(viaQuery));
+			assertEquals(2, ids(viaQuery).size());
+		}
+	}
+
+	@Test
+	void bindRecordIdRangeParamReturn() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			RecordIdRange range = new RecordIdRange("person", Id.from(1L), Id.from(100L));
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", range)).take(0);
+			assertTrue(v.isRecordId());
+			assertEquals("person:1..=100", v.toString());
+		}
+	}
+
+	@Test
+	void bindRecordIdRangeNestedInListParam() {
+		try (Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test").useDb("test");
+			RecordIdRange range = new RecordIdRange("person", Id.from(1L), Id.from(100L));
+			Value v = surreal.query("RETURN $r", Collections.singletonMap("r", Collections.singletonList(range)))
+					.take(0);
+			assertTrue(v.isArray());
+			assertEquals("person:1..=100", v.getArray().get(0).toString());
 		}
 	}
 }
