@@ -145,6 +145,10 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean exportSql(long ptr, String path);
 
+	private static native boolean exportSqlOptions(long ptr, String path, int flags, String[] tables);
+
+	private static native String exportSqlString(long ptr, int flags, String[] tables);
+
 	private static native boolean importSql(long ptr, String path);
 
 	private static native LiveStream selectLive(long ptr, String table);
@@ -246,6 +250,49 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public boolean exportSql(String path) {
 		return exportSql(getPtr(), path);
+	}
+
+	/**
+	 * Exports the database to a file, filtered by the given options. Supported by
+	 * HTTP and local engines; not by WebSocket.
+	 *
+	 * @param path
+	 *            file path to write the export
+	 * @param options
+	 *            the export options controlling what is included
+	 * @return true on success
+	 * @throws SurrealException
+	 *             if export fails or backups are not supported
+	 */
+	public boolean exportSql(String path, ExportOptions options) {
+		return exportSqlOptions(getPtr(), path, options.flags(), options.tableList());
+	}
+
+	/**
+	 * Exports the database and returns it as a string, without going through a
+	 * file. Supported by HTTP and local engines; not by WebSocket.
+	 *
+	 * @return the export content
+	 * @throws SurrealException
+	 *             if export fails or backups are not supported
+	 */
+	public String exportSql() {
+		return exportSql(new ExportOptions());
+	}
+
+	/**
+	 * Exports the database, filtered by the given options, and returns it as a
+	 * string, without going through a file. Supported by HTTP and local engines;
+	 * not by WebSocket.
+	 *
+	 * @param options
+	 *            the export options controlling what is included
+	 * @return the export content
+	 * @throws SurrealException
+	 *             if export fails or backups are not supported
+	 */
+	public String exportSql(ExportOptions options) {
+		return exportSqlString(getPtr(), options.flags(), options.tableList());
 	}
 
 	/**
