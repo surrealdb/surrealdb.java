@@ -684,7 +684,10 @@ fn start_live_select(
 
     // Construct and return a LiveStream(handle, queryId), mirroring how live.rs
     // builds a LiveNotification.
-    let uuid_raw = env.new_string(uuid_str).map_err(SurrealError::from)?.into_raw();
+    let uuid_raw = env
+        .new_string(uuid_str)
+        .map_err(SurrealError::from)?
+        .into_raw();
     let uuid_jstr = unsafe { JObject::from_raw(env, uuid_raw) };
     let class = env
         .find_class(jni_str!("com/surrealdb/LiveStream"))
