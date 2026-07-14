@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import com.surrealdb.signin.AccessCredential;
+import com.surrealdb.signin.AccessKeyCredential;
 import com.surrealdb.signin.BearerCredential;
 import com.surrealdb.signin.Credential;
 import com.surrealdb.signin.DatabaseCredential;
@@ -65,9 +67,18 @@ public class Surreal extends Native implements AutoCloseable {
 	private static native Token signinRecord(long ptr, String namespace, String database, String access,
 			long paramsValuePtr);
 
+	private static native Token signinAccessKey(long ptr, String namespace, String database, String access, String key);
+
+	private static native Token signinAccess(long ptr, String namespace, String database, String username,
+			String password, String access);
+
 	private static native boolean authenticate(long ptr, String token);
 
+	private static native Token authenticateRefresh(long ptr, String access, String refresh);
+
 	private static native boolean invalidate(long ptr);
+
+	private static native long auth(long ptr);
 
 	private static native NsDb useNs(long ptr, String ns);
 
@@ -329,8 +340,8 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Signs in with the given credential. Supports RootCredential,
-	 * NamespaceCredential, DatabaseCredential, RecordCredential, and
-	 * BearerCredential.
+	 * NamespaceCredential, DatabaseCredential, RecordCredential, BearerCredential,
+	 * AccessKeyCredential, and AccessCredential.
 	 * <p>
 	 * For more details, check the <a href=
 	 * "https://surrealdb.com/docs/surrealdb/security/authentication">authentication
@@ -338,11 +349,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 *
 	 * @param credential
 	 *            the credentials (RootCredential, NamespaceCredential,
-	 *            DatabaseCredential, RecordCredential, or BearerCredential)
+	 *            DatabaseCredential, RecordCredential, BearerCredential,
+	 *            AccessKeyCredential, or AccessCredential)
 	 * @return a Token representing the session after a successful sign-in
 	 * @throws SurrealException
-	 *             if the credential type is unsupported or RecordCredential ns/db
-	 *             cannot be resolved
+	 *             if the credential type is unsupported, RecordCredential ns/db
+	 *             cannot be resolved, or an AccessCredential specifies a database
+	 *             without a namespace
 	 */
 	public Token signin(Credential credential) {
 		if (credential instanceof DatabaseCredential) {
@@ -368,6 +381,24 @@ public class Surreal extends Native implements AutoCloseable {
 			BearerCredential bearer = (BearerCredential) credential;
 			authenticate(getPtr(), bearer.getToken());
 			return new Token(bearer.getToken(), null);
+		} else if (credential instanceof AccessKeyCredential) {
+			// Namespace/database are passed through exactly as given (possibly null); no
+			// session fallback, matching the JS SDK's AccessBearerAuth.
+			final AccessKeyCredential accessKey = (AccessKeyCredential) credential;
+			return signinAccessKey(getPtr(), accessKey.getNamespace(), accessKey.getDatabase(), accessKey.getAccess(),
+					accessKey.getKey());
+		} else if (credential instanceof AccessCredential) {
+			// Namespace/database are passed through exactly as given (possibly null); no
+			// session fallback, matching the JS SDK's AccessSystemAuth. A database without
+			// a namespace is rejected here, mirroring AccessSystemAuth's
+			// MissingNamespaceDatabaseError.
+			final AccessCredential access = (AccessCredential) credential;
+			if (access.getDatabase() != null && access.getNamespace() == null) {
+				throw new SurrealException(
+						"AccessCredential signin requires a namespace when a database is set (database without namespace is not allowed).");
+			}
+			return signinAccess(getPtr(), access.getNamespace(), access.getDatabase(), access.getUsername(),
+					access.getPassword(), access.getAccess());
 		}
 		throw new SurrealException(
 				"Unsupported credential type: " + (credential != null ? credential.getClass().getName() : "null"));
@@ -411,6 +442,47 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	/**
+	 * Authenticates the current connection with a {@link Token}, optionally
+	 * performing a refresh-token renewal. Mirrors the JS SDK's
+	 * {@code authenticate(token: Token | Tokens)} (see the JS SDK's
+	 * {@code SurrealSession#authenticate}):
+	 * <ul>
+	 * <li>When {@link Token#getRefresh()} is non-null, performs an actual
+	 * server-side refresh that ROTATES both tokens: the access and refresh tokens
+	 * are validated and replaced, and the new pair is returned. This requires
+	 * SurrealDB &ge; 3.0.0; against an older or unsupporting server the native
+	 * refresh call fails naturally and surfaces as a {@link SurrealException} (no
+	 * client-side version gate is performed here, consistent with how this SDK
+	 * treats other server-version-dependent behavior elsewhere in the
+	 * authentication surface).</li>
+	 * <li>Otherwise, performs the same plain authenticate as
+	 * {@link #authenticate(String)} using {@link Token#getAccess()}, and returns an
+	 * echo {@code Token} with the same access and a null refresh — the server does
+	 * not confirm anything beyond validity in this mode, so nothing beyond the
+	 * input is fabricated in the return value.</li>
+	 * </ul>
+	 *
+	 * @param token
+	 *            the token to authenticate with; when {@code getRefresh()} is
+	 *            non-null a refresh renewal is performed, otherwise a plain
+	 *            authenticate
+	 * @return the rotated token (new access and refresh) when a refresh was
+	 *         performed, otherwise an echo of the given access token with a null
+	 *         refresh
+	 * @throws SurrealException
+	 *             if authentication or the refresh fails (e.g. invalid/expired
+	 *             token, or no refresh token to renew)
+	 * @see #authenticate(String)
+	 */
+	public Token authenticate(Token token) {
+		if (token.getRefresh() != null) {
+			return authenticateRefresh(getPtr(), token.getAccess(), token.getRefresh());
+		}
+		authenticate(getPtr(), token.getAccess());
+		return new Token(token.getAccess(), null);
+	}
+
+	/**
 	 * Invalidates the authentication for the current connection.
 	 *
 	 * @return the current instance
@@ -418,6 +490,51 @@ public class Surreal extends Native implements AutoCloseable {
 	public Surreal invalidate() {
 		invalidate(getPtr());
 		return this;
+	}
+
+	/**
+	 * Returns the record of the currently-authenticated record user, i.e. the
+	 * record pointed to by the {@code $auth} parameter (implemented as
+	 * {@code SELECT * FROM $auth}). This matches the {@code info} RPC method and
+	 * the JavaScript SDK's {@code auth()} (called {@code info()} in the v1 JS SDK).
+	 * <p>
+	 * A record user can only read its own record when the table permissions allow
+	 * it (e.g.
+	 * {@code DEFINE TABLE user PERMISSIONS FOR select WHERE id = $auth.id}).
+	 * <p>
+	 * For more details, check the <a href=
+	 * "https://surrealdb.com/docs/surrealdb/security/authentication#record-users">authentication
+	 * documentation</a>.
+	 *
+	 * @return an Optional containing the authenticated record user's Value, or an
+	 *         empty Optional when the session is not authenticated as a record user
+	 *         (e.g. unauthenticated, invalidated, or a system user) or the record
+	 *         is not visible to it
+	 * @throws SurrealException
+	 *             if the request fails
+	 */
+	public Optional<Value> auth() {
+		final long valuePtr = auth(getPtr());
+		if (valuePtr == 0) {
+			return Optional.empty();
+		}
+		return Optional.of(new Value(valuePtr));
+	}
+
+	/**
+	 * Returns the record of the currently-authenticated record user, converted to
+	 * an instance of the specified type.
+	 *
+	 * @param <T>
+	 *            the type of the instance to be returned
+	 * @param type
+	 *            the class type to convert the authenticated record to
+	 * @return an Optional containing the authenticated record user converted to the
+	 *         specified type, otherwise an empty Optional
+	 * @see #auth()
+	 */
+	public <T> Optional<T> auth(Class<T> type) {
+		return auth().map(v -> v.get(type));
 	}
 
 	/**
