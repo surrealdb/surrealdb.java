@@ -5,7 +5,8 @@ package com.surrealdb.signin;
  * {@link com.surrealdb.Surreal#signin(Credential)}. Implementations:
  * {@link RootCredential}, {@link NamespaceCredential},
  * {@link DatabaseCredential}, {@link RecordCredential},
- * {@link BearerCredential}.
+ * {@link BearerCredential}, {@link AccessKeyCredential},
+ * {@link AccessCredential}.
  */
 public interface Credential {
 }

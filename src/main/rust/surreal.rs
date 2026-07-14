@@ -14,7 +14,7 @@ use crate::{
     take_one_result, JniTypes, TOKIO_RUNTIME,
 };
 use futures::StreamExt;
-use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString, JValue};
+use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString, JValue, Reference};
 use jni::sys::{jboolean, jint, jlong, jlongArray, jobject, jstring};
 use jni::{jni_sig, jni_str, Env, EnvUnowned};
 use parking_lot::Mutex;
@@ -22,8 +22,12 @@ use serde::Serialize;
 use std::ops::Bound;
 use std::result::Result as StdResult;
 use surrealdb::engine::any::Any;
-use surrealdb::opt::auth::{Database, Namespace, Record as AuthRecord, Root};
-use surrealdb::types::{RecordId, RecordIdKey, RecordIdKeyRange, SurrealValue, ToSql, Uuid, Value};
+use surrealdb::opt::auth::{
+    AccessToken, Database, Namespace, Record as AuthRecord, RefreshToken, Root, Token as AuthToken,
+};
+use surrealdb::types::{
+    Kind, Object, RecordId, RecordIdKey, RecordIdKeyRange, SurrealValue, ToSql, Uuid, Value,
+};
 use surrealdb::{IndexedResults, Result, Surreal};
 
 #[no_mangle]
@@ -178,6 +182,122 @@ fn new_ns_db_object<'local>(
         .map_err(SurrealError::from)?;
     Ok(ns_db_obj.into_raw())
 }
+
+/// Converts a possibly-null `JString` into `Option<String>`. Unlike
+/// `get_rust_string!`, a null `JString` is not an error: it maps to `None`.
+/// Used for the optional namespace/database on `AccessKeyCredentials` and
+/// `AccessCredentials`, which (mirroring the JS SDK's `AccessBearerAuth` and
+/// `AccessSystemAuth`) are sent to the server exactly as given, with no
+/// session-based fallback.
+fn get_optional_rust_string(env: &mut Env, s: JString) -> StdResult<Option<String>, SurrealError> {
+    if s.is_null() {
+        Ok(None)
+    } else {
+        s.try_to_string(env).map(Some).map_err(SurrealError::from)
+    }
+}
+
+/// Credentials for signing in with a pre-issued `TYPE BEARER` access grant key
+/// (`DEFINE ACCESS x ON DATABASE TYPE BEARER FOR USER ...` +
+/// `ACCESS x ON DATABASE GRANT FOR USER ...`). Namespace/database are
+/// optional and sent to the server exactly as given (no fallback to the
+/// session's current namespace/database), mirroring the JS SDK's
+/// `AccessBearerAuth`. Backs `Java_com_surrealdb_Surreal_signinAccessKey`.
+///
+/// Not one of the vendored SDK's built-in `Credentials<Signin>` impls (only
+/// `Root`/`Namespace`/`Database`/`Record<P>` exist there), so this is a small
+/// local struct implementing the same public extension points, mirroring
+/// `Record<P>`'s manual `SurrealValue` impl in `surrealdb::opt::auth`.
+struct AccessKeyCredentials {
+    namespace: Option<String>,
+    database: Option<String>,
+    access: String,
+    key: String,
+}
+
+impl SurrealValue for AccessKeyCredentials {
+    fn kind_of() -> Kind {
+        // Not built with the `kind!({ ... })` object-literal macro (unlike
+        // `Record<P>` in the vendored SDK): that macro's expansion hard-codes
+        // `surrealdb_types::...` paths, which only resolve inside a crate that
+        // depends on `surrealdb_types` directly — this crate only depends on
+        // `surrealdb` (which re-exports it as `surrealdb::types`). `kind_of()`
+        // is never actually consulted on the signin path (only `into_value` is
+        // called; see the `from_value` note below), so a coarse `Object` kind
+        // is sufficient here.
+        Kind::Object
+    }
+
+    fn into_value(self) -> Value {
+        let mut obj = Object::new();
+        if let Some(ns) = self.namespace {
+            obj.insert("ns".to_string(), Value::String(ns));
+        }
+        if let Some(db) = self.database {
+            obj.insert("db".to_string(), Value::String(db));
+        }
+        obj.insert("ac".to_string(), Value::String(self.access));
+        obj.insert("key".to_string(), Value::String(self.key));
+        Value::Object(obj)
+    }
+
+    fn from_value(_value: Value) -> StdResult<Self, surrealdb::types::Error> {
+        // Outbound-only: `Surreal::signin` only ever calls `into_value` on the
+        // credentials (see `Signin::into_future` in the vendored SDK), never
+        // `from_value`. This is never actually invoked.
+        Err(surrealdb::types::Error::internal(
+            "AccessKeyCredentials cannot be constructed from a Value".to_string(),
+        ))
+    }
+}
+
+impl surrealdb::opt::auth::Credentials<surrealdb::opt::auth::Signin> for AccessKeyCredentials {}
+
+/// Credentials for signing in via a named, user-defined system-level `ACCESS`
+/// method verified with username/password (distinct from the built-in
+/// root/namespace/database user tables and from record access), mirroring the
+/// JS SDK's `AccessSystemAuth`. Namespace/database are optional and sent
+/// exactly as given (no session fallback); the "database without namespace"
+/// validation happens in Java before this struct is built (see
+/// `Surreal.signin` on the Java side). Backs
+/// `Java_com_surrealdb_Surreal_signinAccess`.
+struct AccessCredentials {
+    namespace: Option<String>,
+    database: Option<String>,
+    username: String,
+    password: String,
+    access: String,
+}
+
+impl SurrealValue for AccessCredentials {
+    fn kind_of() -> Kind {
+        // See the comment on `AccessKeyCredentials::kind_of`.
+        Kind::Object
+    }
+
+    fn into_value(self) -> Value {
+        let mut obj = Object::new();
+        if let Some(ns) = self.namespace {
+            obj.insert("ns".to_string(), Value::String(ns));
+        }
+        if let Some(db) = self.database {
+            obj.insert("db".to_string(), Value::String(db));
+        }
+        obj.insert("user".to_string(), Value::String(self.username));
+        obj.insert("pass".to_string(), Value::String(self.password));
+        obj.insert("ac".to_string(), Value::String(self.access));
+        Value::Object(obj)
+    }
+
+    fn from_value(_value: Value) -> StdResult<Self, surrealdb::types::Error> {
+        // Outbound-only; see `AccessKeyCredentials::from_value`.
+        Err(surrealdb::types::Error::internal(
+            "AccessCredentials cannot be constructed from a Value".to_string(),
+        ))
+    }
+}
+
+impl surrealdb::opt::auth::Credentials<surrealdb::opt::auth::Signin> for AccessCredentials {}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
@@ -352,6 +472,102 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRecord<'local>(
     })
 }
 
+/// JNI implementation of `Surreal.signinAccessKey`. Namespace/database are
+/// nullable (unlike `signinRecord`'s): they are sent to the server exactly as
+/// given, with no fallback to the session's current namespace/database. See
+/// `AccessKeyCredentials`.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_signinAccessKey<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    namespace: JString<'local>,
+    database: JString<'local>,
+    access: JString<'local>,
+    key: JString<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let namespace = match get_optional_rust_string(env, namespace) {
+            Ok(v) => v,
+            Err(e) => return e.exception(env, null_mut),
+        };
+        let database = match get_optional_rust_string(env, database) {
+            Ok(v) => v,
+            Err(e) => return e.exception(env, null_mut),
+        };
+        let access = get_rust_string!(env, access, null_mut);
+        let key = get_rust_string!(env, key, null_mut);
+        let credentials = AccessKeyCredentials {
+            namespace,
+            database,
+            access,
+            key,
+        };
+        match TOKIO_RUNTIME.block_on(async { surreal.signin(credentials).await }) {
+            Ok(token) => {
+                let access_str = token.access.into_insecure_token();
+                let refresh = token.refresh.map(|r| r.into_insecure_token());
+                match new_token_object(env, access_str, refresh) {
+                    Ok(obj) => obj,
+                    Err(e) => e.exception(env, null_mut),
+                }
+            }
+            Err(err) => SurrealError::from(err).exception(env, null_mut),
+        }
+    })
+}
+
+/// JNI implementation of `Surreal.signinAccess`. Namespace/database are
+/// nullable: they are sent to the server exactly as given, with no fallback to
+/// the session's current namespace/database. The "database without
+/// namespace" validation happens on the Java side before this is called. See
+/// `AccessCredentials`.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_signinAccess<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    namespace: JString<'local>,
+    database: JString<'local>,
+    username: JString<'local>,
+    password: JString<'local>,
+    access: JString<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let namespace = match get_optional_rust_string(env, namespace) {
+            Ok(v) => v,
+            Err(e) => return e.exception(env, null_mut),
+        };
+        let database = match get_optional_rust_string(env, database) {
+            Ok(v) => v,
+            Err(e) => return e.exception(env, null_mut),
+        };
+        let username = get_rust_string!(env, username, null_mut);
+        let password = get_rust_string!(env, password, null_mut);
+        let access = get_rust_string!(env, access, null_mut);
+        let credentials = AccessCredentials {
+            namespace,
+            database,
+            username,
+            password,
+            access,
+        };
+        match TOKIO_RUNTIME.block_on(async { surreal.signin(credentials).await }) {
+            Ok(token) => {
+                let access_str = token.access.into_insecure_token();
+                let refresh = token.refresh.map(|r| r.into_insecure_token());
+                match new_token_object(env, access_str, refresh) {
+                    Ok(obj) => obj,
+                    Err(e) => e.exception(env, null_mut),
+                }
+            }
+            Err(err) => SurrealError::from(err).exception(env, null_mut),
+        }
+    })
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_authenticate<'local>(
     mut env: EnvUnowned<'local>,
@@ -366,6 +582,57 @@ pub extern "system" fn Java_com_surrealdb_Surreal_authenticate<'local>(
             return SurrealError::from(err).exception(env, || false as jboolean);
         }
         true as jboolean
+    })
+}
+
+/// JNI implementation of `Surreal.authenticateRefresh`. Performs an actual
+/// server-side token refresh (`Command::Refresh`), which validates and
+/// ROTATES both the access and refresh tokens, returning the new pair. Called
+/// from `Surreal.authenticate(Token)` when the given token's refresh is
+/// non-null; mirrors `Authenticate::refresh` in the vendored SDK
+/// (`surrealdb::method::authenticate`): `surreal.authenticate(token).refresh()`
+/// switches from the plain `Command::Authenticate` to `Command::Refresh`.
+///
+/// An empty `refresh` string is treated the same as "no refresh token
+/// present": the resulting `surrealdb::opt::auth::Token::refresh` is `None`,
+/// so the vendored SDK's own client-side guard
+/// (`Authenticate<C, RefreshToken>::into_future`) rejects the call with
+/// "Missing refresh token" before any network round trip, surfaced here as a
+/// `SurrealException` rather than a crash. In normal use this function is
+/// only reached with a real, non-empty refresh token (`Surreal.authenticate`
+/// only calls it when `Token.getRefresh()` is non-null).
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_authenticateRefresh<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    access: JString<'local>,
+    refresh: JString<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let access = get_rust_string!(env, access, null_mut);
+        let refresh = get_rust_string!(env, refresh, null_mut);
+        let refresh = if refresh.is_empty() {
+            None
+        } else {
+            Some(RefreshToken::from(refresh))
+        };
+        // `AuthToken` (`surrealdb::opt::auth::Token`) is `#[non_exhaustive]`, so it
+        // cannot be built with struct-literal syntax outside its crate; the vendored
+        // SDK provides `From<(AccessToken, Option<RefreshToken>)>` for exactly this.
+        let token: AuthToken = (AccessToken::from(access), refresh).into();
+        match TOKIO_RUNTIME.block_on(async { surreal.authenticate(token).refresh().await }) {
+            Ok(new_token) => {
+                let access_str = new_token.access.into_insecure_token();
+                let refresh_str = new_token.refresh.map(|r| r.into_insecure_token());
+                match new_token_object(env, access_str, refresh_str) {
+                    Ok(obj) => obj,
+                    Err(e) => e.exception(env, null_mut),
+                }
+            }
+            Err(err) => SurrealError::from(err).exception(env, null_mut),
+        }
     })
 }
 
