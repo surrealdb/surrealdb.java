@@ -78,7 +78,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean invalidate(long ptr);
 
-	private static native long info(long ptr);
+	private static native long auth(long ptr);
 
 	private static native NsDb useNs(long ptr, String ns);
 
@@ -513,8 +513,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @throws SurrealException
 	 *             if the request fails
 	 */
-	public Optional<Value> info() {
-		final long valuePtr = info(getPtr());
+	public Optional<Value> auth() {
+		final long valuePtr = auth(getPtr());
 		if (valuePtr == 0) {
 			return Optional.empty();
 		}
@@ -531,10 +531,10 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the class type to convert the authenticated record to
 	 * @return an Optional containing the authenticated record user converted to the
 	 *         specified type, otherwise an empty Optional
-	 * @see #info()
+	 * @see #auth()
 	 */
-	public <T> Optional<T> info(Class<T> type) {
-		return info().map(v -> v.get(type));
+	public <T> Optional<T> auth(Class<T> type) {
+		return auth().map(v -> v.get(type));
 	}
 
 	/**

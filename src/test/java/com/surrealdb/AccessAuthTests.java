@@ -17,7 +17,7 @@ import com.surrealdb.signin.RecordCredential;
 import com.surrealdb.signin.Token;
 
 /**
- * Tests for the authentication-parity additions alongside {@code info()}:
+ * Tests for the authentication-parity additions alongside {@code auth()}:
  * {@link AccessKeyCredential} (signin with a {@code TYPE BEARER} access grant
  * key), {@link AccessCredential} (signin via a named system-level
  * {@code ACCESS} method with username/password), and

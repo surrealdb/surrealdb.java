@@ -15,10 +15,10 @@ import com.surrealdb.signin.RecordCredential;
 import com.surrealdb.signin.Token;
 
 /**
- * Tests for {@link Surreal#info()} and {@link Surreal#info(Class)}: fetching
+ * Tests for {@link Surreal#auth()} and {@link Surreal#auth(Class)}: fetching
  * the currently-authenticated record user ({@code SELECT * FROM $auth}).
  */
-public class InfoTests {
+public class AuthTests {
 
 	/** Java 8 compatible: Map.of("email", "a@b.com", "pass", "p") */
 	private static Map<String, String> params(String k1, String v1, String k2, String v2) {
@@ -50,29 +50,29 @@ public class InfoTests {
 	}
 
 	@Test
-	void info_afterSignup_returnsAuthenticatedRecord() {
+	void auth_afterSignup_returnsAuthenticatedRecord() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			Token token = signupUser(surreal, "tobie@example.com");
 			assertNotNull(token.getAccess());
-			// info() returns the record user pointed to by $auth
-			Optional<Value> info = surreal.info();
-			assertTrue(info.isPresent());
-			Value value = info.get();
+			// auth() returns the record user pointed to by $auth
+			Optional<Value> auth = surreal.auth();
+			assertTrue(auth.isPresent());
+			Value value = auth.get();
 			assertTrue(value.isObject());
 			assertEquals("tobie@example.com", value.getObject().get("email").getString());
 			// The returned record is the $auth record
-			RecordId auth = surreal.query("RETURN $auth").take(0).getRecordId();
-			assertEquals(auth, value.getObject().get("id").getRecordId());
+			RecordId authId = surreal.query("RETURN $auth").take(0).getRecordId();
+			assertEquals(authId, value.getObject().get("id").getRecordId());
 		}
 	}
 
 	@Test
-	void info_typed_hydratesPojo() {
+	void auth_typed_hydratesPojo() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			signupUser(surreal, "jaime@example.com");
-			Optional<User> user = surreal.info(User.class);
+			Optional<User> user = surreal.auth(User.class);
 			assertTrue(user.isPresent());
 			assertEquals("jaime@example.com", user.get().email);
 			assertNotNull(user.get().id);
@@ -81,38 +81,38 @@ public class InfoTests {
 	}
 
 	@Test
-	void info_unauthenticated_returnsEmpty() {
+	void auth_unauthenticated_returnsEmpty() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
-			assertFalse(surreal.info().isPresent());
-			assertFalse(surreal.info(User.class).isPresent());
+			assertFalse(surreal.auth().isPresent());
+			assertFalse(surreal.auth(User.class).isPresent());
 		}
 	}
 
 	@Test
-	void info_recordNotVisibleToUser_returnsEmpty() {
+	void auth_recordNotVisibleToUser_returnsEmpty() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			// The table's select permission excludes the record user's own record
 			Token token = signupUser(surreal, "denied@example.com", "NONE");
 			assertNotNull(token.getAccess());
 			// The session is authenticated: $auth points to the record user...
-			RecordId auth = surreal.query("RETURN $auth").take(0).getRecordId();
-			assertEquals("user", auth.getTable());
-			// ...but the record is not visible to it, so info() is empty
-			assertFalse(surreal.info().isPresent());
-			assertFalse(surreal.info(User.class).isPresent());
+			RecordId authId = surreal.query("RETURN $auth").take(0).getRecordId();
+			assertEquals("user", authId.getTable());
+			// ...but the record is not visible to it, so auth() is empty
+			assertFalse(surreal.auth().isPresent());
+			assertFalse(surreal.auth(User.class).isPresent());
 		}
 	}
 
 	@Test
-	void info_afterInvalidate_returnsEmpty() {
+	void auth_afterInvalidate_returnsEmpty() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			signupUser(surreal, "emmanuel@example.com");
-			assertTrue(surreal.info().isPresent());
+			assertTrue(surreal.auth().isPresent());
 			surreal.invalidate();
-			assertFalse(surreal.info().isPresent());
+			assertFalse(surreal.auth().isPresent());
 		}
 	}
 }

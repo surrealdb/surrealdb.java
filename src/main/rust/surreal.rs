@@ -651,7 +651,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
     })
 }
 
-/// JNI implementation of `Surreal.info(long ptr)`.
+/// JNI implementation of `Surreal.auth(long ptr)`.
 ///
 /// Fetches the record of the currently-authenticated record user by running
 /// `SELECT * FROM $auth`. The non-`ONLY` form is used deliberately: when the
@@ -660,7 +660,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
 /// whereas `SELECT * FROM ONLY $auth` would raise "Expected a single result
 /// output when using the ONLY keyword".
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_info<'local>(
+pub extern "system" fn Java_com_surrealdb_Surreal_auth<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
