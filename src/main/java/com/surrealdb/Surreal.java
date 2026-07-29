@@ -172,12 +172,56 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Establishes a connection to the Surreal database using the provided
 	 * connection string.
+	 * <p>
+	 * In addition to the native connect strings understood by the underlying engine
+	 * (e.g. {@code ws://host:port}, {@code memory}, {@code surrealkv://path}), a
+	 * JDBC-style URL of the form
+	 * {@code jdbc:surrealdb://[user[:password]@]host[:port][/namespace[/database]]}
+	 * is accepted as a convenience shorthand, following the standard JDBC
+	 * convention of {@code jdbc:<subprotocol>:<subname>}. When such a URL is given,
+	 * this method connects, then (if credentials were present) signs in, then (if a
+	 * namespace/database were present) selects them - equivalent to calling
+	 * {@link #connect(String)}, {@link #signin(Credential)},
+	 * {@link #useNs(String)}, and {@link #useDb(String)} in sequence.
+	 * <p>
+	 * JDBC-style URLs always authenticate as {@link RootCredential root}:
+	 * namespace- or database-scoped users cannot be represented in this shorthand.
+	 * Callers that need to sign in with a {@link NamespaceCredential},
+	 * {@link DatabaseCredential}, or a record user should call
+	 * {@link #connect(String)} with a plain (non-JDBC) connection string and then
+	 * call {@link #signin(Credential)} directly.
 	 *
 	 * @param connect
-	 *            the connection string used to establish the connection
+	 *            the connection string used to establish the connection, or a
+	 *            {@code jdbc:surrealdb:...} URL
 	 * @return the current instance of the {@code Surreal} class
+	 * @throws IllegalArgumentException
+	 *             if the input starts with {@code "jdbc:"} but is not a valid
+	 *             {@code jdbc:surrealdb:...} connection URL, including
+	 *             half-specified combinations: a username without a password (or
+	 *             vice versa) and a database without a namespace are rejected
+	 *             rather than silently ignored
 	 */
 	public Surreal connect(String connect) {
+		if (connect != null && connect.length() >= 5 && connect.substring(0, 5).equalsIgnoreCase("jdbc:")) {
+			final JdbcConnectionUrl parsed = JdbcConnectionUrl.parse(connect);
+			connect(getPtr(), parsed.getNativeConnectString());
+			namespace = null;
+			database = null;
+			if (parsed.getUsername() != null) {
+				// The parser guarantees a password accompanies the username.
+				signin(new RootCredential(parsed.getUsername(), parsed.getPassword()));
+			}
+			if (parsed.getNamespace() != null) {
+				useNs(parsed.getNamespace());
+			}
+			if (parsed.getDatabase() != null) {
+				// The parser rejects a database without a namespace, so this always
+				// follows a useNs() above; the parameter cannot be silently dropped.
+				useDb(parsed.getDatabase());
+			}
+			return this;
+		}
 		connect(getPtr(), connect);
 		namespace = null;
 		database = null;

@@ -102,4 +102,82 @@ public class ConnectionTests {
 			}
 		}
 	}
+
+	@Test
+	void jdbcConnectWebsocket() throws Exception {
+		try (Surreal surreal = new Surreal()) {
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			try {
+				Future<Void> future = executor.submit(new Callable<Void>() {
+					@Override
+					public Void call() throws SurrealException {
+						surreal.connect("jdbc:surrealdb://root:root@localhost:8000/test/test");
+						assertEquals("test", surreal.getNamespace());
+						assertEquals("test", surreal.getDatabase());
+						assertNotNull(surreal.version());
+						return null;
+					}
+				});
+				future.get(10, TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				fail("connect() blocked for 10s (is a SurrealDB server running at ws://localhost:8000?)");
+			} finally {
+				executor.shutdownNow();
+				executor.awaitTermination(2, TimeUnit.SECONDS);
+			}
+		}
+	}
+
+	@Test
+	void jdbcConnectWebsocketUppercaseScheme() throws Exception {
+		// Regression test: the native "any" engine dispatch matches scheme tokens
+		// case-sensitively, so an uppercase scheme in the JDBC URL must be
+		// normalized to lowercase before being handed to the native connect() call,
+		// or this would fail with "Invalid URL: ...".
+		try (Surreal surreal = new Surreal()) {
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			try {
+				Future<Void> future = executor.submit(new Callable<Void>() {
+					@Override
+					public Void call() throws SurrealException {
+						surreal.connect("jdbc:surrealdb:WS://root:root@localhost:8000/test/test");
+						assertEquals("test", surreal.getNamespace());
+						assertEquals("test", surreal.getDatabase());
+						assertNotNull(surreal.version());
+						return null;
+					}
+				});
+				future.get(10, TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				fail("connect() blocked for 10s (is a SurrealDB server running at ws://localhost:8000?)");
+			} finally {
+				executor.shutdownNow();
+				executor.awaitTermination(2, TimeUnit.SECONDS);
+			}
+		}
+	}
+
+	@Test
+	void jdbcConnectMemory() throws SurrealException {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("jdbc:surrealdb:memory?ns=test_ns&db=test_db");
+			assertEquals("test_ns", surreal.getNamespace());
+			assertEquals("test_db", surreal.getDatabase());
+			final Response response = surreal.query("INFO FOR ROOT");
+			final Value value = response.take(0);
+			assertTrue(value.isObject());
+		}
+	}
+
+	@Test
+	void jdbcConnectSurrealKV() throws SurrealException, IOException {
+		final Path tempDir = Files.createTempDirectory("surrealkv-jdbc");
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("jdbc:surrealdb:surrealkv://" + tempDir.toAbsolutePath() + "?ns=test&db=test");
+			assertEquals("test", surreal.getNamespace());
+			assertEquals("test", surreal.getDatabase());
+			final Person created = surreal.create(Person.class, "person", Helpers.tobie).get(0);
+			assertNotNull(created.id);
+		}
+	}
 }
