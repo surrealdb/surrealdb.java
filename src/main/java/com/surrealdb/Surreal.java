@@ -488,7 +488,14 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Surreal set(String name, java.lang.Object value) {
 		final ValueMut valueMut = ValueBuilder.convert(value);
-		set(getPtr(), name, valueMut.getPtr());
+		try {
+			set(getPtr(), name, valueMut.getPtr());
+		} finally {
+			// Keeps valueMut reachable until the native call has copied it, so its
+			// finalizer cannot free the pointer mid-call.
+			synchronized (valueMut) {
+			}
+		}
 		return this;
 	}
 
