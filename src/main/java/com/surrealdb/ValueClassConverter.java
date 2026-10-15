@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 class ValueClassConverter<T> {
 
@@ -176,7 +177,7 @@ class ValueClassConverter<T> {
 				list.add(convertArrayElement(element, elementType, elementGenericType));
 			}
 			if (Set.class.isAssignableFrom(type)) {
-				return new LinkedHashSet<>(list);
+				return newSet(type, list);
 			}
 			if (type == byte[].class) {
 				final byte[] bytes = new byte[list.size()];
@@ -252,6 +253,26 @@ class ValueClassConverter<T> {
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
 		return convertSingleValue(value);
+	}
+
+	// Builds a set the declared type accepts: LinkedHashSet for Set/HashSet,
+	// TreeSet for SortedSet/NavigableSet, or the declared class itself if it is
+	// concrete.
+	@SuppressWarnings("unchecked")
+	private static Set<java.lang.Object> newSet(final Class<?> type, final List<java.lang.Object> elements)
+			throws ReflectiveOperationException {
+		final Set<java.lang.Object> set;
+		if (type.isAssignableFrom(LinkedHashSet.class)) {
+			set = new LinkedHashSet<>();
+		} else if (type.isAssignableFrom(TreeSet.class)) {
+			set = new TreeSet<>();
+		} else if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
+			set = (Set<java.lang.Object>) type.getDeclaredConstructor().newInstance();
+		} else {
+			throw new SurrealException("Unsupported set type: " + type.getName());
+		}
+		set.addAll(elements);
+		return set;
 	}
 
 	private static Array elements(final Value value) {

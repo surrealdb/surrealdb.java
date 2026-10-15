@@ -3,8 +3,10 @@ package com.surrealdb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -130,6 +132,9 @@ public class SetAndRangeBoundsTests {
 		public Set<Long> fromSet;
 		public List<Long> setAsList;
 		public Set<Long> fromArray;
+		public SortedSet<Long> sorted;
+		public TreeSet<Long> tree;
+		public HashSet<Long> hash;
 
 		public Tagged() {
 		}
@@ -163,11 +168,16 @@ public class SetAndRangeBoundsTests {
 
 		// POJO fields: sets convert to Set or List fields, and arrays to Set fields.
 		final Tagged tagged = surreal
-				.query("RETURN { fromSet: <set>[2, 1, 2], setAsList: <set>[3, 3], fromArray: [7, 7, 8] }").take(0)
-				.get(Tagged.class);
+				.query("RETURN { fromSet: <set>[2, 1, 2], setAsList: <set>[3, 3], fromArray: [7, 7, 8], "
+						+ "sorted: <set>[9, 8], tree: [6, 5], hash: [4, 4] }")
+				.take(0).get(Tagged.class);
 		assertEquals(new TreeSet<>(Arrays.asList(1L, 2L)), tagged.fromSet);
 		assertEquals(Collections.singletonList(3L), tagged.setAsList);
 		assertEquals(new TreeSet<>(Arrays.asList(7L, 8L)), tagged.fromArray);
+		// Declared set types are honoured, including sorted ones.
+		assertEquals(Arrays.asList(8L, 9L), new ArrayList<>(tagged.sorted));
+		assertEquals(Arrays.asList(5L, 6L), new ArrayList<>(tagged.tree));
+		assertEquals(Collections.singleton(4L), tagged.hash);
 	}
 
 	@Test
