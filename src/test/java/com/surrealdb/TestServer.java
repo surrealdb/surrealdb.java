@@ -19,13 +19,18 @@ import com.surrealdb.signin.RootCredential;
  * surreal start -u root -p root --unauthenticated --allow-all --bind 127.0.0.1:8000 memory
  * }</pre>
  *
- * Tests that need a server skip themselves when none is reachable, so a local
- * {@code ./gradlew test} without one stays green.
+ * When {@code SURREALDB_URL} is not set, tests that need a server skip
+ * themselves if none is reachable, so a local {@code ./gradlew test} without
+ * one stays green. When it is set (as in CI), the server was asked for
+ * explicitly and failing to reach it fails the test.
  */
 public final class TestServer {
 
 	/** WebSocket endpoint of the test server. */
 	public static final String WS_URL = System.getenv().getOrDefault("SURREALDB_URL", "ws://localhost:8000");
+
+	/** Whether a server was configured explicitly, so it must be reachable. */
+	private static final boolean REQUIRED = System.getenv("SURREALDB_URL") != null;
 
 	/** HTTP endpoint of the same server. */
 	public static final String HTTP_URL = WS_URL.replaceFirst("^ws", "http");
@@ -36,8 +41,9 @@ public final class TestServer {
 	}
 
 	/**
-	 * Connects to {@code url}, signs in as root and selects a fresh database, or
-	 * aborts (skips) the calling test if the server cannot be reached in time.
+	 * Connects to {@code url}, signs in as root and selects a fresh database. If
+	 * the server cannot be reached or signed in to in time, fails the calling test
+	 * when {@code SURREALDB_URL} is set, and aborts (skips) it otherwise.
 	 */
 	public static Surreal connect(String url) {
 		final Surreal surreal = new Surreal();
@@ -50,6 +56,10 @@ public final class TestServer {
 			f.get(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			surreal.close();
+			if (REQUIRED) {
+				throw new IllegalStateException(
+						"Cannot use the SurrealDB server at " + url + " (configured by SURREALDB_URL)", e);
+			}
 			Assumptions.abort("No SurrealDB server reachable at " + url + " (" + e + ")");
 		} finally {
 			executor.shutdownNow();
