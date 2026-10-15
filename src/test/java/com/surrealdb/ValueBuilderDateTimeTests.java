@@ -123,7 +123,7 @@ public class ValueBuilderDateTimeTests {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test").useDb("test");
 
-			final Response response = surreal.query("RETURN $value", Collections.singletonMap("value", input));
+			final Response response = surreal.query("RETURN $dt", Collections.singletonMap("dt", input));
 			final Value value = response.take(0);
 
 			assertTrue(value.isDateTime());

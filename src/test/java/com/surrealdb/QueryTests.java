@@ -589,9 +589,9 @@ public class QueryTests {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			{
 				final HashMap<String, String> map = new HashMap<>();
-				map.put("value", "hello");
+				map.put("value1", "hello");
 				map.put("value2", "world");
-				final String sql = "RETURN $value;RETURN $value2";
+				final String sql = "RETURN $value1;RETURN $value2";
 				final Response response = surreal.queryBind(sql, map);
 				{
 					final int size = response.size();
@@ -611,9 +611,9 @@ public class QueryTests {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			{
 				final HashMap<String, String> map = new HashMap<>();
-				map.put("value", "hello");
+				map.put("value1", "hello");
 				map.put("value2", "world");
-				final String sql = "RETURN $value;RETURN $value2";
+				final String sql = "RETURN $value1;RETURN $value2";
 				final Response response = surreal.query(sql, map);
 				{
 					final int size = response.size();

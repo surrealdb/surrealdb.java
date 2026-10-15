@@ -19,7 +19,10 @@ opt-level = 3
 # Driver-specific dependencies (jni, once_cell, cargo-lock) are independent.
 [dependencies]
 jni = "0.22.4"
-surrealdb = { version = "3.1.5", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
+# Pinned to surrealdb-private#1829 ("fix(sdk): accept 4.x servers on connect"), on top of the
+# 3.4 main line, until a crates.io release carries the widened server version range. Switch
+# back to a `version = "..."` requirement once that release is out.
+surrealdb = { git = "https://github.com/surrealdb/surrealdb-private", rev = "09671a644757f4a66ff8b1c677e614a707375a40", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
 # Geometry construction (write path). Must match the geo version surrealdb-types uses
 # so the geo::* types unify with surrealdb::types::Geometry's inner geo types.
 geo = { version = "0.32", default-features = false }
@@ -38,11 +41,13 @@ async-channel = "2.5.0"
 cargo-lock = "11.0.1"
 
 [features]
-default = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "http", "jwks"]
+default = ["rustls", "kv-mem", "kv-surrealkv", "kv-rocksdb", "protocol-ws", "protocol-http", "protocol-grpc", "http", "jwks"]
 rustls = ["surrealdb/rustls"]
 jwks = ["surrealdb/jwks"]
 http = ["surrealdb/http"]
 kv-mem = ["surrealdb/kv-mem"]
 kv-surrealkv = ["surrealdb/kv-surrealkv"]
+kv-rocksdb = ["surrealdb/kv-rocksdb"]
 protocol-ws = ["surrealdb/protocol-ws"]
 protocol-http = ["surrealdb/protocol-http"]
+protocol-grpc = ["surrealdb/protocol-grpc"]
