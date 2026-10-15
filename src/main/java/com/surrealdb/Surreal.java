@@ -69,6 +69,16 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean invalidate(long ptr);
 
+	private static native Token refresh(long ptr, String access, String refresh);
+
+	private static native void revoke(long ptr, String access, String refresh);
+
+	private static native void set(long ptr, String name, long valuePtr);
+
+	private static native void unset(long ptr, String name);
+
+	private static native long info(long ptr);
+
 	private static native NsDb useNs(long ptr, String ns);
 
 	private static native NsDb useDb(long ptr, String db);
@@ -418,6 +428,103 @@ public class Surreal extends Native implements AutoCloseable {
 	public Surreal invalidate() {
 		invalidate(getPtr());
 		return this;
+	}
+
+	/**
+	 * Exchanges a refresh token for a new access/refresh pair and authenticates
+	 * this session with the new access token. The refresh token passed in is
+	 * consumed: use the one in the returned {@link Token} next time.
+	 * <p>
+	 * Refresh tokens are issued by record access methods defined
+	 * {@code WITH REFRESH}.
+	 *
+	 * @param token
+	 *            a token pair from {@link #signin}, {@link #signup} or a previous
+	 *            refresh
+	 * @return the new token pair
+	 * @throws IllegalArgumentException
+	 *             if the token has no refresh part
+	 */
+	public Token refresh(Token token) {
+		final String refreshToken = requireRefresh(token);
+		return refresh(getPtr(), token.getAccess(), refreshToken);
+	}
+
+	/**
+	 * Revokes the refresh token of a token pair, so it can no longer be exchanged
+	 * with {@link #refresh(Token)}. This does not sign the session out; use
+	 * {@link #invalidate()} for that.
+	 *
+	 * @param token
+	 *            the token pair whose refresh token to revoke
+	 * @return the current instance
+	 * @throws IllegalArgumentException
+	 *             if the token has no refresh part
+	 */
+	public Surreal revoke(Token token) {
+		final String refreshToken = requireRefresh(token);
+		revoke(getPtr(), token.getAccess(), refreshToken);
+		return this;
+	}
+
+	private static String requireRefresh(Token token) {
+		Objects.requireNonNull(token, "token");
+		if (token.getRefresh() == null) {
+			throw new IllegalArgumentException(
+					"The token has no refresh part; refresh tokens come from record access defined WITH REFRESH");
+		}
+		return token.getRefresh();
+	}
+
+	/**
+	 * Defines a variable on this session. It is available as {@code $name} in every
+	 * later query on this session, until {@link #unset(String)}.
+	 *
+	 * @param name
+	 *            the variable name, without the {@code $}
+	 * @param value
+	 *            the value; converted like a query binding
+	 * @return the current instance
+	 */
+	public Surreal set(String name, java.lang.Object value) {
+		final ValueMut valueMut = ValueBuilder.convert(value);
+		set(getPtr(), name, valueMut.getPtr());
+		return this;
+	}
+
+	/**
+	 * Removes a variable defined with {@link #set(String, java.lang.Object)}.
+	 *
+	 * @param name
+	 *            the variable name, without the {@code $}
+	 * @return the current instance
+	 */
+	public Surreal unset(String name) {
+		unset(getPtr(), name);
+		return this;
+	}
+
+	/**
+	 * Returns the record of the signed-in record user ({@code $auth}).
+	 *
+	 * @return the user's record, or empty when the session is not signed in as a
+	 *         record user
+	 */
+	public Optional<Value> info() {
+		final long ptr = info(getPtr());
+		return ptr == 0 ? Optional.empty() : Optional.of(new Value(ptr));
+	}
+
+	/**
+	 * Returns the record of the signed-in record user, converted to {@code type}.
+	 *
+	 * @param type
+	 *            the class to convert the record to
+	 * @return the user's record, or empty when the session is not signed in as a
+	 *         record user
+	 */
+	public <T> Optional<T> info(Class<T> type) {
+		return info().map(v -> v.get(type));
 	}
 
 	/**
