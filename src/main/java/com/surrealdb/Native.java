@@ -43,7 +43,13 @@ public abstract class Native {
 	}
 
 	final void moved() {
-		handle.moved();
+		try {
+			handle.moved();
+		} finally {
+			// Until the pointer is cleared, the cleaner must not see this object as
+			// unreachable: it would free a pointer the native side now owns.
+			reachabilityFence(this);
+		}
 	}
 
 	/**

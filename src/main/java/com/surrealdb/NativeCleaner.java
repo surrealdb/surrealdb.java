@@ -87,8 +87,14 @@ final class NativeCleaner {
 
 	static Handle register(Native owner, long ptr, Deleter deleter) {
 		final Handle handle = new Handle(owner, ptr, deleter);
-		if (ptr != 0) {
-			LIVE.add(handle);
+		try {
+			if (ptr != 0) {
+				LIVE.add(handle);
+			}
+		} finally {
+			// If the owner became unreachable before the handle was added, the cleaner
+			// could release it first and the add would then keep it forever.
+			reachabilityFence(owner);
 		}
 		return handle;
 	}
