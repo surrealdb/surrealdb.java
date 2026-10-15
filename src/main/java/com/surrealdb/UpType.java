@@ -37,7 +37,17 @@ public enum UpType {
 	 * documentation</a>.
 	 * <p>
 	 */
-	PATCH(3);
+	PATCH(3),
+	/**
+	 * Represents a replace operation. This type of operation replaces the whole
+	 * record with the provided data: fields left out are removed.
+	 * <p>
+	 * For more details, check the <a href=
+	 * "https://surrealdb.com/docs/surrealql/statements/update#replace-clause">SurrealQL
+	 * documentation</a>.
+	 * <p>
+	 */
+	REPLACE(4);
 
 	final int code;
 
