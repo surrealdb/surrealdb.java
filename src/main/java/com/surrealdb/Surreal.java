@@ -147,7 +147,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean importSql(long ptr, String path);
 
-	private static native LiveStream selectLive(long ptr, String table);
+	private static native LiveStream selectLive(long ptr, String table, boolean diff);
 
 	private static native void kill(long ptr, String queryId);
 
@@ -286,7 +286,31 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             the subscription fails
 	 */
 	public LiveStream selectLive(String table) {
-		return selectLive(getPtr(), table);
+		return selectLive(getPtr(), table, false);
+	}
+
+	/**
+	 * Starts a live query on the given table, optionally in diff mode.
+	 * <p>
+	 * In diff mode ({@code LIVE SELECT DIFF}) each notification's
+	 * {@link LiveNotification#getValue() value} is an array of JSON Patch
+	 * operations ({@code op}, {@code path}, {@code value}) describing how the
+	 * record changed, rather than the record itself. Otherwise this behaves like
+	 * {@link #selectLive(String)}.
+	 *
+	 * @param table
+	 *            table name to watch (must already exist)
+	 * @param diff
+	 *            whether notifications carry JSON Patch operations instead of
+	 *            records
+	 * @return a LiveStream; the caller must call {@link LiveStream#close()} when
+	 *         done
+	 * @throws SurrealException
+	 *             if live queries are not supported, the table does not exist, or
+	 *             the subscription fails
+	 */
+	public LiveStream selectLive(String table, boolean diff) {
+		return selectLive(getPtr(), table, diff);
 	}
 
 	/**
