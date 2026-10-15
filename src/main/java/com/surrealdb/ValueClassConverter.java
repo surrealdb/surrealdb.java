@@ -12,9 +12,12 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 class ValueClassConverter<T> {
 
@@ -166,12 +169,15 @@ class ValueClassConverter<T> {
 		if (Value.class.equals(type)) {
 			return value;
 		}
-		if (value.isArray()) {
+		if (value.isArray() || value.isSet()) {
 			final Class<?> elementType = firstTypeArgumentRaw(genericType);
 			final Type elementGenericType = firstTypeArgument(genericType);
 			final List<java.lang.Object> list = new ArrayList<>();
-			for (final Value element : value.getArray()) {
+			for (final Value element : elements(value)) {
 				list.add(convertArrayElement(element, elementType, elementGenericType));
+			}
+			if (Set.class.isAssignableFrom(type)) {
+				return newSet(type, list);
 			}
 			if (type == byte[].class) {
 				final byte[] bytes = new byte[list.size()];
@@ -238,15 +244,39 @@ class ValueClassConverter<T> {
 			}
 			return convert(elementType, value.getObject());
 		}
-		if (value.isArray()) {
+		if (value.isArray() || value.isSet()) {
 			final List<java.lang.Object> nested = new ArrayList<>();
-			for (final Value v : value.getArray()) {
+			for (final Value v : elements(value)) {
 				nested.add(convertArrayElement(v, elementType, elementGenericType));
 			}
 			return nested;
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
 		return convertSingleValue(value);
+	}
+
+	// Builds a set the declared type accepts: LinkedHashSet for Set/HashSet,
+	// TreeSet for SortedSet/NavigableSet, or the declared class itself if it is
+	// concrete.
+	@SuppressWarnings("unchecked")
+	private static Set<java.lang.Object> newSet(final Class<?> type, final List<java.lang.Object> elements)
+			throws ReflectiveOperationException {
+		final Set<java.lang.Object> set;
+		if (type.isAssignableFrom(LinkedHashSet.class)) {
+			set = new LinkedHashSet<>();
+		} else if (type.isAssignableFrom(TreeSet.class)) {
+			set = new TreeSet<>();
+		} else if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
+			set = (Set<java.lang.Object>) type.getDeclaredConstructor().newInstance();
+		} else {
+			throw new SurrealException("Unsupported set type: " + type.getName());
+		}
+		set.addAll(elements);
+		return set;
+	}
+
+	private static Array elements(final Value value) {
+		return value.isSet() ? value.getSet() : value.getArray();
 	}
 
 	private static Type firstTypeArgument(final Type genericType) {

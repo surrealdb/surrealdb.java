@@ -7,7 +7,7 @@ use crate::with_env_body;
 use jni::objects::{AsJArrayRaw, JClass};
 use jni::sys::{jboolean, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
 use jni::EnvUnowned;
-use surrealdb::types::{Number, ToSql, Value};
+use surrealdb::types::{Array, Number, ToSql, Value};
 
 use crate::error::SurrealError;
 use crate::{get_value_instance, new_jlong_array, new_string, release_instance, JniTypes};
@@ -445,6 +445,36 @@ pub extern "system" fn Java_com_surrealdb_Value_getFile<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isSet<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        matches!(value.as_ref(), Value::Set(_)) as jboolean
+    })
+}
+
+/// Returns the elements of a set, in the set's order, as an array value.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getSet<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Set(set) = value.as_ref() {
+            let elements: Vec<Value> = set.iter().cloned().collect();
+            JniTypes::new_value(Arc::new(Value::Array(Array::from(elements))))
+        } else {
+            SurrealError::NullPointerException("Set").exception(env, || 0)
+        }
+    })
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_isRange<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
@@ -490,6 +520,38 @@ pub extern "system" fn Java_com_surrealdb_Value_getRangeEnd<'local>(
             }
         } else {
             SurrealError::NullPointerException("Range").exception(env, || 0)
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isRangeStartInclusive<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        if let Value::Range(r) = value.as_ref() {
+            matches!(r.start, Bound::Included(_)) as jboolean
+        } else {
+            SurrealError::NullPointerException("Range").exception(env, || false as jboolean)
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isRangeEndInclusive<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        if let Value::Range(r) = value.as_ref() {
+            matches!(r.end, Bound::Included(_)) as jboolean
+        } else {
+            SurrealError::NullPointerException("Range").exception(env, || false as jboolean)
         }
     })
 }

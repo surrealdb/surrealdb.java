@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +47,8 @@ public class ValueMut extends Native {
 	private static native long newArray(long ptr);
 
 	private static native long newArrayOf(long[] ptrs);
+
+	private static native long newSetOf(long[] ptrs);
 
 	private static native long newObject(long ptr);
 
@@ -156,6 +160,32 @@ public class ValueMut extends Native {
 		}
 		final ValueMut value = new ValueMut(newArrayOf(ptrs));
 		// The Values have been moved
+		values.forEach(Native::moved);
+		return value;
+	}
+
+	/**
+	 * Creates a set value: a sorted collection without duplicates, SurrealQL's
+	 * {@code set} type. Elements are converted like query bindings.
+	 * <p>
+	 * A {@link java.util.Set} passed as a binding or POJO field is still sent as an
+	 * array, because a set does not coerce into an {@code array} field. Use this
+	 * method where a SurrealQL set is wanted.
+	 *
+	 * @param elements
+	 *            the elements of the set
+	 * @return the set value
+	 */
+	public static ValueMut createSet(Collection<?> elements) {
+		final List<ValueMut> values = new ArrayList<>(elements.size());
+		for (final java.lang.Object element : elements) {
+			values.add(ValueBuilder.convert(element));
+		}
+		final long[] ptrs = new long[values.size()];
+		for (int i = 0; i < ptrs.length; i++) {
+			ptrs[i] = values.get(i).getPtr();
+		}
+		final ValueMut value = new ValueMut(newSetOf(ptrs));
 		values.forEach(Native::moved);
 		return value;
 	}
