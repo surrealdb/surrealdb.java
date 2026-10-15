@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -51,6 +53,12 @@ public class LiveDiffTests {
 
 	private static void diffNotifications(Surreal surreal) {
 		surreal.query("DEFINE TABLE watched");
+		if (!Surreal.atLeast(surreal.version(), 3, 3)) {
+			// Diff patches can leak permission-hidden fields before 3.3.0.
+			final SurrealException e = assertThrows(SurrealException.class, () -> surreal.selectLive("watched", true));
+			assertTrue(e.getMessage().contains("GHSA-pm6c-q8rh-92m8"), e.getMessage());
+			return;
+		}
 		try (final LiveStream stream = surreal.selectLive("watched", true)) {
 			surreal.query("CREATE watched:1 SET v = 1, keep = 'x'");
 			surreal.query("UPDATE watched:1 SET v = 2");
@@ -100,5 +108,16 @@ public class LiveDiffTests {
 	@Test
 	void fullRecordsWithoutDiffRemote() {
 		withServer(LiveDiffTests::fullRecordsByDefault);
+	}
+
+	@Test
+	void versionGate() {
+		assertTrue(Surreal.atLeast("3.3.0", 3, 3));
+		assertTrue(Surreal.atLeast("surrealdb-3.3.4", 3, 3));
+		assertTrue(Surreal.atLeast("3.4.0-nightly", 3, 3));
+		assertTrue(Surreal.atLeast("4.0.0", 3, 3));
+		assertFalse(Surreal.atLeast("3.1.5", 3, 3));
+		assertFalse(Surreal.atLeast("2.6.0", 3, 3));
+		assertFalse(Surreal.atLeast("garbage", 3, 3));
 	}
 }

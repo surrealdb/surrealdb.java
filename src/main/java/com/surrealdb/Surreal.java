@@ -305,12 +305,41 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            records
 	 * @return a LiveStream; the caller must call {@link LiveStream#close()} when
 	 *         done
+	 *         <p>
+	 *         Diff mode needs SurrealDB 3.3.0 or later, for the server and for the
+	 *         embedded engine. Earlier versions can leak fields hidden by
+	 *         field-level {@code SELECT} permissions through diff patches (advisory
+	 *         GHSA-pm6c-q8rh-92m8), so it is refused there.
+	 *
 	 * @throws SurrealException
-	 *             if live queries are not supported, the table does not exist, or
-	 *             the subscription fails
+	 *             if live queries are not supported, the table does not exist, the
+	 *             subscription fails, or diff mode is requested on SurrealDB before
+	 *             3.3.0
 	 */
 	public LiveStream selectLive(String table, boolean diff) {
+		if (diff) {
+			final String version = version();
+			if (!atLeast(version, 3, 3)) {
+				throw new SurrealException("Live queries in diff mode need SurrealDB 3.3.0 or later, but this is "
+						+ version + ": earlier versions can leak fields hidden by field-level SELECT"
+						+ " permissions (GHSA-pm6c-q8rh-92m8)");
+			}
+		}
 		return selectLive(getPtr(), table, diff);
+	}
+
+	// Whether a version string such as "3.3.4", "surrealdb-3.3.4" or
+	// "3.4.0-nightly" is at least major.minor. Unparseable versions count as too
+	// old.
+	static boolean atLeast(String version, int major, int minor) {
+		final String[] parts = version.replaceFirst("^surrealdb-", "").split("[.+-]");
+		try {
+			final int actualMajor = Integer.parseInt(parts[0]);
+			final int actualMinor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+			return actualMajor > major || (actualMajor == major && actualMinor >= minor);
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	/**
