@@ -26,12 +26,12 @@ public class UseNsUseDbTests {
 	}
 
 	@Test
-	void getNamespace_getDatabase_nullAfterNewSessionBeforeUse() {
+	void getNamespace_getDatabase_inheritedByNewSession() {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			try (Surreal other = surreal.newSession()) {
-				assertNull(other.getNamespace());
-				assertNull(other.getDatabase());
+				assertEquals("test_ns", other.getNamespace());
+				assertEquals("test_db", other.getDatabase());
 			}
 		}
 	}
