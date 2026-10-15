@@ -17,13 +17,13 @@ import com.surrealdb.signin.RootCredential;
  * (on server 3.0.5) crashed the server worker. A fixed driver finishes the loop
  * quickly with stable per-iteration latency.
  * <p>
- * Skipped when no SurrealDB instance is reachable at
- * {@code ws://localhost:8000} so local {@code ./gradlew test} runs without a
- * server stay green; CI starts one before the test step.
+ * Skipped when no SurrealDB instance is reachable at {@code SURREALDB_URL} (see
+ * {@link TestServer}) so local {@code ./gradlew test} runs without a server
+ * stay green; CI starts one before the test step.
  */
 public class Issue160RegressionTests {
 
-	private static final String WS_URL = "ws://localhost:8000";
+	private static final String WS_URL = TestServer.WS_URL;
 
 	@Test
 	@EnabledOnOs({OS.LINUX, OS.MAC})

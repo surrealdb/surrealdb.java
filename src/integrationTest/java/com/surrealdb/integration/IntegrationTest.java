@@ -22,7 +22,9 @@ public class IntegrationTest {
 	void surrealdb_websocket() {
 		// When SurrealDB is running at localhost:8000 (e.g. in CI), connect and verify.
 		try (Surreal surreal = new Surreal()) {
-			assertDoesNotThrow(() -> surreal.connect("ws://localhost:8000").useNs("test").useDb("test"));
+			assertDoesNotThrow(
+					() -> surreal.connect(System.getenv().getOrDefault("SURREALDB_URL", "ws://localhost:8000"))
+							.useNs("test").useDb("test"));
 		}
 	}
 
