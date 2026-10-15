@@ -49,11 +49,14 @@ public class Array extends Native implements Iterable<Value> {
 			muts[i] = ValueBoxing.box(elements.get(i));
 			ptrs[i] = muts[i].getPtr();
 		}
-		final Array array = new Array(newOf(ptrs));
-		for (final ValueMut m : muts) {
-			m.moved();
+		try {
+			return new Array(newOf(ptrs));
+		} finally {
+			// The native side took ownership (see ValueMut.createArray).
+			for (final ValueMut m : muts) {
+				m.moved();
+			}
 		}
-		return array;
 	}
 
 	private static native long newOf(long[] valueMutPtrs);
@@ -83,8 +86,12 @@ public class Array extends Native implements Iterable<Value> {
 		return len(getPtr());
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Array::deleteInstance;
+	}
 
 	@Override
 	final public Iterator<Value> iterator() {

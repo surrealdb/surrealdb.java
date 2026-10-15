@@ -52,11 +52,14 @@ public class Id extends Native {
 			muts[i] = ValueBoxing.box(elements.get(i));
 			ptrs[i] = muts[i].getPtr();
 		}
-		final Id id = new Id(newArrayId(ptrs));
-		for (final ValueMut m : muts) {
-			m.moved();
+		try {
+			return new Id(newArrayId(ptrs));
+		} finally {
+			// The native side took ownership (see ValueMut.createArray).
+			for (final ValueMut m : muts) {
+				m.moved();
+			}
 		}
-		return id;
 	}
 
 	private static native long newLongId(long id);
@@ -96,8 +99,12 @@ public class Id extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Id::deleteInstance;
+	}
 
 	final public boolean isLong() {
 		return isLong(getPtr());

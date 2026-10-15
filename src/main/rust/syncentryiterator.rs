@@ -37,3 +37,18 @@ pub extern "system" fn Java_com_surrealdb_SynchronizedEntryIterator_next<'local>
         }
     })
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_SynchronizedEntryIterator_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::release_instance::<
+        std::sync::Arc<
+            parking_lot::Mutex<
+                std::collections::btree_map::IntoIter<String, surrealdb::types::Value>,
+            >,
+        >,
+    >(ptr);
+}

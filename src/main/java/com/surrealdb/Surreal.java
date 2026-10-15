@@ -166,8 +166,12 @@ public class Surreal extends Native implements AutoCloseable {
 		return ptr1 == ptr2;
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Surreal::deleteInstance;
+	}
 
 	/**
 	 * Establishes a connection to the Surreal database using the provided
@@ -227,11 +231,16 @@ public class Surreal extends Native implements AutoCloseable {
 		}
 		ValueMut[] valueMuts = new ValueMut[args.length];
 		long[] ptrs = new long[args.length];
-		for (int i = 0; i < args.length; i++) {
-			valueMuts[i] = ValueBuilder.convert(args[i]);
-			ptrs[i] = valueMuts[i].getPtr();
+		try {
+			for (int i = 0; i < args.length; i++) {
+				valueMuts[i] = ValueBuilder.convert(args[i]);
+				ptrs[i] = valueMuts[i].getPtr();
+			}
+			return new Value(run(getPtr(), name, ptrs));
+		} finally {
+			reachabilityFence(valueMuts);
+			reachabilityFence(this);
 		}
-		return new Value(run(getPtr(), name, ptrs));
 	}
 
 	/**
@@ -363,7 +372,11 @@ public class Surreal extends Native implements AutoCloseable {
 						"RecordCredential signin requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
 			}
 			final ValueMut paramsValue = ValueBuilder.convert(rec.getParams());
-			return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
+			try {
+				return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
+			} finally {
+				reachabilityFence(paramsValue);
+			}
 		} else if (credential instanceof BearerCredential) {
 			BearerCredential bearer = (BearerCredential) credential;
 			authenticate(getPtr(), bearer.getToken());
@@ -394,7 +407,12 @@ public class Surreal extends Native implements AutoCloseable {
 					"RecordCredential signup requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
 		}
 		final ValueMut paramsValue = ValueBuilder.convert(record.getParams());
-		return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
+		try {
+			return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
+		} finally {
+			reachabilityFence(paramsValue);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -544,12 +562,17 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Response query(String sql, Map<String, ?> params) {
 		final Map<String, ValueMut> valueMuts = ValueBuilder.convertParams(params);
-		final String[] keys = valueMuts.keySet().toArray(new String[0]);
-		final long[] values = new long[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			values[i] = valueMuts.get(keys[i]).getPtr();
+		try {
+			final String[] keys = valueMuts.keySet().toArray(new String[0]);
+			final long[] values = new long[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				values[i] = valueMuts.get(keys[i]).getPtr();
+			}
+			return new Response(queryWithBindings(getPtr(), sql, keys, values));
+		} finally {
+			reachabilityFence(valueMuts);
+			reachabilityFence(this);
 		}
-		return new Response(queryWithBindings(getPtr(), sql, keys, values));
 	}
 
 	/**
@@ -592,8 +615,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value create(RecordId recordId, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -636,9 +664,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final <T> List<Value> create(String target, T... contents) {
-		final long[] valueMutPtrs = contents2longs(contents);
-		final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
-		return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		final ValueMut[] valueMuts = convertAll(contents);
+		final long[] valueMutPtrs = ptrs(valueMuts);
+		try {
+			final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
+			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		} finally {
+			reachabilityFence(valueMuts);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -686,9 +720,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final <T> List<Value> insert(String target, T... contents) {
-		final long[] valueMutPtrs = contents2longs(contents);
-		final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
-		return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		final ValueMut[] valueMuts = convertAll(contents);
+		final long[] valueMutPtrs = ptrs(valueMuts);
+		try {
+			final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
+			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		} finally {
+			reachabilityFence(valueMuts);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -735,8 +775,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T extends InsertRelation> Value insertRelation(String target, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -779,9 +824,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
-		final long[] valueMutPtrs = contents2longs(contents);
-		final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
-		return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		final ValueMut[] valueMuts = convertAll(contents);
+		final long[] valueMutPtrs = ptrs(valueMuts);
+		try {
+			final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
+			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		} finally {
+			reachabilityFence(valueMuts);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -877,8 +928,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value relate(RecordId from, String table, RecordId to, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -928,8 +984,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value update(RecordId recordId, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -946,11 +1007,16 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value update(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-				valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+			final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
+					valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -996,7 +1062,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> update(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1020,7 +1091,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> update(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1092,7 +1168,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> updateSync(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1116,7 +1198,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> updateSync(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1188,8 +1276,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value upsert(RecordId recordId, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1205,11 +1298,16 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value upsert(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-				valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
+			final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
+					valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1255,7 +1353,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsert(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1277,7 +1380,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsert(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1351,7 +1459,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsertSync(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1374,7 +1488,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsertSync(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			reachabilityFence(valueMut);
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -1427,11 +1547,19 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	@SafeVarargs
-	private final <T> long[] contents2longs(T... contents) {
-		final long[] ptrs = new long[contents.length];
+	private static <T> ValueMut[] convertAll(T... contents) {
+		final ValueMut[] valueMuts = new ValueMut[contents.length];
 		int index = 0;
 		for (final T c : contents) {
-			ptrs[index++] = ValueBuilder.convert(c).getPtr();
+			valueMuts[index++] = ValueBuilder.convert(c);
+		}
+		return valueMuts;
+	}
+
+	private static long[] ptrs(Native[] natives) {
+		final long[] ptrs = new long[natives.length];
+		for (int i = 0; i < natives.length; i++) {
+			ptrs[i] = natives[i].getPtr();
 		}
 		return ptrs;
 	}

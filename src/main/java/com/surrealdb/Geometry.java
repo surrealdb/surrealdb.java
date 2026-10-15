@@ -61,8 +61,12 @@ public class Geometry extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Geometry::deleteInstance;
+	}
 
 	// ---- type discrimination ----
 
@@ -191,7 +195,11 @@ public class Geometry extends Native {
 		for (int i = 0; i < geometries.size(); i++) {
 			ptrs[i] = geometries.get(i).getPtr();
 		}
-		return new Geometry(newCollection(ptrs));
+		try {
+			return new Geometry(newCollection(ptrs));
+		} finally {
+			reachabilityFence(geometries);
+		}
 	}
 
 	// ---- helpers ----

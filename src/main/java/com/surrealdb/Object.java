@@ -29,8 +29,12 @@ public class Object extends Native implements Iterable<Entry> {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Object::deleteInstance;
+	}
 
 	final public Value get(String key) {
 		return new Value(get(getPtr(), key));

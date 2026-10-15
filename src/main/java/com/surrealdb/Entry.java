@@ -25,8 +25,12 @@ public class Entry extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Entry::deleteInstance;
+	}
 
 	public String getKey() {
 		return getKey(getPtr());

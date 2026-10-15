@@ -14,8 +14,12 @@ public class Response extends Native {
 
 	private static native int size(long ptr);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Response::deleteInstance;
+	}
 
 	private native long take(long ptr, int num);
 

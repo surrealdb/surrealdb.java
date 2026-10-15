@@ -30,8 +30,12 @@ public class FileRef extends Native {
 		return getBucket(ptr1).equals(getBucket(ptr2)) && getKey(ptr1).equals(getKey(ptr2));
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return FileRef::deleteInstance;
+	}
 
 	/**
 	 * Returns the bucket name.

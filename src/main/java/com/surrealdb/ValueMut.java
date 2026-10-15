@@ -154,10 +154,13 @@ public class ValueMut extends Native {
 		for (final ValueMut value : values) {
 			ptrs[idx++] = value.getPtr();
 		}
-		final ValueMut value = new ValueMut(newArrayOf(ptrs));
-		// The Values have been moved
-		values.forEach(Native::moved);
-		return value;
+		try {
+			return new ValueMut(newArrayOf(ptrs));
+		} finally {
+			// The native side took ownership of the values. Marking them moved even if
+			// the call failed risks a leak, never a double free.
+			values.forEach(Native::moved);
+		}
 	}
 
 	public static ValueMut createObject(Object object) {
@@ -171,10 +174,12 @@ public class ValueMut extends Native {
 		for (final EntryMut entry : entries) {
 			ptrs[idx++] = entry.getPtr();
 		}
-		final ValueMut value = new ValueMut(newObjectOf(ptrs));
-		// The Entries have been moved
-		entries.forEach(Native::moved);
-		return value;
+		try {
+			return new ValueMut(newObjectOf(ptrs));
+		} finally {
+			// The native side took ownership of the entries (see createArray).
+			entries.forEach(Native::moved);
+		}
 	}
 
 	public static ValueMut createFile(String bucket, String key) {
@@ -194,6 +199,10 @@ public class ValueMut extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return ValueMut::deleteInstance;
+	}
 }

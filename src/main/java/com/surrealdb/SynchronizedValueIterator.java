@@ -13,8 +13,12 @@ class SynchronizedValueIterator extends Native implements Iterator<Value> {
 
 	private static native long next(long ptr);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return SynchronizedValueIterator::deleteInstance;
+	}
 
 	@Override
 	final String toString(long ptr) {
