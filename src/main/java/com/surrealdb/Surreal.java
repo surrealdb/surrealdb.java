@@ -42,10 +42,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 * Constructor for a Surreal instance backed by an existing native pointer (e.g.
 	 * from {@link #newSession()}).
 	 */
-	private Surreal(long ptr) {
+	private Surreal(long ptr, boolean connected) {
 		super(ptr);
-		// A session forked from a connected instance is connected too.
-		this.connected = true;
+		// A session shares its parent's connection, so it is connected exactly when
+		// the parent is.
+		this.connected = connected;
 	}
 
 	private static native long newInstance();
@@ -440,7 +441,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-		return new Surreal(cloneSession(getPtr()));
+		return new Surreal(cloneSession(getPtr()), connected);
 	}
 
 	private static native long beginTransaction(long ptr);

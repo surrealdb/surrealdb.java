@@ -77,4 +77,12 @@ public class SessionNsDbTests {
 			assertNull(surreal.getDatabase());
 		}
 	}
+
+	@Test
+	void sessionOfUnconnectedInstanceReportsNull() {
+		try (final Surreal surreal = new Surreal(); final Surreal session = surreal.newSession()) {
+			assertNull(session.getNamespace());
+			assertNull(session.getDatabase());
+		}
+	}
 }
