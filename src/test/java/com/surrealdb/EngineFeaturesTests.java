@@ -1,12 +1,18 @@
 package com.surrealdb;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import com.surrealdb.signin.RootCredential;
 
@@ -19,8 +25,18 @@ public class EngineFeaturesTests {
 	private static final String SERVER_URL = System.getenv().getOrDefault("SURREALDB_URL", "ws://localhost:8000");
 
 	@Test
-	void rocksdbPersistsAcrossConnections(@TempDir Path dir) {
-		final String url = "rocksdb://" + dir.resolve("db").toAbsolutePath();
+	void rocksdbPersistsAcrossConnections() throws IOException {
+		// Not @TempDir: JUnit deletes that straight after the test, while the engine
+		// may still be closing RocksDB (see below), which fails the test.
+		final Path dir = Files.createTempDirectory("surrealdb-rocksdb");
+		try {
+			reopen("rocksdb://" + dir.resolve("db").toAbsolutePath());
+		} finally {
+			deleteEventually(dir);
+		}
+	}
+
+	private static void reopen(String url) {
 		try (final Surreal surreal = new Surreal()) {
 			surreal.connect(url).useNs("test_ns").useDb("test_db");
 			surreal.query("CREATE kept:1 SET v = 42");
@@ -43,6 +59,29 @@ public class EngineFeaturesTests {
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt();
 					throw e;
+				}
+			}
+		}
+	}
+
+	private static void deleteEventually(Path dir) {
+		final long deadline = System.currentTimeMillis() + 10_000;
+		while (true) {
+			try (Stream<Path> paths = Files.walk(dir)) {
+				final List<Path> all = paths.sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+				for (final Path p : all) {
+					Files.deleteIfExists(p);
+				}
+				return;
+			} catch (IOException | UncheckedIOException e) {
+				if (System.currentTimeMillis() > deadline) {
+					return; // best effort: it is a temp directory
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					return;
 				}
 			}
 		}
