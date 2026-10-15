@@ -335,3 +335,12 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_equals<'local>(
         v1.eq(v2) as jboolean
     })
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::release_instance::<surrealdb::types::Value>(ptr);
+}

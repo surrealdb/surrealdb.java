@@ -33,3 +33,12 @@ pub extern "system" fn Java_com_surrealdb_ValueIterator_next<'local>(
         }
     })
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueIterator_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::release_instance::<std::vec::IntoIter<surrealdb::types::Value>>(ptr);
+}

@@ -33,8 +33,12 @@ public class EntryIterator extends Native implements Iterator<Entry> {
 		return ptr1 == ptr2;
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return EntryIterator::deleteInstance;
+	}
 
 	@Override
 	public boolean hasNext() {

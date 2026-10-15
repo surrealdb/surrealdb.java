@@ -310,3 +310,12 @@ pub extern "system" fn Java_com_surrealdb_Id_equals<'local>(
         SurrealError::NullPointerException("Id").exception(env, || false as jboolean)
     })
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Id_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::release_instance::<std::sync::Arc<surrealdb::types::Value>>(ptr);
+}
