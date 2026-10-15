@@ -43,9 +43,9 @@ public class TransactionTests {
 			surreal.connect("memory").useNs("test_ns").useDb("test_db");
 			Transaction txn = surreal.beginTransaction();
 			HashMap<String, String> map = new HashMap<>();
-			map.put("value", "hello");
+			map.put("value1", "hello");
 			map.put("value2", "world");
-			Response response = txn.query("RETURN $value;RETURN $value2", map);
+			Response response = txn.query("RETURN $value1;RETURN $value2", map);
 			assertNotNull(response);
 			assertEquals(2, response.size());
 			assertEquals("hello", response.take(0).getString());
