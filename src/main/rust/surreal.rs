@@ -1200,11 +1200,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIdRange<'local>(
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
 ) -> jlongArray {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, surreal_ptr, null_mut);
         let table_str = get_rust_string!(env, table, null_mut);
-        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr) {
+        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr, bounds)
+        {
             Ok(v) => v,
             Err(e) => return e.exception(env, null_mut),
         };
@@ -1234,11 +1236,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIdRange<'local>(
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
 ) -> jboolean {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, surreal_ptr, || false as jboolean);
         let table_str = get_rust_string!(env, table, || false as jboolean);
-        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr) {
+        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr, bounds)
+        {
             Ok(v) => v,
             Err(e) => return e.exception(env, || false as jboolean),
         };
@@ -1281,27 +1285,37 @@ fn value_to_record_id_key(value: &Value) -> std::result::Result<RecordIdKey, Sur
     }
 }
 
+/// `bounds` flag (mirrors RecordIdRange.START_EXCLUSIVE): the start bound is exclusive.
+const RANGE_START_EXCLUSIVE: jint = 1;
+/// `bounds` flag (mirrors RecordIdRange.END_EXCLUSIVE): the end bound is exclusive.
+const RANGE_END_EXCLUSIVE: jint = 2;
+
+fn range_bound(
+    ptr: jlong,
+    exclusive: bool,
+) -> std::result::Result<Bound<RecordIdKey>, SurrealError> {
+    if ptr == 0 {
+        return Ok(Bound::Unbounded);
+    }
+    let value = crate::get_instance::<Arc<Value>>(ptr, crate::JniTypes::Value)?;
+    let key = value_to_record_id_key(value.as_ref())?;
+    Ok(if exclusive {
+        Bound::Excluded(key)
+    } else {
+        Bound::Included(key)
+    })
+}
+
 /// Builds the range record id value for SELECT/DELETE/UPDATE/UPSERT $_range.
 fn build_range_value(
     _env: &mut Env,
     table: &str,
     start_ptr: jlong,
     end_ptr: jlong,
+    bounds: jint,
 ) -> std::result::Result<Value, SurrealError> {
-    let start_bound = if start_ptr == 0 {
-        Bound::Unbounded
-    } else {
-        let value = crate::get_instance::<Arc<Value>>(start_ptr, crate::JniTypes::Value)?;
-        let key = value_to_record_id_key(value.as_ref())?;
-        Bound::Included(key)
-    };
-    let end_bound = if end_ptr == 0 {
-        Bound::Unbounded
-    } else {
-        let value = crate::get_instance::<Arc<Value>>(end_ptr, crate::JniTypes::Value)?;
-        let key = value_to_record_id_key(value.as_ref())?;
-        Bound::Included(key)
-    };
+    let start_bound = range_bound(start_ptr, bounds & RANGE_START_EXCLUSIVE != 0)?;
+    let end_bound = range_bound(end_ptr, bounds & RANGE_END_EXCLUSIVE != 0)?;
     let range = RecordIdKeyRange {
         start: start_bound,
         end: end_bound,
@@ -1389,13 +1403,14 @@ fn up_record_id_range_value(
     table: JString,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
     up_type: jint,
     value_ptr: jlong,
     up: &str,
 ) -> jlong {
     let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
     let table_str = get_rust_string!(env, table, || 0);
-    let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr) {
+    let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr, bounds) {
         Ok(v) => v,
         Err(e) => return e.exception(env, || 0),
     };
@@ -1427,6 +1442,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdRangeValue<'loca
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
@@ -1437,6 +1453,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdRangeValue<'loca
             table,
             start_id_ptr,
             end_id_ptr,
+            bounds,
             up_type,
             value_ptr,
             "update",
@@ -1452,6 +1469,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdRangeValue<'loca
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
@@ -1462,6 +1480,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdRangeValue<'loca
             table,
             start_id_ptr,
             end_id_ptr,
+            bounds,
             up_type,
             value_ptr,
             "upsert",

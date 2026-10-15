@@ -12,9 +12,11 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 class ValueClassConverter<T> {
 
@@ -166,12 +168,15 @@ class ValueClassConverter<T> {
 		if (Value.class.equals(type)) {
 			return value;
 		}
-		if (value.isArray()) {
+		if (value.isArray() || value.isSet()) {
 			final Class<?> elementType = firstTypeArgumentRaw(genericType);
 			final Type elementGenericType = firstTypeArgument(genericType);
 			final List<java.lang.Object> list = new ArrayList<>();
-			for (final Value element : value.getArray()) {
+			for (final Value element : elements(value)) {
 				list.add(convertArrayElement(element, elementType, elementGenericType));
+			}
+			if (Set.class.isAssignableFrom(type)) {
+				return new LinkedHashSet<>(list);
 			}
 			if (type == byte[].class) {
 				final byte[] bytes = new byte[list.size()];
@@ -238,15 +243,19 @@ class ValueClassConverter<T> {
 			}
 			return convert(elementType, value.getObject());
 		}
-		if (value.isArray()) {
+		if (value.isArray() || value.isSet()) {
 			final List<java.lang.Object> nested = new ArrayList<>();
-			for (final Value v : value.getArray()) {
+			for (final Value v : elements(value)) {
 				nested.add(convertArrayElement(v, elementType, elementGenericType));
 			}
 			return nested;
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
 		return convertSingleValue(value);
+	}
+
+	private static Array elements(final Value value) {
+		return value.isSet() ? value.getSet() : value.getArray();
 	}
 
 	private static Type firstTypeArgument(final Type genericType) {

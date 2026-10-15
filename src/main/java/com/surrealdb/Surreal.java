@@ -106,10 +106,10 @@ public class Surreal extends Native implements AutoCloseable {
 	private static native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
 	private static native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr,
-			int update, long valuePtr);
+			int bounds, int update, long valuePtr);
 
 	private static native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr,
-			int update, long valuePtr);
+			int bounds, int update, long valuePtr);
 
 	private static native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
@@ -123,7 +123,8 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native long[] selectRecordIds(long ptr, long[] recordIds);
 
-	private static native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private static native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr,
+			int bounds);
 
 	private static native long selectTargetsValues(long ptr, String... targets);
 
@@ -133,7 +134,8 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native boolean deleteRecordIds(long ptr, long[] recordIds);
 
-	private static native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private static native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr,
+			int bounds);
 
 	private static native boolean deleteTarget(long ptr, String target);
 
@@ -946,10 +948,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value update(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-				valueMut.getPtr());
+		final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), range.startPtr(), range.endPtr(),
+				range.bounds(), upType.code, valueMut.getPtr());
 		return new Value(valuePtr);
 	}
 
@@ -1205,10 +1205,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value upsert(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-				valueMut.getPtr());
+		final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), range.startPtr(), range.endPtr(),
+				range.bounds(), upType.code, valueMut.getPtr());
 		return new Value(valuePtr);
 	}
 
@@ -1538,9 +1536,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return list of values for records in the range
 	 */
 	public List<Value> select(RecordIdRange range) {
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long[] valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		final long[] valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), range.startPtr(), range.endPtr(),
+				range.bounds());
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
 		}
@@ -1674,9 +1671,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the table and optional start/end bounds
 	 */
 	public void delete(RecordIdRange range) {
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		deleteRecordIdRange(getPtr(), range.getTable(), range.startPtr(), range.endPtr(), range.bounds());
 	}
 
 	/**

@@ -85,6 +85,14 @@ public class Value extends Native {
 
 	private static native long getRangeEnd(long ptr);
 
+	private static native boolean isRangeStartInclusive(long ptr);
+
+	private static native boolean isRangeEndInclusive(long ptr);
+
+	private static native boolean isSet(long ptr);
+
+	private static native long getSet(long ptr);
+
 	private static native boolean isTable(long ptr);
 
 	private static native String getTable(long ptr);
@@ -207,6 +215,37 @@ public class Value extends Native {
 	public Optional<Value> getRangeEnd() {
 		final long p = getRangeEnd(getPtr());
 		return p == 0 ? Optional.empty() : Optional.of(new Value(p));
+	}
+
+	/**
+	 * Whether the start bound of the range is inclusive ({@code a..} rather than
+	 * {@code a>..}). Also false when the range has no start bound.
+	 */
+	public boolean isRangeStartInclusive() {
+		return isRangeStartInclusive(getPtr());
+	}
+
+	/**
+	 * Whether the end bound of the range is inclusive ({@code ..=b} rather than
+	 * {@code ..b}). Also false when the range has no end bound.
+	 */
+	public boolean isRangeEndInclusive() {
+		return isRangeEndInclusive(getPtr());
+	}
+
+	/**
+	 * Whether this value is a set: a sorted collection without duplicates. Sets are
+	 * distinct from arrays, so {@link #isArray()} is false for them.
+	 */
+	public boolean isSet() {
+		return isSet(getPtr());
+	}
+
+	/**
+	 * Returns the elements of this set, in the set's (sorted) order.
+	 */
+	public Array getSet() {
+		return new Array(getSet(getPtr()));
 	}
 
 	public boolean isTable() {
