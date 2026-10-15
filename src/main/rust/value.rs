@@ -209,7 +209,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isDuration<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
+pub extern "system" fn Java_com_surrealdb_Value_getDurationSeconds<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
@@ -217,7 +217,32 @@ pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, || 0);
         if let Value::Duration(d) = value.as_ref() {
-            d.as_millis() as jlong
+            // java.time.Duration holds a signed 64-bit second count; anything larger
+            // cannot be represented, so fail loudly instead of wrapping negative.
+            match jlong::try_from(d.secs()) {
+                Ok(secs) => secs,
+                Err(_) => SurrealError::SurrealDBJni(format!(
+                    "Duration of {} seconds is too large for java.time.Duration",
+                    d.secs()
+                ))
+                .exception(env, || 0),
+            }
+        } else {
+            SurrealError::NullPointerException("Duration").exception(env, || 0)
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getDurationNanos<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jint {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || 0);
+        if let Value::Duration(d) = value.as_ref() {
+            d.subsec_nanos() as jint
         } else {
             SurrealError::NullPointerException("Duration").exception(env, || 0)
         }

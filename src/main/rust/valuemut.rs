@@ -97,12 +97,23 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDecimal<'local>(
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newDuration<'local>(
-    _env: EnvUnowned<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
-    millis: jlong,
+    seconds: jlong,
+    nanos: jint,
 ) -> jlong {
-    let value = Value::Duration(Duration::from_millis(millis as u64));
-    JniTypes::new_value_mut(value)
+    with_env_body!(env, env, {
+        // SurrealDB durations are unsigned. Reject negative values rather than letting
+        // the cast to u64 wrap them into a huge positive duration.
+        if seconds < 0 || !(0..1_000_000_000).contains(&nanos) {
+            return SurrealError::SurrealDBJni(format!(
+                "SurrealDB durations cannot be negative (seconds={seconds}, nanos={nanos})"
+            ))
+            .exception(env, || 0);
+        }
+        let value = Value::Duration(Duration::new(seconds as u64, nanos as u32));
+        JniTypes::new_value_mut(value)
+    })
 }
 
 #[no_mangle]
