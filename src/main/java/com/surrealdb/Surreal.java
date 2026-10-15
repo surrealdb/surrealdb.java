@@ -23,6 +23,14 @@ import com.surrealdb.signin.Token;
  * database. It includes functionality to connect to the database, sign in with
  * different scopes, set the namespace and database, execute queries, and
  * perform CRUD operations on records.
+ *
+ * <p>
+ * Methods that take a {@code String} target or table treat it as a table name
+ * and nothing else: the name is sent to the server as a bound table value, so
+ * it is never parsed as SurrealQL, and a string such as {@code "person:tobie"}
+ * names a table called {@code person:tobie} rather than a record. Use
+ * {@link RecordId} to address a single record. Record contents are always sent
+ * as bound parameters.
  */
 public class Surreal extends Native implements AutoCloseable {
 
@@ -213,7 +221,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *
 	 * @param name
 	 *            the function name (e.g. "array::add" or "array::add&lt;1.0.0&gt;"
-	 *            for a version)
+	 *            for a version). Only identifier segments joined by {@code ::} are
+	 *            accepted; anything else is rejected rather than sent.
 	 * @param args
 	 *            the arguments to pass to the function (converted to Surreal
 	 *            values)
