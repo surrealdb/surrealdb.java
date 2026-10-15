@@ -303,14 +303,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 * id of (e.g. one started elsewhere or read from a notification).
 	 *
 	 * <p>
-	 * This is best-effort: the SurrealDB client does not report a server-side KILL
-	 * rejection (e.g. a live query owned by another session), so only an invalid
-	 * UUID or a connection failure raises.
+	 * A kill the server rejects raises an {@link InternalException} ("Cannot
+	 * execute KILL statement using id: ..."), as for an id that names no live
+	 * query, one that was already killed, or one this session may not kill.
 	 *
 	 * @param queryId
 	 *            the live query UUID to terminate
 	 * @throws SurrealException
-	 *             if the id is not a valid UUID or the request cannot be sent
+	 *             if the id is not a valid UUID, the request cannot be sent, or the
+	 *             server rejects the kill
 	 */
 	public void kill(String queryId) {
 		kill(getPtr(), queryId);

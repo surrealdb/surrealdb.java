@@ -670,13 +670,26 @@ pub extern "system" fn Java_com_surrealdb_Surreal_kill<'local>(
         };
         let mut params = BTreeMap::new();
         params.insert("id".to_string(), Value::Uuid(uuid));
-        // Best-effort: the surrealdb client SDK discards the KILL statement result
-        // (`QueryType::Kill => {}` when building IndexedResults) and its typed kill is
-        // `pub(crate)`, so a server-side KILL rejection (e.g. a live query owned by
-        // another session) is not observable from the client. Only transport/connection
-        // errors surface here, via check_query_result!.
-        let res = surrealdb_query::<Value>(surreal, "KILL $id", Some(params));
-        let _ = check_query_result!(env, res, || ());
+        // The surrealdb client drops the result of every KILL statement
+        // (`QueryType::Kill => {}` when it builds IndexedResults) and its typed kill is
+        // `pub(crate)`, so a plain `KILL $id` cannot report a rejection. Running it in a
+        // transaction makes a rejection observable: a failed KILL cancels the
+        // transaction, so the `RETURN true` after it fails too, and that statement's
+        // result is kept. Results are indexed by statement (BEGIN=0, KILL=1, RETURN=2).
+        let res = surrealdb_query::<Value>(
+            surreal,
+            "BEGIN; KILL $id; RETURN true; COMMIT;",
+            Some(params),
+        );
+        let mut res = check_query_result!(env, res, || ());
+        if res.take::<Value>(2).is_err() {
+            // The KILL's own error was dropped by the client; rebuild the one the server
+            // sends for an unknown live query or one this session may not kill.
+            let err = surrealdb::Error::internal(format!(
+                "Cannot execute KILL statement using id: u'{uuid}'"
+            ));
+            return SurrealError::SurrealDB(err).exception(env, || ());
+        }
     })
 }
 
