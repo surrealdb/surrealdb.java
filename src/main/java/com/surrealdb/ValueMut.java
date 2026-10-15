@@ -30,7 +30,7 @@ public class ValueMut extends Native {
 
 	private static native long newDecimal(String s);
 
-	private static native long newDuration(long l);
+	private static native long newDuration(long seconds, int nanos);
 
 	private static native long newDatetime(long seconds, long nanos);
 
@@ -82,8 +82,17 @@ public class ValueMut extends Native {
 		return new ValueMut(newDecimal(d.toString()));
 	}
 
+	/**
+	 * Creates a duration value with full nanosecond precision.
+	 *
+	 * @param d
+	 *            the duration; SurrealDB durations are unsigned
+	 * @return a new duration value
+	 * @throws SurrealException
+	 *             if {@code d} is negative
+	 */
 	public static ValueMut createDuration(Duration d) {
-		return new ValueMut(newDuration(d.toMillis()));
+		return new ValueMut(newDuration(d.getSeconds(), d.getNano()));
 	}
 
 	public static ValueMut createDatetime(Instant i) {

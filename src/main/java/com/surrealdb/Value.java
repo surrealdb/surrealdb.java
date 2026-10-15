@@ -65,7 +65,9 @@ public class Value extends Native {
 
 	private static native boolean isDuration(long ptr);
 
-	private static native long getDuration(long ptr);
+	private static native long getDurationSeconds(long ptr);
+
+	private static native int getDurationNanos(long ptr);
 
 	private static native boolean isBytes(long ptr);
 
@@ -251,8 +253,8 @@ public class Value extends Native {
 	}
 
 	public Duration getDuration() {
-		final long durationMillis = getDuration(getPtr());
-		return Duration.ofMillis(durationMillis);
+		final long ptr = getPtr();
+		return Duration.ofSeconds(getDurationSeconds(ptr), getDurationNanos(ptr));
 	}
 
 	public <T> T get(Class<T> type) {
