@@ -19,7 +19,7 @@ opt-level = 3
 # Driver-specific dependencies (jni, once_cell, cargo-lock) are independent.
 [dependencies]
 jni = "0.22.4"
-surrealdb = { version = "3.1.5", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
+surrealdb = { version = "3.3.4", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
 # Geometry construction (write path). Must match the geo version surrealdb-types uses
 # so the geo::* types unify with surrealdb::types::Geometry's inner geo types.
 geo = { version = "0.32", default-features = false }
@@ -34,15 +34,23 @@ dashmap = "6.1.0"
 futures = "0.3.32"
 async-channel = "2.5.0"
 
+# RocksDB uses 128-bit integers, so it only builds for 64-bit targets, and the
+# Android NDK headers lack the posix_madvise constants it needs. It is enabled
+# by default on 64-bit desktop targets; 32-bit and Android targets build without it.
+[target.'cfg(all(target_pointer_width = "64", not(target_os = "android")))'.dependencies]
+surrealdb = { version = "3.3.4", default-features = false, features = ["kv-rocksdb"] }
+
 [build-dependencies]
 cargo-lock = "11.0.1"
 
 [features]
-default = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "http", "jwks"]
+default = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "protocol-grpc", "http", "jwks"]
 rustls = ["surrealdb/rustls"]
 jwks = ["surrealdb/jwks"]
 http = ["surrealdb/http"]
 kv-mem = ["surrealdb/kv-mem"]
 kv-surrealkv = ["surrealdb/kv-surrealkv"]
+kv-rocksdb = ["surrealdb/kv-rocksdb"]
 protocol-ws = ["surrealdb/protocol-ws"]
 protocol-http = ["surrealdb/protocol-http"]
+protocol-grpc = ["surrealdb/protocol-grpc"]
