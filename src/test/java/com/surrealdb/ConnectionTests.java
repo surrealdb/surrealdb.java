@@ -29,7 +29,7 @@ public class ConnectionTests {
 				Future<Void> future = executor.submit(new Callable<Void>() {
 					@Override
 					public Void call() throws SurrealException {
-						surreal.connect(System.getenv().getOrDefault("SURREALDB_URL", "ws://localhost:8000")).useNs("test").useDb("test");
+						surreal.connect("ws://localhost:8000").useNs("test").useDb("test");
 						assertNotNull(surreal.version());
 						return null;
 					}

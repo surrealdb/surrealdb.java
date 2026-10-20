@@ -23,7 +23,7 @@ import com.surrealdb.signin.RootCredential;
  */
 public class Issue160RegressionTests {
 
-	private static final String WS_URL = System.getenv().getOrDefault("SURREALDB_URL", "ws://localhost:8000");
+	private static final String WS_URL = "ws://localhost:8000";
 
 	@Test
 	@EnabledOnOs({OS.LINUX, OS.MAC})
