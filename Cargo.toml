@@ -34,11 +34,16 @@ dashmap = "6.1.0"
 futures = "0.3.32"
 async-channel = "2.5.0"
 
+# RocksDB uses 128-bit integers, so it only builds for 64-bit targets. It is
+# enabled there by default; 32-bit targets build without it.
+[target.'cfg(target_pointer_width = "64")'.dependencies]
+surrealdb = { version = "3.3.4", default-features = false, features = ["kv-rocksdb"] }
+
 [build-dependencies]
 cargo-lock = "11.0.1"
 
 [features]
-default = ["rustls", "kv-mem", "kv-surrealkv", "kv-rocksdb", "protocol-ws", "protocol-http", "protocol-grpc", "http", "jwks"]
+default = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "protocol-grpc", "http", "jwks"]
 rustls = ["surrealdb/rustls"]
 jwks = ["surrealdb/jwks"]
 http = ["surrealdb/http"]
