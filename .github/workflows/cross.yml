@@ -75,13 +75,13 @@ jobs:
             apt-get: gcc
           - target: aarch64-unknown-linux-gnu
             linker: CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
-            apt-get: gcc-aarch64-linux-gnu
+            apt-get: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           - target: i686-unknown-linux-gnu
             linker: CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc
-            apt-get: gcc-multilib
+            apt-get: gcc-multilib g++-multilib
           - target: armv7-unknown-linux-gnueabihf
             linker: CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
-            apt-get: gcc-arm-linux-gnueabihf
+            apt-get: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
     runs-on: ubuntu-latest
     steps:
