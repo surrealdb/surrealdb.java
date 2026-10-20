@@ -34,9 +34,10 @@ dashmap = "6.1.0"
 futures = "0.3.32"
 async-channel = "2.5.0"
 
-# RocksDB uses 128-bit integers, so it only builds for 64-bit targets. It is
-# enabled there by default; 32-bit targets build without it.
-[target.'cfg(target_pointer_width = "64")'.dependencies]
+# RocksDB uses 128-bit integers, so it only builds for 64-bit targets, and the
+# Android NDK headers lack the posix_madvise constants it needs. It is enabled
+# by default on 64-bit desktop targets; 32-bit and Android targets build without it.
+[target.'cfg(all(target_pointer_width = "64", not(target_os = "android")))'.dependencies]
 surrealdb = { version = "3.3.4", default-features = false, features = ["kv-rocksdb"] }
 
 [build-dependencies]
