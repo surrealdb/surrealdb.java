@@ -6,7 +6,7 @@ package com.surrealdb;
  * Entry provides methods to retrieve the key and value associated with the
  * entry.
  */
-public class Entry extends Native {
+public class Entry extends Native implements AutoCloseable {
 
 	Entry(long ptr) {
 		super(ptr);
@@ -30,6 +30,22 @@ public class Entry extends Native {
 	@Override
 	final NativeCleaner.Deleter deleter() {
 		return Entry::deleteInstance;
+	}
+
+	/**
+	 * Releases the native memory held by this instance. Calling it more than once
+	 * is safe, and an instance that is never closed is still released once it is
+	 * garbage collected. After this call, using the instance throws a
+	 * {@link NullPointerException}.
+	 * <p>
+	 * Values obtained from this instance (for example through {@code take},
+	 * {@code get}, {@code getArray()} or an iterator) are not affected: they hold
+	 * their own reference to the data, which is freed once every holder is closed
+	 * or collected.
+	 */
+	@Override
+	public void close() {
+		deleteInstance();
 	}
 
 	public String getKey() {
