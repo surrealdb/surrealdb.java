@@ -23,11 +23,22 @@ import com.surrealdb.signin.Token;
  * database. It includes functionality to connect to the database, sign in with
  * different scopes, set the namespace and database, execute queries, and
  * perform CRUD operations on records.
+ *
+ * <p>
+ * Methods that take a {@code String} target or table treat it as a table name
+ * and nothing else: the name is sent to the server as a bound table value, so
+ * it is never parsed as SurrealQL. An empty table name, an empty list of
+ * tables, and a table name containing {@code ':'}, such as
+ * {@code "person:tobie"}, are rejected with a {@link SurrealException}. A name
+ * with {@code ':'} is almost always a record id passed by mistake: use
+ * {@link RecordId} to address a single record. Record contents are always sent
+ * as bound parameters. The table inside a {@link RecordId} or
+ * {@link RecordIdRange} is part of that value and is sent bound as well.
  */
 public class Surreal extends Native implements AutoCloseable {
 
 	// Current namespace and database set by useNs() / useDb() / useDefaults() (from
-	// server return value).
+	// server return value), or inherited by newSession() from the parent session.
 	private String namespace;
 	private String database;
 
@@ -40,12 +51,13 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Constructor for a Surreal instance backed by an existing native pointer (e.g.
-	 * from {@link #newSession()}).
+	 * from {@link #newSession()}), whose session uses {@code namespace} and
+	 * {@code database}.
 	 */
-	private Surreal(long ptr) {
+	private Surreal(long ptr, String namespace, String database) {
 		super(ptr);
-		this.namespace = null;
-		this.database = null;
+		this.namespace = namespace;
+		this.database = database;
 	}
 
 	private static native long newInstance();
@@ -226,7 +238,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *
 	 * @param name
 	 *            the function name (e.g. "array::add" or "array::add&lt;1.0.0&gt;"
-	 *            for a version)
+	 *            for a version). Only identifier segments joined by {@code ::} are
+	 *            accepted; anything else is rejected rather than sent.
 	 * @param args
 	 *            the arguments to pass to the function (converted to Surreal
 	 *            values)
@@ -547,14 +560,17 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	/**
-	 * Creates a new session that shares the same connection but has its own
-	 * namespace, database, and authentication state. Use this for multi-session
-	 * support.
+	 * Creates a new session that shares the same connection. The new session starts
+	 * as a copy of this one (namespace, database, variables and authentication) and
+	 * changes to either session after that do not affect the other. Use this for
+	 * multi-session support.
 	 *
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-		return new Surreal(cloneSession(getPtr()));
+		// The native clone copies the session's namespace and database, so the new
+		// instance starts with this one's.
+		return new Surreal(cloneSession(getPtr()), namespace, database);
 	}
 
 	private native long beginTransaction(long ptr);
@@ -619,8 +635,9 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Returns the current namespace set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current namespace, or null
 	 */
@@ -631,8 +648,9 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Returns the current database set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current database, or null
 	 */

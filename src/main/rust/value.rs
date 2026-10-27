@@ -213,13 +213,26 @@ pub extern "system" fn Java_com_surrealdb_Value_getDuration<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     ptr: jlong,
-) -> jlong {
+) -> jlongArray {
     with_env_body!(env, env, {
-        let value = get_value_instance!(env, ptr, || 0);
+        let value = get_value_instance!(env, ptr, null_mut);
         if let Value::Duration(d) = value.as_ref() {
-            d.as_millis() as jlong
+            // java.time.Duration holds a signed 64-bit second count; anything larger
+            // cannot be represented, so fail loudly instead of wrapping negative.
+            let seconds = match jlong::try_from(d.secs()) {
+                Ok(secs) => secs,
+                Err(_) => {
+                    return SurrealError::SurrealDBJni(format!(
+                        "Duration of {} seconds is too large for java.time.Duration",
+                        d.secs()
+                    ))
+                    .exception(env, null_mut)
+                }
+            };
+            let buf: [jlong; 2] = [seconds, d.subsec_nanos() as jlong];
+            new_jlong_array!(env, &buf, null_mut)
         } else {
-            SurrealError::NullPointerException("Duration").exception(env, || 0)
+            SurrealError::NullPointerException("Duration").exception(env, null_mut)
         }
     })
 }
