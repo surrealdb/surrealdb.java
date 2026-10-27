@@ -23,6 +23,13 @@ import com.surrealdb.signin.Token;
  */
 public class SessionAuthTests {
 
+	/** The record a user signs up with, as read back by {@code info(Class)}. */
+	public static class User {
+		public RecordId id;
+		public String email;
+		public String pass;
+	}
+
 	private static final String SERVER_URL = System.getenv().getOrDefault("SURREALDB_URL", "ws://localhost:8000");
 
 	private static Map<String, java.lang.Object> credentials() {
@@ -86,6 +93,7 @@ public class SessionAuthTests {
 		final String db = surreal.getDatabase();
 		// Not signed in as a record user: no info.
 		assertFalse(surreal.info().isPresent());
+		assertFalse(surreal.info(User.class).isPresent());
 
 		final Token signedUp = surreal.signup(new RecordCredential(ns, db, "user", credentials()));
 		assertNotNull(signedUp.getRefresh(), "WITH REFRESH access must return a refresh token");
@@ -93,6 +101,9 @@ public class SessionAuthTests {
 		final Optional<Value> info = surreal.info();
 		assertTrue(info.isPresent());
 		assertEquals("a@b.com", info.get().getObject().get("email").getString());
+		final User user = surreal.info(User.class).get();
+		assertEquals("a@b.com", user.email);
+		assertEquals("user", user.id.getTable());
 
 		// Refresh hands out a new pair and keeps the session authenticated.
 		final Token refreshed = surreal.refresh(signedUp);

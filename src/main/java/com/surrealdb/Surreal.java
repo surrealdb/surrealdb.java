@@ -543,7 +543,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         record user
 	 */
 	public <T> Optional<T> info(Class<T> type) {
-		return info().map(v -> v.get(type));
+		return info().map(v -> v.getAndClose(type));
 	}
 
 	/**
