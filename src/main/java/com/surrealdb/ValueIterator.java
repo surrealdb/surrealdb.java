@@ -15,15 +15,15 @@ import java.util.Objects;
  * Methods: - hasNext(): Checks if there are more elements in the collection to
  * iterate over. - next(): Returns the next Value in the iteration.
  */
-public class ValueIterator extends Native implements Iterator<Value> {
+public class ValueIterator extends Native implements Iterator<Value>, AutoCloseable {
 
 	ValueIterator(long ptr) {
 		super(ptr);
 	}
 
-	private static native boolean hasNext(long ptr);
+	private native boolean hasNext(long ptr);
 
-	private static native long next(long ptr);
+	private native long next(long ptr);
 
 	@Override
 	final String toString(long ptr) {
@@ -40,8 +40,12 @@ public class ValueIterator extends Native implements Iterator<Value> {
 		return ptr1 == ptr2;
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return ValueIterator::deleteInstance;
+	}
 
 	@Override
 	public boolean hasNext() {
