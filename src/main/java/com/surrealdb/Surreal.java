@@ -42,6 +42,13 @@ public class Surreal extends Native implements AutoCloseable {
 	private String namespace;
 	private String database;
 
+	// Server version of this connection, fetched on first use by diff-mode live
+	// queries and then reused so that each subscription does not cost an extra
+	// version() round-trip. Reset by connect(...) and copied to sessions created
+	// with newSession(). Volatile: racing first fills both store the same value.
+	// Package-private for tests.
+	volatile String cachedVersion;
+
 	/**
 	 * Constructs a new Surreal object.
 	 */
@@ -193,6 +200,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Surreal connect(String connect) {
 		connect(getPtr(), connect);
+		cachedVersion = null;
 		namespace = null;
 		database = null;
 		return this;
@@ -337,7 +345,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public LiveStream selectLive(String table, boolean diff) {
 		if (diff) {
-			final String version = version();
+			final String version = cachedServerVersion();
 			if (!atLeast(version, 3, 3)) {
 				throw new SurrealException("Live queries in diff mode need SurrealDB 3.3.0 or later, but this is "
 						+ version + ": earlier versions can leak fields hidden by field-level SELECT"
@@ -347,11 +355,25 @@ public class Surreal extends Native implements AutoCloseable {
 		return selectLive(getPtr(), table, diff);
 	}
 
-	// Whether a version string such as "3.3.4", "surrealdb-3.3.4" or
-	// "3.4.0-nightly" is at least major.minor. Unparseable versions count as too
-	// old.
+	// The server version, fetched once per connection and cached. A null result is
+	// not cached.
+	private String cachedServerVersion() {
+		String version = cachedVersion;
+		if (version == null) {
+			version = version();
+			cachedVersion = version;
+		}
+		return version;
+	}
+
+	// Whether a version string such as "3.3.4", "v3.3.4", "surrealdb-3.3.4",
+	// "surrealdb-v3.3.4" or "3.4.0-nightly" is at least major.minor. Surrounding
+	// whitespace is ignored. A null or unparseable version counts as too old.
 	static boolean atLeast(String version, int major, int minor) {
-		final String[] parts = version.replaceFirst("^surrealdb-", "").split("[.+-]");
+		if (version == null) {
+			return false;
+		}
+		final String[] parts = version.trim().replaceFirst("^(?:surrealdb-)?v?", "").split("[.+-]");
 		try {
 			final int actualMajor = Integer.parseInt(parts[0]);
 			final int actualMinor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
@@ -508,7 +530,9 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-		return new Surreal(cloneSession(getPtr()));
+		final Surreal session = new Surreal(cloneSession(getPtr()));
+		session.cachedVersion = cachedVersion;
+		return session;
 	}
 
 	private native long beginTransaction(long ptr);

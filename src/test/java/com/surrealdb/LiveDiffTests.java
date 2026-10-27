@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assumptions;
@@ -119,5 +120,88 @@ public class LiveDiffTests {
 		assertFalse(Surreal.atLeast("3.1.5", 3, 3));
 		assertFalse(Surreal.atLeast("2.6.0", 3, 3));
 		assertFalse(Surreal.atLeast("garbage", 3, 3));
+	}
+
+	@Test
+	void atLeastRejectsNullAndBlank() {
+		assertFalse(Surreal.atLeast(null, 3, 3));
+		assertFalse(Surreal.atLeast("", 3, 3));
+		assertFalse(Surreal.atLeast("   ", 3, 3));
+	}
+
+	@Test
+	void atLeastIgnoresWhitespace() {
+		assertTrue(Surreal.atLeast("  3.3.4\n", 3, 3));
+		assertTrue(Surreal.atLeast("\t surrealdb-v3.3.4 ", 3, 3));
+		assertFalse(Surreal.atLeast(" 3.2.9 ", 3, 3));
+	}
+
+	@Test
+	void atLeastAcceptsVersionPrefixes() {
+		assertTrue(Surreal.atLeast("v3.3.4", 3, 3));
+		assertTrue(Surreal.atLeast("surrealdb-v3.3.4", 3, 3));
+		assertFalse(Surreal.atLeast("v3.2.9", 3, 3));
+		assertFalse(Surreal.atLeast("surrealdb-v3.2.9", 3, 3));
+	}
+
+	@Test
+	void atLeastComparesNumerically() {
+		assertTrue(Surreal.atLeast("3.3.0", 3, 3));
+		assertFalse(Surreal.atLeast("3.2.9", 3, 3));
+		// "10" sorts before "3" lexically, but 3.10.0 is newer than 3.3.0.
+		assertTrue(Surreal.atLeast("3.10.0", 3, 3));
+		assertFalse(Surreal.atLeast("2.10.0", 3, 3));
+		assertTrue(Surreal.atLeast("10.0.0", 3, 3));
+	}
+
+	@Test
+	void atLeastIgnoresBuildMetadata() {
+		assertTrue(Surreal.atLeast("3.3.0+20261014", 3, 3));
+		assertTrue(Surreal.atLeast("surrealdb-3.3.0+20261014", 3, 3));
+		assertFalse(Surreal.atLeast("3.2.9+20261014", 3, 3));
+	}
+
+	@Test
+	void diffModeFetchesTheVersionOncePerConnection() {
+		withEmbedded(surreal -> {
+			surreal.query("DEFINE TABLE watched");
+			assertNull(surreal.cachedVersion);
+
+			// The first diff-mode call fetches the version and caches it. Whether the
+			// subscription is then accepted depends on the embedded engine version.
+			try (final LiveStream ignored = surreal.selectLive("watched", true)) {
+				// Opened and closed straight away.
+			} catch (SurrealException e) {
+				// Refused by the version gate.
+			}
+			assertEquals(surreal.version(), surreal.cachedVersion);
+
+			// The second call reads the cache rather than asking the server again: a
+			// planted version, which the engine would never report, decides the outcome.
+			surreal.cachedVersion = "3.0.0";
+			final SurrealException e = assertThrows(SurrealException.class, () -> surreal.selectLive("watched", true));
+			assertTrue(e.getMessage().contains("but this is 3.0.0"), e.getMessage());
+		});
+	}
+
+	@Test
+	void cachedVersionIsCopiedToSessions() {
+		withEmbedded(surreal -> {
+			surreal.cachedVersion = "3.3.0";
+			try (final Surreal session = surreal.newSession()) {
+				assertEquals("3.3.0", session.cachedVersion);
+			}
+		});
+	}
+
+	@Test
+	void cachedVersionIsResetOnConnect() {
+		try (final Surreal surreal = new Surreal()) {
+			// A connection is made once per instance (a second connect is refused), so
+			// this plants a value ahead of it to show that connect starts from scratch.
+			surreal.cachedVersion = "3.3.0";
+			surreal.connect("memory");
+			assertNull(surreal.cachedVersion);
+		}
 	}
 }
