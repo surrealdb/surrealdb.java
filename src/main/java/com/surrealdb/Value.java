@@ -65,7 +65,7 @@ public class Value extends Native implements AutoCloseable {
 
 	private native boolean isDuration(long ptr);
 
-	private native long getDuration(long ptr);
+	private native long[] getDuration(long ptr);
 
 	private native boolean isBytes(long ptr);
 
@@ -255,8 +255,8 @@ public class Value extends Native implements AutoCloseable {
 	}
 
 	public Duration getDuration() {
-		final long durationMillis = getDuration(getPtr());
-		return Duration.ofMillis(durationMillis);
+		final long[] duration = getDuration(getPtr());
+		return Duration.ofSeconds(duration[0], duration[1]);
 	}
 
 	public <T> T get(Class<T> type) {
