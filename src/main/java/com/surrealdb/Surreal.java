@@ -1848,13 +1848,4 @@ public class Surreal extends Native implements AutoCloseable {
 		deleteTarget(getPtr(), target);
 	}
 
-	/**
-	 * Closes and releases any resources associated with this instance. This method
-	 * is typically called when the instance is no longer needed. The underlying
-	 * resources are safely cleaned up.
-	 */
-	@Override
-	public void close() {
-		deleteInstance();
-	}
 }

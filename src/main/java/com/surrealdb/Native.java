@@ -55,6 +55,21 @@ public abstract class Native {
 	}
 
 	/**
+	 * Releases the native resources held by this instance right away, instead of
+	 * when it is garbage collected. For a {@link Surreal}, this also closes its
+	 * connection. Calling it more than once is safe. After this call, using the
+	 * instance throws a {@link NullPointerException}.
+	 * <p>
+	 * Instances obtained from this one (a value taken from a {@link Response}, an
+	 * element of an {@link Array}, a field of an {@link Object}, an entry's value,
+	 * and so on) are not affected: each holds its own reference to the data, which
+	 * is freed once every holder is closed or collected.
+	 */
+	public void close() {
+		deleteInstance();
+	}
+
+	/**
 	 * Gives up ownership of the native object and returns its pointer, for a native
 	 * call that takes the object over (and frees it, even when the call fails). The
 	 * pointer is cleared before the call, so two threads handing over the same

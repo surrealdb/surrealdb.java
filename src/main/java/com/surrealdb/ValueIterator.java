@@ -15,7 +15,7 @@ import java.util.Objects;
  * Methods: - hasNext(): Checks if there are more elements in the collection to
  * iterate over. - next(): Returns the next Value in the iteration.
  */
-public class ValueIterator extends Native implements Iterator<Value> {
+public class ValueIterator extends Native implements Iterator<Value>, AutoCloseable {
 
 	ValueIterator(long ptr) {
 		super(ptr);

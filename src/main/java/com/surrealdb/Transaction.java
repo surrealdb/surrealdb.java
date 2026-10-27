@@ -6,9 +6,17 @@ import java.util.Objects;
 /**
  * Client-side transaction. Use {@link Surreal#beginTransaction()} to start a
  * transaction. Operations (e.g. {@link #query(String)}) run within the
- * transaction until {@link #commit()} or {@link #cancel()} is called.
+ * transaction until {@link #commit()} or {@link #cancel()} is called. With
+ * try-with-resources, a transaction that was not committed is cancelled:
+ *
+ * <pre>{@code
+ * try (Transaction txn = db.beginTransaction()) {
+ * 	txn.query("CREATE person:tobie");
+ * 	txn.commit();
+ * }
+ * }</pre>
  */
-public class Transaction extends Native {
+public class Transaction extends Native implements AutoCloseable {
 
 	Transaction(long ptr) {
 		super(ptr);
@@ -40,6 +48,19 @@ public class Transaction extends Native {
 	 */
 	public void cancel() {
 		cancel(takePtr());
+	}
+
+	/**
+	 * Cancels the transaction if it was neither committed nor cancelled, so a
+	 * try-with-resources block rolls back unless {@link #commit()} was called.
+	 * After {@link #commit()} or {@link #cancel()}, this does nothing.
+	 */
+	@Override
+	public void close() {
+		final long ptr = takePtr();
+		if (ptr != 0) {
+			cancel(ptr);
+		}
 	}
 
 	/**

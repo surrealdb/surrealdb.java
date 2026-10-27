@@ -8,7 +8,7 @@ import java.util.Objects;
  * implements the Java Iterator interface to provide a seamless way to iterate
  * over Entry objects.
  */
-public class EntryIterator extends Native implements Iterator<Entry> {
+public class EntryIterator extends Native implements Iterator<Entry>, AutoCloseable {
 
 	EntryIterator(long ptr) {
 		super(ptr);
