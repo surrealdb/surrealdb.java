@@ -1,24 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Native.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">Native.java</span></div><h1>Native.java</h1><pre class="source lang-java linenums">package com.surrealdb;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+
 /**
- * Base for types backed by a native pointer. Instances are only valid for the
- * lifetime of the native resource (e.g. the parent {@link Value} or connection
- * they were obtained from). Using an instance after the underlying resource has
- * been released may cause undefined behavior or native errors.
+ * Base for types backed by a native pointer. Each instance owns its native
+ * object: the native side clones a shared reference or copies the data when it
+ * creates the instance, so it stays valid on its own, independently of the
+ * {@link Value} or connection it was obtained from. The native object is freed
+ * when the instance is garbage collected.
  */
 public abstract class Native {
 
 	static {
-<span class="fc" id="L12">		Loader.loadNative();</span>
-<span class="fc" id="L13">	}</span>
+<span class="fc" id="L18">		Loader.loadNative();</span>
+<span class="fc" id="L19">	}</span>
 
-	// Unique internal ptr used by the native library to locate the SurrealDB
-	// instance
-	private long ptr;
+	// Owns the native pointer used by the native library to locate the object.
+	// It is released at most once: by an explicit close, by takePtr() when the
+	// native side takes ownership, or by the NativeCleaner once this object is
+	// unreachable.
+	//
+	// A native call that is given getPtr() must keep this object reachable until
+	// it returns, or the cleaner could free the pointer mid-call. For the receiver
+	// this is done by declaring such natives as instance methods: JNI holds the
+	// receiver for the duration of the call. (The Rust side ignores that
+	// argument, so it still declares it as a JClass.) Any other Native whose
+	// pointer is passed must be kept alive with reachabilityFence().
+	private final NativeCleaner.Handle handle;
 
-<span class="fc" id="L19">	Native(long ptr) {</span>
-<span class="fc" id="L20">		this.ptr = ptr;</span>
-<span class="fc" id="L21">	}</span>
+<span class="fc" id="L34">	Native(long ptr) {</span>
+<span class="fc" id="L35">		this.handle = NativeCleaner.register(this, ptr, deleter());</span>
+<span class="fc" id="L36">	}</span>
+
+	/**
+	 * Returns the function that frees this type's native object. It must be a
+	 * static method reference: the cleaner calls it after this object is gone.
+	 */
+	abstract NativeCleaner.Deleter deleter();
 
 	abstract String toString(long ptr);
 
@@ -26,50 +47,130 @@ public abstract class Native {
 
 	abstract boolean equals(long ptr1, long ptr2);
 
-	abstract void deleteInstance(long ptr);
-
 	final long getPtr() {
-<span class="fc" id="L32">		return this.ptr;</span>
+<span class="fc" id="L51">		return handle.ptr();</span>
 	}
 
 	final void deleteInstance() {
-<span class="fc" id="L36">		deleteInstance(ptr);</span>
-<span class="fc" id="L37">		ptr = 0;</span>
-<span class="fc" id="L38">	}</span>
+		try {
+<span class="fc" id="L56">			handle.release();</span>
+		} finally {
+			// Keep this object reachable until the release has completed, so a
+			// try-with-resources block around a native call cannot lose it early.
+<span class="fc" id="L60">			reachabilityFence(this);</span>
+		}
+<span class="fc" id="L62">	}</span>
 
-	final void moved() {
-<span class="fc" id="L41">		this.ptr = 0;</span>
-<span class="fc" id="L42">	}</span>
+	/**
+	 * Releases the native resources held by this instance right away, instead of
+	 * when it is garbage collected. For a {@link Surreal}, this also closes its
+	 * connection. Calling it more than once is safe. After this call, using the
+	 * instance throws a {@link NullPointerException}.
+	 * &lt;p&gt;
+	 * Instances obtained from this one (a value taken from a {@link Response}, an
+	 * element of an {@link Array}, a field of an {@link Object}, an entry's value,
+	 * and so on) are not affected: each holds its own reference to the data, which
+	 * is freed once every holder is closed or collected.
+	 */
+	public void close() {
+<span class="fc" id="L76">		deleteInstance();</span>
+<span class="fc" id="L77">	}</span>
+
+	/**
+	 * Gives up ownership of the native object and returns its pointer, for a native
+	 * call that takes the object over (and frees it, even when the call fails). The
+	 * pointer is cleared before the call, so two threads handing over the same
+	 * object cannot both pass it on: the second one gets 0, which the native side
+	 * rejects.
+	 */
+	final long takePtr() {
+		try {
+<span class="fc" id="L88">			return handle.take();</span>
+		} finally {
+			// Until the pointer is cleared, the cleaner must not see this object as
+			// unreachable: it would free a pointer the native side is about to own.
+<span class="fc" id="L92">			reachabilityFence(this);</span>
+		}
+	}
+
+	/**
+	 * {@link #takePtr()} for every element of {@code natives}, read once. A
+	 * {@code null} element, or an element that appears twice, is rejected before
+	 * anything is taken: the native side would otherwise get a 0 pointer for it and
+	 * fail with a less helpful error, after the earlier elements were already
+	 * handed over.
+	 */
+	static long[] takePtrs(List&lt;? extends Native&gt; natives) {
+<span class="fc" id="L104">		final Native[] array = natives.toArray(new Native[0]);</span>
+		// Validate everything before taking anything: a failure must not leave
+		// the earlier elements taken from their owners and never handed over.
+<span class="fc bfc" id="L107" title="All 2 branches covered.">		for (final Native n : array) {</span>
+<span class="fc" id="L108">			java.util.Objects.requireNonNull(n, &quot;A Native element cannot be null&quot;);</span>
+		}
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		if (array.length &gt; 1) {</span>
+<span class="fc" id="L111">			final Set&lt;Native&gt; seen = Collections.newSetFromMap(new IdentityHashMap&lt;Native, Boolean&gt;(array.length));</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">			for (final Native n : array) {</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">				if (!seen.add(n)) {</span>
+<span class="fc" id="L114">					throw new IllegalArgumentException(</span>
+<span class="fc" id="L115">							&quot;The same &quot; + n.getClass().getSimpleName() + &quot; was passed more than once&quot;);</span>
+				}
+			}
+		}
+<span class="fc" id="L119">		final long[] ptrs = new long[array.length];</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">		for (int i = 0; i &lt; array.length; i++) {</span>
+<span class="fc" id="L121">			ptrs[i] = array[i].takePtr();</span>
+		}
+<span class="fc" id="L123">		return ptrs;</span>
+	}
+
+	/**
+	 * The pointer of every element of {@code natives}, without taking ownership.
+	 * The caller must keep the array reachable (see {@link #reachabilityFence})
+	 * until the native call that received the pointers has returned.
+	 */
+	static long[] getPtrs(Native[] natives) {
+<span class="fc" id="L132">		final long[] ptrs = new long[natives.length];</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">		for (int i = 0; i &lt; natives.length; i++) {</span>
+<span class="fc" id="L134">			ptrs[i] = natives[i].getPtr();</span>
+		}
+<span class="fc" id="L136">		return ptrs;</span>
+	}
+
+	/**
+	 * Keeps {@code o} reachable until this call returns. Call it after a native
+	 * call that was given {@code o}'s pointer, when nothing else holds {@code o}.
+	 * Does nothing for {@code null}.
+	 */
+	static void reachabilityFence(java.lang.Object o) {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">		if (o != null) {</span>
+<span class="fc" id="L146">			NativeCleaner.reachabilityFence(o);</span>
+		}
+<span class="fc" id="L148">	}</span>
 
 	@Override
 	final public boolean equals(java.lang.Object o) {
-<span class="pc bpc" id="L46" title="1 of 2 branches missed.">		if (this == o) {</span>
-<span class="nc" id="L47">			return true;</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">		if (this == o) {</span>
+<span class="nc" id="L153">			return true;</span>
 		}
-<span class="pc bpc" id="L49" title="2 of 4 branches missed.">		if (o == null || getClass() != o.getClass()) {</span>
-<span class="nc" id="L50">			return false;</span>
+<span class="pc bpc" id="L155" title="2 of 4 branches missed.">		if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L156">			return false;</span>
 		}
-<span class="fc" id="L52">		final Native n2 = (Native) o;</span>
-<span class="fc" id="L53">		return equals(ptr, n2.ptr);</span>
+<span class="fc" id="L158">		final Native n2 = (Native) o;</span>
+		try {
+<span class="fc" id="L160">			return equals(getPtr(), n2.getPtr());</span>
+		} finally {
+<span class="fc" id="L162">			reachabilityFence(n2);</span>
+		}
 	}
 
 	@Override
 	final public int hashCode() {
-<span class="fc" id="L58">		return hashCode(ptr);</span>
+<span class="fc" id="L168">		return hashCode(getPtr());</span>
 	}
 
 	@Override
 	final public String toString() {
-<span class="fc" id="L63">		return toString(ptr);</span>
+<span class="fc" id="L173">		return toString(getPtr());</span>
 	}
-
-	@Override
-	final protected void finalize() throws Throwable {
-		try {
-<span class="fc" id="L69">			deleteInstance();</span>
-		} finally {
-<span class="fc" id="L71">			super.finalize();</span>
-		}
-<span class="fc" id="L73">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -59,6 +59,7 @@ loadScripts(document, 'script');</script>
 <ol class="toc-list">
 <li><a href="#commit()" tabindex="0">commit()</a></li>
 <li><a href="#cancel()" tabindex="0">cancel()</a></li>
+<li><a href="#close()" tabindex="0">close()</a></li>
 <li><a href="#query(java.lang.String)" tabindex="0">query(String)</a></li>
 <li><a href="#query(java.lang.String,java.util.Map)" tabindex="0">query(String, Map)</a></li>
 </ol>
@@ -76,13 +77,25 @@ loadScripts(document, 'script');</script>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">Transaction</span>
-<span class="extends-implements">extends <a href="Native.html" title="class in com.surrealdb">Native</a></span></div>
+<span class="extends-implements">extends <a href="Native.html" title="class in com.surrealdb">Native</a>
+implements <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></span></div>
 <div class="block">Client-side transaction. Use <a href="Surreal.html#beginTransaction()"><code>Surreal.beginTransaction()</code></a> to start a
 transaction. Operations (e.g. <a href="#query(java.lang.String)"><code>query(String)</code></a>) run within the
-transaction until <a href="#commit()"><code>commit()</code></a> or <a href="#cancel()"><code>cancel()</code></a> is called.</div>
+transaction until <a href="#commit()"><code>commit()</code></a> or <a href="#cancel()"><code>cancel()</code></a> is called. With
+try-with-resources, a transaction that was not committed is cancelled:
+
+<pre><code>try (Transaction txn = db.beginTransaction()) {
+	txn.query("CREATE person:tobie");
+	txn.commit();
+}
+</code></pre></div>
 </div>
 </section>
 <section class="summary">
@@ -104,19 +117,25 @@ transaction until <a href="#commit()"><code>commit()</code></a> or <a href="#can
 <div class="block">Cancels (rolls back) the transaction.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#commit()" class="member-name-link">commit</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#close()" class="member-name-link">close</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Cancels the transaction if it was neither committed nor cancelled, so a
+try-with-resources block rolls back unless <a href="#commit()"><code>commit()</code></a> was called.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#commit()" class="member-name-link">commit</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Commits the transaction.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Response.html" title="class in com.surrealdb">Response</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Response.html" title="class in com.surrealdb">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Runs a SurrealQL query within this transaction.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Response.html" title="class in com.surrealdb">Response</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String,java.util.Map)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Response.html" title="class in com.surrealdb">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String,java.util.Map)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr>?&gt;&nbsp;params)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Runs a parameterized SurrealQL query within this transaction.</div>
 </div>
 </div>
@@ -124,10 +143,10 @@ transaction until <a href="#commit()"><code>commit()</code></a> or <a href="#can
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.surrealdb.Native">Methods inherited from class&nbsp;<a href="Native.html#method-summary" title="class in com.surrealdb">Native</a></h3>
-<code><a href="Native.html#equals(java.lang.Object)" title="equals(Object)">equals</a>, <a href="Native.html#finalize()" title="finalize()">finalize</a>, <a href="Native.html#hashCode()" title="hashCode()">hashCode</a>, <a href="Native.html#toString()" title="toString()">toString</a></code></div>
+<code><a href="Native.html#equals(java.lang.Object)" title="equals(Object)">equals</a>, <a href="Native.html#hashCode()" title="hashCode()">hashCode</a>, <a href="Native.html#toString()" title="toString()">toString</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#method-summary" title="class or interface in java.lang" class="external-link">Object</a></h3>
-<code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
 </section>
 </li>
 </ul>
@@ -158,6 +177,23 @@ only true on success.</div>
 <div class="block">Cancels (rolls back) the transaction. After this call, the transaction is
 completed and must not be used. On failure the native layer throws; the
 return value is only true on success.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="close()">
+<h3>close</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">close</span>()</div>
+<div class="block">Cancels the transaction if it was neither committed nor cancelled, so a
+try-with-resources block rolls back unless <a href="#commit()"><code>commit()</code></a> was called.
+After <a href="#commit()"><code>commit()</code></a> or <a href="#cancel()"><code>cancel()</code></a>, this does nothing.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html#close()" title="class or interface in java.lang" class="external-link">close</a></code>&nbsp;in interface&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/AutoCloseable.html" title="class or interface in java.lang" class="external-link">AutoCloseable</a></code></dd>
+<dt>Overrides:</dt>
+<dd><code><a href="Native.html#close()">close</a></code>&nbsp;in class&nbsp;<code><a href="Native.html" title="class in com.surrealdb">Native</a></code></dd>
+</dl>
 </div>
 </section>
 </li>

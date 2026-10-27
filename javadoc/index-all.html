@@ -114,9 +114,15 @@ interact with and retrieve values from the array.</div>
 <dd>
 <div class="block">Releases the live query and stops receiving notifications.</div>
 </dd>
-<dt><a href="com/surrealdb/Surreal.html#close()" class="member-name-link">close()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dt><a href="com/surrealdb/Native.html#close()" class="member-name-link">close()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Native.html" title="class in com.surrealdb">Native</a></dt>
 <dd>
-<div class="block">Closes and releases any resources associated with this instance.</div>
+<div class="block">Releases the native resources held by this instance right away, instead of
+when it is garbage collected.</div>
+</dd>
+<dt><a href="com/surrealdb/Transaction.html#close()" class="member-name-link">close()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Transaction.html" title="class in com.surrealdb">Transaction</a></dt>
+<dd>
+<div class="block">Cancels the transaction if it was neither committed nor cancelled, so a
+try-with-resources block rolls back unless <a href="com/surrealdb/Transaction.html#commit()"><code>Transaction.commit()</code></a> was called.</div>
 </dd>
 <dt><a href="com/surrealdb/package-summary.html">com.surrealdb</a> - package com.surrealdb</dt>
 <dd>&nbsp;</dd>
@@ -295,8 +301,6 @@ UTC.</div>
 <dd>
 <div class="block">Reference to a file stored in a SurrealDB bucket.</div>
 </dd>
-<dt><a href="com/surrealdb/Native.html#finalize()" class="member-name-link">finalize()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Native.html" title="class in com.surrealdb">Native</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ServerException.html#findCause(com.surrealdb.ErrorKind)" class="member-name-link">findCause(ErrorKind)</a> - Method in exception class com.surrealdb.<a href="com/surrealdb/ServerException.html" title="class in com.surrealdb">ServerException</a></dt>
 <dd>
 <div class="block">Finds the first error in the cause chain (including this error) that has the

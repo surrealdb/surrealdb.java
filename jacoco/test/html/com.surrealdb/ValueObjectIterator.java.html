@@ -1,26 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueObjectIterator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">surrealdb</a> &gt; <a href="index.source.html" class="el_package">com.surrealdb</a> &gt; <span class="el_source">ValueObjectIterator.java</span></div><h1>ValueObjectIterator.java</h1><pre class="source lang-java linenums">package com.surrealdb;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 class ValueObjectIterator&lt;T&gt; implements Iterator&lt;T&gt; {
 
 	private final ValueClassConverter&lt;T&gt; converter;
 	private final Iterator&lt;Value&gt; iterator;
+	private boolean done;
 
-<span class="fc" id="L10">	ValueObjectIterator(Class&lt;T&gt; clazz, Iterator&lt;Value&gt; iterator) {</span>
-<span class="fc" id="L11">		this.converter = new ValueClassConverter&lt;&gt;(clazz);</span>
-<span class="fc" id="L12">		this.iterator = iterator;</span>
-<span class="fc" id="L13">	}</span>
+<span class="fc" id="L12">	ValueObjectIterator(Class&lt;T&gt; clazz, Iterator&lt;Value&gt; iterator) {</span>
+<span class="fc" id="L13">		this.converter = new ValueClassConverter&lt;&gt;(clazz);</span>
+<span class="fc" id="L14">		this.iterator = iterator;</span>
+<span class="fc" id="L15">	}</span>
 
 	@Override
 	final public boolean hasNext() {
-<span class="fc" id="L17">		return iterator.hasNext();</span>
+<span class="fc bfc" id="L19" title="All 2 branches covered.">		if (done) {</span>
+<span class="fc" id="L20">			return false;</span>
+		}
+<span class="fc bfc" id="L22" title="All 2 branches covered.">		if (iterator.hasNext()) {</span>
+<span class="fc" id="L23">			return true;</span>
+		}
+<span class="fc" id="L25">		done = true;</span>
+		// Nobody else can reach a plain iterator, so free it now. A synchronized one
+		// may still be in use by another thread and is left to the cleaner.
+<span class="fc bfc" id="L28" title="All 2 branches covered.">		if (iterator instanceof ValueIterator) {</span>
+<span class="fc" id="L29">			((ValueIterator) iterator).close();</span>
+		}
+<span class="fc" id="L31">		return false;</span>
 	}
 
 	@Override
 	final public T next() {
-<span class="fc" id="L22">		final Value value = iterator.next();</span>
-<span class="fc" id="L23">		return converter.convert(value);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">		if (done) {</span>
+<span class="fc" id="L37">			throw new NoSuchElementException();</span>
+		}
+		// Each element is converted to a T, then released.
+<span class="fc" id="L40">		final Value value = iterator.next();</span>
+		try {
+<span class="fc" id="L42">			return converter.convert(value);</span>
+		} finally {
+<span class="fc" id="L44">			value.close();</span>
+		}
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

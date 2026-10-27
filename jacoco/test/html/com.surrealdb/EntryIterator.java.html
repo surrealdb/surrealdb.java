@@ -8,15 +8,15 @@ import java.util.Objects;
  * implements the Java Iterator interface to provide a seamless way to iterate
  * over Entry objects.
  */
-public class EntryIterator extends Native implements Iterator&lt;Entry&gt; {
+public class EntryIterator extends Native implements Iterator&lt;Entry&gt;, AutoCloseable {
 
 	EntryIterator(long ptr) {
 <span class="fc" id="L14">		super(ptr);</span>
 <span class="fc" id="L15">	}</span>
 
-	private static native boolean hasNext(long ptr);
+	private native boolean hasNext(long ptr);
 
-	private static native long next(long ptr);
+	private native long next(long ptr);
 
 	@Override
 	final String toString(long ptr) {
@@ -33,17 +33,21 @@ public class EntryIterator extends Native implements Iterator&lt;Entry&gt; {
 <span class="nc bnc" id="L33" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L40">		return EntryIterator::deleteInstance;</span>
+	}
 
 	@Override
 	public boolean hasNext() {
-<span class="fc" id="L41">		return hasNext(getPtr());</span>
+<span class="fc" id="L45">		return hasNext(getPtr());</span>
 	}
 
 	@Override
 	public Entry next() {
-<span class="fc" id="L46">		return new Entry(next(getPtr()));</span>
+<span class="fc" id="L50">		return new Entry(next(getPtr()));</span>
 	}
 
 }

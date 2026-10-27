@@ -45,18 +45,9 @@ public class Id extends Native {
 	 * distinctly from {@code from(...)} to avoid a null-call overload ambiguity.
 	 */
 	public static Id fromList(List&lt;?&gt; elements) {
-<span class="fc" id="L48">		Objects.requireNonNull(elements, &quot;elements&quot;);</span>
-<span class="fc" id="L49">		final long[] ptrs = new long[elements.size()];</span>
-<span class="fc" id="L50">		final ValueMut[] muts = new ValueMut[elements.size()];</span>
-<span class="fc bfc" id="L51" title="All 2 branches covered.">		for (int i = 0; i &lt; elements.size(); i++) {</span>
-<span class="fc" id="L52">			muts[i] = ValueBoxing.box(elements.get(i));</span>
-<span class="fc" id="L53">			ptrs[i] = muts[i].getPtr();</span>
-		}
-<span class="fc" id="L55">		final Id id = new Id(newArrayId(ptrs));</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">		for (final ValueMut m : muts) {</span>
-<span class="fc" id="L57">			m.moved();</span>
-		}
-<span class="fc" id="L59">		return id;</span>
+		// Everything is boxed first, so a failure leaves nothing half handed over.
+		// The native side then takes ownership of the boxed values.
+<span class="fc" id="L50">		return new Id(newArrayId(ValueBoxing.boxAndTakePtrs(elements)));</span>
 	}
 
 	private static native long newLongId(long id);
@@ -67,25 +58,25 @@ public class Id extends Native {
 
 	private static native long newArrayId(long[] valueMutPtrs);
 
-	private static native boolean isLong(long ptr);
+	private native boolean isLong(long ptr);
 
-	private static native long getLong(long ptr);
+	private native long getLong(long ptr);
 
-	private static native boolean isString(long ptr);
+	private native boolean isString(long ptr);
 
-	private static native String getString(long ptr);
+	private native String getString(long ptr);
 
-	private static native boolean isUuid(long ptr);
+	private native boolean isUuid(long ptr);
 
-	private static native String getUuid(long ptr);
+	private native String getUuid(long ptr);
 
-	private static native boolean isArray(long ptr);
+	private native boolean isArray(long ptr);
 
-	private static native long getArray(long ptr);
+	private native long getArray(long ptr);
 
-	private static native boolean isObject(long ptr);
+	private native boolean isObject(long ptr);
 
-	private static native long getObject(long ptr);
+	private native long getObject(long ptr);
 
 	@Override
 	final native int hashCode(long ptr);
@@ -96,47 +87,51 @@ public class Id extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L94">		return Id::deleteInstance;</span>
+	}
 
 	final public boolean isLong() {
-<span class="fc" id="L103">		return isLong(getPtr());</span>
+<span class="fc" id="L98">		return isLong(getPtr());</span>
 	}
 
 	final public long getLong() {
-<span class="fc" id="L107">		return getLong(getPtr());</span>
+<span class="fc" id="L102">		return getLong(getPtr());</span>
 	}
 
 	final public boolean isString() {
-<span class="fc" id="L111">		return isString(getPtr());</span>
+<span class="fc" id="L106">		return isString(getPtr());</span>
 	}
 
 	final public String getString() {
-<span class="fc" id="L115">		return getString(getPtr());</span>
+<span class="fc" id="L110">		return getString(getPtr());</span>
 	}
 
 	final public boolean isUuid() {
-<span class="fc" id="L119">		return isUuid(getPtr());</span>
+<span class="fc" id="L114">		return isUuid(getPtr());</span>
 	}
 
 	final public UUID getUuid() {
-<span class="fc" id="L123">		return UUID.fromString(getUuid(getPtr()));</span>
+<span class="fc" id="L118">		return UUID.fromString(getUuid(getPtr()));</span>
 	}
 
 	final public boolean isArray() {
-<span class="fc" id="L127">		return isArray(getPtr());</span>
+<span class="fc" id="L122">		return isArray(getPtr());</span>
 	}
 
 	final public Array getArray() {
-<span class="fc" id="L131">		return new Array(getArray(getPtr()));</span>
+<span class="fc" id="L126">		return new Array(getArray(getPtr()));</span>
 	}
 
 	final public boolean isObject() {
-<span class="fc" id="L135">		return isObject(getPtr());</span>
+<span class="fc" id="L130">		return isObject(getPtr());</span>
 	}
 
 	final public Object getObject() {
-<span class="fc" id="L139">		return new Object(getObject(getPtr()));</span>
+<span class="fc" id="L134">		return new Object(getObject(getPtr()));</span>
 	}
 
 }

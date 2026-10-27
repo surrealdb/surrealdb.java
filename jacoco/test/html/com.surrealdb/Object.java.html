@@ -6,19 +6,19 @@ import java.util.Iterator;
  * The Object class implements the Iterable interface for Entry objects. It
  * provides methods for object manipulation and interaction.
  */
-public class Object extends Native implements Iterable&lt;Entry&gt; {
+public class Object extends Native implements Iterable&lt;Entry&gt;, AutoCloseable {
 
 	Object(long ptr) {
 <span class="fc" id="L12">		super(ptr);</span>
 <span class="fc" id="L13">	}</span>
 
-	private static native long iterator(long ptr);
+	private native long iterator(long ptr);
 
-	private static native long synchronizedIterator(long ptr);
+	private native long synchronizedIterator(long ptr);
 
-	private static native int len(long ptr);
+	private native int len(long ptr);
 
-	private static native long get(long ptr, String key);
+	private native long get(long ptr, String key);
 
 	@Override
 	final native String toString(long ptr);
@@ -29,24 +29,28 @@ public class Object extends Native implements Iterable&lt;Entry&gt; {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L36">		return Object::deleteInstance;</span>
+	}
 
 	final public Value get(String key) {
-<span class="fc" id="L36">		return new Value(get(getPtr(), key));</span>
+<span class="fc" id="L40">		return new Value(get(getPtr(), key));</span>
 	}
 
 	final public int len() {
-<span class="fc" id="L40">		return len(getPtr());</span>
+<span class="fc" id="L44">		return len(getPtr());</span>
 	}
 
 	@Override
 	final public Iterator&lt;Entry&gt; iterator() {
-<span class="fc" id="L45">		return new EntryIterator(iterator(getPtr()));</span>
+<span class="fc" id="L49">		return new EntryIterator(iterator(getPtr()));</span>
 	}
 
 	final public Iterator&lt;Entry&gt; synchronizedIterator() {
-<span class="fc" id="L49">		return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
+<span class="fc" id="L53">		return new SynchronizedEntryIterator(synchronizedIterator(getPtr()));</span>
 	}
 
 }

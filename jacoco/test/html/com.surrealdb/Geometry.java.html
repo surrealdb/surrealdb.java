@@ -26,15 +26,15 @@ public class Geometry extends Native {
 
 	// ---- native: read ----
 
-	private static native boolean isPoint(long ptr);
+	private native boolean isPoint(long ptr);
 
-	private static native double[] getPoint(long ptr);
+	private native double[] getPoint(long ptr);
 
-	private static native String getType(long ptr);
+	private native String getType(long ptr);
 
-	private static native long getCoordinates(long ptr);
+	private native long getCoordinates(long ptr);
 
-	private static native long[] getCollection(long ptr);
+	private native long[] getCollection(long ptr);
 
 	// ---- native: write ----
 
@@ -61,8 +61,12 @@ public class Geometry extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L68">		return Geometry::deleteInstance;</span>
+	}
 
 	// ---- type discrimination ----
 
@@ -72,50 +76,54 @@ public class Geometry extends Native {
 	 * {@code &quot;MultiPolygon&quot;}, or {@code &quot;GeometryCollection&quot;}.
 	 */
 	public String getType() {
-<span class="fc" id="L75">		return getType(getPtr());</span>
+<span class="fc" id="L79">		return getType(getPtr());</span>
 	}
 
 	public boolean isPoint() {
-<span class="fc" id="L79">		return isPoint(getPtr());</span>
+<span class="fc" id="L83">		return isPoint(getPtr());</span>
 	}
 
 	public boolean isLineString() {
-<span class="fc" id="L83">		return &quot;LineString&quot;.equals(getType());</span>
+<span class="fc" id="L87">		return &quot;LineString&quot;.equals(getType());</span>
 	}
 
 	public boolean isPolygon() {
-<span class="fc" id="L87">		return &quot;Polygon&quot;.equals(getType());</span>
+<span class="fc" id="L91">		return &quot;Polygon&quot;.equals(getType());</span>
 	}
 
 	public boolean isMultiPoint() {
-<span class="fc" id="L91">		return &quot;MultiPoint&quot;.equals(getType());</span>
+<span class="fc" id="L95">		return &quot;MultiPoint&quot;.equals(getType());</span>
 	}
 
 	public boolean isMultiLineString() {
-<span class="fc" id="L95">		return &quot;MultiLineString&quot;.equals(getType());</span>
+<span class="fc" id="L99">		return &quot;MultiLineString&quot;.equals(getType());</span>
 	}
 
 	public boolean isMultiPolygon() {
-<span class="fc" id="L99">		return &quot;MultiPolygon&quot;.equals(getType());</span>
+<span class="fc" id="L103">		return &quot;MultiPolygon&quot;.equals(getType());</span>
 	}
 
 	public boolean isGeometryCollection() {
-<span class="fc" id="L103">		return &quot;GeometryCollection&quot;.equals(getType());</span>
+<span class="fc" id="L107">		return &quot;GeometryCollection&quot;.equals(getType());</span>
 	}
 
 	// ---- readers ----
 
 	public Point2D.Double getPoint() {
-<span class="fc" id="L109">		final double[] coord = getPoint(getPtr());</span>
-<span class="fc" id="L110">		return new Point2D.Double(coord[0], coord[1]);</span>
+<span class="fc" id="L113">		final double[] coord = getPoint(getPtr());</span>
+<span class="fc" id="L114">		return new Point2D.Double(coord[0], coord[1]);</span>
 	}
 
 	public List&lt;Point2D.Double&gt; getLineString() {
-<span class="fc" id="L114">		return parseLine(coordinates());</span>
+<span class="fc" id="L118">		try (final Array line = coordinates()) {</span>
+<span class="fc" id="L119">			return parseLine(line);</span>
+		}
 	}
 
 	public List&lt;Point2D.Double&gt; getMultiPoint() {
-<span class="fc" id="L118">		return parseLine(coordinates());</span>
+<span class="fc" id="L124">		try (final Array points = coordinates()) {</span>
+<span class="fc" id="L125">			return parseLine(points);</span>
+		}
 	}
 
 	/**
@@ -123,47 +131,55 @@ public class Geometry extends Native {
 	 * subsequent rings are interior holes.
 	 */
 	public List&lt;List&lt;Point2D.Double&gt;&gt; getPolygon() {
-<span class="fc" id="L126">		return parseRings(coordinates());</span>
+<span class="fc" id="L134">		try (final Array rings = coordinates()) {</span>
+<span class="fc" id="L135">			return parseRings(rings);</span>
+		}
 	}
 
 	public List&lt;List&lt;Point2D.Double&gt;&gt; getMultiLineString() {
-<span class="fc" id="L130">		return parseRings(coordinates());</span>
+<span class="fc" id="L140">		try (final Array lines = coordinates()) {</span>
+<span class="fc" id="L141">			return parseRings(lines);</span>
+		}
 	}
 
 	public List&lt;List&lt;List&lt;Point2D.Double&gt;&gt;&gt; getMultiPolygon() {
-<span class="fc" id="L134">		final Array polygons = coordinates();</span>
-<span class="fc" id="L135">		final List&lt;List&lt;List&lt;Point2D.Double&gt;&gt;&gt; result = new ArrayList&lt;&gt;(polygons.len());</span>
-<span class="fc bfc" id="L136" title="All 2 branches covered.">		for (int i = 0; i &lt; polygons.len(); i++) {</span>
-<span class="fc" id="L137">			result.add(parseRings(polygons.get(i).getArray()));</span>
+<span class="fc" id="L146">		try (final Array polygons = coordinates()) {</span>
+<span class="fc" id="L147">			final int len = polygons.len();</span>
+<span class="fc" id="L148">			final List&lt;List&lt;List&lt;Point2D.Double&gt;&gt;&gt; result = new ArrayList&lt;&gt;(len);</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">			for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L150">				try (final Array polygon = arrayAt(polygons, i)) {</span>
+<span class="fc" id="L151">					result.add(parseRings(polygon));</span>
+				}
+			}
+<span class="fc" id="L154">			return result;</span>
 		}
-<span class="fc" id="L139">		return result;</span>
 	}
 
 	public List&lt;Geometry&gt; getGeometryCollection() {
-<span class="fc" id="L143">		final long[] ptrs = getCollection(getPtr());</span>
-<span class="fc" id="L144">		final List&lt;Geometry&gt; result = new ArrayList&lt;&gt;(ptrs.length);</span>
-<span class="fc bfc" id="L145" title="All 2 branches covered.">		for (final long ptr : ptrs) {</span>
-<span class="fc" id="L146">			result.add(new Geometry(ptr));</span>
+<span class="fc" id="L159">		final long[] ptrs = getCollection(getPtr());</span>
+<span class="fc" id="L160">		final List&lt;Geometry&gt; result = new ArrayList&lt;&gt;(ptrs.length);</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">		for (final long ptr : ptrs) {</span>
+<span class="fc" id="L162">			result.add(new Geometry(ptr));</span>
 		}
-<span class="fc" id="L148">		return result;</span>
+<span class="fc" id="L164">		return result;</span>
 	}
 
 	// ---- factories (x = longitude, y = latitude) ----
 
 	public static Geometry point(double x, double y) {
-<span class="fc" id="L154">		return new Geometry(newPoint(x, y));</span>
+<span class="fc" id="L170">		return new Geometry(newPoint(x, y));</span>
 	}
 
 	public static Geometry point(Point2D.Double point) {
-<span class="nc" id="L158">		return new Geometry(newPoint(point.x, point.y));</span>
+<span class="nc" id="L174">		return new Geometry(newPoint(point.x, point.y));</span>
 	}
 
 	public static Geometry lineString(List&lt;Point2D.Double&gt; points) {
-<span class="fc" id="L162">		return new Geometry(newLineString(flatten(points)));</span>
+<span class="fc" id="L178">		return new Geometry(newLineString(flatten(points)));</span>
 	}
 
 	public static Geometry multiPoint(List&lt;Point2D.Double&gt; points) {
-<span class="fc" id="L166">		return new Geometry(newMultiPoint(flatten(points)));</span>
+<span class="fc" id="L182">		return new Geometry(newMultiPoint(flatten(points)));</span>
 	}
 
 	/**
@@ -171,72 +187,91 @@ public class Geometry extends Native {
 	 * rings are interior holes.
 	 */
 	public static Geometry polygon(List&lt;List&lt;Point2D.Double&gt;&gt; rings) {
-<span class="fc" id="L174">		return new Geometry(newPolygon(flattenRings(rings)));</span>
+<span class="fc" id="L190">		return new Geometry(newPolygon(flattenRings(rings)));</span>
 	}
 
 	public static Geometry multiLineString(List&lt;List&lt;Point2D.Double&gt;&gt; lines) {
-<span class="fc" id="L178">		return new Geometry(newMultiLineString(flattenRings(lines)));</span>
+<span class="fc" id="L194">		return new Geometry(newMultiLineString(flattenRings(lines)));</span>
 	}
 
 	public static Geometry multiPolygon(List&lt;List&lt;List&lt;Point2D.Double&gt;&gt;&gt; polygons) {
-<span class="fc" id="L182">		final double[][][] data = new double[polygons.size()][][];</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">		for (int i = 0; i &lt; polygons.size(); i++) {</span>
-<span class="fc" id="L184">			data[i] = flattenRings(polygons.get(i));</span>
+<span class="fc" id="L198">		final double[][][] data = new double[polygons.size()][][];</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">		for (int i = 0; i &lt; polygons.size(); i++) {</span>
+<span class="fc" id="L200">			data[i] = flattenRings(polygons.get(i));</span>
 		}
-<span class="fc" id="L186">		return new Geometry(newMultiPolygon(data));</span>
+<span class="fc" id="L202">		return new Geometry(newMultiPolygon(data));</span>
 	}
 
 	public static Geometry geometryCollection(List&lt;Geometry&gt; geometries) {
-<span class="fc" id="L190">		final long[] ptrs = new long[geometries.size()];</span>
-<span class="fc bfc" id="L191" title="All 2 branches covered.">		for (int i = 0; i &lt; geometries.size(); i++) {</span>
-<span class="fc" id="L192">			ptrs[i] = geometries.get(i).getPtr();</span>
+		// Snapshot once: the list may be lazy, linked, or changed concurrently.
+<span class="fc" id="L207">		final Geometry[] array = geometries.toArray(new Geometry[0]);</span>
+		try {
+<span class="fc" id="L209">			return new Geometry(newCollection(getPtrs(array)));</span>
+		} finally {
+			// Fencing the array keeps every Geometry in it reachable.
+<span class="fc" id="L212">			reachabilityFence(array);</span>
 		}
-<span class="fc" id="L194">		return new Geometry(newCollection(ptrs));</span>
 	}
 
 	// ---- helpers ----
 
+	// The parsers below close each native wrapper once its numbers are copied out.
+
 	/** The geometry's coordinates as a nested array of {@code [x, y]} pairs. */
 	private Array coordinates() {
-<span class="fc" id="L201">		return new Value(getCoordinates(getPtr())).getArray();</span>
+<span class="fc" id="L222">		try (final Value coordinates = new Value(getCoordinates(getPtr()))) {</span>
+<span class="fc" id="L223">			return coordinates.getArray();</span>
+		}
 	}
 
-	private static Point2D.Double parsePoint(Value coordinate) {
-<span class="fc" id="L205">		final Array xy = coordinate.getArray();</span>
-<span class="fc" id="L206">		return new Point2D.Double(xy.get(0).getDouble(), xy.get(1).getDouble());</span>
+	/** Element {@code i} of {@code array}, which is itself an array. */
+	private static Array arrayAt(Array array, int i) {
+<span class="fc" id="L229">		try (final Value element = array.get(i)) {</span>
+<span class="fc" id="L230">			return element.getArray();</span>
+		}
+	}
+
+	private static Point2D.Double parsePoint(Array line, int i) {
+<span class="fc" id="L235">		try (final Array xy = arrayAt(line, i); final Value x = xy.get(0); final Value y = xy.get(1)) {</span>
+<span class="fc" id="L236">			return new Point2D.Double(x.getDouble(), y.getDouble());</span>
+		}
 	}
 
 	private static List&lt;Point2D.Double&gt; parseLine(Array line) {
-<span class="fc" id="L210">		final List&lt;Point2D.Double&gt; points = new ArrayList&lt;&gt;(line.len());</span>
-<span class="fc bfc" id="L211" title="All 2 branches covered.">		for (int i = 0; i &lt; line.len(); i++) {</span>
-<span class="fc" id="L212">			points.add(parsePoint(line.get(i)));</span>
+<span class="fc" id="L241">		final int len = line.len();</span>
+<span class="fc" id="L242">		final List&lt;Point2D.Double&gt; points = new ArrayList&lt;&gt;(len);</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">		for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L244">			points.add(parsePoint(line, i));</span>
 		}
-<span class="fc" id="L214">		return points;</span>
+<span class="fc" id="L246">		return points;</span>
 	}
 
 	private static List&lt;List&lt;Point2D.Double&gt;&gt; parseRings(Array rings) {
-<span class="fc" id="L218">		final List&lt;List&lt;Point2D.Double&gt;&gt; result = new ArrayList&lt;&gt;(rings.len());</span>
-<span class="fc bfc" id="L219" title="All 2 branches covered.">		for (int i = 0; i &lt; rings.len(); i++) {</span>
-<span class="fc" id="L220">			result.add(parseLine(rings.get(i).getArray()));</span>
+<span class="fc" id="L250">		final int len = rings.len();</span>
+<span class="fc" id="L251">		final List&lt;List&lt;Point2D.Double&gt;&gt; result = new ArrayList&lt;&gt;(len);</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">		for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L253">			try (final Array ring = arrayAt(rings, i)) {</span>
+<span class="fc" id="L254">				result.add(parseLine(ring));</span>
+			}
 		}
-<span class="fc" id="L222">		return result;</span>
+<span class="fc" id="L257">		return result;</span>
 	}
 
 	private static double[] flatten(List&lt;Point2D.Double&gt; points) {
-<span class="fc" id="L226">		final double[] coords = new double[points.size() * 2];</span>
-<span class="fc bfc" id="L227" title="All 2 branches covered.">		for (int i = 0; i &lt; points.size(); i++) {</span>
-<span class="fc" id="L228">			coords[i * 2] = points.get(i).x;</span>
-<span class="fc" id="L229">			coords[i * 2 + 1] = points.get(i).y;</span>
+<span class="fc" id="L261">		final double[] coords = new double[points.size() * 2];</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">		for (int i = 0; i &lt; points.size(); i++) {</span>
+<span class="fc" id="L263">			coords[i * 2] = points.get(i).x;</span>
+<span class="fc" id="L264">			coords[i * 2 + 1] = points.get(i).y;</span>
 		}
-<span class="fc" id="L231">		return coords;</span>
+<span class="fc" id="L266">		return coords;</span>
 	}
 
 	private static double[][] flattenRings(List&lt;List&lt;Point2D.Double&gt;&gt; rings) {
-<span class="fc" id="L235">		final double[][] data = new double[rings.size()][];</span>
-<span class="fc bfc" id="L236" title="All 2 branches covered.">		for (int i = 0; i &lt; rings.size(); i++) {</span>
-<span class="fc" id="L237">			data[i] = flatten(rings.get(i));</span>
+<span class="fc" id="L270">		final double[][] data = new double[rings.size()][];</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">		for (int i = 0; i &lt; rings.size(); i++) {</span>
+<span class="fc" id="L272">			data[i] = flatten(rings.get(i));</span>
 		}
-<span class="fc" id="L239">		return data;</span>
+<span class="fc" id="L274">		return data;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -6,23 +6,31 @@ import java.util.Objects;
 /**
  * Client-side transaction. Use {@link Surreal#beginTransaction()} to start a
  * transaction. Operations (e.g. {@link #query(String)}) run within the
- * transaction until {@link #commit()} or {@link #cancel()} is called.
+ * transaction until {@link #commit()} or {@link #cancel()} is called. With
+ * try-with-resources, a transaction that was not committed is cancelled:
+ *
+ * &lt;pre&gt;{@code
+ * try (Transaction txn = db.beginTransaction()) {
+ * 	txn.query(&quot;CREATE person:tobie&quot;);
+ * 	txn.commit();
+ * }
+ * }&lt;/pre&gt;
  */
-public class Transaction extends Native {
+public class Transaction extends Native implements AutoCloseable {
 
 	Transaction(long ptr) {
-<span class="fc" id="L14">		super(ptr);</span>
-<span class="fc" id="L15">	}</span>
+<span class="fc" id="L22">		super(ptr);</span>
+<span class="fc" id="L23">	}</span>
 
 	private static native void nativeDeleteInstance(long ptr);
 
-	private static native boolean commit(long ptr);
+	private native boolean commit(long ptr);
 
-	private static native boolean cancel(long ptr);
+	private native boolean cancel(long ptr);
 
-	private static native long query(long ptr, String sql);
+	private native long query(long ptr, String sql);
 
-	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+	private native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
 	/**
 	 * Commits the transaction. After this call, the transaction is completed and
@@ -30,12 +38,8 @@ public class Transaction extends Native {
 	 * only true on success.
 	 */
 	public void commit() {
-		try {
-<span class="fc" id="L34">			commit(getPtr());</span>
-		} finally {
-<span class="fc" id="L36">			moved();</span>
-		}
-<span class="fc" id="L38">	}</span>
+<span class="fc" id="L41">		commit(takePtr());</span>
+<span class="fc" id="L42">	}</span>
 
 	/**
 	 * Cancels (rolls back) the transaction. After this call, the transaction is
@@ -43,12 +47,21 @@ public class Transaction extends Native {
 	 * return value is only true on success.
 	 */
 	public void cancel() {
-		try {
-<span class="fc" id="L47">			cancel(getPtr());</span>
-		} finally {
-<span class="fc" id="L49">			moved();</span>
-		}
+<span class="fc" id="L50">		cancel(takePtr());</span>
 <span class="fc" id="L51">	}</span>
+
+	/**
+	 * Cancels the transaction if it was neither committed nor cancelled, so a
+	 * try-with-resources block rolls back unless {@link #commit()} was called.
+	 * After {@link #commit()} or {@link #cancel()}, this does nothing.
+	 */
+	@Override
+	public void close() {
+<span class="fc" id="L60">		final long ptr = takePtr();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (ptr != 0) {</span>
+<span class="fc" id="L62">			cancel(ptr);</span>
+		}
+<span class="fc" id="L64">	}</span>
 
 	/**
 	 * Runs a SurrealQL query within this transaction.
@@ -58,7 +71,7 @@ public class Transaction extends Native {
 	 * @return the query response
 	 */
 	public Response query(String sql) {
-<span class="fc" id="L61">		return new Response(query(getPtr(), sql));</span>
+<span class="fc" id="L74">		return new Response(query(getPtr(), sql));</span>
 	}
 
 	/**
@@ -71,33 +84,37 @@ public class Transaction extends Native {
 	 * @return the query response
 	 */
 	public Response query(String sql, Map&lt;String, ?&gt; params) {
-<span class="fc" id="L74">		final Map&lt;String, ValueMut&gt; valueMuts = ValueBuilder.convertParams(params);</span>
-<span class="fc" id="L75">		final String[] keys = valueMuts.keySet().toArray(new String[0]);</span>
-<span class="fc" id="L76">		final long[] values = new long[keys.length];</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">		for (int i = 0; i &lt; keys.length; i++) {</span>
-<span class="fc" id="L78">			values[i] = valueMuts.get(keys[i]).getPtr();</span>
+<span class="fc" id="L87">		final Map&lt;String, ValueMut&gt; valueMuts = ValueBuilder.convertParams(params);</span>
+		try {
+<span class="fc" id="L89">			final String[] keys = valueMuts.keySet().toArray(new String[0]);</span>
+<span class="fc" id="L90">			final long[] values = new long[keys.length];</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">			for (int i = 0; i &lt; keys.length; i++) {</span>
+<span class="fc" id="L92">				values[i] = valueMuts.get(keys[i]).getPtr();</span>
+			}
+<span class="fc" id="L94">			return new Response(queryWithBindings(getPtr(), sql, keys, values));</span>
+		} finally {
+<span class="fc" id="L96">			ValueBuilder.releaseParams(valueMuts, params);</span>
 		}
-<span class="fc" id="L80">		return new Response(queryWithBindings(getPtr(), sql, keys, values));</span>
 	}
 
 	@Override
-	final void deleteInstance(long ptr) {
-<span class="nc" id="L85">		nativeDeleteInstance(ptr);</span>
-<span class="nc" id="L86">	}</span>
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L102">		return Transaction::nativeDeleteInstance;</span>
+	}
 
 	@Override
 	final String toString(long ptr) {
-<span class="nc" id="L90">		return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L107">		return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
 	}
 
 	@Override
 	final int hashCode(long ptr) {
-<span class="nc" id="L95">		return Objects.hashCode(ptr);</span>
+<span class="nc" id="L112">		return Objects.hashCode(ptr);</span>
 	}
 
 	@Override
 	final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L100" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

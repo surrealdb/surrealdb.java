@@ -4,8 +4,8 @@
  * Reference to a file stored in a SurrealDB bucket. Obtained from
  * {@link Value#getFile()} when {@link Value#isFile()} is true.
  *
- * Valid only for the lifetime of the {@link Value} it was obtained from; do not
- * retain a reference after that Value is no longer in use.
+ * Holds its own reference to the file data, so it stays valid independently of
+ * the {@link Value} it was obtained from.
  */
 public class FileRef extends Native {
 
@@ -13,9 +13,9 @@ public class FileRef extends Native {
 <span class="fc" id="L13">		super(ptr);</span>
 <span class="fc" id="L14">	}</span>
 
-	private static native String getBucket(long ptr);
+	private native String getBucket(long ptr);
 
-	private static native String getKey(long ptr);
+	private native String getKey(long ptr);
 
 	@Override
 	final native String toString(long ptr);
@@ -30,21 +30,25 @@ public class FileRef extends Native {
 <span class="nc bnc" id="L30" title="All 4 branches missed.">		return getBucket(ptr1).equals(getBucket(ptr2)) &amp;&amp; getKey(ptr1).equals(getKey(ptr2));</span>
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L37">		return FileRef::deleteInstance;</span>
+	}
 
 	/**
 	 * Returns the bucket name.
 	 */
 	public String getBucket() {
-<span class="fc" id="L40">		return getBucket(getPtr());</span>
+<span class="fc" id="L44">		return getBucket(getPtr());</span>
 	}
 
 	/**
 	 * Returns the file key (path within the bucket). Always starts with &quot;/&quot;.
 	 */
 	public String getKey() {
-<span class="fc" id="L47">		return getKey(getPtr());</span>
+<span class="fc" id="L51">		return getKey(getPtr());</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -6,15 +6,15 @@
  * Entry provides methods to retrieve the key and value associated with the
  * entry.
  */
-public class Entry extends Native {
+public class Entry extends Native implements AutoCloseable {
 
 	Entry(long ptr) {
 <span class="fc" id="L12">		super(ptr);</span>
 <span class="fc" id="L13">	}</span>
 
-	private static native String getKey(long ptr);
+	private native String getKey(long ptr);
 
-	private static native long getValue(long ptr);
+	private native long getValue(long ptr);
 
 	@Override
 	final native String toString(long ptr);
@@ -25,15 +25,19 @@ public class Entry extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L32">		return Entry::deleteInstance;</span>
+	}
 
 	public String getKey() {
-<span class="fc" id="L32">		return getKey(getPtr());</span>
+<span class="fc" id="L36">		return getKey(getPtr());</span>
 	}
 
 	public Value getValue() {
-<span class="fc" id="L36">		return new Value(getValue(getPtr()));</span>
+<span class="fc" id="L40">		return new Value(getValue(getPtr()));</span>
 	}
 
 }

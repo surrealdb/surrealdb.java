@@ -15,15 +15,15 @@ import java.util.Objects;
  * Methods: - hasNext(): Checks if there are more elements in the collection to
  * iterate over. - next(): Returns the next Value in the iteration.
  */
-public class ValueIterator extends Native implements Iterator&lt;Value&gt; {
+public class ValueIterator extends Native implements Iterator&lt;Value&gt;, AutoCloseable {
 
 	ValueIterator(long ptr) {
 <span class="fc" id="L21">		super(ptr);</span>
 <span class="fc" id="L22">	}</span>
 
-	private static native boolean hasNext(long ptr);
+	private native boolean hasNext(long ptr);
 
-	private static native long next(long ptr);
+	private native long next(long ptr);
 
 	@Override
 	final String toString(long ptr) {
@@ -40,17 +40,21 @@ public class ValueIterator extends Native implements Iterator&lt;Value&gt; {
 <span class="nc bnc" id="L40" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+<span class="fc" id="L47">		return ValueIterator::deleteInstance;</span>
+	}
 
 	@Override
 	public boolean hasNext() {
-<span class="fc" id="L48">		return hasNext(getPtr());</span>
+<span class="fc" id="L52">		return hasNext(getPtr());</span>
 	}
 
 	@Override
 	public Value next() {
-<span class="fc" id="L53">		return new Value(next(getPtr()));</span>
+<span class="fc" id="L57">		return new Value(next(getPtr()));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
