@@ -10,7 +10,7 @@ use jni::EnvUnowned;
 use surrealdb::types::{Number, ToSql, Value};
 
 use crate::error::SurrealError;
-use crate::{get_value_instance, new_jlong_array, new_string, release_instance, JniTypes};
+use crate::{get_value_instance, new_jlong_array, new_string, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
@@ -18,7 +18,7 @@ pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    release_instance::<Arc<Value>>(ptr);
+    JniTypes::release_value(ptr);
     true as jboolean
 }
 

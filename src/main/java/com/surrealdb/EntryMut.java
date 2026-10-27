@@ -9,11 +9,8 @@ public class EntryMut extends Native {
 	private static native long create(String name, long valuePtr);
 
 	public static EntryMut newEntry(String name, ValueMut value) {
-		final long ptr = create(name, value.getPtr());
-		EntryMut entry = new EntryMut(ptr);
-		// The lifecycle of ValueMut is now moved to the Entry
-		value.moved();
-		return entry;
+		// The value now belongs to the entry.
+		return new EntryMut(create(name, value.takePtr()));
 	}
 
 	@Override
@@ -25,7 +22,11 @@ public class EntryMut extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return EntryMut::deleteInstance;
+	}
 
 }
