@@ -6,6 +6,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -16,6 +19,29 @@ import java.util.UUID;
 final class ValueBoxing {
 
 	private ValueBoxing() {
+	}
+
+	/**
+	 * Boxes every element, then hands the boxed values over to the native side by
+	 * taking their pointers. If boxing fails partway, the values already boxed are
+	 * freed and the failure is rethrown, so nothing is left behind. Values that
+	 * were already taken (a failure after the pointers were taken) are a no-op to
+	 * free.
+	 */
+	static long[] boxAndTakePtrs(List<?> elements) {
+		Objects.requireNonNull(elements, "elements");
+		final List<ValueMut> muts = new ArrayList<>(elements.size());
+		try {
+			for (final java.lang.Object e : elements) {
+				muts.add(box(e));
+			}
+			return Native.takePtrs(muts);
+		} catch (Throwable t) {
+			for (final ValueMut m : muts) {
+				m.deleteInstance();
+			}
+			throw t;
+		}
 	}
 
 	static ValueMut box(java.lang.Object e) {

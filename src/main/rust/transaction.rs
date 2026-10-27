@@ -5,15 +5,13 @@ use std::sync::Arc;
 use crate::error::SurrealError;
 use crate::with_env_body;
 use crate::{
-    build_params_map, check_query_result, get_rust_string, get_transaction_ref, release_instance,
-    take_instance, JniTypes,
+    build_params_map, check_query_result, get_rust_string, get_transaction_ref, take_instance,
+    JniTypes,
 };
 use jni::objects::{JClass, JLongArray, JObjectArray, JString};
 use jni::sys::{jboolean, jlong};
 use jni::EnvUnowned;
 use parking_lot::Mutex;
-use surrealdb::engine::any::Any;
-use surrealdb::method::Transaction;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Transaction_nativeDeleteInstance<'local>(
@@ -21,7 +19,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_nativeDeleteInstance<'loca
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<Transaction<Any>>(ptr);
+    JniTypes::release_transaction(ptr);
 }
 
 #[no_mangle]
@@ -32,7 +30,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_commit<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         // take_instance must be first: Transaction::commit(self) takes ownership. On commit failure we drop the txn (rollback).
-        let txn = match take_instance::<Transaction<Any>>(ptr, JniTypes::Transaction) {
+        let txn = match take_instance::<crate::TransactionHandle>(ptr, JniTypes::Transaction) {
             Ok(t) => t,
             Err(e) => return e.exception(env, || false as jboolean),
         };
@@ -51,7 +49,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_cancel<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         // take_instance must be first: Transaction::cancel(self) takes ownership. On cancel failure we drop the txn.
-        let txn = match take_instance::<Transaction<Any>>(ptr, JniTypes::Transaction) {
+        let txn = match take_instance::<crate::TransactionHandle>(ptr, JniTypes::Transaction) {
             Ok(t) => t,
             Err(e) => return e.exception(env, || false as jboolean),
         };
