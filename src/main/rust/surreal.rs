@@ -34,7 +34,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_beginTransaction<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, || 0);
-        match TOKIO_RUNTIME.block_on(async { surreal.clone().begin().await }) {
+        match crate::block_on(async { surreal.clone().begin().await }) {
             Ok(txn) => JniTypes::new_transaction(txn),
             Err(e) => SurrealError::from(e).exception(env, || 0),
         }
@@ -83,7 +83,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_connect<'local>(
         let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
         let addr = get_rust_string!(env, addr, || false as jboolean);
         // Connect
-        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.connect(addr).await }) {
+        if let Err(err) = crate::block_on(async { surreal.connect(addr).await }) {
             return SurrealError::from(err).exception(env, || false as jboolean);
         }
         true as jboolean
@@ -98,7 +98,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_version<'local>(
 ) -> jstring {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, null_mut);
-        let version = match TOKIO_RUNTIME.block_on(async { surreal.version().await }) {
+        let version = match crate::block_on(async { surreal.version().await }) {
             Ok(v) => v.to_string(),
             // Embedded / local: no server to ask; report library version (injected at build time)
             Err(_) => env!("SURREALDB_VERSION").into(),
@@ -115,7 +115,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_health<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
-        match TOKIO_RUNTIME.block_on(async { surreal.health().await }) {
+        match crate::block_on(async { surreal.health().await }) {
             Ok(()) => true as jboolean,
             Err(e) => SurrealError::from(e).exception(env, || false as jboolean),
         }
@@ -191,7 +191,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRoot<'local>(
         let surreal = get_surreal_ref!(env, ptr, null_mut);
         let username = get_rust_string!(env, username, null_mut);
         let password = get_rust_string!(env, password, null_mut);
-        match TOKIO_RUNTIME.block_on(async { surreal.signin(Root { username, password }).await }) {
+        match crate::block_on(async { surreal.signin(Root { username, password }).await }) {
             Ok(token) => {
                 let access = token.access.into_insecure_token();
                 let refresh = token.refresh.map(|r| r.into_insecure_token());
@@ -219,7 +219,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinNamespace<'local>(
         let username = get_rust_string!(env, username, null_mut);
         let password = get_rust_string!(env, password, null_mut);
         let namespace = get_rust_string!(env, ns, null_mut);
-        match TOKIO_RUNTIME.block_on(async {
+        match crate::block_on(async {
             surreal
                 .signin(Namespace {
                     username,
@@ -257,7 +257,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinDatabase<'local>(
         let password = get_rust_string!(env, password, null_mut);
         let namespace = get_rust_string!(env, ns, null_mut);
         let database = get_rust_string!(env, db, null_mut);
-        match TOKIO_RUNTIME.block_on(async {
+        match crate::block_on(async {
             surreal
                 .signin(Database {
                     username,
@@ -302,7 +302,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signup<'local>(
             access,
             params,
         };
-        match TOKIO_RUNTIME.block_on(async { surreal.signup(record).await }) {
+        match crate::block_on(async { surreal.signup(record).await }) {
             Ok(token) => {
                 let access_str = token.access.into_insecure_token();
                 let refresh = token.refresh.map(|r| r.into_insecure_token());
@@ -338,7 +338,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_signinRecord<'local>(
             access,
             params,
         };
-        match TOKIO_RUNTIME.block_on(async { surreal.signin(record).await }) {
+        match crate::block_on(async { surreal.signin(record).await }) {
             Ok(token) => {
                 let access_str = token.access.into_insecure_token();
                 let refresh = token.refresh.map(|r| r.into_insecure_token());
@@ -362,7 +362,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_authenticate<'local>(
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
         let token_str = get_rust_string!(env, token, || false as jboolean);
-        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.authenticate(token_str).await }) {
+        if let Err(err) = crate::block_on(async { surreal.authenticate(token_str).await }) {
             return SurrealError::from(err).exception(env, || false as jboolean);
         }
         true as jboolean
@@ -377,7 +377,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
-        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.invalidate().await }) {
+        if let Err(err) = crate::block_on(async { surreal.invalidate().await }) {
             return SurrealError::from(err).exception(env, || false as jboolean);
         }
         true as jboolean
@@ -394,7 +394,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, null_mut);
         let ns = get_rust_string!(env, ns, null_mut);
-        match TOKIO_RUNTIME.block_on(async { surreal.use_ns(ns).await }) {
+        match crate::block_on(async { surreal.use_ns(ns).await }) {
             Ok((namespace, database)) => match new_ns_db_object(env, namespace, database) {
                 Ok(obj) => obj,
                 Err(e) => e.exception(env, null_mut),
@@ -414,7 +414,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDb<'local>(
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, null_mut);
         let db = get_rust_string!(env, db, null_mut);
-        match TOKIO_RUNTIME.block_on(async { surreal.use_db(db).await }) {
+        match crate::block_on(async { surreal.use_db(db).await }) {
             Ok((namespace, database)) => match new_ns_db_object(env, namespace, database) {
                 Ok(obj) => obj,
                 Err(e) => e.exception(env, null_mut),
@@ -432,7 +432,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDefaults<'local>(
 ) -> jobject {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, null_mut);
-        match TOKIO_RUNTIME.block_on(async { surreal.use_defaults().await }) {
+        match crate::block_on(async { surreal.use_defaults().await }) {
             Ok((namespace, database)) => match new_ns_db_object(env, namespace, database) {
                 Ok(obj) => obj,
                 Err(e) => e.exception(env, null_mut),
@@ -691,7 +691,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_exportSql<'local>(
         let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
         let path = get_rust_string!(env, &path, || false as jboolean);
         let path = Path::new(&path).to_path_buf();
-        match TOKIO_RUNTIME.block_on(async { surreal.export(path).await }) {
+        match crate::block_on(async { surreal.export(path).await }) {
             Ok(()) => true as jboolean,
             Err(e) => SurrealError::from(e).exception(env, || false as jboolean),
         }
@@ -709,7 +709,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_importSql<'local>(
         let surreal = get_surreal_ref!(env, ptr, || false as jboolean);
         let path = get_rust_string!(env, &path, || false as jboolean);
         let path = Path::new(&path).to_path_buf();
-        match TOKIO_RUNTIME.block_on(async { surreal.import(path).await }) {
+        match crate::block_on(async { surreal.import(path).await }) {
             Ok(()) => true as jboolean,
             Err(e) => SurrealError::from(e).exception(env, || false as jboolean),
         }
@@ -722,9 +722,9 @@ fn surrealdb_query<T>(
     params: Option<BTreeMap<String, T>>,
 ) -> Result<IndexedResults>
 where
-    T: SurrealValue + Serialize + 'static,
+    T: SurrealValue + Serialize + Send + 'static,
 {
-    TOKIO_RUNTIME.block_on(async {
+    crate::block_on(async {
         let q = surreal.query(query);
         if let Some(p) = params {
             q.bind(p).await

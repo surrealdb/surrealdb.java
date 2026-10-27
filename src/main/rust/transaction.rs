@@ -6,7 +6,7 @@ use crate::error::SurrealError;
 use crate::with_env_body;
 use crate::{
     build_params_map, check_query_result, get_rust_string, get_transaction_ref, release_instance,
-    take_instance, JniTypes, TOKIO_RUNTIME,
+    take_instance, JniTypes,
 };
 use jni::objects::{JClass, JLongArray, JObjectArray, JString};
 use jni::sys::{jboolean, jlong};
@@ -36,7 +36,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_commit<'local>(
             Ok(t) => t,
             Err(e) => return e.exception(env, || false as jboolean),
         };
-        if let Err(e) = TOKIO_RUNTIME.block_on(async { txn.commit().await }) {
+        if let Err(e) = crate::block_on(async { txn.commit().await }) {
             return SurrealError::from(e).exception(env, || false as jboolean);
         }
         true as jboolean
@@ -55,7 +55,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_cancel<'local>(
             Ok(t) => t,
             Err(e) => return e.exception(env, || false as jboolean),
         };
-        if let Err(e) = TOKIO_RUNTIME.block_on(async { txn.cancel().await }) {
+        if let Err(e) = crate::block_on(async { txn.cancel().await }) {
             return SurrealError::from(e).exception(env, || false as jboolean);
         }
         true as jboolean
@@ -72,7 +72,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_query<'local>(
     with_env_body!(env, env, {
         let txn = get_transaction_ref!(env, ptr, || 0);
         let query = get_rust_string!(env, query, || 0);
-        let res = TOKIO_RUNTIME.block_on(async { txn.query(&query).await });
+        let res = crate::block_on(async { txn.query(&query).await });
         let res = check_query_result!(env, res, || 0);
         JniTypes::new_response(Arc::new(Mutex::new(res)))
     })
@@ -91,7 +91,7 @@ pub extern "system" fn Java_com_surrealdb_Transaction_queryWithBindings<'local>(
         let txn = get_transaction_ref!(env, ptr, || 0);
         let query = get_rust_string!(env, query, || 0);
         let params_map = build_params_map!(env, params_keys, params_values, || 0);
-        let res = TOKIO_RUNTIME.block_on(async { txn.query(&query).bind(params_map).await });
+        let res = crate::block_on(async { txn.query(&query).bind(params_map).await });
         let res = check_query_result!(env, res, || 0);
         JniTypes::new_response(Arc::new(Mutex::new(res)))
     })

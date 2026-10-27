@@ -76,8 +76,40 @@ mod value;
 mod valueiterator;
 mod valuemut;
 
-static TOKIO_RUNTIME: Lazy<Runtime> =
-    Lazy::new(|| Runtime::new().expect("Cannot start Tokio runtime"));
+/// Stack size SurrealDB recommends for threads that run it embedded: its query
+/// executor recurses deeply, and a debug build needs more than 1 MiB.
+const STACK_SIZE: usize = 10 * 1024 * 1024;
+
+static TOKIO_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .thread_stack_size(STACK_SIZE)
+        .build()
+        .expect("Cannot start Tokio runtime")
+});
+
+/// Runs `future` to completion on a thread with a [`STACK_SIZE`] stack.
+///
+/// The calling Java thread may have as little as 1 MiB of stack (the Linux
+/// default), which SurrealDB can overflow. A scoped thread can borrow from the
+/// caller, so the session handle is used as is rather than cloned (a clone is a
+/// new session). A panic is re-raised on the calling thread.
+fn block_on<F>(future: F) -> F::Output
+where
+    F: std::future::Future + Send,
+    F::Output: Send,
+{
+    std::thread::scope(|scope| {
+        let worker = std::thread::Builder::new()
+            .stack_size(STACK_SIZE)
+            .spawn_scoped(scope, || TOKIO_RUNTIME.block_on(future))
+            .expect("Cannot start a SurrealDB thread");
+        match worker.join() {
+            Ok(output) => output,
+            Err(panic) => std::panic::resume_unwind(panic),
+        }
+    })
+}
 
 #[cfg(debug_assertions)]
 type Allocations = DashMap<jlong, JniTypes>;
