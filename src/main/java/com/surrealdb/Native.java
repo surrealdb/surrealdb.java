@@ -1,5 +1,10 @@
 package com.surrealdb;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Base for types backed by a native pointer. Instances are only valid for the
  * lifetime of the native resource (e.g. the parent {@link Value} or connection
@@ -13,8 +18,8 @@ public abstract class Native {
 	}
 
 	// Owns the native pointer used by the native library to locate the object.
-	// It is released at most once: by an explicit close, by moved() when the native
-	// side takes ownership, or by the NativeCleaner once this object is
+	// It is released at most once: by an explicit close, by takePtr() when the
+	// native side takes ownership, or by the NativeCleaner once this object is
 	// unreachable.
 	//
 	// A native call that is given getPtr() must keep this object reachable until
@@ -49,22 +54,54 @@ public abstract class Native {
 		handle.release();
 	}
 
-	final void moved() {
+	/**
+	 * Gives up ownership of the native object and returns its pointer, for a native
+	 * call that takes the object over (and frees it, even when the call fails). The
+	 * pointer is cleared before the call, so two threads handing over the same
+	 * object cannot both pass it on: the second one gets 0, which the native side
+	 * rejects.
+	 */
+	final long takePtr() {
 		try {
-			handle.moved();
+			return handle.take();
 		} finally {
 			// Until the pointer is cleared, the cleaner must not see this object as
-			// unreachable: it would free a pointer the native side now owns.
+			// unreachable: it would free a pointer the native side is about to own.
 			reachabilityFence(this);
 		}
 	}
 
 	/**
+	 * {@link #takePtr()} for every element of {@code natives}, read once. An
+	 * element that appears twice is rejected before anything is taken: the native
+	 * side would otherwise get a 0 pointer for it and fail with a less helpful
+	 * error.
+	 */
+	static long[] takePtrs(List<? extends Native> natives) {
+		final Native[] array = natives.toArray(new Native[0]);
+		final Set<Native> seen = Collections.newSetFromMap(new IdentityHashMap<Native, Boolean>());
+		for (final Native n : array) {
+			if (!seen.add(n)) {
+				throw new IllegalArgumentException(
+						"The same " + n.getClass().getSimpleName() + " was passed more than once");
+			}
+		}
+		final long[] ptrs = new long[array.length];
+		for (int i = 0; i < array.length; i++) {
+			ptrs[i] = array[i].takePtr();
+		}
+		return ptrs;
+	}
+
+	/**
 	 * Keeps {@code o} reachable until this call returns. Call it after a native
 	 * call that was given {@code o}'s pointer, when nothing else holds {@code o}.
+	 * Does nothing for {@code null}.
 	 */
 	static void reachabilityFence(java.lang.Object o) {
-		NativeCleaner.reachabilityFence(o);
+		if (o != null) {
+			NativeCleaner.reachabilityFence(o);
+		}
 	}
 
 	@Override

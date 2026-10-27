@@ -1,5 +1,6 @@
 package com.surrealdb;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -46,20 +47,13 @@ public class Id extends Native {
 	 */
 	public static Id fromList(List<?> elements) {
 		Objects.requireNonNull(elements, "elements");
-		final long[] ptrs = new long[elements.size()];
-		final ValueMut[] muts = new ValueMut[elements.size()];
-		for (int i = 0; i < elements.size(); i++) {
-			muts[i] = ValueBoxing.box(elements.get(i));
-			ptrs[i] = muts[i].getPtr();
+		final List<ValueMut> muts = new ArrayList<>(elements.size());
+		for (final java.lang.Object e : elements) {
+			muts.add(ValueBoxing.box(e));
 		}
-		try {
-			return new Id(newArrayId(ptrs));
-		} finally {
-			// The native side took ownership (see ValueMut.createArray).
-			for (final ValueMut m : muts) {
-				m.moved();
-			}
-		}
+		// Box everything first, so a failure leaves nothing half handed over. The
+		// native side then takes ownership of the boxed values.
+		return new Id(newArrayId(takePtrs(muts)));
 	}
 
 	private static native long newLongId(long id);

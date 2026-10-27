@@ -269,13 +269,23 @@ macro_rules! take_value_mut_instance {
 
 /// Takes ownership of every instance in `ptrs`. The Java side marks all of them as
 /// moved, so each valid pointer is consumed even when another one is invalid: the
-/// taken instances are then dropped and the first error is thrown.
+/// taken instances are then dropped and the first error is thrown. A pointer that
+/// appears twice (the same Java object passed twice) is only taken once: taking it
+/// again would free it twice.
 #[macro_export]
 macro_rules! take_instances {
     ($env:expr, $ptrs:expr, $t:ty, $typ:expr, $default_fn:expr) => {{
         let mut instances = Vec::with_capacity($ptrs.len());
+        let mut taken = std::collections::HashSet::with_capacity($ptrs.len());
         let mut error = None;
         for ptr in $ptrs {
+            if ptr != 0 && !taken.insert(ptr) {
+                error.get_or_insert($crate::SurrealError::SurrealDBJni(format!(
+                    "The same {} was passed more than once",
+                    $typ.as_str()
+                )));
+                continue;
+            }
             match $crate::take_instance::<$t>(ptr, $typ) {
                 Ok(s) => instances.push(s),
                 Err(e) => {

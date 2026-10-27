@@ -30,11 +30,7 @@ public class Transaction extends Native {
 	 * only true on success.
 	 */
 	public void commit() {
-		try {
-			commit(getPtr());
-		} finally {
-			moved();
-		}
+		commit(takePtr());
 	}
 
 	/**
@@ -43,11 +39,7 @@ public class Transaction extends Native {
 	 * return value is only true on success.
 	 */
 	public void cancel() {
-		try {
-			cancel(getPtr());
-		} finally {
-			moved();
-		}
+		cancel(takePtr());
 	}
 
 	/**
