@@ -3,7 +3,6 @@ package com.surrealdb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -30,8 +29,10 @@ public class MultiSessionTests {
 		try (Surreal surreal = new Surreal()) {
 			surreal.connect("memory").useNs("ns_a").useDb("db_a");
 			try (Surreal other = surreal.newSession()) {
-				assertNull(other.getNamespace());
-				assertNull(other.getDatabase());
+				// A new session starts as a copy of its parent's state...
+				assertEquals("ns_a", other.getNamespace());
+				assertEquals("db_a", other.getDatabase());
+				// ...and diverges independently from then on.
 				other.useNs("ns_b").useDb("db_b");
 				assertEquals("ns_b", other.getNamespace());
 				assertEquals("db_b", other.getDatabase());
