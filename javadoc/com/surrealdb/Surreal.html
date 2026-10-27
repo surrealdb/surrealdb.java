@@ -163,7 +163,18 @@ implements <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base
 <div class="block">The <code>Surreal</code> class provides methods to interact with a Surreal
 database. It includes functionality to connect to the database, sign in with
 different scopes, set the namespace and database, execute queries, and
-perform CRUD operations on records.</div>
+perform CRUD operations on records.
+
+<p>
+Methods that take a <code>String</code> target or table treat it as a table name
+and nothing else: the name is sent to the server as a bound table value, so
+it is never parsed as SurrealQL. An empty table name, an empty list of
+tables, and a table name containing <code>':'</code>, such as
+<code>"person:tobie"</code>, are rejected with a <a href="SurrealException.html" title="class in com.surrealdb"><code>SurrealException</code></a>. A name
+with <code>':'</code> is almost always a record id passed by mistake: use
+<a href="RecordId.html" title="class in com.surrealdb"><code>RecordId</code></a> to address a single record. Record contents are always sent
+as bound parameters. The table inside a <a href="RecordId.html" title="class in com.surrealdb"><code>RecordId</code></a> or
+<a href="RecordIdRange.html" title="class in com.surrealdb"><code>RecordIdRange</code></a> is part of that value and is sent bound as well.</div>
 </div>
 </section>
 <section class="summary">
@@ -775,7 +786,8 @@ query.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>name</code> - the function name (e.g. "array::add" or "array::add&lt;1.0.0&gt;"
-           for a version)</dd>
+           for a version). Only identifier segments joined by <code>::</code> are
+           accepted; anything else is rejected rather than sent.</dd>
 <dd><code>args</code> - the arguments to pass to the function (converted to Surreal
            values)</dd>
 <dt>Returns:</dt>
