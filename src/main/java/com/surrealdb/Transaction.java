@@ -93,7 +93,7 @@ public class Transaction extends Native implements AutoCloseable {
 			}
 			return new Response(queryWithBindings(getPtr(), sql, keys, values));
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseParams(valueMuts, params);
 		}
 	}
 
