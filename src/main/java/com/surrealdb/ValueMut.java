@@ -54,6 +54,8 @@ public class ValueMut extends Native {
 
 	private static native long newTable(String name);
 
+	private native long copy(long ptr);
+
 	public static ValueMut createNone() {
 		return new ValueMut(newNone());
 	}
@@ -187,6 +189,15 @@ public class ValueMut extends Native {
 
 	public static ValueMut createTable(String name) {
 		return new ValueMut(newTable(name));
+	}
+
+	/**
+	 * Returns an independent copy of this value, owned by the caller. Unlike
+	 * {@link #createArray(List)} and {@code EntryMut.newEntry}, this value is left
+	 * valid and reusable.
+	 */
+	ValueMut copy() {
+		return new ValueMut(copy(getPtr()));
 	}
 
 	@Override

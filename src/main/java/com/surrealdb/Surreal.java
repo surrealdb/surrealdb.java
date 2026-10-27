@@ -662,7 +662,7 @@ public class Surreal extends Native implements AutoCloseable {
 	public final <T> List<Value> create(String target, T... contents) {
 		final ValueMut[] valueMuts = convertAll(contents);
 		try {
-			final long[] valueMutPtrs = ptrs(valueMuts);
+			final long[] valueMutPtrs = getPtrs(valueMuts);
 			final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
@@ -717,7 +717,7 @@ public class Surreal extends Native implements AutoCloseable {
 	public final <T> List<Value> insert(String target, T... contents) {
 		final ValueMut[] valueMuts = convertAll(contents);
 		try {
-			final long[] valueMutPtrs = ptrs(valueMuts);
+			final long[] valueMutPtrs = getPtrs(valueMuts);
 			final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
@@ -819,7 +819,7 @@ public class Surreal extends Native implements AutoCloseable {
 	public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
 		final ValueMut[] valueMuts = convertAll(contents);
 		try {
-			final long[] valueMutPtrs = ptrs(valueMuts);
+			final long[] valueMutPtrs = getPtrs(valueMuts);
 			final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
@@ -1544,19 +1544,17 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	private static <T> ValueMut[] convertAll(T... contents) {
 		final ValueMut[] valueMuts = new ValueMut[contents.length];
-		int index = 0;
-		for (final T c : contents) {
-			valueMuts[index++] = ValueBuilder.convert(c);
+		try {
+			for (int i = 0; i < contents.length; i++) {
+				valueMuts[i] = ValueBuilder.convert(contents[i]);
+			}
+			return valueMuts;
+		} catch (Throwable t) {
+			// Free what was converted before the failure (elements not converted yet are
+			// null and skipped).
+			ValueBuilder.releaseAll(valueMuts, contents);
+			throw t;
 		}
-		return valueMuts;
-	}
-
-	private static long[] ptrs(Native[] natives) {
-		final long[] ptrs = new long[natives.length];
-		for (int i = 0; i < natives.length; i++) {
-			ptrs[i] = natives[i].getPtr();
-		}
-		return ptrs;
 	}
 
 	/**
@@ -1620,7 +1618,7 @@ public class Surreal extends Native implements AutoCloseable {
 	public List<Value> select(RecordId... recordIds) {
 		final long[] valuePtrs;
 		try {
-			valuePtrs = selectRecordIds(getPtr(), recordIds2longs(recordIds));
+			valuePtrs = selectRecordIds(getPtr(), getPtrs(recordIds));
 		} finally {
 			// Fencing the array keeps every RecordId in it reachable.
 			reachabilityFence(recordIds);
@@ -1628,15 +1626,6 @@ public class Surreal extends Native implements AutoCloseable {
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
 		}
-	}
-
-	private long[] recordIds2longs(RecordId... recordIds) {
-		final long[] ptrs = new long[recordIds.length];
-		int index = 0;
-		for (final RecordId r : recordIds) {
-			ptrs[index++] = r.getPtr();
-		}
-		return ptrs;
 	}
 
 	/**
@@ -1809,7 +1798,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public void delete(RecordId... recordIds) {
 		try {
-			deleteRecordIds(getPtr(), recordIds2longs(recordIds));
+			deleteRecordIds(getPtr(), getPtrs(recordIds));
 		} finally {
 			reachabilityFence(recordIds);
 		}
