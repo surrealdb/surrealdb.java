@@ -166,6 +166,24 @@ public class NativeLifecycleTests {
 	}
 
 	@Test
+	void passingTheSameValueTwiceIsRejectedNotFreedTwice() {
+		// The native side takes ownership of each element. Taking the same pointer
+		// twice would free it twice in release builds (debug builds only caught it
+		// through allocation tracking), so a repeated element is refused.
+		final ValueMut value = ValueMut.createString("a");
+		final SurrealException e = assertThrows(SurrealException.class,
+				() -> ValueMut.createArray(Arrays.asList(value, value)));
+		assertEquals("The same MutableValue was passed more than once", e.getMessage());
+		assertEquals(0L, value.getPtr());
+
+		final EntryMut entry = EntryMut.newEntry("k", ValueMut.createString("a"));
+		final SurrealException e2 = assertThrows(SurrealException.class,
+				() -> ValueMut.createObject(Arrays.asList(entry, entry)));
+		assertEquals("The same MutableObjectEntry was passed more than once", e2.getMessage());
+		assertEquals(0L, entry.getPtr());
+	}
+
+	@Test
 	void unclosedObjectsAreCleanedUp() throws InterruptedException {
 		// Values, iterators and entries used to have no native destructor at all;
 		// this exercises the cleaner path for each of them.
