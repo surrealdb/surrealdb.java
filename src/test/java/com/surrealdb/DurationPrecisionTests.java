@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+import com.surrealdb.signin.RootCredential;
+
 /**
  * Regression tests for durations: both directions must carry full
  * seconds-and-nanoseconds precision, and negative durations (which SurrealDB
@@ -51,8 +53,20 @@ public class DurationPrecisionTests {
 			} catch (SurrealException e) {
 				Assumptions.abort("No SurrealDB server at " + SERVER_URL);
 			}
+			surreal.signin(new RootCredential("root", "root"));
 			surreal.useNs("test_ns").useDb("test_db");
 			assertRoundTrips(surreal);
+		}
+	}
+
+	@Test
+	void durationBeyondLongSecondsIsRejected() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			// SurrealDB's largest durations do not fit java.time.Duration's signed
+			// seconds; reading one fails instead of wrapping negative.
+			final Value tooLarge = surreal.query("RETURN 9223372036854775808s").take(0);
+			assertThrows(SurrealException.class, tooLarge::getDuration);
 		}
 	}
 
