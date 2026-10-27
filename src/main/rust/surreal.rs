@@ -9,9 +9,9 @@ use crate::with_env_body;
 use crate::{
     build_params_map, check_query_result, check_table_binding, convert_up_type, get_long_array,
     get_rust_string, get_rust_string_array, get_surreal_ref, get_value_instance,
-    get_value_mut_instance, new_jlong_array, new_string, release_instance,
-    return_unexpected_result, return_value_array_first, return_value_array_iter,
-    return_value_array_iter_sync, take_one_result, JniTypes, TOKIO_RUNTIME,
+    get_value_mut_instance, new_jlong_array, new_string, return_unexpected_result,
+    return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
+    take_one_result, JniTypes, TOKIO_RUNTIME,
 };
 use futures::StreamExt;
 use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString, JValue};
@@ -71,7 +71,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<Surreal<Any>>(ptr);
+    JniTypes::release_surreal(ptr);
 }
 
 #[no_mangle]
@@ -920,40 +920,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     with_env_body!(env, env, {
-        // Retrieve the Surreal instance
-        let surreal = get_surreal_ref!(env, surreal_ptr, null_mut);
-        // Build the parameters
         let target = get_rust_string!(env, target, null_mut);
-        // Get the pointers
         let value_ptrs = get_long_array!(env, &value_ptrs, null_mut);
-        let mut params = BTreeMap::new();
-        let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
-        // Build the queries
-        let mut records = Vec::with_capacity(value_ptrs.len());
-        for value_ptr in &value_ptrs {
-            let value = get_value_mut_instance!(env, *value_ptr, null_mut);
-            records.push(value.clone());
-        }
-        params.insert("data".to_string(), Value::Array(Array::from(records)));
-        let query = format!("INSERT INTO {tb} $data");
-        // Execute the query
-        let res = surrealdb_query(surreal, &query, Some(params));
-        // Check the result
-        let mut response = check_query_result!(env, res, null_mut);
-        // There is only one statement
-        let result = take_one_result!(env, response, null_mut);
-        if let Value::Array(a) = result {
-            // Prepare the result
-            let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
-            for val in a.into_iter() {
-                let value_ptr = JniTypes::new_value(val.into());
-                value_ptrs.push(value_ptr);
-            }
-            new_jlong_array!(env, &value_ptrs, null_mut)
-        } else {
-            SurrealError::SurrealDBJni(format!("Unexpected result: {}", result.to_sql()))
-                .exception(env, null_mut)
-        }
+        insert_target_values(env, surreal_ptr, target, &value_ptrs, false)
     })
 }
 
@@ -998,41 +967,56 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
     value_ptrs: JLongArray<'local>,
 ) -> jlongArray {
     with_env_body!(env, env, {
-        // Retrieve the Surreal instance
-        let surreal = get_surreal_ref!(env, surreal_ptr, null_mut);
-        // Build the parameters
         let target = get_rust_string!(env, target, null_mut);
-        // Get the pointers
         let value_ptrs = get_long_array!(env, &value_ptrs, null_mut);
-        let mut params = BTreeMap::new();
-        let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
-        // Build the queries
-        let mut records = Vec::with_capacity(value_ptrs.len());
-        for value_ptr in &value_ptrs {
-            let value = get_value_mut_instance!(env, *value_ptr, null_mut);
-            records.push(value.clone());
-        }
-        params.insert("data".to_string(), Value::Array(Array::from(records)));
-        let query = format!("INSERT RELATION INTO {tb} $data");
-        // Execute the query
-        let res = surrealdb_query(surreal, &query, Some(params));
-        // Check the result
-        let mut response = check_query_result!(env, res, null_mut);
-        // There is only one statement
-        let result = take_one_result!(env, response, null_mut);
-        if let Value::Array(a) = result {
-            // Prepare the result
-            let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
-            for val in a.into_iter() {
-                let value_ptr = JniTypes::new_value(val.into());
-                value_ptrs.push(value_ptr);
-            }
-            new_jlong_array!(env, &value_ptrs, null_mut)
-        } else {
-            SurrealError::SurrealDBJni(format!("Unexpected result: {}", result.to_sql()))
-                .exception(env, null_mut)
-        }
+        insert_target_values(env, surreal_ptr, target, &value_ptrs, true)
     })
+}
+
+/// Inserts `value_ptrs` into `target` with `INSERT INTO`, or `INSERT RELATION INTO`
+/// when `relation` is set, and returns the inserted records. No records is
+/// nothing to insert, so nothing is sent.
+fn insert_target_values(
+    env: &mut Env,
+    surreal_ptr: jlong,
+    target: String,
+    value_ptrs: &[jlong],
+    relation: bool,
+) -> jlongArray {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_ref!(env, surreal_ptr, null_mut);
+    let mut params = BTreeMap::new();
+    let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
+    if value_ptrs.is_empty() {
+        return new_jlong_array!(env, &[] as &[jlong], null_mut);
+    }
+    // Build the query
+    let mut records = Vec::with_capacity(value_ptrs.len());
+    for value_ptr in value_ptrs {
+        let value = get_value_mut_instance!(env, *value_ptr, null_mut);
+        records.push(value.clone());
+    }
+    params.insert("data".to_string(), Value::Array(Array::from(records)));
+    let relation = if relation { "RELATION " } else { "" };
+    let query = format!("INSERT {relation}INTO {tb} $data");
+    // Execute the query
+    let res = surrealdb_query(surreal, &query, Some(params));
+    // Check the result
+    let mut response = check_query_result!(env, res, null_mut);
+    // There is only one statement
+    let result = take_one_result!(env, response, null_mut);
+    if let Value::Array(a) = result {
+        // Prepare the result
+        let mut value_ptrs: Vec<jlong> = Vec::with_capacity(a.len());
+        for val in a.into_iter() {
+            let value_ptr = JniTypes::new_value(val.into());
+            value_ptrs.push(value_ptr);
+        }
+        new_jlong_array!(env, &value_ptrs, null_mut)
+    } else {
+        SurrealError::SurrealDBJni(format!("Unexpected result: {}", result.to_sql()))
+            .exception(env, null_mut)
+    }
 }
 
 #[no_mangle]
@@ -1401,14 +1385,14 @@ fn build_range_value(
     let start_bound = if start_ptr == 0 {
         Bound::Unbounded
     } else {
-        let value = crate::get_instance::<Arc<Value>>(start_ptr, crate::JniTypes::Value)?;
+        let value = crate::get_instance::<crate::ValueHandle>(start_ptr, crate::JniTypes::Value)?;
         let key = value_to_record_id_key(value.as_ref())?;
         Bound::Included(key)
     };
     let end_bound = if end_ptr == 0 {
         Bound::Unbounded
     } else {
-        let value = crate::get_instance::<Arc<Value>>(end_ptr, crate::JniTypes::Value)?;
+        let value = crate::get_instance::<crate::ValueHandle>(end_ptr, crate::JniTypes::Value)?;
         let key = value_to_record_id_key(value.as_ref())?;
         Bound::Included(key)
     };

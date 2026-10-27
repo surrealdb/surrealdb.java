@@ -10,7 +10,7 @@ use parking_lot::Mutex;
 use surrealdb::types::{ToSql, Value};
 
 use crate::error::SurrealError;
-use crate::{get_rust_string, get_value_instance, new_string, release_instance, JniTypes};
+use crate::{get_rust_string, get_value_instance, new_string, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Object_deleteInstance<'local>(
@@ -18,7 +18,7 @@ pub extern "system" fn Java_com_surrealdb_Object_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<Arc<Value>>(ptr);
+    JniTypes::release_value(ptr);
 }
 
 #[no_mangle]

@@ -230,11 +230,14 @@ public class InjectionTests {
 			assertThrows(SurrealException.class, () -> surreal.upsertSync(new String[0], UpType.MERGE, p));
 			// No records to create, select or delete is nothing to do.
 			assertTrue(surreal.create("person").isEmpty());
+			assertTrue(surreal.insert("person").isEmpty());
+			assertTrue(surreal.insertRelations("likes").isEmpty());
 			assertTrue(surreal.select(new RecordId[0]).isEmpty());
 			surreal.delete(new RecordId[0]);
 			// Nothing reached the database.
 			final String tables = surreal.query("INFO FOR DB").take(0).getObject().get("tables").toString();
 			assertFalse(tables.contains("person"), tables);
+			assertFalse(tables.contains("likes"), tables);
 		});
 	}
 }

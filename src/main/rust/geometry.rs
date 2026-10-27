@@ -11,8 +11,7 @@ use surrealdb::types::{Geometry, Value};
 
 use crate::error::SurrealError;
 use crate::{
-    get_long_array, get_value_instance, new_double_point, new_jlong_array, new_string,
-    release_instance, JniTypes,
+    get_long_array, get_value_instance, new_double_point, new_jlong_array, new_string, JniTypes,
 };
 
 /// Unwraps a `Result` inside a `jlong`-returning native body, surfacing any error
@@ -81,7 +80,7 @@ pub extern "system" fn Java_com_surrealdb_Geometry_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) -> jboolean {
-    release_instance::<Arc<Value>>(ptr);
+    JniTypes::release_value(ptr);
     true as jboolean
 }
 
