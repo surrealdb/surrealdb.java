@@ -16,7 +16,7 @@ use surrealdb::types::{
 use crate::error::SurrealError;
 use crate::{
     create_instance, get_long_array, get_rust_string, get_value_instance, get_value_mut_instance,
-    new_string, take_entry_mut_instance, take_value_mut_instance, JniTypes,
+    new_string, take_instances, JniTypes,
 };
 
 #[no_mangle]
@@ -224,11 +224,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArrayOf<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let mut values = Vec::with_capacity(ptrs.len());
-        for ptr in ptrs {
-            let value = take_value_mut_instance!(env, ptr, || 0);
-            values.push(value);
-        }
+        let values = take_instances!(env, ptrs, crate::ValueMutHandle, JniTypes::ValueMut, || 0);
         let value = Value::Array(Array::from(values));
         JniTypes::new_value_mut(value)
     })
@@ -257,11 +253,14 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObjectOf<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let mut map = BTreeMap::new();
-        for ptr in ptrs {
-            let (key, value) = take_entry_mut_instance!(env, ptr, || 0);
-            map.insert(key, value);
-        }
+        let entries = take_instances!(
+            env,
+            ptrs,
+            crate::KeyValueMutHandle,
+            JniTypes::KeyValueMutEntry,
+            || 0
+        );
+        let map: BTreeMap<_, _> = entries.into_iter().collect();
         let value = Value::Object(Object::from(map));
         create_instance(value, JniTypes::ValueMut)
     })
@@ -292,6 +291,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newTable<'local>(
         let name = get_rust_string!(env, name, || 0);
         let value = Value::Table(Table::new(name));
         JniTypes::new_value_mut(value)
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_copy<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let value = get_value_mut_instance!(env, ptr, || 0);
+        // Clone (not move) so the original ValueMut stays valid and reusable.
+        JniTypes::new_value_mut(value.clone())
     })
 }
 
@@ -334,4 +346,13 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_equals<'local>(
         let v2 = get_value_mut_instance!(env, ptr2, || false as jboolean);
         v1.eq(v2) as jboolean
     })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    JniTypes::release_value_mut(ptr);
 }

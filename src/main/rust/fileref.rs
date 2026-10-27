@@ -7,7 +7,7 @@ use jni::EnvUnowned;
 use surrealdb::types::Value;
 
 use crate::error::SurrealError;
-use crate::{get_value_instance, new_string, release_instance};
+use crate::{get_value_instance, new_string};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_FileRef_getBucket<'local>(
@@ -64,5 +64,5 @@ pub extern "system" fn Java_com_surrealdb_FileRef_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<std::sync::Arc<Value>>(ptr);
+    crate::JniTypes::release_value(ptr);
 }
