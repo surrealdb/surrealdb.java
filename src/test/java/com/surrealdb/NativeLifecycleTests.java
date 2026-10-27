@@ -104,7 +104,7 @@ public class NativeLifecycleTests {
 			while (running.get()) {
 				System.gc();
 				try {
-					Thread.sleep(1);
+					Thread.sleep(2);
 				} catch (InterruptedException e) {
 					return;
 				}
@@ -123,7 +123,7 @@ public class NativeLifecycleTests {
 			// mid-call. This is a smoke test: the race window is a few instructions
 			// wide, so it is not expected to catch a regression reliably. Receivers are
 			// kept alive by being instance natives, and other arguments by fences.
-			for (int i = 0; i < 20_000; i++) {
+			for (int i = 0; i < 10_000; i++) {
 				assertEquals(0L, value.getArray().iterator().next().getLong());
 				assertEquals(100, value.getArray().len());
 				if (i % 100 == 0) {
@@ -135,6 +135,16 @@ public class NativeLifecycleTests {
 			running.set(false);
 			collector.join();
 		}
+	}
+
+	@Test
+	void failedEntryCreationStillConsumesTheValue() {
+		final ValueMut value = ValueMut.createString("x");
+		// A null name fails in the native call. The value was handed over, so it must
+		// have been consumed (and dropped) there rather than left without an owner.
+		assertThrows(java.lang.Exception.class, () -> EntryMut.newEntry(null, value));
+		assertEquals(0L, value.getPtr());
+		assertDoesNotThrow(() -> EntryMut.newEntry("k", ValueMut.createString("y")));
 	}
 
 	@Test

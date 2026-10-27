@@ -29,8 +29,10 @@ pub extern "system" fn Java_com_surrealdb_EntryMut_create<'local>(
     v: jlong,
 ) -> jlong {
     with_env_body!(env, env, {
-        let s = get_rust_string!(env, s, || 0);
+        // Take the value first: Java marks it moved whatever happens, so if reading
+        // the name fails, the value must still be consumed (and dropped here).
         let v = take_value_mut_instance!(env, v, || 0);
+        let s = get_rust_string!(env, s, || 0);
         JniTypes::new_key_value_mut(s, v)
     })
 }
