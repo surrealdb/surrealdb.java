@@ -30,7 +30,7 @@ public class ValueMut extends Native {
 
 	private static native long newDecimal(String s);
 
-	private static native long newDuration(long l);
+	private static native long newDuration(long seconds, int nanos);
 
 	private static native long newDatetime(long seconds, long nanos);
 
@@ -84,20 +84,29 @@ public class ValueMut extends Native {
 <span class="fc" id="L84">		return new ValueMut(newDecimal(d.toString()));</span>
 	}
 
+	/**
+	 * Creates a duration value with full nanosecond precision.
+	 *
+	 * @param d
+	 *            the duration; SurrealDB durations are unsigned
+	 * @return a new duration value
+	 * @throws SurrealException
+	 *             if {@code d} is negative
+	 */
 	public static ValueMut createDuration(Duration d) {
-<span class="fc" id="L88">		return new ValueMut(newDuration(d.toMillis()));</span>
+<span class="fc" id="L97">		return new ValueMut(newDuration(d.getSeconds(), d.getNano()));</span>
 	}
 
 	public static ValueMut createDatetime(Instant i) {
-<span class="fc" id="L92">		return new ValueMut(newDatetime(i.getEpochSecond(), i.getNano()));</span>
+<span class="fc" id="L101">		return new ValueMut(newDatetime(i.getEpochSecond(), i.getNano()));</span>
 	}
 
 	public static ValueMut createDatetime(ZonedDateTime d) {
-<span class="fc" id="L96">		return createDatetime(d.toInstant());</span>
+<span class="fc" id="L105">		return createDatetime(d.toInstant());</span>
 	}
 
 	public static ValueMut createDatetime(OffsetDateTime d) {
-<span class="fc" id="L100">		return createDatetime(d.toInstant());</span>
+<span class="fc" id="L109">		return createDatetime(d.toInstant());</span>
 	}
 
 	/**
@@ -109,7 +118,7 @@ public class ValueMut extends Native {
 	 * information.
 	 */
 	public static ValueMut createDatetime(LocalDateTime d) {
-<span class="fc" id="L112">		return createDatetime(d.toInstant(ZoneOffset.UTC));</span>
+<span class="fc" id="L121">		return createDatetime(d.toInstant(ZoneOffset.UTC));</span>
 	}
 
 	/**
@@ -122,73 +131,73 @@ public class ValueMut extends Native {
 	 */
 	public static ValueMut createDatetime(java.util.Date d) {
 		try {
-<span class="fc" id="L125">			return createDatetime(d.toInstant());</span>
-<span class="fc" id="L126">		} catch (UnsupportedOperationException e) {</span>
+<span class="fc" id="L134">			return createDatetime(d.toInstant());</span>
+<span class="fc" id="L135">		} catch (UnsupportedOperationException e) {</span>
 			// java.sql.Date and java.sql.Time refuse toInstant()
-<span class="fc" id="L128">			return createDatetime(Instant.ofEpochMilli(d.getTime()));</span>
+<span class="fc" id="L137">			return createDatetime(Instant.ofEpochMilli(d.getTime()));</span>
 		}
 	}
 
 	public static ValueMut createUuid(UUID uuid) {
-<span class="fc" id="L133">		return new ValueMut(newUuid(uuid.toString()));</span>
+<span class="fc" id="L142">		return new ValueMut(newUuid(uuid.toString()));</span>
 	}
 
 	public static ValueMut createId(Id id) {
 		try {
-<span class="fc" id="L138">			return new ValueMut(newId(id.getPtr()));</span>
+<span class="fc" id="L147">			return new ValueMut(newId(id.getPtr()));</span>
 		} finally {
-<span class="fc" id="L140">			reachabilityFence(id);</span>
+<span class="fc" id="L149">			reachabilityFence(id);</span>
 		}
 	}
 
 	public static ValueMut createRecordId(RecordId recordId) {
 		try {
-<span class="fc" id="L146">			return new ValueMut(newRecordId(recordId.getPtr()));</span>
+<span class="fc" id="L155">			return new ValueMut(newRecordId(recordId.getPtr()));</span>
 		} finally {
-<span class="fc" id="L148">			reachabilityFence(recordId);</span>
+<span class="fc" id="L157">			reachabilityFence(recordId);</span>
 		}
 	}
 
 	public static ValueMut createGeometry(Geometry geometry) {
 		try {
-<span class="fc" id="L154">			return new ValueMut(newGeometry(geometry.getPtr()));</span>
+<span class="fc" id="L163">			return new ValueMut(newGeometry(geometry.getPtr()));</span>
 		} finally {
-<span class="fc" id="L156">			reachabilityFence(geometry);</span>
+<span class="fc" id="L165">			reachabilityFence(geometry);</span>
 		}
 	}
 
 	public static ValueMut createArray(Array array) {
 		try {
-<span class="fc" id="L162">			return new ValueMut(newArray(array.getPtr()));</span>
+<span class="fc" id="L171">			return new ValueMut(newArray(array.getPtr()));</span>
 		} finally {
-<span class="fc" id="L164">			reachabilityFence(array);</span>
+<span class="fc" id="L173">			reachabilityFence(array);</span>
 		}
 	}
 
 	public static ValueMut createArray(List&lt;ValueMut&gt; values) {
 		// The native side takes ownership of the values.
-<span class="fc" id="L170">		return new ValueMut(newArrayOf(takePtrs(values)));</span>
+<span class="fc" id="L179">		return new ValueMut(newArrayOf(takePtrs(values)));</span>
 	}
 
 	public static ValueMut createObject(Object object) {
 		try {
-<span class="fc" id="L175">			return new ValueMut(newObject(object.getPtr()));</span>
+<span class="fc" id="L184">			return new ValueMut(newObject(object.getPtr()));</span>
 		} finally {
-<span class="fc" id="L177">			reachabilityFence(object);</span>
+<span class="fc" id="L186">			reachabilityFence(object);</span>
 		}
 	}
 
 	public static ValueMut createObject(List&lt;EntryMut&gt; entries) {
 		// The native side takes ownership of the entries.
-<span class="fc" id="L183">		return new ValueMut(newObjectOf(takePtrs(entries)));</span>
+<span class="fc" id="L192">		return new ValueMut(newObjectOf(takePtrs(entries)));</span>
 	}
 
 	public static ValueMut createFile(String bucket, String key) {
-<span class="fc" id="L187">		return new ValueMut(newFile(bucket, key));</span>
+<span class="fc" id="L196">		return new ValueMut(newFile(bucket, key));</span>
 	}
 
 	public static ValueMut createTable(String name) {
-<span class="fc" id="L191">		return new ValueMut(newTable(name));</span>
+<span class="fc" id="L200">		return new ValueMut(newTable(name));</span>
 	}
 
 	/**
@@ -197,7 +206,7 @@ public class ValueMut extends Native {
 	 * valid and reusable.
 	 */
 	ValueMut copy() {
-<span class="fc" id="L200">		return new ValueMut(copy(getPtr()));</span>
+<span class="fc" id="L209">		return new ValueMut(copy(getPtr()));</span>
 	}
 
 	@Override
@@ -213,7 +222,7 @@ public class ValueMut extends Native {
 
 	@Override
 	final NativeCleaner.Deleter deleter() {
-<span class="fc" id="L216">		return ValueMut::deleteInstance;</span>
+<span class="fc" id="L225">		return ValueMut::deleteInstance;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

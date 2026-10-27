@@ -151,7 +151,9 @@ UTC.</div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createDuration(java.time.Duration)" class="member-name-link">createDuration</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;d)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Creates a duration value with full nanosecond precision.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createFile(java.lang.String,java.lang.String)" class="member-name-link">createFile</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;bucket,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;key)</code></div>
@@ -270,6 +272,15 @@ UTC.</div>
 <h3>createDuration</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createDuration</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;d)</span></div>
+<div class="block">Creates a duration value with full nanosecond precision.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>d</code> - the duration; SurrealDB durations are unsigned</dd>
+<dt>Returns:</dt>
+<dd>a new duration value</dd>
+<dt>Throws:</dt>
+<dd><code><a href="SurrealException.html" title="class in com.surrealdb">SurrealException</a></code> - if <code>d</code> is negative</dd>
+</dl>
 </div>
 </section>
 </li>
