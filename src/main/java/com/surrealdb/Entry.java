@@ -6,15 +6,15 @@ package com.surrealdb;
  * Entry provides methods to retrieve the key and value associated with the
  * entry.
  */
-public class Entry extends Native {
+public class Entry extends Native implements AutoCloseable {
 
 	Entry(long ptr) {
 		super(ptr);
 	}
 
-	private static native String getKey(long ptr);
+	private native String getKey(long ptr);
 
-	private static native long getValue(long ptr);
+	private native long getValue(long ptr);
 
 	@Override
 	final native String toString(long ptr);
@@ -25,8 +25,12 @@ public class Entry extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Entry::deleteInstance;
+	}
 
 	public String getKey() {
 		return getKey(getPtr());

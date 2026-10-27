@@ -103,14 +103,6 @@ public final class RecordIdRange {
 		return endInclusive;
 	}
 
-	long startPtr() {
-		return start != null ? start.getPtr() : 0;
-	}
-
-	long endPtr() {
-		return end != null ? end.getPtr() : 0;
-	}
-
 	int bounds() {
 		return (startInclusive ? 0 : START_EXCLUSIVE) | (endInclusive ? 0 : END_EXCLUSIVE);
 	}

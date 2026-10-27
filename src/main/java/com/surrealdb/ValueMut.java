@@ -58,6 +58,8 @@ public class ValueMut extends Native {
 
 	private static native long newTable(String name);
 
+	private native long copy(long ptr);
+
 	public static ValueMut createNone() {
 		return new ValueMut(newNone());
 	}
@@ -136,32 +138,40 @@ public class ValueMut extends Native {
 	}
 
 	public static ValueMut createId(Id id) {
-		return new ValueMut(newId(id.getPtr()));
+		try {
+			return new ValueMut(newId(id.getPtr()));
+		} finally {
+			reachabilityFence(id);
+		}
 	}
 
 	public static ValueMut createRecordId(RecordId recordId) {
-		return new ValueMut(newRecordId(recordId.getPtr()));
+		try {
+			return new ValueMut(newRecordId(recordId.getPtr()));
+		} finally {
+			reachabilityFence(recordId);
+		}
 	}
 
 	public static ValueMut createGeometry(Geometry geometry) {
-		return new ValueMut(newGeometry(geometry.getPtr()));
+		try {
+			return new ValueMut(newGeometry(geometry.getPtr()));
+		} finally {
+			reachabilityFence(geometry);
+		}
 	}
 
 	public static ValueMut createArray(Array array) {
-		return new ValueMut(newArray(array.getPtr()));
+		try {
+			return new ValueMut(newArray(array.getPtr()));
+		} finally {
+			reachabilityFence(array);
+		}
 	}
 
 	public static ValueMut createArray(List<ValueMut> values) {
-		final long[] ptrs = new long[values.size()];
-		int idx = 0;
-		// Retrieve the PTR for each element
-		for (final ValueMut value : values) {
-			ptrs[idx++] = value.getPtr();
-		}
-		final ValueMut value = new ValueMut(newArrayOf(ptrs));
-		// The Values have been moved
-		values.forEach(Native::moved);
-		return value;
+		// The native side takes ownership of the values.
+		return new ValueMut(newArrayOf(takePtrs(values)));
 	}
 
 	/**
@@ -181,30 +191,21 @@ public class ValueMut extends Native {
 		for (final java.lang.Object element : elements) {
 			values.add(ValueBuilder.convert(element));
 		}
-		final long[] ptrs = new long[values.size()];
-		for (int i = 0; i < ptrs.length; i++) {
-			ptrs[i] = values.get(i).getPtr();
-		}
-		final ValueMut value = new ValueMut(newSetOf(ptrs));
-		values.forEach(Native::moved);
-		return value;
+		// The native side takes ownership of the values.
+		return new ValueMut(newSetOf(takePtrs(values)));
 	}
 
 	public static ValueMut createObject(Object object) {
-		return new ValueMut(newObject(object.getPtr()));
+		try {
+			return new ValueMut(newObject(object.getPtr()));
+		} finally {
+			reachabilityFence(object);
+		}
 	}
 
 	public static ValueMut createObject(List<EntryMut> entries) {
-		final long[] ptrs = new long[entries.size()];
-		int idx = 0;
-		// Retrieve the PTR for each element
-		for (final EntryMut entry : entries) {
-			ptrs[idx++] = entry.getPtr();
-		}
-		final ValueMut value = new ValueMut(newObjectOf(ptrs));
-		// The Entries have been moved
-		entries.forEach(Native::moved);
-		return value;
+		// The native side takes ownership of the entries.
+		return new ValueMut(newObjectOf(takePtrs(entries)));
 	}
 
 	public static ValueMut createFile(String bucket, String key) {
@@ -213,6 +214,15 @@ public class ValueMut extends Native {
 
 	public static ValueMut createTable(String name) {
 		return new ValueMut(newTable(name));
+	}
+
+	/**
+	 * Returns an independent copy of this value, owned by the caller. Unlike
+	 * {@link #createArray(List)} and {@code EntryMut.newEntry}, this value is left
+	 * valid and reusable.
+	 */
+	ValueMut copy() {
+		return new ValueMut(copy(getPtr()));
 	}
 
 	@Override
@@ -224,6 +234,10 @@ public class ValueMut extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return ValueMut::deleteInstance;
+	}
 }

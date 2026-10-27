@@ -10,7 +10,7 @@ import java.util.Objects;
  * interact with and retrieve values from the array. It implements the Iterable
  * interface for Value type.
  */
-public class Array extends Native implements Iterable<Value> {
+public class Array extends Native implements Iterable<Value>, AutoCloseable {
 
 	Array(long ptr) {
 		super(ptr);
@@ -42,29 +42,20 @@ public class Array extends Native implements Iterable<Value> {
 	 * null-call overload ambiguity.
 	 */
 	public static Array fromList(List<?> elements) {
-		Objects.requireNonNull(elements, "elements");
-		final long[] ptrs = new long[elements.size()];
-		final ValueMut[] muts = new ValueMut[elements.size()];
-		for (int i = 0; i < elements.size(); i++) {
-			muts[i] = ValueBoxing.box(elements.get(i));
-			ptrs[i] = muts[i].getPtr();
-		}
-		final Array array = new Array(newOf(ptrs));
-		for (final ValueMut m : muts) {
-			m.moved();
-		}
-		return array;
+		// Everything is boxed first, so a failure leaves nothing half handed over.
+		// The native side then takes ownership of the boxed values.
+		return new Array(newOf(ValueBoxing.boxAndTakePtrs(elements)));
 	}
 
 	private static native long newOf(long[] valueMutPtrs);
 
-	private static native long get(long ptr, int idx);
+	private native long get(long ptr, int idx);
 
-	private static native int len(long ptr);
+	private native int len(long ptr);
 
-	private static native long iterator(long ptr);
+	private native long iterator(long ptr);
 
-	private static native long synchronizedIterator(long ptr);
+	private native long synchronizedIterator(long ptr);
 
 	@Override
 	final native String toString(long ptr);
@@ -83,8 +74,12 @@ public class Array extends Native implements Iterable<Value> {
 		return len(getPtr());
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Array::deleteInstance;
+	}
 
 	@Override
 	final public Iterator<Value> iterator() {
