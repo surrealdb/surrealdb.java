@@ -1,10 +1,13 @@
 package com.surrealdb;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -188,5 +192,101 @@ public class SetAndRangeBoundsTests {
 	@Test
 	void setsRemote() {
 		withServer(SetAndRangeBoundsTests::sets);
+	}
+
+	public static class Nested {
+		public List<Set<Long>> listOfSets;
+		public Set<Set<Long>> setOfSets;
+		public List<List<Long>> listOfLists;
+		public List<List<Item>> listOfItemLists;
+
+		public Nested() {
+		}
+	}
+
+	public static class Item {
+		public String name;
+
+		public Item() {
+		}
+	}
+
+	@Test
+	void nestedCollectionsKeepDeclaredTypes() {
+		withEmbedded(surreal -> {
+			final Nested nested = surreal
+					.query("RETURN { listOfSets: [<set>[2, 1, 2], <set>[3]], "
+							+ "setOfSets: <set>[<set>[2, 1], <set>[3]], listOfLists: [[1, 2], [3]], "
+							+ "listOfItemLists: [[{ name: 'a' }, { name: 'b' }], [{ name: 'c' }]] }")
+					.take(0).get(Nested.class);
+			assertEquals(2, nested.listOfSets.size());
+			for (final java.lang.Object element : nested.listOfSets) {
+				assertTrue(element instanceof Set, "List<Set<Long>> element is " + element.getClass());
+			}
+			assertEquals(new TreeSet<>(Arrays.asList(1L, 2L)), nested.listOfSets.get(0));
+			assertEquals(Collections.singleton(3L), nested.listOfSets.get(1));
+
+			assertEquals(2, nested.setOfSets.size());
+			for (final java.lang.Object element : nested.setOfSets) {
+				assertTrue(element instanceof Set, "Set<Set<Long>> element is " + element.getClass());
+			}
+			assertTrue(nested.setOfSets.contains(new TreeSet<>(Arrays.asList(1L, 2L))));
+			assertTrue(nested.setOfSets.contains(Collections.singleton(3L)));
+
+			assertEquals(Arrays.asList(Arrays.asList(1L, 2L), Collections.singletonList(3L)), nested.listOfLists);
+
+			assertEquals(2, nested.listOfItemLists.size());
+			assertEquals("a", nested.listOfItemLists.get(0).get(0).name);
+			assertEquals("b", nested.listOfItemLists.get(0).get(1).name);
+			assertEquals("c", nested.listOfItemLists.get(1).get(0).name);
+		});
+	}
+
+	@Test
+	void nestedSetsFromArrays() {
+		withEmbedded(surreal -> {
+			// Plain arrays convert to the declared Set types as well.
+			final Nested nested = surreal.query("RETURN { listOfSets: [[2, 1, 2]], setOfSets: [[4, 4]] }").take(0)
+					.get(Nested.class);
+			assertEquals(Collections.singletonList(new TreeSet<>(Arrays.asList(1L, 2L))), nested.listOfSets);
+			assertEquals(Collections.singleton(Collections.singleton(4L)), nested.setOfSets);
+		});
+	}
+
+	@Test
+	void createSetCopiesCallerValues() {
+		withEmbedded(surreal -> {
+			final ValueMut shared = ValueMut.createLong(7L);
+			final ValueMut other = ValueMut.createLong(8L);
+			// The same caller value twice is copied each time and collapses in the set.
+			final ValueMut set = ValueMut.createSet(Arrays.asList(shared, shared, other));
+			final Map<String, java.lang.Object> bindings = new HashMap<>();
+			bindings.put("s", set);
+			bindings.put("v", shared);
+			final Response response = surreal.query("RETURN $s; RETURN $v", bindings);
+			assertEquals(Arrays.asList(7L, 8L), longs(response.take(0).getSet()));
+			// The caller's values were not consumed by the set.
+			assertEquals(7L, response.take(1).getLong());
+			final ValueMut again = ValueMut.createSet(Arrays.asList(shared, other));
+			assertEquals("set",
+					surreal.query("RETURN type::of($s)", Collections.singletonMap("s", again)).take(0).getString());
+			assertEquals("7", shared.toString());
+			assertEquals("8", other.toString());
+		});
+	}
+
+	@Test
+	void createSetRejectsUnsupportedElements() {
+		withEmbedded(surreal -> {
+			final ValueMut kept = ValueMut.createLong(1L);
+			// The converted elements before the failing one are freed, and the caller's
+			// value is untouched.
+			assertThrows(SurrealException.class, () -> ValueMut.createSet(Arrays.asList(kept, 2L, BigInteger.ONE)));
+			assertEquals("1", kept.toString());
+			// Later calls still work.
+			final ValueMut set = ValueMut.createSet(Arrays.asList(kept, 2L));
+			assertEquals(Arrays.asList(1L, 2L),
+					longs(surreal.query("RETURN $s", Collections.singletonMap("s", set)).take(0).getSet()));
+		});
 	}
 }

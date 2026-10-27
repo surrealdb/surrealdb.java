@@ -1025,6 +1025,7 @@ public class Surreal extends Native implements AutoCloseable {
 					upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 			ValueBuilder.releaseConverted(valueMut, content);
@@ -1315,6 +1316,7 @@ public class Surreal extends Native implements AutoCloseable {
 					upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 			ValueBuilder.releaseConverted(valueMut, content);
@@ -1680,6 +1682,7 @@ public class Surreal extends Native implements AutoCloseable {
 			final long endPtr = end != null ? end.getPtr() : 0;
 			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 		}
@@ -1830,6 +1833,7 @@ public class Surreal extends Native implements AutoCloseable {
 			final long endPtr = end != null ? end.getPtr() : 0;
 			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 		}

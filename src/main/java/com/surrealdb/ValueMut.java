@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -176,7 +175,8 @@ public class ValueMut extends Native {
 
 	/**
 	 * Creates a set value: a sorted collection without duplicates, SurrealQL's
-	 * {@code set} type. Elements are converted like query bindings.
+	 * {@code set} type. Elements are converted like query bindings, so a
+	 * {@code ValueMut} element is copied and stays usable by the caller.
 	 * <p>
 	 * A {@link java.util.Set} passed as a binding or POJO field is still sent as an
 	 * array, because a set does not coerce into an {@code array} field. Use this
@@ -187,12 +187,16 @@ public class ValueMut extends Native {
 	 * @return the set value
 	 */
 	public static ValueMut createSet(Collection<?> elements) {
-		final List<ValueMut> values = new ArrayList<>(elements.size());
-		for (final java.lang.Object element : elements) {
-			values.add(ValueBuilder.convert(element));
+		// A caller's ValueMut element is copied, not consumed.
+		final List<ValueMut> values = ValueBuilder.convertElements(elements);
+		try {
+			// The native side takes ownership of the values.
+			return new ValueMut(newSetOf(takePtrs(values)));
+		} catch (Throwable t) {
+			// Whatever was not handed over is still ours to free.
+			ValueBuilder.freeAll(values);
+			throw t;
 		}
-		// The native side takes ownership of the values.
-		return new ValueMut(newSetOf(takePtrs(values)));
 	}
 
 	public static ValueMut createObject(Object object) {

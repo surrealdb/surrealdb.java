@@ -249,7 +249,13 @@ class ValueClassConverter<T> {
 			return convertObject(elementType, value);
 		}
 		if (value.isArray() || value.isSet()) {
-			return convertArray(value, elementType, elementGenericType);
+			// A nested collection is converted to the collection type declared for the
+			// element (List<Set<T>>, Set<Set<T>>, List<List<Pojo>>), with the generic
+			// type of that element, not of the outer collection.
+			if (elementType == null || Value.class.equals(elementType)) {
+				return convertArray(value, elementType, elementGenericType);
+			}
+			return convertValueToType(value, elementType, elementGenericType);
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
 		return convertSingleValue(value);
