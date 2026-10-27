@@ -8,15 +8,15 @@ import java.util.Objects;
  * implements the Java Iterator interface to provide a seamless way to iterate
  * over Entry objects.
  */
-public class EntryIterator extends Native implements Iterator<Entry> {
+public class EntryIterator extends Native implements Iterator<Entry>, AutoCloseable {
 
 	EntryIterator(long ptr) {
 		super(ptr);
 	}
 
-	private static native boolean hasNext(long ptr);
+	private native boolean hasNext(long ptr);
 
-	private static native long next(long ptr);
+	private native long next(long ptr);
 
 	@Override
 	final String toString(long ptr) {
@@ -33,8 +33,12 @@ public class EntryIterator extends Native implements Iterator<Entry> {
 		return ptr1 == ptr2;
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return EntryIterator::deleteInstance;
+	}
 
 	@Override
 	public boolean hasNext() {

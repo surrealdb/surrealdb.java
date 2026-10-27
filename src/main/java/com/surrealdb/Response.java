@@ -6,16 +6,20 @@ import java.util.Objects;
  * The Response class is a specialized wrapper for handling responses from
  * SurrealDB.
  */
-public class Response extends Native {
+public class Response extends Native implements AutoCloseable {
 
 	Response(long ptr) {
 		super(ptr);
 	}
 
-	private static native int size(long ptr);
+	private native int size(long ptr);
+
+	private static native void deleteInstance(long ptr);
 
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Response::deleteInstance;
+	}
 
 	private native long take(long ptr, int num);
 
@@ -24,7 +28,7 @@ public class Response extends Native {
 	}
 
 	public <T> T take(Class<T> type, int num) {
-		return take(num).get(type);
+		return take(num).getAndClose(type);
 	}
 
 	public int size() {

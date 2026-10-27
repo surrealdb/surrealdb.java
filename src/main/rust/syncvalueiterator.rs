@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::with_env_body;
 use jni::objects::JClass;
 use jni::sys::{jboolean, jlong};
@@ -36,4 +34,13 @@ pub extern "system" fn Java_com_surrealdb_SynchronizedValueIterator_next<'local>
             SurrealError::NoSuchElementException.exception(env, || 0)
         }
     })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_SynchronizedValueIterator_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::JniTypes::release_sync_array_iter(ptr);
 }
