@@ -303,9 +303,9 @@ public class Surreal extends Native implements AutoCloseable {
 	 * id of (e.g. one started elsewhere or read from a notification).
 	 *
 	 * <p>
-	 * A kill the server rejects raises an {@link InternalException} ("Cannot
-	 * execute KILL statement using id: ..."), as for an id that names no live
-	 * query, one that was already killed, or one this session may not kill.
+	 * A kill the server rejects raises a {@link QueryException} ("Cannot execute
+	 * KILL statement using id: ..."), as for an id that names no live query, one
+	 * that was already killed, or one this session may not kill.
 	 *
 	 * @param queryId
 	 *            the live query UUID to terminate
