@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -472,5 +473,100 @@ public class NativeLifecycleTests {
 			assertNotNull(surreal.query("RETURN $a", Collections.singletonMap("a", "x")).take(0));
 			assertTrue(callerOwned.getPtr() != 0);
 		}
+	}
+
+	@Test
+	void manyResponsesAreFreedExplicitlyAndByTheCleaner() throws InterruptedException {
+		// Response's deleter used to free the wrong Rust type, which is undefined
+		// behaviour as soon as the cleaner or an explicit release ran it.
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final List<Value> taken = new ArrayList<>();
+			for (int i = 0; i < 1000; i++) {
+				final Response response = surreal.query("RETURN 1");
+				// A value taken from a response keeps working after the response is freed.
+				taken.add(response.take(0));
+				response.deleteInstance();
+				assertEquals(0L, response.getPtr());
+				assertDoesNotThrow(response::deleteInstance);
+			}
+			// Left to the garbage collector.
+			for (int i = 0; i < 1000; i++) {
+				assertEquals(2L, surreal.query("RETURN 1; RETURN 2").take(1).getLong());
+			}
+			System.gc();
+			Thread.sleep(100);
+			for (final Value v : taken) {
+				assertEquals(1L, v.getLong());
+			}
+			assertEquals(1L, surreal.query("RETURN 1").take(0).getLong());
+		}
+	}
+
+	@Test
+	void everyNativeTypeCanBeReleasedExplicitly() throws InterruptedException {
+		// One of each handle type, released by its own deleter (and a second set left
+		// to the cleaner). A deleter that frees a different type than the one that was
+		// boxed would corrupt the heap here; debug builds refuse the release instead.
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			surreal.query("CREATE person:1 SET name = 'a', tags = ['x']");
+			for (int round = 0; round < 2; round++) {
+				final boolean explicit = round == 0;
+				final Response response = surreal.query("SELECT * FROM person");
+				final Value value = response.take(0);
+				final Array array = value.getArray();
+				final Iterator<Value> arrayIter = array.iterator();
+				final Iterator<Value> syncArrayIter = array.synchronizedIterator();
+				final Object object = array.get(0).getObject();
+				final Iterator<Entry> objectIter = object.iterator();
+				final Iterator<Entry> syncObjectIter = object.synchronizedIterator();
+				final Entry entry = objectIter.next();
+				final ValueMut valueMut = ValueMut.createString("v");
+				final EntryMut entryMut = EntryMut.newEntry("k", ValueMut.createLong(1));
+				final Transaction txn = surreal.beginTransaction();
+				final RecordId recordId = object.get("id").getRecordId();
+				final Id id = Id.from(1L, "a");
+				final Geometry geometry = Geometry.point(1.0, 2.0);
+				assertTrue(syncArrayIter.hasNext());
+				assertTrue(syncObjectIter.hasNext());
+				assertTrue(arrayIter.hasNext());
+				if (explicit) {
+					for (final Native n : new Native[]{response, value, array, (Native) arrayIter,
+							(Native) syncArrayIter, object, (Native) objectIter, (Native) syncObjectIter, entry,
+							valueMut, entryMut, txn, recordId, id, geometry}) {
+						n.deleteInstance();
+						assertEquals(0L, n.getPtr());
+					}
+				}
+			}
+			System.gc();
+			Thread.sleep(100);
+			assertEquals(1L, surreal.query("RETURN 1").take(0).getLong());
+		}
+	}
+
+	@Test
+	void failedFromListFreesWhatWasBoxedAndLeavesLaterCallsWorking() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final java.lang.Object unsupported = new java.lang.Object();
+			// Valid elements first, so some are already boxed when the failure hits.
+			final List<java.lang.Object> bad = Arrays.asList("a", 1L, true, unsupported);
+			assertThrows(IllegalArgumentException.class, () -> Array.fromList(bad));
+			assertThrows(IllegalArgumentException.class, () -> Id.fromList(bad));
+			assertThrows(IllegalArgumentException.class, () -> Array.of("a", 1L, unsupported));
+			assertThrows(IllegalArgumentException.class, () -> Id.from("a", 1L, unsupported));
+			assertThrows(NullPointerException.class, () -> Array.fromList(null));
+			assertThrows(NullPointerException.class, () -> Id.fromList(null));
+			// Later calls still work.
+			final Array ok = Array.fromList(Arrays.asList("a", 1L, true));
+			assertEquals(3, ok.len());
+			assertEquals("a", ok.get(0).getString());
+			assertEquals(1L, ok.get(1).getLong());
+			assertNotNull(Id.fromList(Arrays.asList("a", 1L)));
+			assertEquals(1L, surreal.query("RETURN 1").take(0).getLong());
+		}
+		System.gc();
 	}
 }

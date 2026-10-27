@@ -80,5 +80,5 @@ pub extern "system" fn Java_com_surrealdb_Entry_deleteInstance<'local>(
     _class: jni::objects::JClass<'local>,
     ptr: jni::sys::jlong,
 ) {
-    crate::release_instance::<(String, std::sync::Arc<surrealdb::types::Value>)>(ptr);
+    crate::JniTypes::release_key_value(ptr);
 }

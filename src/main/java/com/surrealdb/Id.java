@@ -1,6 +1,5 @@
 package com.surrealdb;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -46,14 +45,9 @@ public class Id extends Native {
 	 * distinctly from {@code from(...)} to avoid a null-call overload ambiguity.
 	 */
 	public static Id fromList(List<?> elements) {
-		Objects.requireNonNull(elements, "elements");
-		final List<ValueMut> muts = new ArrayList<>(elements.size());
-		for (final java.lang.Object e : elements) {
-			muts.add(ValueBoxing.box(e));
-		}
-		// Box everything first, so a failure leaves nothing half handed over. The
-		// native side then takes ownership of the boxed values.
-		return new Id(newArrayId(takePtrs(muts)));
+		// Everything is boxed first, so a failure leaves nothing half handed over.
+		// The native side then takes ownership of the boxed values.
+		return new Id(newArrayId(ValueBoxing.boxAndTakePtrs(elements)));
 	}
 
 	private static native long newLongId(long id);
