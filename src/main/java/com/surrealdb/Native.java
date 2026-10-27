@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Base for types backed by a native pointer. Instances are only valid for the
- * lifetime of the native resource (e.g. the parent {@link Value} or connection
- * they were obtained from). Using an instance after the underlying resource has
- * been released may cause undefined behavior or native errors.
+ * Base for types backed by a native pointer. Each instance owns its native
+ * object: the native side clones a shared reference or copies the data when it
+ * creates the instance, so it stays valid on its own, independently of the
+ * {@link Value} or connection it was obtained from. The native object is freed
+ * when the instance is garbage collected.
  */
 public abstract class Native {
 
@@ -51,7 +52,13 @@ public abstract class Native {
 	}
 
 	final void deleteInstance() {
-		handle.release();
+		try {
+			handle.release();
+		} finally {
+			// Keep this object reachable until the release has completed, so a
+			// try-with-resources block around a native call cannot lose it early.
+			reachabilityFence(this);
+		}
 	}
 
 	/**
@@ -72,18 +79,26 @@ public abstract class Native {
 	}
 
 	/**
-	 * {@link #takePtr()} for every element of {@code natives}, read once. An
-	 * element that appears twice is rejected before anything is taken: the native
-	 * side would otherwise get a 0 pointer for it and fail with a less helpful
-	 * error.
+	 * {@link #takePtr()} for every element of {@code natives}, read once. A
+	 * {@code null} element, or an element that appears twice, is rejected before
+	 * anything is taken: the native side would otherwise get a 0 pointer for it and
+	 * fail with a less helpful error, after the earlier elements were already
+	 * handed over.
 	 */
 	static long[] takePtrs(List<? extends Native> natives) {
 		final Native[] array = natives.toArray(new Native[0]);
-		final Set<Native> seen = Collections.newSetFromMap(new IdentityHashMap<Native, Boolean>());
+		// Validate everything before taking anything: a failure must not leave
+		// the earlier elements taken from their owners and never handed over.
 		for (final Native n : array) {
-			if (!seen.add(n)) {
-				throw new IllegalArgumentException(
-						"The same " + n.getClass().getSimpleName() + " was passed more than once");
+			java.util.Objects.requireNonNull(n, "A Native element cannot be null");
+		}
+		if (array.length > 1) {
+			final Set<Native> seen = Collections.newSetFromMap(new IdentityHashMap<Native, Boolean>(array.length));
+			for (final Native n : array) {
+				if (!seen.add(n)) {
+					throw new IllegalArgumentException(
+							"The same " + n.getClass().getSimpleName() + " was passed more than once");
+				}
 			}
 		}
 		final long[] ptrs = new long[array.length];

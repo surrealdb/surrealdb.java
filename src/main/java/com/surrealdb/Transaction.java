@@ -72,7 +72,7 @@ public class Transaction extends Native {
 			}
 			return new Response(queryWithBindings(getPtr(), sql, keys, values));
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseParams(valueMuts, params);
 		}
 	}
 

@@ -148,4 +148,51 @@ class ValueBuilder {
 				.collect(Collectors.toMap(Map.Entry::getKey, entry -> convert(entry.getValue())));
 	}
 
+	/**
+	 * Frees the temporary {@code ValueMut} that {@link #convert} created from
+	 * {@code original}, once the native call that borrowed it has returned. A
+	 * {@code ValueMut} supplied by the caller is passed through unchanged by
+	 * {@code convert}; it belongs to the caller and is only kept reachable.
+	 */
+	static void releaseConverted(final ValueMut converted, final java.lang.Object original) {
+		if (converted == null) {
+			return;
+		}
+		if (isCallerOwned(converted, original)) {
+			Native.reachabilityFence(converted);
+		} else {
+			converted.deleteInstance();
+		}
+	}
+
+	/**
+	 * {@link #releaseConverted} for each element of {@code converted}, which was
+	 * converted from the element at the same index of {@code originals}. Elements
+	 * not converted yet (null) are skipped.
+	 */
+	static void releaseAll(final ValueMut[] converted, final java.lang.Object[] originals) {
+		for (int i = 0; i < converted.length; i++) {
+			releaseConverted(converted[i], originals[i]);
+		}
+	}
+
+	/**
+	 * {@link #releaseConverted} for each value of {@code converted}, which was
+	 * produced by {@link #convertParams} from {@code originals}.
+	 */
+	static void releaseParams(final Map<String, ValueMut> converted, final Map<String, ?> originals) {
+		for (final Map.Entry<String, ValueMut> entry : converted.entrySet()) {
+			releaseConverted(entry.getValue(), originals.get(entry.getKey()));
+		}
+	}
+
+	// convert() hands back the caller's own ValueMut, possibly inside Optionals.
+	private static boolean isCallerOwned(final ValueMut converted, final java.lang.Object original) {
+		java.lang.Object o = original;
+		while (o instanceof Optional) {
+			o = ((Optional<?>) o).orElse(null);
+		}
+		return converted == o;
+	}
+
 }

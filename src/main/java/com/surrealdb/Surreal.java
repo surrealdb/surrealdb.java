@@ -237,7 +237,7 @@ public class Surreal extends Native implements AutoCloseable {
 			}
 			return new Value(run(getPtr(), name, ptrs));
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseAll(valueMuts, args);
 		}
 	}
 
@@ -373,7 +373,7 @@ public class Surreal extends Native implements AutoCloseable {
 			try {
 				return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
 			} finally {
-				reachabilityFence(paramsValue);
+				ValueBuilder.releaseConverted(paramsValue, rec.getParams());
 			}
 		} else if (credential instanceof BearerCredential) {
 			BearerCredential bearer = (BearerCredential) credential;
@@ -408,7 +408,7 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
 		} finally {
-			reachabilityFence(paramsValue);
+			ValueBuilder.releaseConverted(paramsValue, record.getParams());
 		}
 	}
 
@@ -567,7 +567,7 @@ public class Surreal extends Native implements AutoCloseable {
 			}
 			return new Response(queryWithBindings(getPtr(), sql, keys, values));
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseParams(valueMuts, params);
 		}
 	}
 
@@ -616,7 +616,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new Value(valuePtr);
 		} finally {
 			reachabilityFence(recordId);
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -661,12 +661,12 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T> List<Value> create(String target, T... contents) {
 		final ValueMut[] valueMuts = convertAll(contents);
-		final long[] valueMutPtrs = ptrs(valueMuts);
 		try {
+			final long[] valueMutPtrs = ptrs(valueMuts);
 			final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseAll(valueMuts, contents);
 		}
 	}
 
@@ -716,12 +716,12 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T> List<Value> insert(String target, T... contents) {
 		final ValueMut[] valueMuts = convertAll(contents);
-		final long[] valueMutPtrs = ptrs(valueMuts);
 		try {
+			final long[] valueMutPtrs = ptrs(valueMuts);
 			final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseAll(valueMuts, contents);
 		}
 	}
 
@@ -773,7 +773,7 @@ public class Surreal extends Native implements AutoCloseable {
 			final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -818,12 +818,12 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
 		final ValueMut[] valueMuts = convertAll(contents);
-		final long[] valueMutPtrs = ptrs(valueMuts);
 		try {
+			final long[] valueMutPtrs = ptrs(valueMuts);
 			final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
-			reachabilityFence(valueMuts);
+			ValueBuilder.releaseAll(valueMuts, contents);
 		}
 	}
 
@@ -930,7 +930,7 @@ public class Surreal extends Native implements AutoCloseable {
 		} finally {
 			reachabilityFence(from);
 			reachabilityFence(to);
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -986,7 +986,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new Value(valuePtr);
 		} finally {
 			reachabilityFence(recordId);
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1015,7 +1015,7 @@ public class Surreal extends Native implements AutoCloseable {
 		} finally {
 			reachabilityFence(start);
 			reachabilityFence(end);
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1065,7 +1065,7 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1093,7 +1093,7 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1170,7 +1170,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new SynchronizedValueIterator(
 					updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1199,7 +1199,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new SynchronizedValueIterator(
 					updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1277,7 +1277,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new Value(valuePtr);
 		} finally {
 			reachabilityFence(recordId);
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1305,7 +1305,7 @@ public class Surreal extends Native implements AutoCloseable {
 		} finally {
 			reachabilityFence(start);
 			reachabilityFence(end);
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1355,7 +1355,7 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1381,7 +1381,7 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1460,7 +1460,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new SynchronizedValueIterator(
 					upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 
@@ -1488,7 +1488,7 @@ public class Surreal extends Native implements AutoCloseable {
 			return new SynchronizedValueIterator(
 					upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
-			reachabilityFence(valueMut);
+			ValueBuilder.releaseConverted(valueMut, content);
 		}
 	}
 

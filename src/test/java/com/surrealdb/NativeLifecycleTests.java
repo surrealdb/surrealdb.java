@@ -2,7 +2,9 @@ package com.surrealdb;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -184,6 +186,87 @@ public class NativeLifecycleTests {
 				() -> ValueMut.createObject(Arrays.asList(entry, entry)));
 		assertEquals("The same EntryMut was passed more than once", e2.getMessage());
 		assertNotEquals(0L, entry.getPtr());
+	}
+
+	@Test
+	void nullElementIsRejectedBeforeAnythingIsTaken() {
+		// A null must not leak the elements before it: they stay with their owner.
+		final ValueMut v1 = ValueMut.createString("a");
+		final NullPointerException e = assertThrows(NullPointerException.class,
+				() -> ValueMut.createArray(Arrays.asList(v1, null)));
+		assertEquals("A Native element cannot be null", e.getMessage());
+		assertNotEquals(0L, v1.getPtr());
+		assertDoesNotThrow(() -> ValueMut.createArray(Arrays.asList(v1)));
+
+		// Two nulls used to fail with an unrelated NullPointerException.
+		final ValueMut v2 = ValueMut.createString("b");
+		final NullPointerException e2 = assertThrows(NullPointerException.class,
+				() -> ValueMut.createArray(Arrays.asList(v2, null, null)));
+		assertEquals("A Native element cannot be null", e2.getMessage());
+		assertNotEquals(0L, v2.getPtr());
+		final NullPointerException e3 = assertThrows(NullPointerException.class,
+				() -> ValueMut.createArray(Arrays.asList(null, null)));
+		assertEquals("A Native element cannot be null", e3.getMessage());
+		assertDoesNotThrow(() -> ValueMut.createArray(Arrays.asList(v2)));
+
+		final EntryMut entry = EntryMut.newEntry("k", ValueMut.createString("a"));
+		assertThrows(NullPointerException.class, () -> ValueMut.createObject(Arrays.asList(entry, null)));
+		assertNotEquals(0L, entry.getPtr());
+		assertDoesNotThrow(() -> ValueMut.createObject(Arrays.asList(entry)));
+	}
+
+	private static ValueMut newContent() {
+		return ValueMut.createObject(Arrays.asList(EntryMut.newEntry("name", ValueMut.createString("x"))));
+	}
+
+	@Test
+	void callerSuppliedValueMutSurvivesWriteCalls() {
+		// The SDK frees the temporary ValueMuts it converts, but a ValueMut passed in
+		// by the caller belongs to the caller and must stay usable.
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+
+			final ValueMut forCreate = newContent();
+			surreal.create("person", forCreate);
+			assertNotEquals(0L, forCreate.getPtr());
+			assertDoesNotThrow(() -> surreal.create("person", forCreate));
+
+			final ValueMut forRecordCreate = newContent();
+			surreal.create(new RecordId("person", 1), forRecordCreate);
+			assertNotEquals(0L, forRecordCreate.getPtr());
+			assertDoesNotThrow(() -> surreal.create(new RecordId("person", 2), forRecordCreate));
+
+			final ValueMut forInsert = newContent();
+			surreal.insert("person", forInsert);
+			assertNotEquals(0L, forInsert.getPtr());
+			assertDoesNotThrow(() -> surreal.insert("person", forInsert));
+
+			final ValueMut forUpdate = newContent();
+			surreal.update("person", UpType.MERGE, forUpdate).forEachRemaining(v -> {
+			});
+			assertNotEquals(0L, forUpdate.getPtr());
+			assertDoesNotThrow(() -> surreal.update(new RecordId("person", 1), UpType.MERGE, forUpdate));
+
+			final ValueMut param = ValueMut.createString("x");
+			final Map<String, java.lang.Object> params = new HashMap<>();
+			params.put("name", param);
+			params.put("other", "temporary");
+			assertEquals(1,
+					surreal.query("SELECT * FROM person WHERE name = $name LIMIT 1", params).take(0).getArray().len());
+			assertNotEquals(0L, param.getPtr());
+			assertDoesNotThrow(() -> surreal.query("RETURN $name", params));
+
+			final ValueMut arg = ValueMut.createString("x");
+			surreal.run("string::uppercase", arg);
+			assertNotEquals(0L, arg.getPtr());
+			assertDoesNotThrow(() -> surreal.run("string::uppercase", arg));
+
+			// Also when the caller's value is wrapped in an Optional.
+			final ValueMut optional = newContent();
+			surreal.create("person", java.util.Optional.of(optional));
+			assertNotEquals(0L, optional.getPtr());
+			assertDoesNotThrow(() -> surreal.create("person", optional));
+		}
 	}
 
 	@Test

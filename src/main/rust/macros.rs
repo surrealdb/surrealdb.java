@@ -267,25 +267,17 @@ macro_rules! take_value_mut_instance {
     };
 }
 
-/// Takes ownership of every instance in `ptrs`. The Java side marks all of them as
-/// moved, so each valid pointer is consumed even when another one is invalid: the
-/// taken instances are then dropped and the first error is thrown. A pointer that
-/// appears twice (the same Java object passed twice) is only taken once: taking it
-/// again would free it twice.
+/// Takes ownership of every instance in `ptrs`. The Java side has already
+/// cleared each handle with `takePtr()`, which also rejects a repeated element,
+/// so the same non-zero pointer is never passed twice. Every valid pointer is
+/// consumed even when an earlier one is invalid (0): the taken instances are then
+/// dropped and the first error is thrown.
 #[macro_export]
 macro_rules! take_instances {
     ($env:expr, $ptrs:expr, $t:ty, $typ:expr, $default_fn:expr) => {{
         let mut instances = Vec::with_capacity($ptrs.len());
-        let mut taken = std::collections::HashSet::with_capacity($ptrs.len());
         let mut error = None;
         for ptr in $ptrs {
-            if ptr != 0 && !taken.insert(ptr) {
-                error.get_or_insert($crate::SurrealError::SurrealDBJni(format!(
-                    "The same {} was passed more than once",
-                    $typ.as_str()
-                )));
-                continue;
-            }
             match $crate::take_instance::<$t>(ptr, $typ) {
                 Ok(s) => instances.push(s),
                 Err(e) => {
@@ -304,19 +296,6 @@ macro_rules! take_instances {
 macro_rules! get_value_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {
         match $crate::get_instance::<surrealdb::types::Value>($id, JniTypes::ValueMut) {
-            Ok(s) => s,
-            Err(e) => return e.exception($env, $default_fn),
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! take_entry_mut_instance {
-    ($env:expr, $id:expr, $default_fn:expr) => {
-        match $crate::take_instance::<(String, surrealdb::types::Value)>(
-            $id,
-            JniTypes::KeyValueMutEntry,
-        ) {
             Ok(s) => s,
             Err(e) => return e.exception($env, $default_fn),
         }
