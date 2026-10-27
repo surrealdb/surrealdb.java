@@ -675,13 +675,29 @@ pub extern "system" fn Java_com_surrealdb_Surreal_kill<'local>(
         };
         let mut params = BTreeMap::new();
         params.insert("id".to_string(), Value::Uuid(uuid));
-        // Best-effort: the surrealdb client SDK discards the KILL statement result
-        // (`QueryType::Kill => {}` when building IndexedResults) and its typed kill is
-        // `pub(crate)`, so a server-side KILL rejection (e.g. a live query owned by
-        // another session) is not observable from the client. Only transport/connection
-        // errors surface here, via check_query_result!.
-        let res = surrealdb_query::<Value>(surreal, "KILL $id", Some(params));
-        let _ = check_query_result!(env, res, || ());
+        // The surrealdb client drops the result of every KILL statement
+        // (`QueryType::Kill => {}` when it builds IndexedResults) and its typed kill is
+        // `pub(crate)`, so a plain `KILL $id` cannot report a rejection. Running it in a
+        // transaction makes a rejection observable: a failed KILL aborts the
+        // transaction, so the COMMIT that follows returns an error ("Cannot COMMIT: the
+        // transaction was aborted due to a prior error"). Results keep the index of their
+        // statement even though KILL's is dropped: BEGIN=0, KILL=1 (dropped), COMMIT=2.
+        // The client drops the KILL row, so its own error cannot be reached; a query
+        // error naming the live query id is raised instead, with the aborted COMMIT as
+        // its cause.
+        let res = surrealdb_query::<Value>(surreal, "BEGIN; KILL $id; COMMIT;", Some(params));
+        let mut res = check_query_result!(env, res, || ());
+        if let Err(err) = res.take::<Value>(0) {
+            return SurrealError::SurrealDB(err).exception(env, || ());
+        }
+        if let Err(err) = res.take::<Value>(2) {
+            let err = surrealdb::Error::query(
+                format!("Cannot execute KILL statement using id: u'{uuid}'"),
+                None,
+            )
+            .with_cause(err);
+            return SurrealError::SurrealDB(err).exception(env, || ());
+        }
     })
 }
 
