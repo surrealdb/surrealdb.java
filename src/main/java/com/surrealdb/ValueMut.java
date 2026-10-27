@@ -164,19 +164,8 @@ public class ValueMut extends Native {
 	}
 
 	public static ValueMut createArray(List<ValueMut> values) {
-		final long[] ptrs = new long[values.size()];
-		int idx = 0;
-		// Retrieve the PTR for each element
-		for (final ValueMut value : values) {
-			ptrs[idx++] = value.getPtr();
-		}
-		try {
-			return new ValueMut(newArrayOf(ptrs));
-		} finally {
-			// The native side took ownership of the values. Marking them moved even if
-			// the call failed risks a leak, never a double free.
-			values.forEach(Native::moved);
-		}
+		// The native side takes ownership of the values.
+		return new ValueMut(newArrayOf(takePtrs(values)));
 	}
 
 	public static ValueMut createObject(Object object) {
@@ -188,18 +177,8 @@ public class ValueMut extends Native {
 	}
 
 	public static ValueMut createObject(List<EntryMut> entries) {
-		final long[] ptrs = new long[entries.size()];
-		int idx = 0;
-		// Retrieve the PTR for each element
-		for (final EntryMut entry : entries) {
-			ptrs[idx++] = entry.getPtr();
-		}
-		try {
-			return new ValueMut(newObjectOf(ptrs));
-		} finally {
-			// The native side took ownership of the entries (see createArray).
-			entries.forEach(Native::moved);
-		}
+		// The native side takes ownership of the entries.
+		return new ValueMut(newObjectOf(takePtrs(entries)));
 	}
 
 	public static ValueMut createFile(String bucket, String key) {

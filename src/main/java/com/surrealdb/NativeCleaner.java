@@ -6,10 +6,7 @@ import java.lang.invoke.MethodType;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 /**
  * Frees native objects whose Java owner was garbage collected without being
@@ -19,9 +16,15 @@ import java.util.concurrent.atomic.AtomicLong;
  * how to free it without touching the (by then unreachable) owner.
  *
  * <p>
- * The pointer lives in an {@link AtomicLong} and is released with
- * {@code getAndSet(0)}, so an explicit close, a GC-driven cleanup and a
- * {@code moved()} hand-over can race without double-freeing.
+ * The pointer is cleared with an atomic {@code getAndSet(0)} by whichever comes
+ * first: an explicit close, a hand-over to the native side ({@code take()}), or
+ * the cleanup after GC. So these can race without freeing the pointer twice or
+ * handing it over twice.
+ *
+ * <p>
+ * Like the JDK cleaner, live handles are kept in an intrusive doubly linked
+ * list, so registering and releasing a handle allocates nothing beyond the
+ * handle itself.
  */
 final class NativeCleaner {
 
@@ -33,37 +36,63 @@ final class NativeCleaner {
 	/** Owns one native pointer on behalf of a {@link Native}. */
 	static final class Handle extends PhantomReference<Native> {
 
-		private final AtomicLong ptr;
+		private static final AtomicLongFieldUpdater<Handle> PTR = AtomicLongFieldUpdater.newUpdater(Handle.class,
+				"ptr");
+
+		private volatile long ptr;
 
 		private final Deleter deleter;
 
+		// Links in the list of live handles, guarded by LIVE. A handle that is not in
+		// the list points to itself.
+		private Handle prev = this;
+
+		private Handle next = this;
+
 		private Handle(Native owner, long ptr, Deleter deleter) {
 			super(owner, QUEUE);
-			this.ptr = new AtomicLong(ptr);
+			this.ptr = ptr;
 			this.deleter = deleter;
 		}
 
+		/** The list head: an empty handle that is never enqueued. */
+		private Handle() {
+			super(null, null);
+			this.deleter = null;
+		}
+
 		long ptr() {
-			return ptr.get();
+			return ptr;
 		}
 
 		/** Frees the native object, at most once. */
 		void release() {
-			final long p = ptr.getAndSet(0);
+			final long p = PTR.getAndSet(this, 0);
 			forget();
 			if (p != 0) {
 				deleter.delete(p);
 			}
 		}
 
-		/** Gives up ownership without freeing (the native side took it over). */
-		void moved() {
-			ptr.set(0);
+		/**
+		 * Gives up ownership and returns the pointer, for a native call that takes the
+		 * object over. Returns 0 if it was already released or taken.
+		 */
+		long take() {
+			final long p = PTR.getAndSet(this, 0);
 			forget();
+			return p;
 		}
 
 		private void forget() {
-			LIVE.remove(this);
+			synchronized (LIVE) {
+				if (next != this) {
+					next.prev = prev;
+					prev.next = next;
+					prev = this;
+					next = this;
+				}
+			}
 			clear();
 		}
 	}
@@ -72,7 +101,7 @@ final class NativeCleaner {
 
 	// Keeps every handle strongly reachable until it has been released, so the
 	// phantom reference is not collected before its owner is.
-	private static final Set<Handle> LIVE = Collections.newSetFromMap(new ConcurrentHashMap<Handle, Boolean>());
+	private static final Handle LIVE = new Handle();
 
 	private static final MethodHandle REACHABILITY_FENCE = findReachabilityFence();
 
@@ -89,7 +118,12 @@ final class NativeCleaner {
 		final Handle handle = new Handle(owner, ptr, deleter);
 		try {
 			if (ptr != 0) {
-				LIVE.add(handle);
+				synchronized (LIVE) {
+					handle.prev = LIVE;
+					handle.next = LIVE.next;
+					LIVE.next.prev = handle;
+					LIVE.next = handle;
+				}
 			}
 		} finally {
 			// If the owner became unreachable before the handle was added, the cleaner

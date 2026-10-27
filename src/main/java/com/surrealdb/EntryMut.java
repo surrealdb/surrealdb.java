@@ -9,12 +9,8 @@ public class EntryMut extends Native {
 	private static native long create(String name, long valuePtr);
 
 	public static EntryMut newEntry(String name, ValueMut value) {
-		try {
-			return new EntryMut(create(name, value.getPtr()));
-		} finally {
-			// The lifecycle of ValueMut is now moved to the Entry
-			value.moved();
-		}
+		// The value now belongs to the entry.
+		return new EntryMut(create(name, value.takePtr()));
 	}
 
 	@Override

@@ -5,10 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
@@ -167,20 +169,60 @@ public class NativeLifecycleTests {
 
 	@Test
 	void passingTheSameValueTwiceIsRejectedNotFreedTwice() {
-		// The native side takes ownership of each element. Taking the same pointer
-		// twice would free it twice in release builds (debug builds only caught it
-		// through allocation tracking), so a repeated element is refused.
+		// The native side takes ownership of each element. Handing it the same
+		// pointer twice would free it twice, so a repeated element is refused before
+		// anything is handed over, and the value stays usable.
 		final ValueMut value = ValueMut.createString("a");
-		final SurrealException e = assertThrows(SurrealException.class,
+		final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
 				() -> ValueMut.createArray(Arrays.asList(value, value)));
-		assertEquals("The same MutableValue was passed more than once", e.getMessage());
-		assertEquals(0L, value.getPtr());
+		assertEquals("The same ValueMut was passed more than once", e.getMessage());
+		assertNotEquals(0L, value.getPtr());
+		assertDoesNotThrow(() -> ValueMut.createArray(Arrays.asList(value)));
 
 		final EntryMut entry = EntryMut.newEntry("k", ValueMut.createString("a"));
-		final SurrealException e2 = assertThrows(SurrealException.class,
+		final IllegalArgumentException e2 = assertThrows(IllegalArgumentException.class,
 				() -> ValueMut.createObject(Arrays.asList(entry, entry)));
-		assertEquals("The same MutableObjectEntry was passed more than once", e2.getMessage());
-		assertEquals(0L, entry.getPtr());
+		assertEquals("The same EntryMut was passed more than once", e2.getMessage());
+		assertNotEquals(0L, entry.getPtr());
+	}
+
+	@Test
+	void aValueCanOnlyBeHandedOverOnce() throws InterruptedException {
+		// takePtr() clears the pointer before the native call, so when two threads
+		// hand over the same transaction only one of them passes the pointer on.
+		for (int round = 0; round < 50; round++) {
+			try (final Surreal surreal = new Surreal()) {
+				surreal.connect("memory").useNs("test_ns").useDb("test_db");
+				final Transaction txn = surreal.beginTransaction();
+				final CountDownLatch start = new CountDownLatch(1);
+				final AtomicInteger succeeded = new AtomicInteger();
+				final List<Thread> threads = new ArrayList<>();
+				for (int t = 0; t < 2; t++) {
+					final boolean commit = t == 0;
+					final Thread thread = new Thread(() -> {
+						try {
+							start.await();
+							if (commit) {
+								txn.commit();
+							} else {
+								txn.cancel();
+							}
+							succeeded.incrementAndGet();
+						} catch (Throwable e) {
+							// The loser sees a released transaction.
+						}
+					});
+					thread.start();
+					threads.add(thread);
+				}
+				start.countDown();
+				for (final Thread thread : threads) {
+					thread.join();
+				}
+				assertEquals(1, succeeded.get());
+				assertEquals(0L, txn.getPtr());
+			}
+		}
 	}
 
 	@Test

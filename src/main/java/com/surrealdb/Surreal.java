@@ -1004,14 +1004,17 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value update(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
 		try {
-			final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-			final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
 			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
 					valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
-			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
 			reachabilityFence(valueMut);
 		}
 	}
@@ -1291,14 +1294,17 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value upsert(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
 		try {
-			final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-			final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
 			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
 					valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
-			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
 			reachabilityFence(valueMut);
 		}
 	}
@@ -1665,13 +1671,16 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return list of values for records in the range
 	 */
 	public List<Value> select(RecordIdRange range) {
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
 		final long[] valuePtrs;
 		try {
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
 			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
 		} finally {
-			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
 		}
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
@@ -1813,12 +1822,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the table and optional start/end bounds
 	 */
 	public void delete(RecordIdRange range) {
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
 		try {
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
 			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
 		} finally {
-			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
 		}
 	}
 
