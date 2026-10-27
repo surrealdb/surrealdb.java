@@ -4,12 +4,10 @@ use crate::with_env_body;
 use jni::objects::JClass;
 use jni::sys::{jint, jlong};
 use jni::EnvUnowned;
-use parking_lot::Mutex;
 use surrealdb::types::Value;
-use surrealdb::{IndexedResults, Result};
 
 use crate::error::SurrealError;
-use crate::{create_instance, get_response_instance, release_instance, JniTypes};
+use crate::{create_instance, get_response_instance, JniTypes};
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Response_deleteInstance<'local>(
@@ -17,7 +15,7 @@ pub extern "system" fn Java_com_surrealdb_Response_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<Arc<Mutex<Result<IndexedResults>>>>(ptr);
+    JniTypes::release_response(ptr);
 }
 
 #[no_mangle]

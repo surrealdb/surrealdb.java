@@ -31,14 +31,14 @@ public class RecordId extends Native {
 	 * Creates a RecordId with an array key (e.g. composite keys for timeseries).
 	 */
 	public RecordId(String table, Array id) {
-		super(newRecordIdWithArray(table, id.getPtr()));
+		super(newRecordIdWithArray(table, id));
 	}
 
 	/**
 	 * Creates a RecordId with an object key.
 	 */
 	public RecordId(String table, Object id) {
-		super(newRecordIdWithObject(table, id.getPtr()));
+		super(newRecordIdWithObject(table, id));
 	}
 
 	private static native long newRecordIdWithLong(String table, long id);
@@ -49,11 +49,27 @@ public class RecordId extends Native {
 
 	private static native long newRecordIdWithArray(String table, long arrayPtr);
 
+	private static long newRecordIdWithArray(String table, Array id) {
+		try {
+			return newRecordIdWithArray(table, id.getPtr());
+		} finally {
+			reachabilityFence(id);
+		}
+	}
+
 	private static native long newRecordIdWithObject(String table, long objectPtr);
 
-	private static native String getTable(long ptr);
+	private static long newRecordIdWithObject(String table, Object id) {
+		try {
+			return newRecordIdWithObject(table, id.getPtr());
+		} finally {
+			reachabilityFence(id);
+		}
+	}
 
-	private static native long getId(long ptr);
+	private native String getTable(long ptr);
+
+	private native long getId(long ptr);
 
 	@Override
 	final native String toString(long ptr);
@@ -64,8 +80,12 @@ public class RecordId extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return RecordId::deleteInstance;
+	}
 
 	public String getTable() {
 		return getTable(getPtr());
