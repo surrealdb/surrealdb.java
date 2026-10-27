@@ -38,7 +38,7 @@ import com.surrealdb.signin.Token;
 public class Surreal extends Native implements AutoCloseable {
 
 	// Current namespace and database set by useNs() / useDb() / useDefaults() (from
-	// server return value).
+	// server return value), or inherited by newSession() from the parent session.
 	private String namespace;
 	private String database;
 
@@ -51,13 +51,14 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Constructor for a Surreal instance backed by an existing native pointer (e.g.
-	 * from {@link #newSession()}).
+	 * from {@link #newSession()}), whose session uses {@code namespace} and
+	 * {@code database}.
 	 */
-	private Surreal(long ptr) {
-<span class="fc" id="L57">		super(ptr);</span>
-<span class="fc" id="L58">		this.namespace = null;</span>
-<span class="fc" id="L59">		this.database = null;</span>
-<span class="fc" id="L60">	}</span>
+	private Surreal(long ptr, String namespace, String database) {
+<span class="fc" id="L58">		super(ptr);</span>
+<span class="fc" id="L59">		this.namespace = namespace;</span>
+<span class="fc" id="L60">		this.database = database;</span>
+<span class="fc" id="L61">	}</span>
 
 	private static native long newInstance();
 
@@ -163,24 +164,24 @@ public class Surreal extends Native implements AutoCloseable {
 
 	@Override
 	final String toString(long ptr) {
-<span class="nc" id="L166">		return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
+<span class="nc" id="L167">		return getClass().getName() + &quot;[ptr=&quot; + ptr + &quot;]&quot;;</span>
 	}
 
 	@Override
 	final int hashCode(long ptr) {
-<span class="nc" id="L171">		return Objects.hashCode(ptr);</span>
+<span class="nc" id="L172">		return Objects.hashCode(ptr);</span>
 	}
 
 	@Override
 	final boolean equals(long ptr1, long ptr2) {
-<span class="nc bnc" id="L176" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">		return ptr1 == ptr2;</span>
 	}
 
 	private static native void deleteInstance(long ptr);
 
 	@Override
 	final NativeCleaner.Deleter deleter() {
-<span class="fc" id="L183">		return Surreal::deleteInstance;</span>
+<span class="fc" id="L184">		return Surreal::deleteInstance;</span>
 	}
 
 	/**
@@ -192,10 +193,10 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the current instance of the {@code Surreal} class
 	 */
 	public Surreal connect(String connect) {
-<span class="fc" id="L195">		connect(getPtr(), connect);</span>
-<span class="fc" id="L196">		namespace = null;</span>
-<span class="fc" id="L197">		database = null;</span>
-<span class="fc" id="L198">		return this;</span>
+<span class="fc" id="L196">		connect(getPtr(), connect);</span>
+<span class="fc" id="L197">		namespace = null;</span>
+<span class="fc" id="L198">		database = null;</span>
+<span class="fc" id="L199">		return this;</span>
 	}
 
 	/**
@@ -206,7 +207,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             if the request fails
 	 */
 	public String version() {
-<span class="fc" id="L209">		return version(getPtr());</span>
+<span class="fc" id="L210">		return version(getPtr());</span>
 	}
 
 	/**
@@ -217,7 +218,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             if the health check fails
 	 */
 	public boolean health() {
-<span class="fc" id="L220">		return health(getPtr());</span>
+<span class="fc" id="L221">		return health(getPtr());</span>
 	}
 
 	/**
@@ -237,19 +238,19 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             if the run fails
 	 */
 	public Value run(String name, java.lang.Object... args) {
-<span class="pc bpc" id="L240" title="1 of 4 branches missed.">		if (args == null || args.length == 0) {</span>
-<span class="fc" id="L241">			return new Value(run(getPtr(), name, new long[0]));</span>
+<span class="pc bpc" id="L241" title="1 of 4 branches missed.">		if (args == null || args.length == 0) {</span>
+<span class="fc" id="L242">			return new Value(run(getPtr(), name, new long[0]));</span>
 		}
-<span class="fc" id="L243">		ValueMut[] valueMuts = new ValueMut[args.length];</span>
-<span class="fc" id="L244">		long[] ptrs = new long[args.length];</span>
+<span class="fc" id="L244">		ValueMut[] valueMuts = new ValueMut[args.length];</span>
+<span class="fc" id="L245">		long[] ptrs = new long[args.length];</span>
 		try {
-<span class="fc bfc" id="L246" title="All 2 branches covered.">			for (int i = 0; i &lt; args.length; i++) {</span>
-<span class="fc" id="L247">				valueMuts[i] = ValueBuilder.convert(args[i]);</span>
-<span class="fc" id="L248">				ptrs[i] = valueMuts[i].getPtr();</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">			for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc" id="L248">				valueMuts[i] = ValueBuilder.convert(args[i]);</span>
+<span class="fc" id="L249">				ptrs[i] = valueMuts[i].getPtr();</span>
 			}
-<span class="fc" id="L250">			return new Value(run(getPtr(), name, ptrs));</span>
+<span class="fc" id="L251">			return new Value(run(getPtr(), name, ptrs));</span>
 		} finally {
-<span class="fc" id="L252">			ValueBuilder.releaseAll(valueMuts, args);</span>
+<span class="fc" id="L253">			ValueBuilder.releaseAll(valueMuts, args);</span>
 		}
 	}
 
@@ -264,7 +265,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             if export fails or backups are not supported
 	 */
 	public boolean exportSql(String path) {
-<span class="fc" id="L267">		return exportSql(getPtr(), path);</span>
+<span class="fc" id="L268">		return exportSql(getPtr(), path);</span>
 	}
 
 	/**
@@ -278,7 +279,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             if import fails or backups are not supported
 	 */
 	public boolean importSql(String path) {
-<span class="fc" id="L281">		return importSql(getPtr(), path);</span>
+<span class="fc" id="L282">		return importSql(getPtr(), path);</span>
 	}
 
 	/**
@@ -305,7 +306,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             the subscription fails
 	 */
 	public LiveStream selectLive(String table) {
-<span class="fc" id="L308">		return selectLive(getPtr(), table);</span>
+<span class="fc" id="L309">		return selectLive(getPtr(), table);</span>
 	}
 
 	/**
@@ -332,8 +333,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             if the id is not a valid UUID or the request cannot be sent
 	 */
 	public void kill(String queryId) {
-<span class="fc" id="L335">		kill(getPtr(), queryId);</span>
-<span class="fc" id="L336">	}</span>
+<span class="fc" id="L336">		kill(getPtr(), queryId);</span>
+<span class="fc" id="L337">	}</span>
 
 	/**
 	 * Stops the live query with the given id.
@@ -343,8 +344,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @see #kill(String)
 	 */
 	public void kill(java.util.UUID queryId) {
-<span class="nc" id="L346">		kill(getPtr(), queryId.toString());</span>
-<span class="nc" id="L347">	}</span>
+<span class="nc" id="L347">		kill(getPtr(), queryId.toString());</span>
+<span class="nc" id="L348">	}</span>
 
 	/**
 	 * Signs in with the given credential. Supports RootCredential,
@@ -364,36 +365,36 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             cannot be resolved
 	 */
 	public Token signin(Credential credential) {
-<span class="pc bpc" id="L367" title="1 of 2 branches missed.">		if (credential instanceof DatabaseCredential) {</span>
-<span class="nc" id="L368">			final DatabaseCredential db = (DatabaseCredential) credential;</span>
-<span class="nc" id="L369">			return signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase());</span>
-<span class="pc bpc" id="L370" title="1 of 2 branches missed.">		} else if (credential instanceof NamespaceCredential) {</span>
-<span class="nc" id="L371">			final NamespaceCredential ns = (NamespaceCredential) credential;</span>
-<span class="nc" id="L372">			return signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace());</span>
-<span class="fc bfc" id="L373" title="All 2 branches covered.">		} else if (credential instanceof RootCredential) {</span>
-<span class="fc" id="L374">			final RootCredential r = (RootCredential) credential;</span>
-<span class="fc" id="L375">			return signinRoot(getPtr(), r.getUsername(), r.getPassword());</span>
-<span class="fc bfc" id="L376" title="All 2 branches covered.">		} else if (credential instanceof RecordCredential) {</span>
-<span class="fc" id="L377">			final RecordCredential rec = (RecordCredential) credential;</span>
-<span class="fc bfc" id="L378" title="All 2 branches covered.">			String ns = rec.getNamespace() != null ? rec.getNamespace() : this.namespace;</span>
-<span class="fc bfc" id="L379" title="All 2 branches covered.">			String db = rec.getDatabase() != null ? rec.getDatabase() : this.database;</span>
-<span class="pc bpc" id="L380" title="1 of 4 branches missed.">			if (ns == null || db == null) {</span>
-<span class="fc" id="L381">				throw new SurrealException(</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">		if (credential instanceof DatabaseCredential) {</span>
+<span class="nc" id="L369">			final DatabaseCredential db = (DatabaseCredential) credential;</span>
+<span class="nc" id="L370">			return signinDatabase(getPtr(), db.getUsername(), db.getPassword(), db.getNamespace(), db.getDatabase());</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">		} else if (credential instanceof NamespaceCredential) {</span>
+<span class="nc" id="L372">			final NamespaceCredential ns = (NamespaceCredential) credential;</span>
+<span class="nc" id="L373">			return signinNamespace(getPtr(), ns.getUsername(), ns.getPassword(), ns.getNamespace());</span>
+<span class="fc bfc" id="L374" title="All 2 branches covered.">		} else if (credential instanceof RootCredential) {</span>
+<span class="fc" id="L375">			final RootCredential r = (RootCredential) credential;</span>
+<span class="fc" id="L376">			return signinRoot(getPtr(), r.getUsername(), r.getPassword());</span>
+<span class="fc bfc" id="L377" title="All 2 branches covered.">		} else if (credential instanceof RecordCredential) {</span>
+<span class="fc" id="L378">			final RecordCredential rec = (RecordCredential) credential;</span>
+<span class="fc bfc" id="L379" title="All 2 branches covered.">			String ns = rec.getNamespace() != null ? rec.getNamespace() : this.namespace;</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">			String db = rec.getDatabase() != null ? rec.getDatabase() : this.database;</span>
+<span class="pc bpc" id="L381" title="1 of 4 branches missed.">			if (ns == null || db == null) {</span>
+<span class="fc" id="L382">				throw new SurrealException(</span>
 						&quot;RecordCredential signin requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.&quot;);
 			}
-<span class="fc" id="L384">			final ValueMut paramsValue = ValueBuilder.convert(rec.getParams());</span>
+<span class="fc" id="L385">			final ValueMut paramsValue = ValueBuilder.convert(rec.getParams());</span>
 			try {
-<span class="nc" id="L386">				return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());</span>
+<span class="fc" id="L387">				return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());</span>
 			} finally {
-<span class="fc" id="L388">				ValueBuilder.releaseConverted(paramsValue, rec.getParams());</span>
+<span class="fc" id="L389">				ValueBuilder.releaseConverted(paramsValue, rec.getParams());</span>
 			}
-<span class="pc bpc" id="L390" title="1 of 2 branches missed.">		} else if (credential instanceof BearerCredential) {</span>
-<span class="nc" id="L391">			BearerCredential bearer = (BearerCredential) credential;</span>
-<span class="nc" id="L392">			authenticate(getPtr(), bearer.getToken());</span>
-<span class="nc" id="L393">			return new Token(bearer.getToken(), null);</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">		} else if (credential instanceof BearerCredential) {</span>
+<span class="nc" id="L392">			BearerCredential bearer = (BearerCredential) credential;</span>
+<span class="nc" id="L393">			authenticate(getPtr(), bearer.getToken());</span>
+<span class="nc" id="L394">			return new Token(bearer.getToken(), null);</span>
 		}
-<span class="fc" id="L395">		throw new SurrealException(</span>
-<span class="pc bpc" id="L396" title="1 of 2 branches missed.">				&quot;Unsupported credential type: &quot; + (credential != null ? credential.getClass().getName() : &quot;null&quot;));</span>
+<span class="fc" id="L396">		throw new SurrealException(</span>
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">				&quot;Unsupported credential type: &quot; + (credential != null ? credential.getClass().getName() : &quot;null&quot;));</span>
 	}
 
 	/**
@@ -410,17 +411,17 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             first when omitting)
 	 */
 	public Token signup(RecordCredential record) {
-<span class="fc bfc" id="L413" title="All 2 branches covered.">		String ns = record.getNamespace() != null ? record.getNamespace() : this.namespace;</span>
-<span class="fc bfc" id="L414" title="All 2 branches covered.">		String db = record.getDatabase() != null ? record.getDatabase() : this.database;</span>
-<span class="pc bpc" id="L415" title="1 of 4 branches missed.">		if (ns == null || db == null) {</span>
-<span class="fc" id="L416">			throw new SurrealException(</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">		String ns = record.getNamespace() != null ? record.getNamespace() : this.namespace;</span>
+<span class="fc bfc" id="L415" title="All 2 branches covered.">		String db = record.getDatabase() != null ? record.getDatabase() : this.database;</span>
+<span class="pc bpc" id="L416" title="1 of 4 branches missed.">		if (ns == null || db == null) {</span>
+<span class="fc" id="L417">			throw new SurrealException(</span>
 					&quot;RecordCredential signup requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.&quot;);
 		}
-<span class="fc" id="L419">		final ValueMut paramsValue = ValueBuilder.convert(record.getParams());</span>
+<span class="fc" id="L420">		final ValueMut paramsValue = ValueBuilder.convert(record.getParams());</span>
 		try {
-<span class="nc" id="L421">			return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());</span>
+<span class="fc" id="L422">			return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());</span>
 		} finally {
-<span class="fc" id="L423">			ValueBuilder.releaseConverted(paramsValue, record.getParams());</span>
+<span class="fc" id="L424">			ValueBuilder.releaseConverted(paramsValue, record.getParams());</span>
 		}
 	}
 
@@ -433,8 +434,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the current instance
 	 */
 	public Surreal authenticate(String token) {
-<span class="nc" id="L436">		authenticate(getPtr(), token);</span>
-<span class="nc" id="L437">		return this;</span>
+<span class="nc" id="L437">		authenticate(getPtr(), token);</span>
+<span class="nc" id="L438">		return this;</span>
 	}
 
 	/**
@@ -443,19 +444,22 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the current instance
 	 */
 	public Surreal invalidate() {
-<span class="fc" id="L446">		invalidate(getPtr());</span>
-<span class="fc" id="L447">		return this;</span>
+<span class="fc" id="L447">		invalidate(getPtr());</span>
+<span class="fc" id="L448">		return this;</span>
 	}
 
 	/**
-	 * Creates a new session that shares the same connection but has its own
-	 * namespace, database, and authentication state. Use this for multi-session
-	 * support.
+	 * Creates a new session that shares the same connection. The new session starts
+	 * as a copy of this one (namespace, database, variables and authentication) and
+	 * changes to either session after that do not affect the other. Use this for
+	 * multi-session support.
 	 *
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-<span class="fc" id="L458">		return new Surreal(cloneSession(getPtr()));</span>
+		// The native clone copies the session's namespace and database, so the new
+		// instance starts with this one's.
+<span class="fc" id="L462">		return new Surreal(cloneSession(getPtr()), namespace, database);</span>
 	}
 
 	private native long beginTransaction(long ptr);
@@ -468,7 +472,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new Transaction instance
 	 */
 	public Transaction beginTransaction() {
-<span class="fc" id="L471">		return new Transaction(beginTransaction(getPtr()));</span>
+<span class="fc" id="L475">		return new Transaction(beginTransaction(getPtr()));</span>
 	}
 
 	/**
@@ -481,10 +485,10 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return this instance for chaining
 	 */
 	public Surreal useNs(String ns) {
-<span class="fc" id="L484">		NsDb result = useNs(getPtr(), ns);</span>
-<span class="fc" id="L485">		this.namespace = result.getNamespace();</span>
-<span class="fc" id="L486">		this.database = result.getDatabase();</span>
-<span class="fc" id="L487">		return this;</span>
+<span class="fc" id="L488">		NsDb result = useNs(getPtr(), ns);</span>
+<span class="fc" id="L489">		this.namespace = result.getNamespace();</span>
+<span class="fc" id="L490">		this.database = result.getDatabase();</span>
+<span class="fc" id="L491">		return this;</span>
 	}
 
 	/**
@@ -497,10 +501,10 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return this instance for chaining
 	 */
 	public Surreal useDb(String db) {
-<span class="fc" id="L500">		NsDb result = useDb(getPtr(), db);</span>
-<span class="fc" id="L501">		this.namespace = result.getNamespace();</span>
-<span class="fc" id="L502">		this.database = result.getDatabase();</span>
-<span class="fc" id="L503">		return this;</span>
+<span class="fc" id="L504">		NsDb result = useDb(getPtr(), db);</span>
+<span class="fc" id="L505">		this.namespace = result.getNamespace();</span>
+<span class="fc" id="L506">		this.database = result.getDatabase();</span>
+<span class="fc" id="L507">		return this;</span>
 	}
 
 	/**
@@ -511,34 +515,36 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return this instance for chaining
 	 */
 	public Surreal useDefaults() {
-<span class="fc" id="L514">		NsDb result = useDefaults(getPtr());</span>
-<span class="fc" id="L515">		this.namespace = result.getNamespace();</span>
-<span class="fc" id="L516">		this.database = result.getDatabase();</span>
-<span class="fc" id="L517">		return this;</span>
+<span class="fc" id="L518">		NsDb result = useDefaults(getPtr());</span>
+<span class="fc" id="L519">		this.namespace = result.getNamespace();</span>
+<span class="fc" id="L520">		this.database = result.getDatabase();</span>
+<span class="fc" id="L521">		return this;</span>
 	}
 
 	/**
 	 * Returns the current namespace set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current namespace, or null
 	 */
 	public String getNamespace() {
-<span class="fc" id="L529">		return namespace;</span>
+<span class="fc" id="L534">		return namespace;</span>
 	}
 
 	/**
 	 * Returns the current database set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current database, or null
 	 */
 	public String getDatabase() {
-<span class="fc" id="L541">		return database;</span>
+<span class="fc" id="L547">		return database;</span>
 	}
 
 	/**
@@ -553,7 +559,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a Response object containing the results of the query
 	 */
 	public Response query(String sql) {
-<span class="fc" id="L556">		return new Response(query(getPtr(), sql));</span>
+<span class="fc" id="L562">		return new Response(query(getPtr(), sql));</span>
 	}
 
 	/**
@@ -570,16 +576,16 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a Response object containing the results of the query
 	 */
 	public Response query(String sql, Map&lt;String, ?&gt; params) {
-<span class="fc" id="L573">		final Map&lt;String, ValueMut&gt; valueMuts = ValueBuilder.convertParams(params);</span>
+<span class="fc" id="L579">		final Map&lt;String, ValueMut&gt; valueMuts = ValueBuilder.convertParams(params);</span>
 		try {
-<span class="fc" id="L575">			final String[] keys = valueMuts.keySet().toArray(new String[0]);</span>
-<span class="fc" id="L576">			final long[] values = new long[keys.length];</span>
-<span class="fc bfc" id="L577" title="All 2 branches covered.">			for (int i = 0; i &lt; keys.length; i++) {</span>
-<span class="fc" id="L578">				values[i] = valueMuts.get(keys[i]).getPtr();</span>
+<span class="fc" id="L581">			final String[] keys = valueMuts.keySet().toArray(new String[0]);</span>
+<span class="fc" id="L582">			final long[] values = new long[keys.length];</span>
+<span class="fc bfc" id="L583" title="All 2 branches covered.">			for (int i = 0; i &lt; keys.length; i++) {</span>
+<span class="fc" id="L584">				values[i] = valueMuts.get(keys[i]).getPtr();</span>
 			}
-<span class="fc" id="L580">			return new Response(queryWithBindings(getPtr(), sql, keys, values));</span>
+<span class="fc" id="L586">			return new Response(queryWithBindings(getPtr(), sql, keys, values));</span>
 		} finally {
-<span class="fc" id="L582">			ValueBuilder.releaseParams(valueMuts, params);</span>
+<span class="fc" id="L588">			ValueBuilder.releaseParams(valueMuts, params);</span>
 		}
 	}
 
@@ -601,7 +607,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@Deprecated
 	public Response queryBind(String sql, Map&lt;String, ?&gt; params) {
-<span class="fc" id="L604">		return query(sql, params);</span>
+<span class="fc" id="L610">		return query(sql, params);</span>
 	}
 
 	/**
@@ -622,13 +628,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new Value object initialized with the provided RecordId and content
 	 */
 	public &lt;T&gt; Value create(RecordId recordId, T content) {
-<span class="fc" id="L625">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L631">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L627">			final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L628">			return new Value(valuePtr);</span>
+<span class="fc" id="L633">			final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());</span>
+<span class="fc" id="L634">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L630">			reachabilityFence(recordId);</span>
-<span class="fc" id="L631">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L636">			reachabilityFence(recordId);</span>
+<span class="fc" id="L637">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -650,7 +656,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An instance of the specified type
 	 */
 	public &lt;T&gt; T create(Class&lt;T&gt; type, RecordId recordId, T content) {
-<span class="fc" id="L653">		return create(recordId, content).getAndClose(type);</span>
+<span class="fc" id="L659">		return create(recordId, content).getAndClose(type);</span>
 	}
 
 	/**
@@ -672,13 +678,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final &lt;T&gt; List&lt;Value&gt; create(String target, T... contents) {
-<span class="fc" id="L675">		final ValueMut[] valueMuts = convertAll(contents);</span>
+<span class="fc" id="L681">		final ValueMut[] valueMuts = convertAll(contents);</span>
 		try {
-<span class="fc" id="L677">			final long[] valueMutPtrs = getPtrs(valueMuts);</span>
-<span class="fc" id="L678">			final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L679">			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L683">			final long[] valueMutPtrs = getPtrs(valueMuts);</span>
+<span class="fc" id="L684">			final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L685">			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
 		} finally {
-<span class="fc" id="L681">			ValueBuilder.releaseAll(valueMuts, contents);</span>
+<span class="fc" id="L687">			ValueBuilder.releaseAll(valueMuts, contents);</span>
 		}
 	}
 
@@ -703,8 +709,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final &lt;T&gt; List&lt;T&gt; create(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L706">		try (final Stream&lt;Value&gt; s = create(target, contents).stream()) {</span>
-<span class="fc" id="L707">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L712">		try (final Stream&lt;Value&gt; s = create(target, contents).stream()) {</span>
+<span class="fc" id="L713">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -727,13 +733,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final &lt;T&gt; List&lt;Value&gt; insert(String target, T... contents) {
-<span class="fc" id="L730">		final ValueMut[] valueMuts = convertAll(contents);</span>
+<span class="fc" id="L736">		final ValueMut[] valueMuts = convertAll(contents);</span>
 		try {
-<span class="fc" id="L732">			final long[] valueMutPtrs = getPtrs(valueMuts);</span>
-<span class="fc" id="L733">			final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L734">			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L738">			final long[] valueMutPtrs = getPtrs(valueMuts);</span>
+<span class="fc" id="L739">			final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L740">			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
 		} finally {
-<span class="fc" id="L736">			ValueBuilder.releaseAll(valueMuts, contents);</span>
+<span class="fc" id="L742">			ValueBuilder.releaseAll(valueMuts, contents);</span>
 		}
 	}
 
@@ -758,8 +764,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final &lt;T&gt; List&lt;T&gt; insert(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L761">		try (final Stream&lt;Value&gt; s = insert(target, contents).stream()) {</span>
-<span class="fc" id="L762">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L767">		try (final Stream&lt;Value&gt; s = insert(target, contents).stream()) {</span>
+<span class="fc" id="L768">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -780,12 +786,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a Value object representing the inserted relation
 	 */
 	public &lt;T extends InsertRelation&gt; Value insertRelation(String target, T content) {
-<span class="fc" id="L783">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L789">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L785">			final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());</span>
-<span class="fc" id="L786">			return new Value(valuePtr);</span>
+<span class="fc" id="L791">			final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());</span>
+<span class="fc" id="L792">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L788">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L794">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -808,7 +814,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the inserted relation of type T
 	 */
 	public &lt;T extends InsertRelation&gt; T insertRelation(Class&lt;T&gt; type, String target, T content) {
-<span class="fc" id="L811">		return insertRelation(target, content).getAndClose(type);</span>
+<span class="fc" id="L817">		return insertRelation(target, content).getAndClose(type);</span>
 	}
 
 	/**
@@ -829,13 +835,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final &lt;T extends InsertRelation&gt; List&lt;Value&gt; insertRelations(String target, T... contents) {
-<span class="fc" id="L832">		final ValueMut[] valueMuts = convertAll(contents);</span>
+<span class="fc" id="L838">		final ValueMut[] valueMuts = convertAll(contents);</span>
 		try {
-<span class="fc" id="L834">			final long[] valueMutPtrs = getPtrs(valueMuts);</span>
-<span class="fc" id="L835">			final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);</span>
-<span class="fc" id="L836">			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L840">			final long[] valueMutPtrs = getPtrs(valueMuts);</span>
+<span class="fc" id="L841">			final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);</span>
+<span class="fc" id="L842">			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());</span>
 		} finally {
-<span class="fc" id="L838">			ValueBuilder.releaseAll(valueMuts, contents);</span>
+<span class="fc" id="L844">			ValueBuilder.releaseAll(valueMuts, contents);</span>
 		}
 	}
 
@@ -859,8 +865,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final &lt;T extends InsertRelation&gt; List&lt;T&gt; insertRelations(Class&lt;T&gt; type, String target, T... contents) {
-<span class="fc" id="L862">		try (final Stream&lt;Value&gt; s = insertRelations(target, contents).stream()) {</span>
-<span class="fc" id="L863">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L868">		try (final Stream&lt;Value&gt; s = insertRelations(target, contents).stream()) {</span>
+<span class="fc" id="L869">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -883,10 +889,10 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Value relate(RecordId from, String table, RecordId to) {
 		try {
-<span class="fc" id="L886">			return new Value(relate(getPtr(), from.getPtr(), table, to.getPtr()));</span>
+<span class="fc" id="L892">			return new Value(relate(getPtr(), from.getPtr(), table, to.getPtr()));</span>
 		} finally {
-<span class="fc" id="L888">			reachabilityFence(from);</span>
-<span class="fc" id="L889">			reachabilityFence(to);</span>
+<span class="fc" id="L894">			reachabilityFence(from);</span>
+<span class="fc" id="L895">			reachabilityFence(to);</span>
 		}
 	}
 
@@ -911,7 +917,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The established relation of the specified type.
 	 */
 	public &lt;T extends Relation&gt; T relate(Class&lt;T&gt; type, RecordId from, String table, RecordId to) {
-<span class="fc" id="L914">		return relate(from, table, to).getAndClose(type);</span>
+<span class="fc" id="L920">		return relate(from, table, to).getAndClose(type);</span>
 	}
 
 	/**
@@ -935,14 +941,14 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return A Value object representing the newly created relationship.
 	 */
 	public &lt;T&gt; Value relate(RecordId from, String table, RecordId to, T content) {
-<span class="fc" id="L938">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L944">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L940">			final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());</span>
-<span class="fc" id="L941">			return new Value(valuePtr);</span>
+<span class="fc" id="L946">			final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());</span>
+<span class="fc" id="L947">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L943">			reachabilityFence(from);</span>
-<span class="fc" id="L944">			reachabilityFence(to);</span>
-<span class="fc" id="L945">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L949">			reachabilityFence(from);</span>
+<span class="fc" id="L950">			reachabilityFence(to);</span>
+<span class="fc" id="L951">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -971,7 +977,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the established relation of the specified type
 	 */
 	public &lt;R extends Relation, T&gt; R relate(Class&lt;R&gt; type, RecordId from, String table, RecordId to, T content) {
-<span class="fc" id="L974">		return relate(from, table, to, content).getAndClose(type);</span>
+<span class="fc" id="L980">		return relate(from, table, to, content).getAndClose(type);</span>
 	}
 
 	/**
@@ -992,13 +998,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return A Value object representing the updated value.
 	 */
 	public &lt;T&gt; Value update(RecordId recordId, UpType upType, T content) {
-<span class="fc" id="L995">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1001">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L997">			final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());</span>
-<span class="fc" id="L998">			return new Value(valuePtr);</span>
+<span class="fc" id="L1003">			final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());</span>
+<span class="fc" id="L1004">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L1000">			reachabilityFence(recordId);</span>
-<span class="fc" id="L1001">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1006">			reachabilityFence(recordId);</span>
+<span class="fc" id="L1007">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1015,19 +1021,19 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         record; this returns the first)
 	 */
 	public &lt;T&gt; Value update(RecordIdRange range, UpType upType, T content) {
-<span class="fc" id="L1018">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L1019">		final Id start = range.getStart();</span>
-<span class="fc" id="L1020">		final Id end = range.getEnd();</span>
+<span class="fc" id="L1024">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1025">		final Id start = range.getStart();</span>
+<span class="fc" id="L1026">		final Id end = range.getEnd();</span>
 		try {
-<span class="pc bpc" id="L1022" title="1 of 2 branches missed.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
-<span class="pc bpc" id="L1023" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
-<span class="fc" id="L1024">			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,</span>
-<span class="fc" id="L1025">					valueMut.getPtr());</span>
-<span class="fc" id="L1026">			return new Value(valuePtr);</span>
+<span class="pc bpc" id="L1028" title="1 of 2 branches missed.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
+<span class="pc bpc" id="L1029" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
+<span class="fc" id="L1030">			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,</span>
+<span class="fc" id="L1031">					valueMut.getPtr());</span>
+<span class="fc" id="L1032">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L1028">			reachabilityFence(start);</span>
-<span class="fc" id="L1029">			reachabilityFence(end);</span>
-<span class="fc" id="L1030">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1034">			reachabilityFence(start);</span>
+<span class="fc" id="L1035">			reachabilityFence(end);</span>
+<span class="fc" id="L1036">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1051,7 +1057,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the updated record of the specified type
 	 */
 	public &lt;T&gt; T update(Class&lt;T&gt; type, RecordId recordId, UpType upType, T content) {
-<span class="fc" id="L1054">		return update(recordId, upType, content).getAndClose(type);</span>
+<span class="fc" id="L1060">		return update(recordId, upType, content).getAndClose(type);</span>
 	}
 
 	/**
@@ -1073,11 +1079,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         target
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; update(String target, UpType upType, T content) {
-<span class="fc" id="L1076">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1082">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1078">			return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1084">			return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1080">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1086">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1101,11 +1107,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return an Iterator of Value objects representing the updated values
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; update(String[] targets, UpType upType, T content) {
-<span class="fc" id="L1104">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1110">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1106">			return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1112">			return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1108">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1114">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1130,7 +1136,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return an iterator over the updated values
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; update(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L1133">		return new ValueObjectIterator&lt;&gt;(type, update(target, upType, content));</span>
+<span class="fc" id="L1139">		return new ValueObjectIterator&lt;&gt;(type, update(target, upType, content));</span>
 	}
 
 	/**
@@ -1154,7 +1160,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An iterator over the updated elements of the specified type.
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; update(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L1157">		return new ValueObjectIterator&lt;&gt;(type, update(targets, upType, content));</span>
+<span class="nc" id="L1163">		return new ValueObjectIterator&lt;&gt;(type, update(targets, upType, content));</span>
 	}
 
 	/**
@@ -1177,12 +1183,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         state.
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; updateSync(String target, UpType upType, T content) {
-<span class="fc" id="L1180">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1186">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1182">			return new SynchronizedValueIterator(</span>
-<span class="fc" id="L1183">					updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1188">			return new SynchronizedValueIterator(</span>
+<span class="fc" id="L1189">					updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1185">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1191">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1206,12 +1212,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a thread-safe iterator over the updated {@code Value} objects
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; updateSync(String[] targets, UpType upType, T content) {
-<span class="fc" id="L1209">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1215">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1211">			return new SynchronizedValueIterator(</span>
-<span class="fc" id="L1212">					updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1217">			return new SynchronizedValueIterator(</span>
+<span class="fc" id="L1218">					updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1214">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1220">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1238,7 +1244,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         resource
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; updateSync(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L1241">		return new ValueObjectIterator&lt;&gt;(type, updateSync(target, upType, content));</span>
+<span class="fc" id="L1247">		return new ValueObjectIterator&lt;&gt;(type, updateSync(target, upType, content));</span>
 	}
 
 	/**
@@ -1262,7 +1268,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a thread-safe iterator for the updated values
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; updateSync(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L1265">		return new ValueObjectIterator&lt;&gt;(type, updateSync(targets, upType, content));</span>
+<span class="nc" id="L1271">		return new ValueObjectIterator&lt;&gt;(type, updateSync(targets, upType, content));</span>
 	}
 
 	/**
@@ -1283,13 +1289,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The resulting value after the upsert operation.
 	 */
 	public &lt;T&gt; Value upsert(RecordId recordId, UpType upType, T content) {
-<span class="fc" id="L1286">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1292">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1288">			final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());</span>
-<span class="fc" id="L1289">			return new Value(valuePtr);</span>
+<span class="fc" id="L1294">			final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());</span>
+<span class="fc" id="L1295">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L1291">			reachabilityFence(recordId);</span>
-<span class="fc" id="L1292">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1297">			reachabilityFence(recordId);</span>
+<span class="fc" id="L1298">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1305,19 +1311,19 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the first upserted value
 	 */
 	public &lt;T&gt; Value upsert(RecordIdRange range, UpType upType, T content) {
-<span class="fc" id="L1308">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
-<span class="fc" id="L1309">		final Id start = range.getStart();</span>
-<span class="fc" id="L1310">		final Id end = range.getEnd();</span>
+<span class="fc" id="L1314">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1315">		final Id start = range.getStart();</span>
+<span class="fc" id="L1316">		final Id end = range.getEnd();</span>
 		try {
-<span class="pc bpc" id="L1312" title="1 of 2 branches missed.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
-<span class="pc bpc" id="L1313" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
-<span class="fc" id="L1314">			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,</span>
-<span class="fc" id="L1315">					valueMut.getPtr());</span>
-<span class="fc" id="L1316">			return new Value(valuePtr);</span>
+<span class="pc bpc" id="L1318" title="1 of 2 branches missed.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
+<span class="pc bpc" id="L1319" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
+<span class="fc" id="L1320">			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,</span>
+<span class="fc" id="L1321">					valueMut.getPtr());</span>
+<span class="fc" id="L1322">			return new Value(valuePtr);</span>
 		} finally {
-<span class="fc" id="L1318">			reachabilityFence(start);</span>
-<span class="fc" id="L1319">			reachabilityFence(end);</span>
-<span class="fc" id="L1320">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1324">			reachabilityFence(start);</span>
+<span class="fc" id="L1325">			reachabilityFence(end);</span>
+<span class="fc" id="L1326">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1341,7 +1347,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The upserted entity of the specified type.
 	 */
 	public &lt;T&gt; T upsert(Class&lt;T&gt; type, RecordId recordId, UpType upType, T content) {
-<span class="fc" id="L1344">		return upsert(recordId, upType, content).getAndClose(type);</span>
+<span class="fc" id="L1350">		return upsert(recordId, upType, content).getAndClose(type);</span>
 	}
 
 	/**
@@ -1363,11 +1369,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An iterator over the values resulting from the upsert operation.
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; upsert(String target, UpType upType, T content) {
-<span class="fc" id="L1366">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1372">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1368">			return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1374">			return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1370">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1376">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1389,11 +1395,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An iterator over the upserted values.
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; upsert(String[] targets, UpType upType, T content) {
-<span class="fc" id="L1392">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1398">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1394">			return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1400">			return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1396">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1402">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1418,7 +1424,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         upsert operation.
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; upsert(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L1421">		return new ValueObjectIterator&lt;&gt;(type, upsert(target, upType, content));</span>
+<span class="fc" id="L1427">		return new ValueObjectIterator&lt;&gt;(type, upsert(target, upType, content));</span>
 	}
 
 	/**
@@ -1443,7 +1449,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An iterator over the result of the upsert operation.
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; upsert(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L1446">		return new ValueObjectIterator&lt;&gt;(type, upsert(targets, upType, content));</span>
+<span class="nc" id="L1452">		return new ValueObjectIterator&lt;&gt;(type, upsert(targets, upType, content));</span>
 	}
 
 	/**
@@ -1467,12 +1473,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         operation
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; upsertSync(String target, UpType upType, T content) {
-<span class="fc" id="L1470">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1476">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1472">			return new SynchronizedValueIterator(</span>
-<span class="fc" id="L1473">					upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1478">			return new SynchronizedValueIterator(</span>
+<span class="fc" id="L1479">					upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1475">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1481">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1495,12 +1501,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         operation
 	 */
 	public &lt;T&gt; Iterator&lt;Value&gt; upsertSync(String[] targets, UpType upType, T content) {
-<span class="fc" id="L1498">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
+<span class="fc" id="L1504">		final ValueMut valueMut = ValueBuilder.convert(content);</span>
 		try {
-<span class="fc" id="L1500">			return new SynchronizedValueIterator(</span>
-<span class="fc" id="L1501">					upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
+<span class="fc" id="L1506">			return new SynchronizedValueIterator(</span>
+<span class="fc" id="L1507">					upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));</span>
 		} finally {
-<span class="fc" id="L1503">			ValueBuilder.releaseConverted(valueMut, content);</span>
+<span class="fc" id="L1509">			ValueBuilder.releaseConverted(valueMut, content);</span>
 		}
 	}
 
@@ -1524,7 +1530,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a thread-safe iterator over the upserted record
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; upsertSync(Class&lt;T&gt; type, String target, UpType upType, T content) {
-<span class="fc" id="L1527">		return new ValueObjectIterator&lt;&gt;(type, upsertSync(target, upType, content));</span>
+<span class="fc" id="L1533">		return new ValueObjectIterator&lt;&gt;(type, upsertSync(target, upType, content));</span>
 	}
 
 	/**
@@ -1550,22 +1556,22 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         type.
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; upsertSync(Class&lt;T&gt; type, String[] targets, UpType upType, T content) {
-<span class="nc" id="L1553">		return new ValueObjectIterator&lt;&gt;(type, upsertSync(targets, upType, content));</span>
+<span class="nc" id="L1559">		return new ValueObjectIterator&lt;&gt;(type, upsertSync(targets, upType, content));</span>
 	}
 
 	@SafeVarargs
 	private static &lt;T&gt; ValueMut[] convertAll(T... contents) {
-<span class="fc" id="L1558">		final ValueMut[] valueMuts = new ValueMut[contents.length];</span>
+<span class="fc" id="L1564">		final ValueMut[] valueMuts = new ValueMut[contents.length];</span>
 		try {
-<span class="fc bfc" id="L1560" title="All 2 branches covered.">			for (int i = 0; i &lt; contents.length; i++) {</span>
-<span class="fc" id="L1561">				valueMuts[i] = ValueBuilder.convert(contents[i]);</span>
+<span class="fc bfc" id="L1566" title="All 2 branches covered.">			for (int i = 0; i &lt; contents.length; i++) {</span>
+<span class="fc" id="L1567">				valueMuts[i] = ValueBuilder.convert(contents[i]);</span>
 			}
-<span class="fc" id="L1563">			return valueMuts;</span>
-<span class="fc" id="L1564">		} catch (Throwable t) {</span>
+<span class="fc" id="L1569">			return valueMuts;</span>
+<span class="fc" id="L1570">		} catch (Throwable t) {</span>
 			// Free what was converted before the failure (elements not converted yet are
 			// null and skipped).
-<span class="fc" id="L1567">			ValueBuilder.releaseAll(valueMuts, contents);</span>
-<span class="fc" id="L1568">			throw t;</span>
+<span class="fc" id="L1573">			ValueBuilder.releaseAll(valueMuts, contents);</span>
+<span class="fc" id="L1574">			throw t;</span>
 		}
 	}
 
@@ -1584,14 +1590,14 @@ public class Surreal extends Native implements AutoCloseable {
 	public Optional&lt;Value&gt; select(RecordId recordId) {
 		final long valuePtr;
 		try {
-<span class="fc" id="L1587">			valuePtr = selectRecordId(getPtr(), recordId.getPtr());</span>
+<span class="fc" id="L1593">			valuePtr = selectRecordId(getPtr(), recordId.getPtr());</span>
 		} finally {
-<span class="fc" id="L1589">			reachabilityFence(recordId);</span>
+<span class="fc" id="L1595">			reachabilityFence(recordId);</span>
 		}
-<span class="fc bfc" id="L1591" title="All 2 branches covered.">		if (valuePtr == 0) {</span>
-<span class="fc" id="L1592">			return Optional.empty();</span>
+<span class="fc bfc" id="L1597" title="All 2 branches covered.">		if (valuePtr == 0) {</span>
+<span class="fc" id="L1598">			return Optional.empty();</span>
 		}
-<span class="fc" id="L1594">		return Optional.of(new Value(valuePtr));</span>
+<span class="fc" id="L1600">		return Optional.of(new Value(valuePtr));</span>
 	}
 
 	/**
@@ -1613,7 +1619,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         present, otherwise an empty Optional
 	 */
 	public &lt;T&gt; Optional&lt;T&gt; select(Class&lt;T&gt; type, RecordId recordId) {
-<span class="fc" id="L1616">		return select(recordId).map(v -&gt; v.getAndClose(type));</span>
+<span class="fc" id="L1622">		return select(recordId).map(v -&gt; v.getAndClose(type));</span>
 	}
 
 	/**
@@ -1630,13 +1636,13 @@ public class Surreal extends Native implements AutoCloseable {
 	public List&lt;Value&gt; select(RecordId... recordIds) {
 		final long[] valuePtrs;
 		try {
-<span class="fc" id="L1633">			valuePtrs = selectRecordIds(getPtr(), getPtrs(recordIds));</span>
+<span class="fc" id="L1639">			valuePtrs = selectRecordIds(getPtr(), getPtrs(recordIds));</span>
 		} finally {
 			// Fencing the array keeps every RecordId in it reachable.
-<span class="fc" id="L1636">			reachabilityFence(recordIds);</span>
+<span class="fc" id="L1642">			reachabilityFence(recordIds);</span>
 		}
-<span class="fc" id="L1638">		try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
-<span class="fc" id="L1639">			return s.mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L1644">		try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
+<span class="fc" id="L1645">			return s.mapToObj(Value::new).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -1659,8 +1665,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         record IDs
 	 */
 	public &lt;T&gt; List&lt;T&gt; select(Class&lt;T&gt; type, RecordId... recordIds) {
-<span class="fc" id="L1662">		try (final Stream&lt;Value&gt; s = select(recordIds).stream()) {</span>
-<span class="fc" id="L1663">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
+<span class="fc" id="L1668">		try (final Stream&lt;Value&gt; s = select(recordIds).stream()) {</span>
+<span class="fc" id="L1669">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -1672,19 +1678,19 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return list of values for records in the range
 	 */
 	public List&lt;Value&gt; select(RecordIdRange range) {
-<span class="fc" id="L1675">		final Id start = range.getStart();</span>
-<span class="fc" id="L1676">		final Id end = range.getEnd();</span>
+<span class="fc" id="L1681">		final Id start = range.getStart();</span>
+<span class="fc" id="L1682">		final Id end = range.getEnd();</span>
 		final long[] valuePtrs;
 		try {
-<span class="fc bfc" id="L1679" title="All 2 branches covered.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
-<span class="pc bpc" id="L1680" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
-<span class="fc" id="L1681">			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);</span>
+<span class="fc bfc" id="L1685" title="All 2 branches covered.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
+<span class="pc bpc" id="L1686" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
+<span class="fc" id="L1687">			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);</span>
 		} finally {
-<span class="fc" id="L1683">			reachabilityFence(start);</span>
-<span class="fc" id="L1684">			reachabilityFence(end);</span>
+<span class="fc" id="L1689">			reachabilityFence(start);</span>
+<span class="fc" id="L1690">			reachabilityFence(end);</span>
 		}
-<span class="fc" id="L1686">		try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
-<span class="fc" id="L1687">			return s.mapToObj(Value::new).collect(Collectors.toList());</span>
+<span class="fc" id="L1692">		try (final LongStream s = Arrays.stream(valuePtrs)) {</span>
+<span class="fc" id="L1693">			return s.mapToObj(Value::new).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -1700,8 +1706,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return list of objects of the specified type
 	 */
 	public &lt;T&gt; List&lt;T&gt; select(Class&lt;T&gt; type, RecordIdRange range) {
-<span class="nc" id="L1703">		try (final Stream&lt;Value&gt; s = select(range).stream()) {</span>
-<span class="nc" id="L1704">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
+<span class="nc" id="L1709">		try (final Stream&lt;Value&gt; s = select(range).stream()) {</span>
+<span class="nc" id="L1710">			return s.map(v -&gt; v.getAndClose(type)).collect(Collectors.toList());</span>
 		}
 	}
 
@@ -1718,7 +1724,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An iterator over the values corresponding to the specified targets.
 	 */
 	public Iterator&lt;Value&gt; select(String targets) {
-<span class="fc" id="L1721">		return new ValueIterator(selectTargetsValues(getPtr(), targets));</span>
+<span class="fc" id="L1727">		return new ValueIterator(selectTargetsValues(getPtr(), targets));</span>
 	}
 
 	/**
@@ -1735,7 +1741,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         specified targets.
 	 */
 	public Iterator&lt;Value&gt; selectSync(String targets) {
-<span class="fc" id="L1738">		return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));</span>
+<span class="fc" id="L1744">		return new SynchronizedValueIterator(selectTargetsValuesSync(getPtr(), targets));</span>
 	}
 
 	/**
@@ -1755,7 +1761,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An iterator of the specified type for the selected targets.
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; select(Class&lt;T&gt; type, String targets) {
-<span class="fc" id="L1758">		return new ValueObjectIterator&lt;&gt;(type, select(targets));</span>
+<span class="fc" id="L1764">		return new ValueObjectIterator&lt;&gt;(type, select(targets));</span>
 	}
 
 	/**
@@ -1776,7 +1782,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         type
 	 */
 	public &lt;T&gt; Iterator&lt;T&gt; selectSync(Class&lt;T&gt; type, String targets) {
-<span class="fc" id="L1779">		return new ValueObjectIterator&lt;&gt;(type, selectSync(targets));</span>
+<span class="fc" id="L1785">		return new ValueObjectIterator&lt;&gt;(type, selectSync(targets));</span>
 	}
 
 	/**
@@ -1791,11 +1797,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public void delete(RecordId recordId) {
 		try {
-<span class="fc" id="L1794">			deleteRecordId(getPtr(), recordId.getPtr());</span>
+<span class="fc" id="L1800">			deleteRecordId(getPtr(), recordId.getPtr());</span>
 		} finally {
-<span class="fc" id="L1796">			reachabilityFence(recordId);</span>
+<span class="fc" id="L1802">			reachabilityFence(recordId);</span>
 		}
-<span class="fc" id="L1798">	}</span>
+<span class="fc" id="L1804">	}</span>
 
 	/**
 	 * Deletes the specified records.
@@ -1810,11 +1816,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public void delete(RecordId... recordIds) {
 		try {
-<span class="fc" id="L1813">			deleteRecordIds(getPtr(), getPtrs(recordIds));</span>
+<span class="fc" id="L1819">			deleteRecordIds(getPtr(), getPtrs(recordIds));</span>
 		} finally {
-<span class="fc" id="L1815">			reachabilityFence(recordIds);</span>
+<span class="fc" id="L1821">			reachabilityFence(recordIds);</span>
 		}
-<span class="fc" id="L1817">	}</span>
+<span class="fc" id="L1823">	}</span>
 
 	/**
 	 * Deletes all records in the given record ID range.
@@ -1823,17 +1829,17 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the table and optional start/end bounds
 	 */
 	public void delete(RecordIdRange range) {
-<span class="fc" id="L1826">		final Id start = range.getStart();</span>
-<span class="fc" id="L1827">		final Id end = range.getEnd();</span>
+<span class="fc" id="L1832">		final Id start = range.getStart();</span>
+<span class="fc" id="L1833">		final Id end = range.getEnd();</span>
 		try {
-<span class="pc bpc" id="L1829" title="1 of 2 branches missed.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
-<span class="pc bpc" id="L1830" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
-<span class="fc" id="L1831">			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);</span>
+<span class="pc bpc" id="L1835" title="1 of 2 branches missed.">			final long startPtr = start != null ? start.getPtr() : 0;</span>
+<span class="pc bpc" id="L1836" title="1 of 2 branches missed.">			final long endPtr = end != null ? end.getPtr() : 0;</span>
+<span class="fc" id="L1837">			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);</span>
 		} finally {
-<span class="fc" id="L1833">			reachabilityFence(start);</span>
-<span class="fc" id="L1834">			reachabilityFence(end);</span>
+<span class="fc" id="L1839">			reachabilityFence(start);</span>
+<span class="fc" id="L1840">			reachabilityFence(end);</span>
 		}
-<span class="fc" id="L1836">	}</span>
+<span class="fc" id="L1842">	}</span>
 
 	/**
 	 * Deletes the specified target.
@@ -1846,8 +1852,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the name of the target to be deleted
 	 */
 	public void delete(String target) {
-<span class="fc" id="L1849">		deleteTarget(getPtr(), target);</span>
-<span class="fc" id="L1850">	}</span>
+<span class="fc" id="L1855">		deleteTarget(getPtr(), target);</span>
+<span class="fc" id="L1856">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -281,14 +281,14 @@ contents as the values.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the current database set by the last <a href="#useNs(java.lang.String)"><code>useNs(String)</code></a>,
 <a href="#useDb(java.lang.String)"><code>useDb(String)</code></a>, or <a href="#useDefaults()"><code>useDefaults()</code></a> call (from the server
-response).</div>
+response), or inherited from the parent by <a href="#newSession()"><code>newSession()</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getNamespace()" class="member-name-link">getNamespace</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the current namespace set by the last <a href="#useNs(java.lang.String)"><code>useNs(String)</code></a>,
 <a href="#useDb(java.lang.String)"><code>useDb(String)</code></a>, or <a href="#useDefaults()"><code>useDefaults()</code></a> call (from the server
-response).</div>
+response), or inherited from the parent by <a href="#newSession()"><code>newSession()</code></a>.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#health()" class="member-name-link">health</a>()</code></div>
@@ -359,8 +359,7 @@ as the values.</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#newSession()" class="member-name-link">newSession</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Creates a new session that shares the same connection but has its own
-namespace, database, and authentication state.</div>
+<div class="block">Creates a new session that shares the same connection.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Response.html" title="class in com.surrealdb">Response</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#query(java.lang.String)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;sql)</code></div>
@@ -993,9 +992,10 @@ from signin).</div>
 <h3>newSession</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></span>&nbsp;<span class="element-name">newSession</span>()</div>
-<div class="block">Creates a new session that shares the same connection but has its own
-namespace, database, and authentication state. Use this for multi-session
-support.</div>
+<div class="block">Creates a new session that shares the same connection. The new session starts
+as a copy of this one (namespace, database, variables and authentication) and
+changes to either session after that do not affect the other. Use this for
+multi-session support.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>a new Surreal instance representing a separate session</dd>
@@ -1074,8 +1074,9 @@ them.</div>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getNamespace</span>()</div>
 <div class="block">Returns the current namespace set by the last <a href="#useNs(java.lang.String)"><code>useNs(String)</code></a>,
 <a href="#useDb(java.lang.String)"><code>useDb(String)</code></a>, or <a href="#useDefaults()"><code>useDefaults()</code></a> call (from the server
-response). Null if none of those have been called since
-<a href="#connect(java.lang.String)"><code>connect(String)</code></a> or for a new session.</div>
+response), or inherited from the parent by <a href="#newSession()"><code>newSession()</code></a>. Null if
+none of those have happened since <a href="#connect(java.lang.String)"><code>connect(String)</code></a>. A <code>USE</code>
+statement run through <a href="#query(java.lang.String)"><code>query(String)</code></a> is not reflected here.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the current namespace, or null</dd>
@@ -1090,8 +1091,9 @@ response). Null if none of those have been called since
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getDatabase</span>()</div>
 <div class="block">Returns the current database set by the last <a href="#useNs(java.lang.String)"><code>useNs(String)</code></a>,
 <a href="#useDb(java.lang.String)"><code>useDb(String)</code></a>, or <a href="#useDefaults()"><code>useDefaults()</code></a> call (from the server
-response). Null if none of those have been called since
-<a href="#connect(java.lang.String)"><code>connect(String)</code></a> or for a new session.</div>
+response), or inherited from the parent by <a href="#newSession()"><code>newSession()</code></a>. Null if
+none of those have happened since <a href="#connect(java.lang.String)"><code>connect(String)</code></a>. A <code>USE</code>
+statement run through <a href="#query(java.lang.String)"><code>query(String)</code></a> is not reflected here.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the current database, or null</dd>

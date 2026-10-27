@@ -389,7 +389,7 @@ already hold a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.
 <dd>
 <div class="block">Returns the current database set by the last <a href="com/surrealdb/Surreal.html#useNs(java.lang.String)"><code>Surreal.useNs(String)</code></a>,
 <a href="com/surrealdb/Surreal.html#useDb(java.lang.String)"><code>Surreal.useDb(String)</code></a>, or <a href="com/surrealdb/Surreal.html#useDefaults()"><code>Surreal.useDefaults()</code></a> call (from the server
-response).</div>
+response), or inherited from the parent by <a href="com/surrealdb/Surreal.html#newSession()"><code>Surreal.newSession()</code></a>.</div>
 </dd>
 <dt><a href="com/surrealdb/AlreadyExistsException.html#getDatabaseName()" class="member-name-link">getDatabaseName()</a> - Method in exception class com.surrealdb.<a href="com/surrealdb/AlreadyExistsException.html" title="class in com.surrealdb">AlreadyExistsException</a></dt>
 <dd>
@@ -471,7 +471,7 @@ response).</div>
 <dd>
 <div class="block">Returns the current namespace set by the last <a href="com/surrealdb/Surreal.html#useNs(java.lang.String)"><code>Surreal.useNs(String)</code></a>,
 <a href="com/surrealdb/Surreal.html#useDb(java.lang.String)"><code>Surreal.useDb(String)</code></a>, or <a href="com/surrealdb/Surreal.html#useDefaults()"><code>Surreal.useDefaults()</code></a> call (from the server
-response).</div>
+response), or inherited from the parent by <a href="com/surrealdb/Surreal.html#newSession()"><code>Surreal.newSession()</code></a>.</div>
 </dd>
 <dt><a href="com/surrealdb/AlreadyExistsException.html#getNamespaceName()" class="member-name-link">getNamespaceName()</a> - Method in exception class com.surrealdb.<a href="com/surrealdb/AlreadyExistsException.html" title="class in com.surrealdb">AlreadyExistsException</a></dt>
 <dd>
@@ -896,8 +896,7 @@ supported.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Surreal.html#newSession()" class="member-name-link">newSession()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
-<div class="block">Creates a new session that shares the same connection but has its own
-namespace, database, and authentication state.</div>
+<div class="block">Creates a new session that shares the same connection.</div>
 </dd>
 <dt><a href="com/surrealdb/EntryIterator.html#next()" class="member-name-link">next()</a> - Method in class com.surrealdb.<a href="com/surrealdb/EntryIterator.html" title="class in com.surrealdb">EntryIterator</a></dt>
 <dd>&nbsp;</dd>
