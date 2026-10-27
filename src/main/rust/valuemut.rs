@@ -289,6 +289,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newTable<'local>(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_copy<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let value = get_value_mut_instance!(env, ptr, || 0);
+        // Clone (not move) so the original ValueMut stays valid and reusable.
+        JniTypes::new_value_mut(value.clone())
+    })
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_toString<'local>(
     mut env: EnvUnowned<'local>,
     _class: JClass<'local>,

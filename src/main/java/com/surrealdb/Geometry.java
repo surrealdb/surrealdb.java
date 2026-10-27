@@ -191,14 +191,13 @@ public class Geometry extends Native {
 	}
 
 	public static Geometry geometryCollection(List<Geometry> geometries) {
-		final long[] ptrs = new long[geometries.size()];
-		for (int i = 0; i < geometries.size(); i++) {
-			ptrs[i] = geometries.get(i).getPtr();
-		}
+		// Snapshot once: the list may be lazy, linked, or changed concurrently.
+		final Geometry[] array = geometries.toArray(new Geometry[0]);
 		try {
-			return new Geometry(newCollection(ptrs));
+			return new Geometry(newCollection(getPtrs(array)));
 		} finally {
-			reachabilityFence(geometries);
+			// Fencing the array keeps every Geometry in it reachable.
+			reachabilityFence(array);
 		}
 	}
 

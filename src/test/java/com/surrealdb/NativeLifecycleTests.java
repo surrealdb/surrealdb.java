@@ -2,7 +2,10 @@ package com.surrealdb;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -13,8 +16,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.surrealdb.pojos.Person;
@@ -324,5 +329,148 @@ public class NativeLifecycleTests {
 		}
 		System.gc();
 		Thread.sleep(100);
+	}
+
+	/** A POJO with a ValueMut field. */
+	public static class WithValueMut {
+		public String name;
+		public ValueMut payload;
+
+		public WithValueMut(String name, ValueMut payload) {
+			this.name = name;
+			this.payload = payload;
+		}
+	}
+
+	@Test
+	void callerValueMutNestedInMapSurvivesAndIsReusable() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final ValueMut vm = ValueMut.createString("hello");
+			final Map<String, java.lang.Object> map = Collections.singletonMap("avatar", vm);
+			// The same map, and the same ValueMut, work in several calls.
+			for (int i = 0; i < 3; i++) {
+				assertEquals(1, surreal.create("person", map).size());
+				final Value v = surreal.query("RETURN $m", Collections.singletonMap("m", map)).take(0);
+				assertEquals("hello", v.getObject().get("avatar").getString());
+				assertNotEquals(0L, vm.getPtr());
+			}
+			assertEquals("'hello'", vm.toString());
+		}
+	}
+
+	@Test
+	void callerValueMutNestedInListAndOptionalSurvives() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final ValueMut vm = ValueMut.createLong(7);
+			final List<java.lang.Object> list = Arrays.asList(vm, java.util.Optional.of(vm), 1L);
+			for (int i = 0; i < 3; i++) {
+				final Value v = surreal.query("RETURN $l", Collections.singletonMap("l", list)).take(0);
+				assertEquals(3, v.getArray().len());
+				assertEquals(7L, v.getArray().get(0).getLong());
+				assertEquals(7L, v.getArray().get(1).getLong());
+				assertNotEquals(0L, vm.getPtr());
+			}
+			// At the top level it is only borrowed, too.
+			assertEquals(7L, surreal.query("RETURN $v", Collections.singletonMap("v", vm)).take(0).getLong());
+			assertEquals(7L, surreal.query("RETURN $v", Collections.singletonMap("v", java.util.Optional.of(vm)))
+					.take(0).getLong());
+			assertNotEquals(0L, vm.getPtr());
+		}
+	}
+
+	@Test
+	void callerValueMutInPojoFieldSurvives() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final ValueMut vm = ValueMut.createString("data");
+			final WithValueMut pojo = new WithValueMut("n", vm);
+			for (int i = 0; i < 3; i++) {
+				final List<Value> created = surreal.create("pojo", pojo);
+				assertEquals(1, created.size());
+				assertEquals("data", created.get(0).getObject().get("payload").getString());
+				assertNotEquals(0L, vm.getPtr());
+			}
+			// Several create contents sharing the one ValueMut.
+			assertEquals(2, surreal.create("pojo", pojo, new WithValueMut("m", vm)).size());
+			assertNotEquals(0L, vm.getPtr());
+		}
+	}
+
+	@Test
+	void sameCallerValueMutUnderTwoKeys() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final ValueMut vm = ValueMut.createString("shared");
+			final Map<String, java.lang.Object> map = new LinkedHashMap<>();
+			map.put("a", vm);
+			map.put("b", vm);
+			map.put("c", Arrays.asList(vm, vm));
+			final Value v = surreal.query("RETURN $m", Collections.singletonMap("m", map)).take(0);
+			assertEquals("shared", v.getObject().get("a").getString());
+			assertEquals("shared", v.getObject().get("b").getString());
+			assertEquals("shared", v.getObject().get("c").getArray().get(1).getString());
+			assertNotEquals(0L, vm.getPtr());
+			// And the same ValueMut in two fields of a POJO-free object call.
+			final Value created = surreal.create("two", map).get(0);
+			assertEquals("shared", created.getObject().get("a").getString());
+			assertEquals("shared", created.getObject().get("b").getString());
+		}
+	}
+
+	@Test
+	void geometryCollectionSnapshotsAnyList() {
+		final Geometry p = Geometry.point(1.0, 2.0);
+		final Geometry q = Geometry.point(3.0, 4.0);
+		assertEquals(2, Geometry.geometryCollection(Arrays.asList(p, q)).getGeometryCollection().size());
+		assertEquals(2,
+				Geometry.geometryCollection(new LinkedList<>(Arrays.asList(p, q))).getGeometryCollection().size());
+		assertEquals(0, Geometry.geometryCollection(new ArrayList<>()).getGeometryCollection().size());
+		// The inputs are only borrowed.
+		assertNotEquals(0L, p.getPtr());
+		assertNotEquals(0L, q.getPtr());
+		assertThrows(NullPointerException.class, () -> Geometry.geometryCollection(Arrays.asList(p, null)));
+		assertNotEquals(0L, p.getPtr());
+	}
+
+	@Test
+	void failedConversionPartwayThrowsAndLeavesLaterCallsWorking() {
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			final ValueMut callerOwned = ValueMut.createString("keep");
+			final java.lang.Object unsupported = new java.lang.Object();
+			// Entries converted before the failing one are freed (a caller-owned ValueMut
+			// is spared); the failure itself reaches the caller.
+			final Map<String, java.lang.Object> params = new LinkedHashMap<>();
+			params.put("a", "x");
+			params.put("b", Arrays.asList(1L, 2L));
+			params.put("c", callerOwned);
+			params.put("d", unsupported);
+			assertThrows(RuntimeException.class, () -> surreal.query("RETURN $a", params));
+			// Same through varargs contents.
+			assertThrows(RuntimeException.class, () -> surreal.create("person", Collections.singletonMap("k", "v"),
+					callerOwned, java.math.BigInteger.ONE));
+			// And inside a nested Collection, Map, and Optional.
+			final Map<String, java.lang.Object> nested = new LinkedHashMap<>();
+			nested.put("ok", callerOwned);
+			nested.put("list", Arrays.asList("a", callerOwned, java.util.Optional.of(java.math.BigInteger.ONE)));
+			assertThrows(RuntimeException.class,
+					() -> surreal.query("RETURN $n", Collections.singletonMap("n", nested)));
+			final Map<String, java.lang.Object> badMap = new LinkedHashMap<>();
+			badMap.put("ok", "v");
+			badMap.put("bad", unsupported);
+			assertThrows(RuntimeException.class,
+					() -> surreal.query("RETURN $n", Collections.singletonMap("n", badMap)));
+			assertThrows(RuntimeException.class,
+					() -> surreal.create("person", new WithValueMut("n", callerOwned), unsupported));
+			// Nothing is left broken.
+			assertNotEquals(0L, callerOwned.getPtr());
+			assertEquals("keep",
+					surreal.query("RETURN $v", Collections.singletonMap("v", callerOwned)).take(0).getString());
+			assertEquals(1, surreal.create("person", Collections.singletonMap("k", "v")).size());
+			assertNotNull(surreal.query("RETURN $a", Collections.singletonMap("a", "x")).take(0));
+			assertTrue(callerOwned.getPtr() != 0);
+		}
 	}
 }

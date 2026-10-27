@@ -109,6 +109,19 @@ public abstract class Native {
 	}
 
 	/**
+	 * The pointer of every element of {@code natives}, without taking ownership.
+	 * The caller must keep the array reachable (see {@link #reachabilityFence})
+	 * until the native call that received the pointers has returned.
+	 */
+	static long[] getPtrs(Native[] natives) {
+		final long[] ptrs = new long[natives.length];
+		for (int i = 0; i < natives.length; i++) {
+			ptrs[i] = natives[i].getPtr();
+		}
+		return ptrs;
+	}
+
+	/**
 	 * Keeps {@code o} reachable until this call returns. Call it after a native
 	 * call that was given {@code o}'s pointer, when nothing else holds {@code o}.
 	 * Does nothing for {@code null}.

@@ -10,20 +10,29 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 class ValueBuilder {
 
-	private static <T> ValueMut convertObject(final T object) throws IllegalAccessException {
+	/**
+	 * @param topLevel
+	 *            true for the object the caller passed in, false for anything
+	 *            nested in a Collection, Map, or POJO field. A caller-supplied
+	 *            {@code ValueMut} is returned as is at the top level, where the
+	 *            call only borrows it. Nested, it is copied, because building the
+	 *            enclosing array or object takes ownership of what it is given.
+	 */
+	private static <T> ValueMut convertObject(final T object, final boolean topLevel) throws IllegalAccessException {
 		if (object == null) {
 			return ValueMut.createNull();
 		}
 		if (object instanceof ValueMut) {
-			return (ValueMut) object;
+			final ValueMut vm = (ValueMut) object;
+			return topLevel ? vm : vm.copy();
 		}
 		if (object instanceof String) {
 			return ValueMut.createString((String) object);
@@ -73,23 +82,40 @@ class ValueBuilder {
 		if (object instanceof Collection) {
 			final Collection<?> collection = (Collection<?>) object;
 			// Create a ValueMut for each element of the collection
-			final List<ValueMut> values = collection.stream().map(ValueBuilder::convert).collect(Collectors.toList());
-			return ValueMut.createArray(values);
+			final List<ValueMut> values = new ArrayList<>(collection.size());
+			try {
+				for (final java.lang.Object element : collection) {
+					values.add(convertObject(element, false));
+				}
+				return ValueMut.createArray(values);
+			} catch (Throwable t) {
+				// Whatever was not handed over to the array is still ours to free.
+				freeAll(values);
+				throw t;
+			}
 		}
 		if (object instanceof Map) {
 			final Map<?, ?> map = (Map<?, ?>) object;
+			final List<ValueMut> values = new ArrayList<>(map.size());
 			final List<EntryMut> entries = new ArrayList<>(map.size());
-			// Create a ValueMut for each value of the map
-			for (final Map.Entry<?, ?> entry : map.entrySet()) {
-				final String key = entry.getKey().toString();
-				final ValueMut value = convert(entry.getValue());
-				entries.add(EntryMut.newEntry(key, value));
+			try {
+				// Create a ValueMut for each value of the map
+				for (final Map.Entry<?, ?> entry : map.entrySet()) {
+					final String key = entry.getKey().toString();
+					final ValueMut value = convertObject(entry.getValue(), false);
+					values.add(value);
+					entries.add(EntryMut.newEntry(key, value));
+				}
+				return ValueMut.createObject(entries);
+			} catch (Throwable t) {
+				freeAll(entries);
+				freeAll(values);
+				throw t;
 			}
-			return ValueMut.createObject(entries);
 		}
 		if (object instanceof Optional) {
 			final Optional<?> optional = (Optional<?>) object;
-			return optional.map(ValueBuilder::convert).orElseGet(ValueMut::createNull);
+			return optional.isPresent() ? convertObject(optional.get(), topLevel) : ValueMut.createNull();
 		}
 		if (object instanceof Id) {
 			return ValueMut.createId((Id) object);
@@ -125,27 +151,57 @@ class ValueBuilder {
 		if (fields.isEmpty() && clazz.getDeclaredFields().length == 0) {
 			throw new SurrealException("No field found: " + clazz.getCanonicalName());
 		}
+		final List<ValueMut> values = new ArrayList<>(fields.size());
 		final List<EntryMut> entries = new ArrayList<>(fields.size());
-		for (final Map.Entry<String, Field> fieldEntry : fields.entrySet()) {
-			final java.lang.Object value = fieldEntry.getValue().get(object);
-			if (value != null) {
-				entries.add(EntryMut.newEntry(fieldEntry.getKey(), convert(value)));
+		try {
+			for (final Map.Entry<String, Field> fieldEntry : fields.entrySet()) {
+				final java.lang.Object value = fieldEntry.getValue().get(object);
+				if (value != null) {
+					final ValueMut converted = convertObject(value, false);
+					values.add(converted);
+					entries.add(EntryMut.newEntry(fieldEntry.getKey(), converted));
+				}
 			}
+			return ValueMut.createObject(entries);
+		} catch (Throwable t) {
+			freeAll(entries);
+			freeAll(values);
+			throw t;
 		}
-		return ValueMut.createObject(entries);
+	}
+
+	/**
+	 * Frees temporaries built here that were not handed over to an enclosing array
+	 * or object. Handing over clears the pointer, so what was already taken is a
+	 * no-op.
+	 */
+	private static void freeAll(final List<? extends Native> natives) {
+		for (final Native n : natives) {
+			n.deleteInstance();
+		}
 	}
 
 	static <T> ValueMut convert(final T object) {
 		try {
-			return convertObject(object);
+			return convertObject(object, true);
 		} catch (IllegalAccessException e) {
 			throw new SurrealException("Unable to convert object", e);
 		}
 	}
 
 	static Map<String, ValueMut> convertParams(final Map<String, ?> params) {
-		return params.entrySet().stream()
-				.collect(Collectors.toMap(Map.Entry::getKey, entry -> convert(entry.getValue())));
+		final Map<String, ValueMut> converted = new HashMap<>(params.size() * 2);
+		try {
+			for (final Map.Entry<String, ?> entry : params.entrySet()) {
+				converted.put(entry.getKey(), convert(entry.getValue()));
+			}
+			return converted;
+		} catch (Throwable t) {
+			// Free what was converted before the failure; a caller-supplied ValueMut is
+			// spared.
+			releaseParams(converted, params);
+			throw t;
+		}
 	}
 
 	/**
