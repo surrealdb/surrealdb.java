@@ -1,6 +1,7 @@
 package com.surrealdb;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,15 @@ public class ReplaceModeTests {
 		return m;
 	}
 
+	/** Every record was rewritten to just {@code name}: no field survived. */
+	private static void assertReplaced(List<Value> records, int count, String name) {
+		assertEquals(count, records.size());
+		for (final Value v : records) {
+			assertEquals(name, v.getObject().get("name").getString());
+			assertTrue(v.getObject().get("age").isNone());
+		}
+	}
+
 	private static void replace(Surreal surreal) {
 		surreal.query("CREATE person:1 SET name = 'a', age = 3; CREATE person:2 SET name = 'b', age = 4");
 
@@ -70,6 +80,17 @@ public class ReplaceModeTests {
 			assertEquals("t", v.getObject().get("name").getString());
 			assertFalse(v.getObject().get("age").isLong());
 		}
+
+		// A range REPLACE rewrites every record in the range (both ends included).
+		surreal.query("CREATE pet:1 SET name = 'p', age = 1; CREATE pet:2 SET name = 'q', age = 2;"
+				+ " CREATE pet:3 SET name = 's', age = 3");
+		// The range methods return the first record written; select reads them all.
+		final RecordIdRange first2 = new RecordIdRange("pet", Id.from(1L), Id.from(2L));
+		assertReplaced(Collections.singletonList(surreal.update(first2, UpType.REPLACE, named("rr"))), 1, "rr");
+		assertReplaced(surreal.select(first2), 2, "rr");
+		final RecordIdRange last2 = new RecordIdRange("pet", Id.from(2L), Id.from(3L));
+		assertReplaced(Collections.singletonList(surreal.upsert(last2, UpType.REPLACE, named("ur"))), 1, "ur");
+		assertReplaced(surreal.select(last2), 2, "ur");
 	}
 
 	@Test
