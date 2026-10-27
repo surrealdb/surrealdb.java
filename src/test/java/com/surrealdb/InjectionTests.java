@@ -67,13 +67,20 @@ public class InjectionTests {
 		// Every helper that takes a table name.
 		assertEquals(1, surreal.create(HOSTILE, p).size());
 		assertEquals(1, surreal.insert(HOSTILE, p).size());
+		final RecordId victim = new RecordId("victim", 1L);
+		surreal.insertRelation(HOSTILE, new InsertRelation(Id.from(2), victim, victim));
+		assertEquals(1, surreal.insertRelations(HOSTILE, new InsertRelation(Id.from(3), victim, victim)).size());
 		assertFalse(toList(surreal.select(HOSTILE)).isEmpty());
 		assertFalse(toList(surreal.selectSync(HOSTILE)).isEmpty());
 		assertFalse(toList(surreal.update(HOSTILE, UpType.MERGE, p)).isEmpty());
 		assertFalse(toList(surreal.updateSync(HOSTILE, UpType.MERGE, p)).isEmpty());
 		assertFalse(toList(surreal.update(new String[]{HOSTILE}, UpType.MERGE, p)).isEmpty());
+		assertFalse(toList(surreal.updateSync(new String[]{HOSTILE}, UpType.MERGE, p)).isEmpty());
 		assertFalse(toList(surreal.upsert(HOSTILE, UpType.MERGE, p)).isEmpty());
+		assertFalse(toList(surreal.upsertSync(HOSTILE, UpType.MERGE, p)).isEmpty());
+		assertFalse(toList(surreal.upsert(new String[]{HOSTILE}, UpType.MERGE, p)).isEmpty());
 		assertFalse(toList(surreal.upsertSync(new String[]{HOSTILE}, UpType.MERGE, p)).isEmpty());
+		surreal.selectLive(HOSTILE).close();
 		surreal.relate(new RecordId("victim", 1L), HOSTILE, new RecordId("victim", 1L));
 		surreal.relate(new RecordId("victim", 1L), HOSTILE, new RecordId("victim", 1L), p);
 		surreal.delete(HOSTILE);
@@ -111,6 +118,7 @@ public class InjectionTests {
 		assertRejectsRecordId(() -> surreal.create(id, p));
 		assertRejectsRecordId(() -> surreal.insert(id, p));
 		assertRejectsRecordId(() -> surreal.insertRelation(id, new InsertRelation(Id.from(1), tobie, tobie)));
+		assertRejectsRecordId(() -> surreal.insertRelations(id, new InsertRelation(Id.from(1), tobie, tobie)));
 		assertRejectsRecordId(() -> surreal.relate(tobie, id, tobie));
 		assertRejectsRecordId(() -> surreal.relate(tobie, id, tobie, p));
 		assertRejectsRecordId(() -> surreal.select(id));
@@ -124,6 +132,7 @@ public class InjectionTests {
 		assertRejectsRecordId(() -> surreal.upsert(new String[]{"person", id}, UpType.MERGE, p));
 		assertRejectsRecordId(() -> surreal.upsertSync(new String[]{"person", id}, UpType.MERGE, p));
 		assertRejectsRecordId(() -> surreal.delete(id));
+		assertRejectsRecordId(() -> surreal.selectLive(id));
 		// Nothing was written: no stray `person:tobie` table, and the record is
 		// unchanged.
 		final String tables = surreal.query("INFO FOR DB").take(0).getObject().get("tables").toString();
@@ -178,6 +187,54 @@ public class InjectionTests {
 			assertThrows(SurrealException.class, () -> surreal.run("string::"));
 			assertEquals(3L, surreal.run("string::len", "abc").getLong());
 			assertEquals(1, count(surreal, "victim"));
+		});
+	}
+
+	private static void assertInvalidFunctionName(Surreal surreal, String name) {
+		final SurrealException e = assertThrows(SurrealException.class, () -> surreal.run(name));
+		assertTrue(e.getMessage().startsWith("Invalid function name"), e.getMessage());
+	}
+
+	@Test
+	void runChecksVersionSuffixes() {
+		withEmbedded(surreal -> {
+			surreal.query("CREATE victim:1");
+			// A well-formed version passes the name check and reaches the server, which
+			// has no such model.
+			final SurrealException e = assertThrows(SurrealException.class, () -> surreal.run("ml::model<1.0.0>"));
+			assertFalse(e.getMessage().startsWith("Invalid function name"), e.getMessage());
+			// SurrealQL hidden in the version is refused before anything is sent.
+			assertThrows(SurrealException.class,
+					() -> surreal.run("string::len<1.0.0>; REMOVE TABLE victim; RETURN a<1>"));
+			assertEquals(1, count(surreal, "victim"));
+			assertInvalidFunctionName(surreal, "fn::foo<>");
+			assertInvalidFunctionName(surreal, "fn::foo<1.0.a>");
+			assertInvalidFunctionName(surreal, "fn::foo<...>");
+			assertInvalidFunctionName(surreal, "fn::foo<1..0>");
+			assertInvalidFunctionName(surreal, "fn::foo<.1>");
+		});
+	}
+
+	@Test
+	void emptyTargets() {
+		withEmbedded(surreal -> {
+			final Person p = new Person();
+			p.name = "nobody";
+			// An empty table name, or no tables at all, is refused before sending.
+			assertThrows(SurrealException.class, () -> surreal.select(""));
+			assertThrows(SurrealException.class, () -> surreal.create("", p));
+			assertThrows(SurrealException.class, () -> surreal.selectLive(""));
+			assertThrows(SurrealException.class, () -> surreal.update(new String[0], UpType.MERGE, p));
+			assertThrows(SurrealException.class, () -> surreal.updateSync(new String[0], UpType.MERGE, p));
+			assertThrows(SurrealException.class, () -> surreal.upsert(new String[0], UpType.MERGE, p));
+			assertThrows(SurrealException.class, () -> surreal.upsertSync(new String[0], UpType.MERGE, p));
+			// No records to create, select or delete is nothing to do.
+			assertTrue(surreal.create("person").isEmpty());
+			assertTrue(surreal.select(new RecordId[0]).isEmpty());
+			surreal.delete(new RecordId[0]);
+			// Nothing reached the database.
+			final String tables = surreal.query("INFO FOR DB").take(0).getObject().get("tables").toString();
+			assertFalse(tables.contains("person"), tables);
 		});
 	}
 }

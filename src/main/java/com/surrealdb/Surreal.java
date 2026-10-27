@@ -27,10 +27,13 @@ import com.surrealdb.signin.Token;
  * <p>
  * Methods that take a {@code String} target or table treat it as a table name
  * and nothing else: the name is sent to the server as a bound table value, so
- * it is never parsed as SurrealQL. A table name containing {@code ':'}, such as
- * {@code "person:tobie"}, is rejected with a {@link SurrealException}, because
- * it is almost always a record id passed by mistake. Use {@link RecordId} to
- * address a single record. Record contents are always sent as bound parameters.
+ * it is never parsed as SurrealQL. An empty table name, an empty list of
+ * tables, and a table name containing {@code ':'}, such as
+ * {@code "person:tobie"}, are rejected with a {@link SurrealException}. A name
+ * with {@code ':'} is almost always a record id passed by mistake: use
+ * {@link RecordId} to address a single record. Record contents are always sent
+ * as bound parameters. The table inside a {@link RecordId} or
+ * {@link RecordIdRange} is part of that value and is sent bound as well.
  */
 public class Surreal extends Native implements AutoCloseable {
 

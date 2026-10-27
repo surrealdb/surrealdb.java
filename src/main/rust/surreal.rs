@@ -495,6 +495,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, || 0);
         let name = get_rust_string!(env, &name, || 0);
+        if let Err(e) = check_function_name(&name) {
+            return e.exception(env, || 0);
+        }
         let value_ptrs = get_long_array!(env, &args_value_ptrs, || 0);
         let mut params_map = BTreeMap::<String, Value>::new();
         let mut placeholders = Vec::with_capacity(value_ptrs.len());
@@ -503,9 +506,6 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
             placeholders.push(format!("${}", key));
             let value = get_value_mut_instance!(env, *value_ptr, || 0);
             params_map.insert(key, value.clone());
-        }
-        if let Err(e) = check_function_name(&name) {
-            return e.exception(env, || 0);
         }
         let args_list = placeholders.join(", ");
         let query = format!("RETURN {}({})", name, args_list);
@@ -561,12 +561,12 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
         let surreal = get_surreal_ref!(env, ptr, null_mut);
         let table = get_rust_string!(env, &table, null_mut);
 
-        // Run the LIVE SELECT synchronously on the calling thread. type::table($tb)
-        // binds the table name safely (no SQL injection).
+        // Run the LIVE SELECT synchronously on the calling thread. The table name
+        // is bound, never spliced into the query.
         let mut params = BTreeMap::new();
-        params.insert("tb".to_string(), Value::String(table));
-        let res =
-            surrealdb_query::<Value>(surreal, "LIVE SELECT * FROM type::table($tb)", Some(params));
+        let tb = check_table_binding!(env, bind_table(&mut params, "tb", table), null_mut);
+        let query = format!("LIVE SELECT * FROM {tb}");
+        let res = surrealdb_query::<Value>(surreal, &query, Some(params));
         let mut res = check_query_result!(env, res, null_mut);
 
         // The statement result at index 0 is the live-query UUID. Reading it via
@@ -740,6 +740,11 @@ fn bind_tables(
     params: &mut BTreeMap<String, Value>,
     tables: Vec<String>,
 ) -> StdResult<String, SurrealError> {
+    if tables.is_empty() {
+        return Err(SurrealError::SurrealDBJni(
+            "At least one table name is required".to_string(),
+        ));
+    }
     let placeholders = tables
         .into_iter()
         .enumerate()
@@ -748,12 +753,16 @@ fn bind_tables(
     Ok(placeholders.join(", "))
 }
 
-/// Rejects table names containing `:`. Such a string is almost always a record id
-/// (`person:tobie`) passed where a table is expected. Bound as a table it would
-/// silently create a new table called `person:tobie`, or delete nothing, so it is
-/// refused with a pointer to [`RecordId`] instead.
+/// Rejects an empty table name, and table names containing `:`. Such a string is
+/// almost always a record id (`person:tobie`) passed where a table is expected.
+/// Bound as a table it would silently create a new table called `person:tobie`, or
+/// delete nothing, so it is refused with a pointer to [`RecordId`] instead.
 fn check_table_name(table: &str) -> StdResult<(), SurrealError> {
-    if table.contains(':') {
+    if table.is_empty() {
+        Err(SurrealError::SurrealDBJni(
+            "Invalid table name: the name is empty".to_string(),
+        ))
+    } else if table.contains(':') {
         Err(SurrealError::SurrealDBJni(format!(
             "Invalid table name: {table:?}. A String target is a table name and cannot contain ':'; use RecordId to address a single record"
         )))
@@ -767,10 +776,12 @@ fn check_table_name(table: &str) -> StdResult<(), SurrealError> {
 /// is not a sequence of identifier segments joined by `::` is rejected rather than
 /// spliced into the query.
 fn check_function_name(name: &str) -> StdResult<(), SurrealError> {
-    // An optional version suffix, e.g. `ml::model<1.0.0>`, is digits and dots only.
+    // An optional version suffix, e.g. `ml::model<1.0.0>`, is runs of digits joined by dots.
     let path = match name.strip_suffix('>').and_then(|n| n.split_once('<')) {
         Some((path, version))
-            if !version.is_empty() && version.chars().all(|c| c.is_ascii_digit() || c == '.') =>
+            if version
+                .split('.')
+                .all(|seg| !seg.is_empty() && seg.chars().all(|c| c.is_ascii_digit())) =>
         {
             path
         }
@@ -861,6 +872,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_createTargetValues<'local>(
         let mut queries = Vec::with_capacity(value_ptrs.len());
         let mut params = BTreeMap::new();
         let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
+        if value_ptrs.is_empty() {
+            return new_jlong_array!(env, &[] as &[jlong], null_mut);
+        }
         for (idx, value_ptr) in value_ptrs.iter().enumerate() {
             queries.push(format!("CREATE {tb} CONTENT $i{idx}"));
             let value = get_value_mut_instance!(env, *value_ptr, null_mut);
@@ -912,14 +926,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertTargetValues<'local>(
         let target = get_rust_string!(env, target, null_mut);
         // Get the pointers
         let value_ptrs = get_long_array!(env, &value_ptrs, null_mut);
+        let mut params = BTreeMap::new();
+        let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
         // Build the queries
         let mut records = Vec::with_capacity(value_ptrs.len());
         for value_ptr in &value_ptrs {
             let value = get_value_mut_instance!(env, *value_ptr, null_mut);
             records.push(value.clone());
         }
-        let mut params = BTreeMap::new();
-        let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
         params.insert("data".to_string(), Value::Array(Array::from(records)));
         let query = format!("INSERT INTO {tb} $data");
         // Execute the query
@@ -990,14 +1004,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_insertRelationTargetValues<'lo
         let target = get_rust_string!(env, target, null_mut);
         // Get the pointers
         let value_ptrs = get_long_array!(env, &value_ptrs, null_mut);
+        let mut params = BTreeMap::new();
+        let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
         // Build the queries
         let mut records = Vec::with_capacity(value_ptrs.len());
         for value_ptr in &value_ptrs {
             let value = get_value_mut_instance!(env, *value_ptr, null_mut);
             records.push(value.clone());
         }
-        let mut params = BTreeMap::new();
-        let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), null_mut);
         params.insert("data".to_string(), Value::Array(Array::from(records)));
         let query = format!("INSERT RELATION INTO {tb} $data");
         // Execute the query
@@ -1039,11 +1053,10 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relate<'local>(
         let from_value = get_value_instance!(env, from_ptr, || 0);
         let to_value = get_value_instance!(env, to_ptr, || 0);
         // Execute the query
-        let mut params = BTreeMap::from([
-            ("from".to_string(), from_value.as_ref().clone()),
-            ("to".to_string(), to_value.as_ref().clone()),
-        ]);
+        let mut params = BTreeMap::new();
         let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), || 0);
+        params.insert("from".to_string(), from_value.as_ref().clone());
+        params.insert("to".to_string(), to_value.as_ref().clone());
         let query = format!("RELATE $from->{tb}->$to");
         let res = surrealdb_query(surreal, &query, Some(params));
         // Check the result
@@ -1077,12 +1090,11 @@ pub extern "system" fn Java_com_surrealdb_Surreal_relateContent<'local>(
         let to_value = get_value_instance!(env, to_ptr, || 0);
         let content_value = get_value_mut_instance!(env, content_ptr, || 0);
         // Execute the query
-        let mut params = BTreeMap::from([
-            ("from".to_string(), from_value.as_ref().clone()),
-            ("to".to_string(), to_value.as_ref().clone()),
-            ("content".to_string(), content_value.clone()),
-        ]);
+        let mut params = BTreeMap::new();
         let tb = check_table_binding!(env, bind_table(&mut params, "tb", target), || 0);
+        params.insert("from".to_string(), from_value.as_ref().clone());
+        params.insert("to".to_string(), to_value.as_ref().clone());
+        params.insert("content".to_string(), content_value.clone());
         let query = format!("RELATE $from->{tb}->$to CONTENT $content");
         let res = surrealdb_query(surreal, &query, Some(params));
         // Check the result
@@ -1140,6 +1152,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIds<'local>(
         let surreal = get_surreal_ref!(env, surreal_ptr, null_mut);
         // Get the record id pointers
         let record_id_ptrs = get_long_array!(env, &record_id_ptrs, null_mut);
+        if record_id_ptrs.is_empty() {
+            return new_jlong_array!(env, &[] as &[jlong], null_mut);
+        }
         // Extract the record ids
         let mut record_ids = Vec::with_capacity(record_id_ptrs.len());
         let mut params = BTreeMap::new();
@@ -1179,24 +1194,8 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValues<'local>(
     targets: JObjectArray<'local, JString<'local>>,
 ) -> jlong {
     with_env_body!(env, env, {
-        // Retrieve the Surreal instance
-        let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
-        // Get the targets
         let targets = get_rust_string_array!(env, targets, || 0);
-        // Prepare the query
-        let mut params = BTreeMap::new();
-        let tbs = check_table_binding!(env, bind_tables(&mut params, targets), || 0);
-        let query = format!("SELECT * FROM {tbs}");
-        // Execute the query
-        let res = surrealdb_query(surreal, &query, Some(params));
-        // Check the result
-        let mut response = check_query_result!(env, res, || 0);
-        // There is only one statement
-        let result = take_one_result!(env, response, || 0);
-        // Return the iterator
-        return_value_array_iter!(result);
-        // Otherwise throw an error
-        return_unexpected_result!(env, result.to_sql(), || 0)
+        select_targets_values(env, surreal_ptr, targets, false)
     })
 }
 
@@ -1208,25 +1207,41 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectTargetsValuesSync<'local
     targets: JObjectArray<'local, JString<'local>>,
 ) -> jlong {
     with_env_body!(env, env, {
-        // Retrieve the Surreal instance
-        let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
-        // Get the targets
         let targets = get_rust_string_array!(env, targets, || 0);
-        // Prepare the query
-        let mut params = BTreeMap::new();
-        let tbs = check_table_binding!(env, bind_tables(&mut params, targets), || 0);
-        let query = format!("SELECT * FROM {tbs}");
-        // Execute the query
-        let res = surrealdb_query(surreal, &query, Some(params));
-        // Check the result
-        let mut response = check_query_result!(env, res, || 0);
-        // There is only one statement
-        let result = take_one_result!(env, response, || 0);
-        // Return tne sync iterator
-        return_value_array_iter_sync!(result);
-        // Otherwise throw an error
-        return_unexpected_result!(env, result.to_sql(), || 0)
+        select_targets_values(env, surreal_ptr, targets, true)
     })
+}
+
+fn select_targets_values(
+    env: &mut Env,
+    surreal_ptr: jlong,
+    targets: Vec<String>,
+    sync: bool,
+) -> jlong {
+    // Retrieve the Surreal instance
+    let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
+    // Prepare the query
+    let mut params = BTreeMap::new();
+    let tbs = check_table_binding!(env, bind_tables(&mut params, targets), || 0);
+    let query = format!("SELECT * FROM {tbs}");
+    // Execute the query
+    let res = surrealdb_query(surreal, &query, Some(params));
+    // Check the result
+    let mut response = check_query_result!(env, res, || 0);
+    // There is only one statement
+    let result = take_one_result!(env, response, || 0);
+    rows_iter(env, result, sync)
+}
+
+/// Returns the rows of `result` as a value iterator, a synchronized one if `sync`
+/// is set, or throws if `result` is not an array.
+fn rows_iter(env: &mut Env, result: Value, sync: bool) -> jlong {
+    if sync {
+        return_value_array_iter_sync!(result);
+    } else {
+        return_value_array_iter!(result);
+    }
+    return_unexpected_result!(env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -1263,6 +1278,9 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIds<'local>(
         let surreal = get_surreal_ref!(env, surreal_ptr, || false as jboolean);
         // Extract the record ids
         let record_id_ptrs = get_long_array!(env, &record_id_ptrs, || false as jboolean);
+        if record_id_ptrs.is_empty() {
+            return true as jboolean;
+        }
         // Prepare the params
         let mut targets = Vec::with_capacity(record_id_ptrs.len());
         let mut params = BTreeMap::new();
@@ -1571,26 +1589,25 @@ fn up_target_value(
     up_type: jint,
     value_ptr: jlong,
     up: &str,
+    sync: bool,
 ) -> jlong {
     // Retrieve the Surreal instance
     let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
+    // Check the up type and the targets before copying the value
+    let up_type = convert_up_type!(env, up_type, || 0);
+    let mut params = BTreeMap::new();
+    let tbs = check_table_binding!(env, bind_tables(&mut params, targets), || 0);
     // Get the value
     let value = get_value_mut_instance!(env, value_ptr, || 0);
-    // Check the up type
-    let up_type = convert_up_type!(env, up_type, || 0);
+    params.insert("val".to_string(), value.clone());
     // Execute the query
-    let mut params = BTreeMap::from([("val".to_string(), value.clone())]);
-    let tbs = check_table_binding!(env, bind_tables(&mut params, targets), || 0);
     let query = format!("{up} {tbs} {up_type} $val");
     let res = surrealdb_query(surreal, &query, Some(params));
     // Check the result
     let mut response = check_query_result!(env, res, || 0);
     // There is only one statement
     let result: Value = take_one_result!(env, response, || 0);
-    // There should be only one result
-    return_value_array_iter!(result);
-    // Otherwise we return an error
-    return_unexpected_result!(env, result.to_sql(), || 0)
+    rows_iter(env, result, sync)
 }
 
 #[no_mangle]
@@ -1604,7 +1621,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetValue<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let target = get_rust_string!(env, target, || 0);
-        up_target_value(env, surreal_ptr, vec![target], up_type, value_ptr, "update")
+        up_target_value(
+            env,
+            surreal_ptr,
+            vec![target],
+            up_type,
+            value_ptr,
+            "update",
+            false,
+        )
     })
 }
 
@@ -1619,7 +1644,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValue<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let targets = get_rust_string_array!(env, targets, || 0);
-        up_target_value(env, surreal_ptr, targets, up_type, value_ptr, "update")
+        up_target_value(
+            env,
+            surreal_ptr,
+            targets,
+            up_type,
+            value_ptr,
+            "update",
+            false,
+        )
     })
 }
 
@@ -1634,7 +1667,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetValue<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let target = get_rust_string!(env, target, || 0);
-        up_target_value(env, surreal_ptr, vec![target], up_type, value_ptr, "upsert")
+        up_target_value(
+            env,
+            surreal_ptr,
+            vec![target],
+            up_type,
+            value_ptr,
+            "upsert",
+            false,
+        )
     })
 }
 
@@ -1649,37 +1690,16 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetsValue<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let targets = get_rust_string_array!(env, targets, || 0);
-        up_target_value(env, surreal_ptr, targets, up_type, value_ptr, "upsert")
+        up_target_value(
+            env,
+            surreal_ptr,
+            targets,
+            up_type,
+            value_ptr,
+            "upsert",
+            false,
+        )
     })
-}
-
-fn up_target_value_sync(
-    env: &mut Env,
-    surreal_ptr: jlong,
-    targets: Vec<String>,
-    up_type: jint,
-    value_ptr: jlong,
-    up: &str,
-) -> jlong {
-    // Retrieve the Surreal instance
-    let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
-    // Get the value
-    let value = get_value_mut_instance!(env, value_ptr, || 0);
-    // Check the up type
-    let up_type = convert_up_type!(env, up_type, || 0);
-    // Execute the query
-    let mut params = BTreeMap::from([("val".to_string(), value.clone())]);
-    let tbs = check_table_binding!(env, bind_tables(&mut params, targets), || 0);
-    let query = format!("{up} {tbs} {up_type} $val");
-    let res = surrealdb_query(surreal, &query, Some(params));
-    // Check the result
-    let mut response = check_query_result!(env, res, || 0);
-    // There is only one statement
-    let result: Value = take_one_result!(env, response, || 0);
-    // Return tne sync iterator
-    return_value_array_iter_sync!(result);
-    // Otherwise throw an error
-    return_unexpected_result!(env, result.to_sql(), || 0)
 }
 
 #[no_mangle]
@@ -1693,7 +1713,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetValueSync<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let target = get_rust_string!(env, target, || 0);
-        up_target_value_sync(env, surreal_ptr, vec![target], up_type, value_ptr, "update")
+        up_target_value(
+            env,
+            surreal_ptr,
+            vec![target],
+            up_type,
+            value_ptr,
+            "update",
+            true,
+        )
     })
 }
 
@@ -1708,7 +1736,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateTargetsValueSync<'local>
 ) -> jlong {
     with_env_body!(env, env, {
         let targets = get_rust_string_array!(env, targets, || 0);
-        up_target_value_sync(env, surreal_ptr, targets, up_type, value_ptr, "update")
+        up_target_value(
+            env,
+            surreal_ptr,
+            targets,
+            up_type,
+            value_ptr,
+            "update",
+            true,
+        )
     })
 }
 
@@ -1723,7 +1759,15 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetValueSync<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let target = get_rust_string!(env, target, || 0);
-        up_target_value_sync(env, surreal_ptr, vec![target], up_type, value_ptr, "upsert")
+        up_target_value(
+            env,
+            surreal_ptr,
+            vec![target],
+            up_type,
+            value_ptr,
+            "upsert",
+            true,
+        )
     })
 }
 
@@ -1738,6 +1782,14 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertTargetsValueSync<'local>
 ) -> jlong {
     with_env_body!(env, env, {
         let targets = get_rust_string_array!(env, targets, || 0);
-        up_target_value_sync(env, surreal_ptr, targets, up_type, value_ptr, "upsert")
+        up_target_value(
+            env,
+            surreal_ptr,
+            targets,
+            up_type,
+            value_ptr,
+            "upsert",
+            true,
+        )
     })
 }
