@@ -10,8 +10,7 @@ use surrealdb::types::{Array, RecordId, RecordIdKey, ToSql, Uuid, Value};
 
 use crate::error::SurrealError;
 use crate::{
-    get_long_array, get_rust_string, get_value_instance, new_string, take_value_mut_instance,
-    JniTypes,
+    get_long_array, get_rust_string, get_value_instance, new_string, take_instances, JniTypes,
 };
 
 #[no_mangle]
@@ -62,11 +61,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newArrayId<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let mut values = Vec::with_capacity(ptrs.len());
-        for ptr in ptrs {
-            let value = take_value_mut_instance!(env, ptr, || 0);
-            values.push(value);
-        }
+        let values = take_instances!(env, ptrs, surrealdb::types::Value, JniTypes::ValueMut, || 0);
         let key = RecordIdKey::Array(Array::from(values));
         let value = Value::RecordId(RecordId::new("", key));
         JniTypes::new_value(value.into())

@@ -267,6 +267,29 @@ macro_rules! take_value_mut_instance {
     };
 }
 
+/// Takes ownership of every instance in `ptrs`. The Java side marks all of them as
+/// moved, so each valid pointer is consumed even when another one is invalid: the
+/// taken instances are then dropped and the first error is thrown.
+#[macro_export]
+macro_rules! take_instances {
+    ($env:expr, $ptrs:expr, $t:ty, $typ:expr, $default_fn:expr) => {{
+        let mut instances = Vec::with_capacity($ptrs.len());
+        let mut error = None;
+        for ptr in $ptrs {
+            match $crate::take_instance::<$t>(ptr, $typ) {
+                Ok(s) => instances.push(s),
+                Err(e) => {
+                    error.get_or_insert(e);
+                }
+            }
+        }
+        if let Some(e) = error {
+            return e.exception($env, $default_fn);
+        }
+        instances
+    }};
+}
+
 #[macro_export]
 macro_rules! get_value_mut_instance {
     ($env:expr, $id:expr, $default_fn:expr) => {

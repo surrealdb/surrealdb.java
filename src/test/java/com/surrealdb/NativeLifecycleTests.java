@@ -148,6 +148,24 @@ public class NativeLifecycleTests {
 	}
 
 	@Test
+	void failedCollectionCreationStillConsumesEveryValue() {
+		// The first element was already handed over, so the native call fails on
+		// it. The live elements after it must still be consumed, since Java marks
+		// every element moved, rather than left without an owner.
+		final ValueMut consumed = ValueMut.createString("a");
+		EntryMut.newEntry("k", consumed);
+		final ValueMut live = ValueMut.createString("b");
+		assertThrows(NullPointerException.class, () -> ValueMut.createArray(Arrays.asList(consumed, live)));
+		assertEquals(0L, live.getPtr());
+
+		final EntryMut consumedEntry = EntryMut.newEntry("k", ValueMut.createString("a"));
+		ValueMut.createObject(Arrays.asList(consumedEntry));
+		final EntryMut liveEntry = EntryMut.newEntry("l", ValueMut.createString("b"));
+		assertThrows(NullPointerException.class, () -> ValueMut.createObject(Arrays.asList(consumedEntry, liveEntry)));
+		assertEquals(0L, liveEntry.getPtr());
+	}
+
+	@Test
 	void unclosedObjectsAreCleanedUp() throws InterruptedException {
 		// Values, iterators and entries used to have no native destructor at all;
 		// this exercises the cleaner path for each of them.

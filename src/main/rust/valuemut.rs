@@ -16,7 +16,7 @@ use surrealdb::types::{
 use crate::error::SurrealError;
 use crate::{
     create_instance, get_long_array, get_rust_string, get_value_instance, get_value_mut_instance,
-    new_string, take_entry_mut_instance, take_value_mut_instance, JniTypes,
+    new_string, take_instances, JniTypes,
 };
 
 #[no_mangle]
@@ -224,11 +224,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArrayOf<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let mut values = Vec::with_capacity(ptrs.len());
-        for ptr in ptrs {
-            let value = take_value_mut_instance!(env, ptr, || 0);
-            values.push(value);
-        }
+        let values = take_instances!(env, ptrs, surrealdb::types::Value, JniTypes::ValueMut, || 0);
         let value = Value::Array(Array::from(values));
         JniTypes::new_value_mut(value)
     })
@@ -257,11 +253,8 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObjectOf<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let mut map = BTreeMap::new();
-        for ptr in ptrs {
-            let (key, value) = take_entry_mut_instance!(env, ptr, || 0);
-            map.insert(key, value);
-        }
+        let entries = take_instances!(env, ptrs, (String, Value), JniTypes::KeyValueMutEntry, || 0);
+        let map: BTreeMap<_, _> = entries.into_iter().collect();
         let value = Value::Object(Object::from(map));
         create_instance(value, JniTypes::ValueMut)
     })
