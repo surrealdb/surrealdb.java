@@ -98,6 +98,46 @@ public class NativeLifecycleTests {
 	}
 
 	@Test
+	void unreferencedOwnersSurviveGarbageCollectionDuringNativeCalls() throws InterruptedException {
+		final AtomicBoolean running = new AtomicBoolean(true);
+		final Thread collector = new Thread(() -> {
+			while (running.get()) {
+				System.gc();
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					return;
+				}
+			}
+		});
+		collector.setDaemon(true);
+		collector.start();
+		try (final Surreal surreal = new Surreal()) {
+			surreal.connect("memory").useNs("test_ns").useDb("test_db");
+			surreal.query("CREATE person:1 SET name = 'a'");
+			final Value value = surreal.query("RETURN array::range(0, 100)").take(0);
+			// Each chain leaves a wrapper whose only use is the getPtr() passed to a
+			// native call: the Array, the iterator and the RecordIds below are
+			// unreachable from Java while the call runs. The loop runs long enough for
+			// the JIT to compile it, which is when such a wrapper can be collected
+			// mid-call. This is a smoke test: the race window is a few instructions
+			// wide, so it is not expected to catch a regression reliably. Receivers are
+			// kept alive by being instance natives, and other arguments by fences.
+			for (int i = 0; i < 20_000; i++) {
+				assertEquals(0L, value.getArray().iterator().next().getLong());
+				assertEquals(100, value.getArray().len());
+				if (i % 100 == 0) {
+					assertEquals(true, surreal.select(new RecordId("person", 1L)).isPresent());
+					ValueMut.createRecordId(new RecordId("person", Array.of(1L, "a")));
+				}
+			}
+		} finally {
+			running.set(false);
+			collector.join();
+		}
+	}
+
+	@Test
 	void unclosedObjectsAreCleanedUp() throws InterruptedException {
 		// Values, iterators and entries used to have no native destructor at all;
 		// this exercises the cleaner path for each of them.

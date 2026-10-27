@@ -12,13 +12,13 @@ public class Object extends Native implements Iterable<Entry> {
 		super(ptr);
 	}
 
-	private static native long iterator(long ptr);
+	private native long iterator(long ptr);
 
-	private static native long synchronizedIterator(long ptr);
+	private native long synchronizedIterator(long ptr);
 
-	private static native int len(long ptr);
+	private native int len(long ptr);
 
-	private static native long get(long ptr, String key);
+	private native long get(long ptr, String key);
 
 	@Override
 	final native String toString(long ptr);

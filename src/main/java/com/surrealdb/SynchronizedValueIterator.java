@@ -9,9 +9,9 @@ class SynchronizedValueIterator extends Native implements Iterator<Value> {
 		super(ptr);
 	}
 
-	private static native boolean hasNext(long ptr);
+	private native boolean hasNext(long ptr);
 
-	private static native long next(long ptr);
+	private native long next(long ptr);
 
 	private static native void deleteInstance(long ptr);
 

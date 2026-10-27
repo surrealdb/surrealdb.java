@@ -26,15 +26,15 @@ public class Geometry extends Native {
 
 	// ---- native: read ----
 
-	private static native boolean isPoint(long ptr);
+	private native boolean isPoint(long ptr);
 
-	private static native double[] getPoint(long ptr);
+	private native double[] getPoint(long ptr);
 
-	private static native String getType(long ptr);
+	private native String getType(long ptr);
 
-	private static native long getCoordinates(long ptr);
+	private native long getCoordinates(long ptr);
 
-	private static native long[] getCollection(long ptr);
+	private native long[] getCollection(long ptr);
 
 	// ---- native: write ----
 

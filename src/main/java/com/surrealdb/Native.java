@@ -16,6 +16,13 @@ public abstract class Native {
 	// It is released at most once: by an explicit close, by moved() when the native
 	// side takes ownership, or by the NativeCleaner once this object is
 	// unreachable.
+	//
+	// A native call that is given getPtr() must keep this object reachable until
+	// it returns, or the cleaner could free the pointer mid-call. For the receiver
+	// this is done by declaring such natives as instance methods: JNI holds the
+	// receiver for the duration of the call. (The Rust side ignores that
+	// argument, so it still declares it as a JClass.) Any other Native whose
+	// pointer is passed must be kept alive with reachabilityFence().
 	private final NativeCleaner.Handle handle;
 
 	Native(long ptr) {
@@ -69,7 +76,11 @@ public abstract class Native {
 			return false;
 		}
 		final Native n2 = (Native) o;
-		return equals(getPtr(), n2.getPtr());
+		try {
+			return equals(getPtr(), n2.getPtr());
+		} finally {
+			reachabilityFence(n2);
+		}
 	}
 
 	@Override

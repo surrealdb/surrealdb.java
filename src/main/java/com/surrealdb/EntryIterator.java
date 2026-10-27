@@ -14,9 +14,9 @@ public class EntryIterator extends Native implements Iterator<Entry> {
 		super(ptr);
 	}
 
-	private static native boolean hasNext(long ptr);
+	private native boolean hasNext(long ptr);
 
-	private static native long next(long ptr);
+	private native long next(long ptr);
 
 	@Override
 	final String toString(long ptr) {

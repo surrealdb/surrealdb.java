@@ -70,25 +70,25 @@ public class Id extends Native {
 
 	private static native long newArrayId(long[] valueMutPtrs);
 
-	private static native boolean isLong(long ptr);
+	private native boolean isLong(long ptr);
 
-	private static native long getLong(long ptr);
+	private native long getLong(long ptr);
 
-	private static native boolean isString(long ptr);
+	private native boolean isString(long ptr);
 
-	private static native String getString(long ptr);
+	private native String getString(long ptr);
 
-	private static native boolean isUuid(long ptr);
+	private native boolean isUuid(long ptr);
 
-	private static native String getUuid(long ptr);
+	private native String getUuid(long ptr);
 
-	private static native boolean isArray(long ptr);
+	private native boolean isArray(long ptr);
 
-	private static native long getArray(long ptr);
+	private native long getArray(long ptr);
 
-	private static native boolean isObject(long ptr);
+	private native boolean isObject(long ptr);
 
-	private static native long getObject(long ptr);
+	private native long getObject(long ptr);
 
 	@Override
 	final native int hashCode(long ptr);

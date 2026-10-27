@@ -50,106 +50,105 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private static native long newInstance();
 
-	private static native long cloneSession(long ptr);
+	private native long cloneSession(long ptr);
 
-	private static native boolean connect(long ptr, String connect);
+	private native boolean connect(long ptr, String connect);
 
-	private static native Token signinRoot(long ptr, String username, String password);
+	private native Token signinRoot(long ptr, String username, String password);
 
-	private static native Token signinNamespace(long ptr, String username, String password, String ns);
+	private native Token signinNamespace(long ptr, String username, String password, String ns);
 
-	private static native Token signinDatabase(long ptr, String username, String password, String ns, String db);
+	private native Token signinDatabase(long ptr, String username, String password, String ns, String db);
 
-	private static native Token signup(long ptr, String namespace, String database, String access, long paramsValuePtr);
+	private native Token signup(long ptr, String namespace, String database, String access, long paramsValuePtr);
 
-	private static native Token signinRecord(long ptr, String namespace, String database, String access,
-			long paramsValuePtr);
+	private native Token signinRecord(long ptr, String namespace, String database, String access, long paramsValuePtr);
 
-	private static native boolean authenticate(long ptr, String token);
+	private native boolean authenticate(long ptr, String token);
 
-	private static native boolean invalidate(long ptr);
+	private native boolean invalidate(long ptr);
 
-	private static native NsDb useNs(long ptr, String ns);
+	private native NsDb useNs(long ptr, String ns);
 
-	private static native NsDb useDb(long ptr, String db);
+	private native NsDb useDb(long ptr, String db);
 
-	private static native NsDb useDefaults(long ptr);
+	private native NsDb useDefaults(long ptr);
 
-	private static native long query(long ptr, String sql);
+	private native long query(long ptr, String sql);
 
-	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+	private native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
-	private static native long createRecordIdValue(long ptr, long recordIdPtr, long valuePtr);
+	private native long createRecordIdValue(long ptr, long recordIdPtr, long valuePtr);
 
-	private static native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
+	private native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
 
-	private static native long[] insertTargetValues(long ptr, String target, long[] valuePtrs);
+	private native long[] insertTargetValues(long ptr, String target, long[] valuePtrs);
 
-	private static native long insertRelationTargetValue(long ptr, String target, long valuePtr);
+	private native long insertRelationTargetValue(long ptr, String target, long valuePtr);
 
-	private static native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
+	private native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
 
-	private static native long relate(long ptr, long from, String table, long to);
+	private native long relate(long ptr, long from, String table, long to);
 
-	private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
+	private native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
-	private static native long updateRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
+	private native long updateRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
-	private static native long updateTargetValue(long ptr, String target, int update, long valuePtr);
+	private native long updateTargetValue(long ptr, String target, int update, long valuePtr);
 
-	private static native long updateTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+	private native long updateTargetsValue(long ptr, String[] targets, int update, long valuePtr);
 
-	private static native long updateTargetValueSync(long ptr, String target, int update, long valuePtr);
+	private native long updateTargetValueSync(long ptr, String target, int update, long valuePtr);
 
-	private static native long updateTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
+	private native long updateTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
-	private static native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
+	private native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
-	private static native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr,
-			int update, long valuePtr);
+	private native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update,
+			long valuePtr);
 
-	private static native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr,
-			int update, long valuePtr);
+	private native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update,
+			long valuePtr);
 
-	private static native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
+	private native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
-	private static native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+	private native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
 
-	private static native long upsertTargetValueSync(long ptr, String target, int update, long valuePtr);
+	private native long upsertTargetValueSync(long ptr, String target, int update, long valuePtr);
 
-	private static native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
+	private native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
-	private static native long selectRecordId(long ptr, long recordId);
+	private native long selectRecordId(long ptr, long recordId);
 
-	private static native long[] selectRecordIds(long ptr, long[] recordIds);
+	private native long[] selectRecordIds(long ptr, long[] recordIds);
 
-	private static native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
 
-	private static native long selectTargetsValues(long ptr, String... targets);
+	private native long selectTargetsValues(long ptr, String... targets);
 
-	private static native long selectTargetsValuesSync(long ptr, String... targets);
+	private native long selectTargetsValuesSync(long ptr, String... targets);
 
-	private static native boolean deleteRecordId(long ptr, long recordId);
+	private native boolean deleteRecordId(long ptr, long recordId);
 
-	private static native boolean deleteRecordIds(long ptr, long[] recordIds);
+	private native boolean deleteRecordIds(long ptr, long[] recordIds);
 
-	private static native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
 
-	private static native boolean deleteTarget(long ptr, String target);
+	private native boolean deleteTarget(long ptr, String target);
 
-	private static native String version(long ptr);
+	private native String version(long ptr);
 
-	private static native boolean health(long ptr);
+	private native boolean health(long ptr);
 
-	private static native long run(long ptr, String name, long[] argsValuePtrs);
+	private native long run(long ptr, String name, long[] argsValuePtrs);
 
-	private static native boolean exportSql(long ptr, String path);
+	private native boolean exportSql(long ptr, String path);
 
-	private static native boolean importSql(long ptr, String path);
+	private native boolean importSql(long ptr, String path);
 
-	private static native LiveStream selectLive(long ptr, String table);
+	private native LiveStream selectLive(long ptr, String table);
 
-	private static native void kill(long ptr, String queryId);
+	private native void kill(long ptr, String queryId);
 
 	@Override
 	final String toString(long ptr) {
@@ -239,7 +238,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new Value(run(getPtr(), name, ptrs));
 		} finally {
 			reachabilityFence(valueMuts);
-			reachabilityFence(this);
 		}
 	}
 
@@ -411,7 +409,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
 		} finally {
 			reachabilityFence(paramsValue);
-			reachabilityFence(this);
 		}
 	}
 
@@ -449,7 +446,7 @@ public class Surreal extends Native implements AutoCloseable {
 		return new Surreal(cloneSession(getPtr()));
 	}
 
-	private static native long beginTransaction(long ptr);
+	private native long beginTransaction(long ptr);
 
 	/**
 	 * Starts a client-side transaction. Use {@link Transaction#query(String)} for
@@ -571,7 +568,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new Response(queryWithBindings(getPtr(), sql, keys, values));
 		} finally {
 			reachabilityFence(valueMuts);
-			reachabilityFence(this);
 		}
 	}
 
@@ -619,8 +615,8 @@ public class Surreal extends Native implements AutoCloseable {
 			final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(recordId);
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -671,7 +667,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
 			reachabilityFence(valueMuts);
-			reachabilityFence(this);
 		}
 	}
 
@@ -727,7 +722,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
 			reachabilityFence(valueMuts);
-			reachabilityFence(this);
 		}
 	}
 
@@ -780,7 +774,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new Value(valuePtr);
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -831,7 +824,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
 		} finally {
 			reachabilityFence(valueMuts);
-			reachabilityFence(this);
 		}
 	}
 
@@ -878,8 +870,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new {@code Value} instance representing the relation
 	 */
 	public Value relate(RecordId from, String table, RecordId to) {
-		final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());
-		return new Value(valuePtr);
+		try {
+			return new Value(relate(getPtr(), from.getPtr(), table, to.getPtr()));
+		} finally {
+			reachabilityFence(from);
+			reachabilityFence(to);
+		}
 	}
 
 	/**
@@ -932,8 +928,9 @@ public class Surreal extends Native implements AutoCloseable {
 			final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(from);
+			reachabilityFence(to);
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -988,8 +985,8 @@ public class Surreal extends Native implements AutoCloseable {
 			final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(recordId);
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1014,8 +1011,8 @@ public class Surreal extends Native implements AutoCloseable {
 					valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1066,7 +1063,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1095,7 +1091,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1173,7 +1168,6 @@ public class Surreal extends Native implements AutoCloseable {
 					updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1203,7 +1197,6 @@ public class Surreal extends Native implements AutoCloseable {
 					updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1280,8 +1273,8 @@ public class Surreal extends Native implements AutoCloseable {
 			final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(recordId);
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1305,8 +1298,8 @@ public class Surreal extends Native implements AutoCloseable {
 					valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1357,7 +1350,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1384,7 +1376,6 @@ public class Surreal extends Native implements AutoCloseable {
 			return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1464,7 +1455,6 @@ public class Surreal extends Native implements AutoCloseable {
 					upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1493,7 +1483,6 @@ public class Surreal extends Native implements AutoCloseable {
 					upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
 		} finally {
 			reachabilityFence(valueMut);
-			reachabilityFence(this);
 		}
 	}
 
@@ -1577,7 +1566,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         Optional if not found
 	 */
 	public Optional<Value> select(RecordId recordId) {
-		final long valuePtr = selectRecordId(getPtr(), recordId.getPtr());
+		final long valuePtr;
+		try {
+			valuePtr = selectRecordId(getPtr(), recordId.getPtr());
+		} finally {
+			reachabilityFence(recordId);
+		}
 		if (valuePtr == 0) {
 			return Optional.empty();
 		}
@@ -1618,8 +1612,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a list of Value objects corresponding to the selected RecordIds.
 	 */
 	public List<Value> select(RecordId... recordIds) {
-		final long[] recordIdsPtr = recordIds2longs(recordIds);
-		final long[] valuePtrs = selectRecordIds(getPtr(), recordIdsPtr);
+		final long[] valuePtrs;
+		try {
+			valuePtrs = selectRecordIds(getPtr(), recordIds2longs(recordIds));
+		} finally {
+			// Fencing the array keeps every RecordId in it reachable.
+			reachabilityFence(recordIds);
+		}
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
 		}
@@ -1668,7 +1667,12 @@ public class Surreal extends Native implements AutoCloseable {
 	public List<Value> select(RecordIdRange range) {
 		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
 		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long[] valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		final long[] valuePtrs;
+		try {
+			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		} finally {
+			reachabilityFence(range);
+		}
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
 		}
@@ -1776,7 +1780,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the identifier of the record to be deleted
 	 */
 	public void delete(RecordId recordId) {
-		deleteRecordId(getPtr(), recordId.getPtr());
+		try {
+			deleteRecordId(getPtr(), recordId.getPtr());
+		} finally {
+			reachabilityFence(recordId);
+		}
 	}
 
 	/**
@@ -1791,8 +1799,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            deleted.
 	 */
 	public void delete(RecordId... recordIds) {
-		final long[] recordIdsPtr = recordIds2longs(recordIds);
-		deleteRecordIds(getPtr(), recordIdsPtr);
+		try {
+			deleteRecordIds(getPtr(), recordIds2longs(recordIds));
+		} finally {
+			reachabilityFence(recordIds);
+		}
 	}
 
 	/**
@@ -1804,7 +1815,11 @@ public class Surreal extends Native implements AutoCloseable {
 	public void delete(RecordIdRange range) {
 		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
 		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		try {
+			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		} finally {
+			reachabilityFence(range);
+		}
 	}
 
 	/**

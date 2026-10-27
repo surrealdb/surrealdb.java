@@ -132,19 +132,35 @@ public class ValueMut extends Native {
 	}
 
 	public static ValueMut createId(Id id) {
-		return new ValueMut(newId(id.getPtr()));
+		try {
+			return new ValueMut(newId(id.getPtr()));
+		} finally {
+			reachabilityFence(id);
+		}
 	}
 
 	public static ValueMut createRecordId(RecordId recordId) {
-		return new ValueMut(newRecordId(recordId.getPtr()));
+		try {
+			return new ValueMut(newRecordId(recordId.getPtr()));
+		} finally {
+			reachabilityFence(recordId);
+		}
 	}
 
 	public static ValueMut createGeometry(Geometry geometry) {
-		return new ValueMut(newGeometry(geometry.getPtr()));
+		try {
+			return new ValueMut(newGeometry(geometry.getPtr()));
+		} finally {
+			reachabilityFence(geometry);
+		}
 	}
 
 	public static ValueMut createArray(Array array) {
-		return new ValueMut(newArray(array.getPtr()));
+		try {
+			return new ValueMut(newArray(array.getPtr()));
+		} finally {
+			reachabilityFence(array);
+		}
 	}
 
 	public static ValueMut createArray(List<ValueMut> values) {
@@ -164,7 +180,11 @@ public class ValueMut extends Native {
 	}
 
 	public static ValueMut createObject(Object object) {
-		return new ValueMut(newObject(object.getPtr()));
+		try {
+			return new ValueMut(newObject(object.getPtr()));
+		} finally {
+			reachabilityFence(object);
+		}
 	}
 
 	public static ValueMut createObject(List<EntryMut> entries) {

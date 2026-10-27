@@ -12,7 +12,7 @@ public class Response extends Native {
 		super(ptr);
 	}
 
-	private static native int size(long ptr);
+	private native int size(long ptr);
 
 	private static native void deleteInstance(long ptr);
 

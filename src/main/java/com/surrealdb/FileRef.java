@@ -13,9 +13,9 @@ public class FileRef extends Native {
 		super(ptr);
 	}
 
-	private static native String getBucket(long ptr);
+	private native String getBucket(long ptr);
 
-	private static native String getKey(long ptr);
+	private native String getKey(long ptr);
 
 	@Override
 	final native String toString(long ptr);

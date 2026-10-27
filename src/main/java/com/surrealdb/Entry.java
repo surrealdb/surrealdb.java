@@ -12,9 +12,9 @@ public class Entry extends Native {
 		super(ptr);
 	}
 
-	private static native String getKey(long ptr);
+	private native String getKey(long ptr);
 
-	private static native long getValue(long ptr);
+	private native long getValue(long ptr);
 
 	@Override
 	final native String toString(long ptr);

@@ -19,75 +19,75 @@ public class Value extends Native {
 		super(ptr);
 	}
 
-	private static native boolean isNone(long ptr);
+	private native boolean isNone(long ptr);
 
-	private static native boolean isNull(long ptr);
+	private native boolean isNull(long ptr);
 
-	private static native boolean isBoolean(long ptr);
+	private native boolean isBoolean(long ptr);
 
-	private static native boolean getBoolean(long ptr);
+	private native boolean getBoolean(long ptr);
 
-	private static native boolean isDouble(long ptr);
+	private native boolean isDouble(long ptr);
 
-	private static native double getDouble(long ptr);
+	private native double getDouble(long ptr);
 
-	private static native boolean isLong(long ptr);
+	private native boolean isLong(long ptr);
 
-	private static native long getLong(long ptr);
+	private native long getLong(long ptr);
 
-	private static native boolean isBigDecimal(long ptr);
+	private native boolean isBigDecimal(long ptr);
 
-	private static native String getBigDecimal(long ptr);
+	private native String getBigDecimal(long ptr);
 
-	private static native boolean isString(long ptr);
+	private native boolean isString(long ptr);
 
-	private static native String getString(long ptr);
+	private native String getString(long ptr);
 
-	private static native boolean isUuid(long ptr);
+	private native boolean isUuid(long ptr);
 
-	private static native String getUuid(long ptr);
+	private native String getUuid(long ptr);
 
-	private static native boolean isArray(long ptr);
+	private native boolean isArray(long ptr);
 
-	private static native long getArray(long ptr);
+	private native long getArray(long ptr);
 
-	private static native boolean isObject(long ptr);
+	private native boolean isObject(long ptr);
 
-	private static native long getObject(long ptr);
+	private native long getObject(long ptr);
 
-	private static native boolean isGeometry(long ptr);
+	private native boolean isGeometry(long ptr);
 
-	private static native long getGeometry(long ptr);
+	private native long getGeometry(long ptr);
 
-	private static native boolean isDateTime(long ptr);
+	private native boolean isDateTime(long ptr);
 
-	private static native long[] getDateTime(long ptr);
+	private native long[] getDateTime(long ptr);
 
-	private static native boolean isDuration(long ptr);
+	private native boolean isDuration(long ptr);
 
-	private static native long getDuration(long ptr);
+	private native long getDuration(long ptr);
 
-	private static native boolean isBytes(long ptr);
+	private native boolean isBytes(long ptr);
 
-	private static native byte[] getBytes(long ptr);
+	private native byte[] getBytes(long ptr);
 
-	private static native boolean isRecordId(long ptr);
+	private native boolean isRecordId(long ptr);
 
-	private static native long getRecordId(long ptr);
+	private native long getRecordId(long ptr);
 
-	private static native boolean isFile(long ptr);
+	private native boolean isFile(long ptr);
 
-	private static native long getFile(long ptr);
+	private native long getFile(long ptr);
 
-	private static native boolean isRange(long ptr);
+	private native boolean isRange(long ptr);
 
-	private static native long getRangeStart(long ptr);
+	private native long getRangeStart(long ptr);
 
-	private static native long getRangeEnd(long ptr);
+	private native long getRangeEnd(long ptr);
 
-	private static native boolean isTable(long ptr);
+	private native boolean isTable(long ptr);
 
-	private static native String getTable(long ptr);
+	private native String getTable(long ptr);
 
 	@Override
 	final native String toString(long ptr);

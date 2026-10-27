@@ -61,13 +61,13 @@ public class Array extends Native implements Iterable<Value> {
 
 	private static native long newOf(long[] valueMutPtrs);
 
-	private static native long get(long ptr, int idx);
+	private native long get(long ptr, int idx);
 
-	private static native int len(long ptr);
+	private native int len(long ptr);
 
-	private static native long iterator(long ptr);
+	private native long iterator(long ptr);
 
-	private static native long synchronizedIterator(long ptr);
+	private native long synchronizedIterator(long ptr);
 
 	@Override
 	final native String toString(long ptr);

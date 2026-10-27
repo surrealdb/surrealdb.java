@@ -16,13 +16,13 @@ public class Transaction extends Native {
 
 	private static native void nativeDeleteInstance(long ptr);
 
-	private static native boolean commit(long ptr);
+	private native boolean commit(long ptr);
 
-	private static native boolean cancel(long ptr);
+	private native boolean cancel(long ptr);
 
-	private static native long query(long ptr, String sql);
+	private native long query(long ptr, String sql);
 
-	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+	private native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
 	/**
 	 * Commits the transaction. After this call, the transaction is completed and
@@ -81,7 +81,6 @@ public class Transaction extends Native {
 			return new Response(queryWithBindings(getPtr(), sql, keys, values));
 		} finally {
 			reachabilityFence(valueMuts);
-			reachabilityFence(this);
 		}
 	}
 
