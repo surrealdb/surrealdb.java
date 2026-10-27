@@ -22,13 +22,14 @@ public class KillRejectionTests {
 		surreal.query("DEFINE TABLE IF NOT EXISTS person");
 		// An id that names no live query.
 		final UUID unknown = UUID.randomUUID();
-		final InternalException e = assertThrows(InternalException.class, () -> surreal.kill(unknown));
+		// A query error naming the live query id, not an InternalException.
+		final QueryException e = assertThrows(QueryException.class, () -> surreal.kill(unknown));
 		assertTrue(e.getMessage().contains("Cannot execute KILL statement"), e.getMessage());
 		assertTrue(e.getMessage().contains(unknown.toString()), e.getMessage());
 		// A real live query can be killed once; the second kill is rejected.
 		try (final LiveStream stream = surreal.selectLive("person")) {
 			assertDoesNotThrow(() -> surreal.kill(stream.getQueryId()));
-			assertThrows(InternalException.class, () -> surreal.kill(stream.getQueryId()));
+			assertThrows(QueryException.class, () -> surreal.kill(stream.getQueryId()));
 		}
 	}
 

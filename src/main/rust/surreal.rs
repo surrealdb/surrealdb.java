@@ -673,21 +673,24 @@ pub extern "system" fn Java_com_surrealdb_Surreal_kill<'local>(
         // The surrealdb client drops the result of every KILL statement
         // (`QueryType::Kill => {}` when it builds IndexedResults) and its typed kill is
         // `pub(crate)`, so a plain `KILL $id` cannot report a rejection. Running it in a
-        // transaction makes a rejection observable: a failed KILL cancels the
-        // transaction, so the `RETURN true` after it fails too, and that statement's
-        // result is kept. Results are indexed by statement (BEGIN=0, KILL=1, RETURN=2).
-        let res = surrealdb_query::<Value>(
-            surreal,
-            "BEGIN; KILL $id; RETURN true; COMMIT;",
-            Some(params),
-        );
+        // transaction makes a rejection observable: a failed KILL aborts the
+        // transaction, so the COMMIT that follows returns an error ("Cannot COMMIT: the
+        // transaction was aborted due to a prior error"). Results keep the index of their
+        // statement even though KILL's is dropped: BEGIN=0, KILL=1 (dropped), COMMIT=2.
+        // The client drops the KILL row, so its own error cannot be reached; a query
+        // error naming the live query id is raised instead, with the aborted COMMIT as
+        // its cause.
+        let res = surrealdb_query::<Value>(surreal, "BEGIN; KILL $id; COMMIT;", Some(params));
         let mut res = check_query_result!(env, res, || ());
-        if res.take::<Value>(2).is_err() {
-            // The KILL's own error was dropped by the client; rebuild the one the server
-            // sends for an unknown live query or one this session may not kill.
-            let err = surrealdb::Error::internal(format!(
-                "Cannot execute KILL statement using id: u'{uuid}'"
-            ));
+        if let Err(err) = res.take::<Value>(0) {
+            return SurrealError::SurrealDB(err).exception(env, || ());
+        }
+        if let Err(err) = res.take::<Value>(2) {
+            let err = surrealdb::Error::query(
+                format!("Cannot execute KILL statement using id: u'{uuid}'"),
+                None,
+            )
+            .with_cause(err);
             return SurrealError::SurrealDB(err).exception(env, || ());
         }
     })
