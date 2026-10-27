@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import com.surrealdb.pojos.Person;
 
@@ -92,13 +93,42 @@ public class InjectionTests {
 		withServer(InjectionTests::hostileTableNames);
 	}
 
+	private static void assertRejectsRecordId(Executable call) {
+		final SurrealException e = assertThrows(SurrealException.class, call);
+		assertTrue(e.getMessage().contains("\"person:tobie\""), e.getMessage());
+		assertTrue(e.getMessage().contains("RecordId"), e.getMessage());
+	}
+
 	private static void stringIsNeverARecordId(Surreal surreal) {
 		surreal.query("CREATE person:tobie SET name = 'tobie'");
-		// "person:tobie" is a table name, not a record id: the server reports a
-		// missing table rather than returning the record.
-		final NotFoundException e = assertThrows(NotFoundException.class, () -> surreal.select("person:tobie"));
-		assertTrue(e.getMessage().contains("'person:tobie'"), e.getMessage());
-		surreal.delete("person:tobie");
+		final RecordId tobie = new RecordId("person", "tobie");
+		final Person p = new Person();
+		p.name = "changed";
+		// "person:tobie" is a record id passed where a table name is expected.
+		// Bound as a table it would create a table called `person:tobie` or
+		// silently delete nothing, so every helper rejects it before sending.
+		final String id = "person:tobie";
+		assertRejectsRecordId(() -> surreal.create(id, p));
+		assertRejectsRecordId(() -> surreal.insert(id, p));
+		assertRejectsRecordId(() -> surreal.insertRelation(id, new InsertRelation(Id.from(1), tobie, tobie)));
+		assertRejectsRecordId(() -> surreal.relate(tobie, id, tobie));
+		assertRejectsRecordId(() -> surreal.relate(tobie, id, tobie, p));
+		assertRejectsRecordId(() -> surreal.select(id));
+		assertRejectsRecordId(() -> surreal.selectSync(id));
+		assertRejectsRecordId(() -> surreal.update(id, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.updateSync(id, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.update(new String[]{"person", id}, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.updateSync(new String[]{"person", id}, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.upsert(id, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.upsertSync(id, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.upsert(new String[]{"person", id}, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.upsertSync(new String[]{"person", id}, UpType.MERGE, p));
+		assertRejectsRecordId(() -> surreal.delete(id));
+		// Nothing was written: no stray `person:tobie` table, and the record is
+		// unchanged.
+		final String tables = surreal.query("INFO FOR DB").take(0).getObject().get("tables").toString();
+		assertFalse(tables.contains(id), tables);
+		assertEquals("tobie", surreal.select(tobie).get().getObject().get("name").getString());
 		assertEquals(1, count(surreal, "person"));
 	}
 

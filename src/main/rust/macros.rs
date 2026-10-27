@@ -359,6 +359,16 @@ macro_rules! check_query_result {
 }
 
 #[macro_export]
+macro_rules! check_table_binding {
+    ($env:expr, $res:expr, $default_fn:expr) => {
+        match $res {
+            Ok(res) => res,
+            Err(e) => return e.exception($env, $default_fn),
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! parse_value {
     ($env:expr, $val:expr, $default_fn:expr) => {
         match surrealdb::parse::value($val) {
