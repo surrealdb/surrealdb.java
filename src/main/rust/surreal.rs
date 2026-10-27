@@ -442,36 +442,6 @@ pub extern "system" fn Java_com_surrealdb_Surreal_useDefaults<'local>(
     })
 }
 
-/// Reads the namespace and database the session is actually using, as the engine
-/// sees them. The Java side used to cache these from `useNs`/`useDb`, which went
-/// stale whenever the session got them another way, e.g. a forked session inherits
-/// its parent's.
-#[no_mangle]
-pub extern "system" fn Java_com_surrealdb_Surreal_sessionNsDb<'local>(
-    mut env: EnvUnowned<'local>,
-    _class: JClass<'local>,
-    ptr: jlong,
-) -> jobject {
-    with_env_body!(env, env, {
-        let surreal = get_surreal_ref!(env, ptr, null_mut);
-        let res = surrealdb_query::<()>(surreal, "RETURN [session::ns(), session::db()]", None);
-        let mut res = check_query_result!(env, res, null_mut);
-        let result = take_one_result!(env, res, null_mut);
-        let as_name = |v: Option<&Value>| match v {
-            Some(Value::String(s)) => Some(s.clone()),
-            _ => None,
-        };
-        let (namespace, database) = match &result {
-            Value::Array(a) => (as_name(a.first()), as_name(a.get(1))),
-            _ => (None, None),
-        };
-        match new_ns_db_object(env, namespace, database) {
-            Ok(obj) => obj,
-            Err(e) => e.exception(env, null_mut),
-        }
-    })
-}
-
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_query<'local>(
     mut env: EnvUnowned<'local>,

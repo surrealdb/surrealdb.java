@@ -26,9 +26,10 @@ import com.surrealdb.signin.Token;
  */
 public class Surreal extends Native implements AutoCloseable {
 
-	// Whether connect() has succeeded. Before that there is no session to ask
-	// for its namespace and database.
-	private volatile boolean connected;
+	// Current namespace and database set by useNs() / useDb() / useDefaults() (from
+	// server return value), or inherited by newSession() from the parent session.
+	private String namespace;
+	private String database;
 
 	/**
 	 * Constructs a new Surreal object.
@@ -39,13 +40,13 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Constructor for a Surreal instance backed by an existing native pointer (e.g.
-	 * from {@link #newSession()}).
+	 * from {@link #newSession()}), whose session uses {@code namespace} and
+	 * {@code database}.
 	 */
-	private Surreal(long ptr, boolean connected) {
+	private Surreal(long ptr, String namespace, String database) {
 		super(ptr);
-		// A session shares its parent's connection, so it is connected exactly when
-		// the parent is.
-		this.connected = connected;
+		this.namespace = namespace;
+		this.database = database;
 	}
 
 	private static native long newInstance();
@@ -73,8 +74,6 @@ public class Surreal extends Native implements AutoCloseable {
 	private native NsDb useDb(long ptr, String db);
 
 	private native NsDb useDefaults(long ptr);
-
-	private native NsDb sessionNsDb(long ptr);
 
 	private native long query(long ptr, String sql);
 
@@ -184,7 +183,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Surreal connect(String connect) {
 		connect(getPtr(), connect);
-		connected = true;
+		namespace = null;
+		database = null;
 		return this;
 	}
 
@@ -364,13 +364,8 @@ public class Surreal extends Native implements AutoCloseable {
 			return signinRoot(getPtr(), r.getUsername(), r.getPassword());
 		} else if (credential instanceof RecordCredential) {
 			final RecordCredential rec = (RecordCredential) credential;
-			String ns = rec.getNamespace();
-			String db = rec.getDatabase();
-			if (ns == null || db == null) {
-				final NsDb current = currentNsDb();
-				ns = ns != null ? ns : current.getNamespace();
-				db = db != null ? db : current.getDatabase();
-			}
+			String ns = rec.getNamespace() != null ? rec.getNamespace() : this.namespace;
+			String db = rec.getDatabase() != null ? rec.getDatabase() : this.database;
 			if (ns == null || db == null) {
 				throw new SurrealException(
 						"RecordCredential signin requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
@@ -404,13 +399,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             first when omitting)
 	 */
 	public Token signup(RecordCredential record) {
-		String ns = record.getNamespace();
-		String db = record.getDatabase();
-		if (ns == null || db == null) {
-			final NsDb current = currentNsDb();
-			ns = ns != null ? ns : current.getNamespace();
-			db = db != null ? db : current.getDatabase();
-		}
+		String ns = record.getNamespace() != null ? record.getNamespace() : this.namespace;
+		String db = record.getDatabase() != null ? record.getDatabase() : this.database;
 		if (ns == null || db == null) {
 			throw new SurrealException(
 					"RecordCredential signup requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
@@ -455,7 +445,9 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-		return new Surreal(cloneSession(getPtr()), connected);
+		// The native clone copies the session's namespace and database, so the new
+		// instance starts with this one's.
+		return new Surreal(cloneSession(getPtr()), namespace, database);
 	}
 
 	private native long beginTransaction(long ptr);
@@ -472,71 +464,75 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	/**
-	 * Sets the namespace for the Surreal instance. Use {@link #getNamespace()} and
-	 * {@link #getDatabase()} to read the session's current values.
+	 * Sets the namespace for the Surreal instance. The current namespace and
+	 * database from the server are stored; use {@link #getNamespace()} and
+	 * {@link #getDatabase()} to read them.
 	 *
 	 * @param ns
 	 *            the namespace to use
 	 * @return this instance for chaining
 	 */
 	public Surreal useNs(String ns) {
-		useNs(getPtr(), ns);
+		NsDb result = useNs(getPtr(), ns);
+		this.namespace = result.getNamespace();
+		this.database = result.getDatabase();
 		return this;
 	}
 
 	/**
-	 * Sets the database for the current instance. Use {@link #getNamespace()} and
-	 * {@link #getDatabase()} to read the session's current values.
+	 * Sets the database for the current instance. The current namespace and
+	 * database from the server are stored; use {@link #getNamespace()} and
+	 * {@link #getDatabase()} to read them.
 	 *
 	 * @param db
 	 *            the database name to use
 	 * @return this instance for chaining
 	 */
 	public Surreal useDb(String db) {
-		useDb(getPtr(), db);
+		NsDb result = useDb(getPtr(), db);
+		this.namespace = result.getNamespace();
+		this.database = result.getDatabase();
 		return this;
 	}
 
 	/**
-	 * Sets the default namespace and database. Use {@link #getNamespace()} and
-	 * {@link #getDatabase()} to read the values the session ended up with.
+	 * Sets the default namespace and database. The actual defaults from the server
+	 * are stored; use {@link #getNamespace()} and {@link #getDatabase()} to read
+	 * them.
 	 *
 	 * @return this instance for chaining
 	 */
 	public Surreal useDefaults() {
-		useDefaults(getPtr());
+		NsDb result = useDefaults(getPtr());
+		this.namespace = result.getNamespace();
+		this.database = result.getDatabase();
 		return this;
 	}
 
-	private NsDb currentNsDb() {
-		if (!connected) {
-			return new NsDb(null, null);
-		}
-		return sessionNsDb(getPtr());
-	}
-
 	/**
-	 * Returns the namespace this session is using, read from the session itself
-	 * rather than remembered from {@link #useNs(String)}, so it also reflects the
-	 * state a {@link #newSession()} inherits from its parent. Each call asks the
-	 * engine, so it costs one round trip on a remote connection.
+	 * Returns the current namespace set by the last {@link #useNs(String)},
+	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
-	 * @return the current namespace, or null if none is selected (or not yet
-	 *         connected)
+	 * @return the current namespace, or null
 	 */
 	public String getNamespace() {
-		return currentNsDb().getNamespace();
+		return namespace;
 	}
 
 	/**
-	 * Returns the database this session is using, read from the session itself. See
-	 * {@link #getNamespace()}.
+	 * Returns the current database set by the last {@link #useNs(String)},
+	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
-	 * @return the current database, or null if none is selected (or not yet
-	 *         connected)
+	 * @return the current database, or null
 	 */
 	public String getDatabase() {
-		return currentNsDb().getDatabase();
+		return database;
 	}
 
 	/**

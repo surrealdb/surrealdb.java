@@ -13,10 +13,10 @@ import com.surrealdb.signin.RecordCredential;
 import com.surrealdb.signin.Token;
 
 /**
- * Regression tests for the namespace/database the Java side reports. They used
- * to come from a cache filled by useNs()/useDb(), which went stale for forked
- * sessions and made record signin on a new session fail its "requires namespace
- * and database" guard.
+ * Regression tests for the namespace/database the Java side reports. A new
+ * session used to start with none, although its native session is a copy of its
+ * parent's, so record signin on it failed its "requires namespace and database"
+ * guard.
  */
 public class SessionNsDbTests {
 
@@ -38,6 +38,12 @@ public class SessionNsDbTests {
 
 	private static void recordSigninOnNewSession(Surreal surreal, String db) {
 		surreal.useNs("test_ns").useDb(db);
+		// After a fork the two sessions are independent.
+		try (Surreal fork = surreal.newSession()) {
+			fork.useDb(db + "_other");
+			assertEquals(db + "_other", fork.getDatabase());
+			assertEquals(db, surreal.getDatabase());
+		}
 		defineUserAccess(surreal);
 		surreal.signup(new RecordCredential("test_ns", db, "user", credentials()));
 		try (Surreal session = surreal.newSession()) {
