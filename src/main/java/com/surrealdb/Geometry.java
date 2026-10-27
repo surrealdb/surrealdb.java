@@ -115,11 +115,15 @@ public class Geometry extends Native {
 	}
 
 	public List<Point2D.Double> getLineString() {
-		return parseLine(coordinates());
+		try (final Array line = coordinates()) {
+			return parseLine(line);
+		}
 	}
 
 	public List<Point2D.Double> getMultiPoint() {
-		return parseLine(coordinates());
+		try (final Array points = coordinates()) {
+			return parseLine(points);
+		}
 	}
 
 	/**
@@ -127,20 +131,28 @@ public class Geometry extends Native {
 	 * subsequent rings are interior holes.
 	 */
 	public List<List<Point2D.Double>> getPolygon() {
-		return parseRings(coordinates());
+		try (final Array rings = coordinates()) {
+			return parseRings(rings);
+		}
 	}
 
 	public List<List<Point2D.Double>> getMultiLineString() {
-		return parseRings(coordinates());
+		try (final Array lines = coordinates()) {
+			return parseRings(lines);
+		}
 	}
 
 	public List<List<List<Point2D.Double>>> getMultiPolygon() {
-		final Array polygons = coordinates();
-		final List<List<List<Point2D.Double>>> result = new ArrayList<>(polygons.len());
-		for (int i = 0; i < polygons.len(); i++) {
-			result.add(parseRings(polygons.get(i).getArray()));
+		try (final Array polygons = coordinates()) {
+			final int len = polygons.len();
+			final List<List<List<Point2D.Double>>> result = new ArrayList<>(len);
+			for (int i = 0; i < len; i++) {
+				try (final Array polygon = arrayAt(polygons, i)) {
+					result.add(parseRings(polygon));
+				}
+			}
+			return result;
 		}
-		return result;
 	}
 
 	public List<Geometry> getGeometryCollection() {
@@ -204,28 +216,44 @@ public class Geometry extends Native {
 
 	// ---- helpers ----
 
+	// The parsers below close each native wrapper once its numbers are copied out.
+
 	/** The geometry's coordinates as a nested array of {@code [x, y]} pairs. */
 	private Array coordinates() {
-		return new Value(getCoordinates(getPtr())).getArray();
+		try (final Value coordinates = new Value(getCoordinates(getPtr()))) {
+			return coordinates.getArray();
+		}
 	}
 
-	private static Point2D.Double parsePoint(Value coordinate) {
-		final Array xy = coordinate.getArray();
-		return new Point2D.Double(xy.get(0).getDouble(), xy.get(1).getDouble());
+	/** Element {@code i} of {@code array}, which is itself an array. */
+	private static Array arrayAt(Array array, int i) {
+		try (final Value element = array.get(i)) {
+			return element.getArray();
+		}
+	}
+
+	private static Point2D.Double parsePoint(Array line, int i) {
+		try (final Array xy = arrayAt(line, i); final Value x = xy.get(0); final Value y = xy.get(1)) {
+			return new Point2D.Double(x.getDouble(), y.getDouble());
+		}
 	}
 
 	private static List<Point2D.Double> parseLine(Array line) {
-		final List<Point2D.Double> points = new ArrayList<>(line.len());
-		for (int i = 0; i < line.len(); i++) {
-			points.add(parsePoint(line.get(i)));
+		final int len = line.len();
+		final List<Point2D.Double> points = new ArrayList<>(len);
+		for (int i = 0; i < len; i++) {
+			points.add(parsePoint(line, i));
 		}
 		return points;
 	}
 
 	private static List<List<Point2D.Double>> parseRings(Array rings) {
-		final List<List<Point2D.Double>> result = new ArrayList<>(rings.len());
-		for (int i = 0; i < rings.len(); i++) {
-			result.add(parseLine(rings.get(i).getArray()));
+		final int len = rings.len();
+		final List<List<Point2D.Double>> result = new ArrayList<>(len);
+		for (int i = 0; i < len; i++) {
+			try (final Array ring = arrayAt(rings, i)) {
+				result.add(parseLine(ring));
+			}
 		}
 		return result;
 	}

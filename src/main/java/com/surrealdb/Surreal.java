@@ -638,7 +638,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An instance of the specified type
 	 */
 	public <T> T create(Class<T> type, RecordId recordId, T content) {
-		return create(recordId, content).get(type);
+		return create(recordId, content).getAndClose(type);
 	}
 
 	/**
@@ -692,7 +692,7 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T> List<T> create(Class<T> type, String target, T... contents) {
 		try (final Stream<Value> s = create(target, contents).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -747,7 +747,7 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T> List<T> insert(Class<T> type, String target, T... contents) {
 		try (final Stream<Value> s = insert(target, contents).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -796,7 +796,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the inserted relation of type T
 	 */
 	public <T extends InsertRelation> T insertRelation(Class<T> type, String target, T content) {
-		return insertRelation(target, content).get(type);
+		return insertRelation(target, content).getAndClose(type);
 	}
 
 	/**
@@ -848,7 +848,7 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T extends InsertRelation> List<T> insertRelations(Class<T> type, String target, T... contents) {
 		try (final Stream<Value> s = insertRelations(target, contents).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -899,7 +899,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The established relation of the specified type.
 	 */
 	public <T extends Relation> T relate(Class<T> type, RecordId from, String table, RecordId to) {
-		return relate(from, table, to).get(type);
+		return relate(from, table, to).getAndClose(type);
 	}
 
 	/**
@@ -959,7 +959,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the established relation of the specified type
 	 */
 	public <R extends Relation, T> R relate(Class<R> type, RecordId from, String table, RecordId to, T content) {
-		return relate(from, table, to, content).get(type);
+		return relate(from, table, to, content).getAndClose(type);
 	}
 
 	/**
@@ -1039,7 +1039,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the updated record of the specified type
 	 */
 	public <T> T update(Class<T> type, RecordId recordId, UpType upType, T content) {
-		return update(recordId, upType, content).get(type);
+		return update(recordId, upType, content).getAndClose(type);
 	}
 
 	/**
@@ -1329,7 +1329,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The upserted entity of the specified type.
 	 */
 	public <T> T upsert(Class<T> type, RecordId recordId, UpType upType, T content) {
-		return upsert(recordId, upType, content).get(type);
+		return upsert(recordId, upType, content).getAndClose(type);
 	}
 
 	/**
@@ -1603,7 +1603,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         present, otherwise an empty Optional
 	 */
 	public <T> Optional<T> select(Class<T> type, RecordId recordId) {
-		return select(recordId).map(v -> v.get(type));
+		return select(recordId).map(v -> v.getAndClose(type));
 	}
 
 	/**
@@ -1659,7 +1659,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> List<T> select(Class<T> type, RecordId... recordIds) {
 		try (final Stream<Value> s = select(recordIds).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -1700,7 +1700,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> List<T> select(Class<T> type, RecordIdRange range) {
 		try (final Stream<Value> s = select(range).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 

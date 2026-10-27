@@ -262,4 +262,16 @@ public class Value extends Native implements AutoCloseable {
 	public <T> T get(Class<T> type) {
 		return new ValueClassConverter<>(type).convert(this);
 	}
+
+	/**
+	 * {@link #get(Class)}, then {@link #close()}. For values that only the SDK
+	 * holds, such as a result it converts before returning it.
+	 */
+	final <T> T getAndClose(Class<T> type) {
+		try {
+			return get(type);
+		} finally {
+			close();
+		}
+	}
 }

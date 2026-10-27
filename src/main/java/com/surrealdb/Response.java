@@ -28,7 +28,7 @@ public class Response extends Native implements AutoCloseable {
 	}
 
 	public <T> T take(Class<T> type, int num) {
-		return take(num).get(type);
+		return take(num).getAndClose(type);
 	}
 
 	public int size() {
