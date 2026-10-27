@@ -33,3 +33,12 @@ pub extern "system" fn Java_com_surrealdb_EntryIterator_next<'local>(
         }
     })
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_EntryIterator_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::JniTypes::release_object_iter(ptr);
+}

@@ -13,7 +13,7 @@ use std::vec::IntoIter;
 use surrealdb::engine::any::Any;
 use surrealdb::method::Transaction;
 use surrealdb::types::Value;
-use surrealdb::{Connection, IndexedResults, Surreal};
+use surrealdb::{IndexedResults, Surreal};
 
 /// Item type for the live query notification channel.
 pub(crate) type LiveNotificationResult =
@@ -98,49 +98,113 @@ enum JniTypes {
     LiveStream,
 }
 
+/// The concrete Rust type boxed behind each [`JniTypes`] tag.
+///
+/// Each alias is the single definition of that type: the `JniTypes::new_*` and
+/// `JniTypes::release_*` helpers below and the `get_*_instance!` / `take_*`
+/// macros all go through it, so a creator, reader or deleter that drifts from
+/// the others fails to compile instead of freeing the wrong type.
+pub(crate) type SurrealHandle = Surreal<Any>;
+pub(crate) type TransactionHandle = Transaction<Any>;
+pub(crate) type ValueHandle = Arc<Value>;
+pub(crate) type ValueMutHandle = Value;
+pub(crate) type ArrayIterHandle = IntoIter<Value>;
+pub(crate) type SyncArrayIterHandle = Arc<Mutex<IntoIter<Value>>>;
+pub(crate) type KeyValueHandle = (String, Arc<Value>);
+pub(crate) type KeyValueMutHandle = (String, Value);
+pub(crate) type ObjectIterHandle = BIntoIter<String, Value>;
+pub(crate) type SyncObjectIterHandle = Arc<Mutex<BIntoIter<String, Value>>>;
+pub(crate) type ResponseHandle = Arc<Mutex<IndexedResults>>;
+
 impl JniTypes {
-    fn new_surreal<C: Connection>(s: Surreal<C>) -> jlong {
+    fn new_surreal(s: SurrealHandle) -> jlong {
         create_instance(s, Self::Surreal)
     }
 
-    fn new_transaction<C: Connection>(t: Transaction<C>) -> jlong {
+    fn release_surreal(ptr: jlong) {
+        release_instance::<SurrealHandle>(ptr, Self::Surreal)
+    }
+
+    fn new_transaction(t: TransactionHandle) -> jlong {
         create_instance(t, Self::Transaction)
     }
 
-    fn new_value(v: Arc<Value>) -> jlong {
+    fn release_transaction(ptr: jlong) {
+        release_instance::<TransactionHandle>(ptr, Self::Transaction)
+    }
+
+    fn new_value(v: ValueHandle) -> jlong {
         create_instance(v, Self::Value)
     }
 
-    fn new_value_mut(v: Value) -> jlong {
+    fn release_value(ptr: jlong) {
+        release_instance::<ValueHandle>(ptr, Self::Value)
+    }
+
+    fn new_value_mut(v: ValueMutHandle) -> jlong {
         create_instance(v, Self::ValueMut)
     }
 
-    fn new_array_iter(i: IntoIter<Value>) -> jlong {
+    fn release_value_mut(ptr: jlong) {
+        release_instance::<ValueMutHandle>(ptr, Self::ValueMut)
+    }
+
+    fn new_array_iter(i: ArrayIterHandle) -> jlong {
         create_instance(i, Self::ArrayIter)
     }
 
-    fn new_sync_array_iter(i: Arc<Mutex<IntoIter<Value>>>) -> jlong {
+    fn release_array_iter(ptr: jlong) {
+        release_instance::<ArrayIterHandle>(ptr, Self::ArrayIter)
+    }
+
+    fn new_sync_array_iter(i: SyncArrayIterHandle) -> jlong {
         create_instance(i, Self::SyncArrayIter)
     }
 
+    fn release_sync_array_iter(ptr: jlong) {
+        release_instance::<SyncArrayIterHandle>(ptr, Self::SyncArrayIter)
+    }
+
     fn new_key_value(key: String, value: Arc<Value>) -> jlong {
-        create_instance((key, value), Self::KeyValueEntry)
+        let entry: KeyValueHandle = (key, value);
+        create_instance(entry, Self::KeyValueEntry)
+    }
+
+    fn release_key_value(ptr: jlong) {
+        release_instance::<KeyValueHandle>(ptr, Self::KeyValueEntry)
     }
 
     fn new_key_value_mut(key: String, value: Value) -> jlong {
-        create_instance((key, value), Self::KeyValueMutEntry)
+        let entry: KeyValueMutHandle = (key, value);
+        create_instance(entry, Self::KeyValueMutEntry)
     }
 
-    fn new_sync_object_iter(i: Arc<Mutex<BIntoIter<String, Value>>>) -> jlong {
+    fn release_key_value_mut(ptr: jlong) {
+        release_instance::<KeyValueMutHandle>(ptr, Self::KeyValueMutEntry)
+    }
+
+    fn new_sync_object_iter(i: SyncObjectIterHandle) -> jlong {
         create_instance(i, Self::SyncObjectIter)
     }
 
-    fn new_object_iter(i: BIntoIter<String, Value>) -> jlong {
+    fn release_sync_object_iter(ptr: jlong) {
+        release_instance::<SyncObjectIterHandle>(ptr, Self::SyncObjectIter)
+    }
+
+    fn new_object_iter(i: ObjectIterHandle) -> jlong {
         create_instance(i, Self::ObjectIter)
     }
 
-    fn new_response(res: Arc<Mutex<IndexedResults>>) -> jlong {
+    fn release_object_iter(ptr: jlong) {
+        release_instance::<ObjectIterHandle>(ptr, Self::ObjectIter)
+    }
+
+    fn new_response(res: ResponseHandle) -> jlong {
         create_instance(res, Self::Response)
+    }
+
+    fn release_response(ptr: jlong) {
+        release_instance::<ResponseHandle>(ptr, Self::Response)
     }
 
     fn new_live_stream(chan: LiveStreamChannel) -> jlong {
@@ -250,20 +314,33 @@ pub(crate) fn take_instance<T>(ptr: jlong, t: JniTypes) -> Result<T, SurrealErro
 /// Clones the Surreal instance at the given pointer and returns a new pointer to the clone.
 /// Used for multi-session support: each clone is a separate session sharing the same connection.
 pub(crate) fn clone_surreal_instance(ptr: jlong) -> Result<jlong, SurrealError> {
-    let s = get_instance::<Surreal<Any>>(ptr, JniTypes::Surreal)?;
+    let s = get_instance::<SurrealHandle>(ptr, JniTypes::Surreal)?;
     let cloned = (*s).clone();
     Ok(JniTypes::new_surreal(cloned))
 }
 
-fn release_instance<T>(ptr: jlong) {
-    if ptr != 0 {
-        #[cfg(debug_assertions)]
-        ALLOCATOR.remove(&ptr);
-        // Convert jlong back to Arc<T> and let it go out of scope to free memory
-        unsafe {
-            let _ = Box::from_raw(ptr as *mut T);
-        };
+/// Frees an instance created by [`create_instance`]. `T` must be the type that
+/// was boxed, which is why callers go through the typed `JniTypes::release_*`
+/// helpers rather than naming `T` themselves. In debug builds the tag is
+/// checked against the allocation first; on a mismatch (or an unknown or
+/// already-freed pointer) nothing is freed and the problem is logged, never
+/// raised across the JNI boundary.
+fn release_instance<T>(ptr: jlong, _t: JniTypes) {
+    if ptr == 0 {
+        return;
     }
+    #[cfg(debug_assertions)]
+    {
+        if let Err(SurrealError::SurrealDBJni(msg)) = check_allocation(ptr, _t) {
+            eprintln!("surrealdb-java: refusing to release instance: {msg}");
+            return;
+        }
+        ALLOCATOR.remove(&ptr);
+    }
+    // Convert jlong back to Box<T> and let it go out of scope to free memory
+    unsafe {
+        let _ = Box::from_raw(ptr as *mut T);
+    };
 }
 
 // Function to read a jobjectArray of Strings into a Vec<String>

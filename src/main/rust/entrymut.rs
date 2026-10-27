@@ -4,13 +4,12 @@ use std::ptr::null_mut;
 use crate::error::SurrealError;
 use crate::with_env_body;
 use crate::{
-    get_entry_mut_instance, get_rust_string, new_string, release_instance, take_value_mut_instance,
-    JniTypes,
+    get_entry_mut_instance, get_rust_string, new_string, take_value_mut_instance, JniTypes,
 };
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jlong, jstring};
 use jni::EnvUnowned;
-use surrealdb::types::{ToSql, Value};
+use surrealdb::types::ToSql;
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_EntryMut_deleteInstance<'local>(
@@ -18,7 +17,7 @@ pub extern "system" fn Java_com_surrealdb_EntryMut_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<(String, Value)>(ptr);
+    JniTypes::release_key_value_mut(ptr);
 }
 
 #[no_mangle]
@@ -29,8 +28,10 @@ pub extern "system" fn Java_com_surrealdb_EntryMut_create<'local>(
     v: jlong,
 ) -> jlong {
     with_env_body!(env, env, {
-        let s = get_rust_string!(env, s, || 0);
+        // Take the value first: Java marks it moved whatever happens, so if reading
+        // the name fails, the value must still be consumed (and dropped here).
         let v = take_value_mut_instance!(env, v, || 0);
+        let s = get_rust_string!(env, s, || 0);
         JniTypes::new_key_value_mut(s, v)
     })
 }
