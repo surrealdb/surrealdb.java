@@ -224,7 +224,7 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArrayOf<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let values = take_instances!(env, ptrs, surrealdb::types::Value, JniTypes::ValueMut, || 0);
+        let values = take_instances!(env, ptrs, crate::ValueMutHandle, JniTypes::ValueMut, || 0);
         let value = Value::Array(Array::from(values));
         JniTypes::new_value_mut(value)
     })
@@ -253,7 +253,13 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newObjectOf<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let entries = take_instances!(env, ptrs, (String, Value), JniTypes::KeyValueMutEntry, || 0);
+        let entries = take_instances!(
+            env,
+            ptrs,
+            crate::KeyValueMutHandle,
+            JniTypes::KeyValueMutEntry,
+            || 0
+        );
         let map: BTreeMap<_, _> = entries.into_iter().collect();
         let value = Value::Object(Object::from(map));
         create_instance(value, JniTypes::ValueMut)
@@ -348,5 +354,5 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_deleteInstance<'local>(
     _class: jni::objects::JClass<'local>,
     ptr: jni::sys::jlong,
 ) {
-    crate::release_instance::<surrealdb::types::Value>(ptr);
+    JniTypes::release_value_mut(ptr);
 }

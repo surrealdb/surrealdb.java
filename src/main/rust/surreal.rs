@@ -9,9 +9,9 @@ use crate::with_env_body;
 use crate::{
     build_params_map, check_query_result, convert_up_type, get_long_array, get_rust_string,
     get_rust_string_array, get_surreal_ref, get_value_instance, get_value_mut_instance,
-    new_jlong_array, new_string, release_instance, return_unexpected_result,
-    return_value_array_first, return_value_array_iter, return_value_array_iter_sync,
-    take_one_result, JniTypes, TOKIO_RUNTIME,
+    new_jlong_array, new_string, return_unexpected_result, return_value_array_first,
+    return_value_array_iter, return_value_array_iter_sync, take_one_result, JniTypes,
+    TOKIO_RUNTIME,
 };
 use futures::StreamExt;
 use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString, JValue};
@@ -69,7 +69,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteInstance<'local>(
     _class: JClass<'local>,
     ptr: jlong,
 ) {
-    release_instance::<Surreal<Any>>(ptr);
+    JniTypes::release_surreal(ptr);
 }
 
 #[no_mangle]
@@ -1291,14 +1291,14 @@ fn build_range_value(
     let start_bound = if start_ptr == 0 {
         Bound::Unbounded
     } else {
-        let value = crate::get_instance::<Arc<Value>>(start_ptr, crate::JniTypes::Value)?;
+        let value = crate::get_instance::<crate::ValueHandle>(start_ptr, crate::JniTypes::Value)?;
         let key = value_to_record_id_key(value.as_ref())?;
         Bound::Included(key)
     };
     let end_bound = if end_ptr == 0 {
         Bound::Unbounded
     } else {
-        let value = crate::get_instance::<Arc<Value>>(end_ptr, crate::JniTypes::Value)?;
+        let value = crate::get_instance::<crate::ValueHandle>(end_ptr, crate::JniTypes::Value)?;
         let key = value_to_record_id_key(value.as_ref())?;
         Bound::Included(key)
     };

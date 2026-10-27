@@ -61,7 +61,7 @@ pub extern "system" fn Java_com_surrealdb_Id_newArrayId<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let ptrs = get_long_array!(env, &ptrs, || 0);
-        let values = take_instances!(env, ptrs, surrealdb::types::Value, JniTypes::ValueMut, || 0);
+        let values = take_instances!(env, ptrs, crate::ValueMutHandle, JniTypes::ValueMut, || 0);
         let key = RecordIdKey::Array(Array::from(values));
         let value = Value::RecordId(RecordId::new("", key));
         JniTypes::new_value(value.into())
@@ -312,5 +312,5 @@ pub extern "system" fn Java_com_surrealdb_Id_deleteInstance<'local>(
     _class: jni::objects::JClass<'local>,
     ptr: jni::sys::jlong,
 ) {
-    crate::release_instance::<std::sync::Arc<surrealdb::types::Value>>(ptr);
+    JniTypes::release_value(ptr);
 }

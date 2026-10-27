@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::with_env_body;
 use jni::objects::JClass;
 use jni::sys::{jboolean, jlong};
@@ -44,11 +42,5 @@ pub extern "system" fn Java_com_surrealdb_SynchronizedEntryIterator_deleteInstan
     _class: jni::objects::JClass<'local>,
     ptr: jni::sys::jlong,
 ) {
-    crate::release_instance::<
-        std::sync::Arc<
-            parking_lot::Mutex<
-                std::collections::btree_map::IntoIter<String, surrealdb::types::Value>,
-            >,
-        >,
-    >(ptr);
+    crate::JniTypes::release_sync_object_iter(ptr);
 }

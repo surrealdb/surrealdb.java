@@ -96,20 +96,17 @@ class ValueBuilder {
 		}
 		if (object instanceof Map) {
 			final Map<?, ?> map = (Map<?, ?>) object;
-			final List<ValueMut> values = new ArrayList<>(map.size());
 			final List<EntryMut> entries = new ArrayList<>(map.size());
 			try {
-				// Create a ValueMut for each value of the map
+				// Each converted value goes straight into its entry, which takes
+				// ownership of it before anything else can fail.
 				for (final Map.Entry<?, ?> entry : map.entrySet()) {
 					final String key = entry.getKey().toString();
-					final ValueMut value = convertObject(entry.getValue(), false);
-					values.add(value);
-					entries.add(EntryMut.newEntry(key, value));
+					entries.add(EntryMut.newEntry(key, convertObject(entry.getValue(), false)));
 				}
 				return ValueMut.createObject(entries);
 			} catch (Throwable t) {
 				freeAll(entries);
-				freeAll(values);
 				throw t;
 			}
 		}
@@ -151,21 +148,17 @@ class ValueBuilder {
 		if (fields.isEmpty() && clazz.getDeclaredFields().length == 0) {
 			throw new SurrealException("No field found: " + clazz.getCanonicalName());
 		}
-		final List<ValueMut> values = new ArrayList<>(fields.size());
 		final List<EntryMut> entries = new ArrayList<>(fields.size());
 		try {
 			for (final Map.Entry<String, Field> fieldEntry : fields.entrySet()) {
 				final java.lang.Object value = fieldEntry.getValue().get(object);
 				if (value != null) {
-					final ValueMut converted = convertObject(value, false);
-					values.add(converted);
-					entries.add(EntryMut.newEntry(fieldEntry.getKey(), converted));
+					entries.add(EntryMut.newEntry(fieldEntry.getKey(), convertObject(value, false)));
 				}
 			}
 			return ValueMut.createObject(entries);
 		} catch (Throwable t) {
 			freeAll(entries);
-			freeAll(values);
 			throw t;
 		}
 	}

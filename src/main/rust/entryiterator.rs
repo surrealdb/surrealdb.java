@@ -40,7 +40,5 @@ pub extern "system" fn Java_com_surrealdb_EntryIterator_deleteInstance<'local>(
     _class: jni::objects::JClass<'local>,
     ptr: jni::sys::jlong,
 ) {
-    crate::release_instance::<std::collections::btree_map::IntoIter<String, surrealdb::types::Value>>(
-        ptr,
-    );
+    crate::JniTypes::release_object_iter(ptr);
 }

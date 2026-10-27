@@ -1,6 +1,5 @@
 package com.surrealdb;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -43,14 +42,9 @@ public class Array extends Native implements Iterable<Value>, AutoCloseable {
 	 * null-call overload ambiguity.
 	 */
 	public static Array fromList(List<?> elements) {
-		Objects.requireNonNull(elements, "elements");
-		final List<ValueMut> muts = new ArrayList<>(elements.size());
-		for (final java.lang.Object e : elements) {
-			muts.add(ValueBoxing.box(e));
-		}
-		// Box everything first, so a failure leaves nothing half handed over. The
-		// native side then takes ownership of the boxed values.
-		return new Array(newOf(takePtrs(muts)));
+		// Everything is boxed first, so a failure leaves nothing half handed over.
+		// The native side then takes ownership of the boxed values.
+		return new Array(newOf(ValueBoxing.boxAndTakePtrs(elements)));
 	}
 
 	private static native long newOf(long[] valueMutPtrs);
