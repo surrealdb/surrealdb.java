@@ -409,7 +409,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_refresh<'local>(
         let token = token_pair(access, refresh);
         // Exchanges the refresh token for a new pair and authenticates the session
         // with the new access token. The old refresh token is consumed.
-        match TOKIO_RUNTIME.block_on(async { surreal.authenticate(token).refresh().await }) {
+        match crate::block_on(async { surreal.authenticate(token).refresh().await }) {
             Ok(token) => {
                 let access = token.access.into_insecure_token();
                 let refresh = token.refresh.map(|r| r.into_insecure_token());
@@ -436,9 +436,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_revoke<'local>(
         let access = get_rust_string!(env, access, || ());
         let refresh = get_rust_string!(env, refresh, || ());
         let token = token_pair(access, refresh);
-        if let Err(err) =
-            TOKIO_RUNTIME.block_on(async { surreal.invalidate().refresh(token).await })
-        {
+        if let Err(err) = crate::block_on(async { surreal.invalidate().refresh(token).await }) {
             SurrealError::from(err).exception(env, || ())
         }
     })
@@ -456,7 +454,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_set<'local>(
         let surreal = get_surreal_ref!(env, ptr, || ());
         let name = get_rust_string!(env, name, || ());
         let value = get_value_mut_instance!(env, value_ptr, || ()).clone();
-        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.set(name, value).await }) {
+        if let Err(err) = crate::block_on(async { surreal.set(name, value).await }) {
             SurrealError::from(err).exception(env, || ())
         }
     })
@@ -472,7 +470,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_unset<'local>(
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, || ());
         let name = get_rust_string!(env, name, || ());
-        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.unset(name).await }) {
+        if let Err(err) = crate::block_on(async { surreal.unset(name).await }) {
             SurrealError::from(err).exception(env, || ())
         }
     })
