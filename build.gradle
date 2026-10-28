@@ -193,9 +193,6 @@ test {
     jvmArgs "-Djava.library.path=${libPath}"
     // Per-test timeout so a single test cannot hang the suite (may not interrupt native/JNI blocks)
     systemProperty 'junit.jupiter.execution.timeout.default', '15s'
-    // Debug builds of the embedded engine overflow Linux's default 1 MiB
-    // thread stack (the engine's futures are polled on the calling thread).
-    jvmArgs '-Xss8m'
     maxParallelForks = 1
     // To pinpoint where the run gets stuck, uncomment and run with short timeout (e.g. ./test-with-timeout.sh 25):
     // beforeTest { d -> logger.lifecycle("[{}] START {} > {}", System.currentTimeMillis(), d.className, d.name) }
@@ -238,9 +235,6 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
         systemProperty 'java.library.path', libPath
         jvmArgs "-Djava.library.path=${libPath}"
         systemProperty 'junit.jupiter.execution.timeout.default', '15s'
-        // Debug builds of the embedded engine overflow Linux's default 1 MiB
-        // thread stack (the engine's futures are polled on the calling thread).
-        jvmArgs '-Xss8m'
         maxParallelForks = 1
         testLogging {
             events "passed", "failed", "skipped"

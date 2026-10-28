@@ -1,7 +1,8 @@
 # Changelog
 
 ## [Unreleased]
-- Upgrade to SurrealDB SDK 3.3.4, and run CI against SurrealDB server v3.3.4 (previously v3.1.5). SurrealDB calls now run on Tokio worker threads with 10 MiB stacks, as SurrealDB recommends, so a Java thread with a small stack (1 MiB by default on Linux) no longer overflows [#216](https://github.com/surrealdb/surrealdb.java/pull/216).
+- Upgrade to SurrealDB SDK 3.3.4, and run CI against SurrealDB server v3.3.4 (previously v3.1.5). SurrealDB calls now run on Tokio worker threads with 10 MiB stacks, as SurrealDB recommends, so a Java thread with a small stack (1 MiB by default on Linux) no longer overflows [#212](https://github.com/surrealdb/surrealdb.java/pull/212).
+- Support RocksDB (`rocksdb://`, 64-bit desktop targets only; not available on 32-bit or Android) and gRPC (`grpc://`, enabled by default) [#212](https://github.com/surrealdb/surrealdb.java/pull/212).
 
 ## [2.1.2] - 2026-06-24
 - Add full geometry-type support for reading and writing all seven types — Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection — via `Geometry` type-discrimination accessors (`getType()`, `isPolygon()`, …), readers returning `java.awt.geom.Point2D.Double` coordinates (x = longitude, y = latitude), and factory methods that serialize through `create`/`update` content and bound parameters. Also fixes an `UnsatisfiedLinkError` thrown when a `Geometry` was finalized (the native `deleteInstance` had no matching Rust symbol) [#183](https://github.com/surrealdb/surrealdb.java/pull/183).
