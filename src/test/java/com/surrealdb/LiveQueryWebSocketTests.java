@@ -40,9 +40,9 @@ import com.surrealdb.signin.RootCredential;
  * </ul>
  *
  * <p>
- * These tests require a SurrealDB server running at {@code ws://localhost:8000}
- * with a root user named {@code root}/{@code root}. CI provides one via
- * {@code surrealdb/setup-surreal} which starts SurrealDB with
+ * These tests require a SurrealDB server running at {@code SURREALDB_URL} (see
+ * {@link TestServer}) with a root user named {@code root}/{@code root}. CI
+ * provides one via {@code surrealdb/setup-surreal} which starts SurrealDB with
  * {@code -u root -p root --unauthenticated --allow-all}. Locally, run:
  *
  * <pre>{@code
@@ -53,7 +53,7 @@ import com.surrealdb.signin.RootCredential;
  */
 public class LiveQueryWebSocketTests {
 
-	private static final String WS_URL = "ws://localhost:8000";
+	private static final String WS_URL = TestServer.WS_URL;
 	private static final int CONNECT_TIMEOUT_SECONDS = 5;
 
 	/**
