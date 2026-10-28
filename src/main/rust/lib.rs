@@ -76,8 +76,44 @@ mod value;
 mod valueiterator;
 mod valuemut;
 
-static TOKIO_RUNTIME: Lazy<Runtime> =
-    Lazy::new(|| Runtime::new().expect("Cannot start Tokio runtime"));
+/// Stack size SurrealDB recommends for threads that run it embedded: its query
+/// executor recurses deeply, and a debug build needs more than 1 MiB.
+const STACK_SIZE: usize = 10 * 1024 * 1024;
+
+static TOKIO_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .thread_stack_size(STACK_SIZE)
+        .build()
+        .expect("Cannot start Tokio runtime")
+});
+
+/// Runs `future` to completion on a Tokio worker thread, which has a
+/// [`STACK_SIZE`] stack, and blocks the calling thread until it finishes.
+///
+/// The calling Java thread may have as little as 1 MiB of stack (the Linux
+/// default), which SurrealDB can overflow, so the work does not run on it.
+///
+/// The `&'static` session and transaction references returned by
+/// `get_instance` are only valid while Java holds the object. Handing them to
+/// a spawned task is sound only because this function does not return until
+/// the task has completed. Do not add any path that returns before the
+/// `JoinHandle` resolves (no timeout, `select` or early return).
+///
+/// A panic in the future is re-raised on the calling thread.
+fn block_on<F>(future: F) -> F::Output
+where
+    F: std::future::Future + Send + 'static,
+    F::Output: Send + 'static,
+{
+    match TOKIO_RUNTIME.block_on(TOKIO_RUNTIME.spawn(future)) {
+        Ok(output) => output,
+        Err(err) => match err.try_into_panic() {
+            Ok(panic) => std::panic::resume_unwind(panic),
+            Err(err) => unreachable!("SurrealDB task was cancelled: {err}"),
+        },
+    }
+}
 
 #[cfg(debug_assertions)]
 type Allocations = DashMap<jlong, JniTypes>;

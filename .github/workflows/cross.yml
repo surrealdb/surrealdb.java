@@ -75,7 +75,7 @@ jobs:
             apt-get: gcc
           - target: aarch64-unknown-linux-gnu
             linker: CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
-            apt-get: gcc-aarch64-linux-gnu
+            apt-get: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           - target: i686-unknown-linux-gnu
             linker: CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc
             apt-get: gcc-multilib
@@ -310,7 +310,7 @@ jobs:
       - name: Start SurrealDB
         uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
-          surrealdb_version: v3.1.5
+          surrealdb_version: v3.3.4
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
@@ -355,7 +355,7 @@ jobs:
         if: runner.os != 'Windows'
         uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
         with:
-          surrealdb_version: v3.1.5
+          surrealdb_version: v3.3.4
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
