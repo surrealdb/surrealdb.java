@@ -40,9 +40,6 @@ jobs:
   build:
     name: Test (Java ${{ matrix.java }}, SurrealDB ${{ matrix.surrealdb }})
     runs-on: ubuntu-latest
-    # Nightly is an early warning, not a merge gate: a server regression there
-    # should not block unrelated PRs.
-    continue-on-error: ${{ matrix.surrealdb == 'nightly' }}
 
     strategy:
       fail-fast: false
@@ -51,12 +48,11 @@ jobs:
         # Latest 3.x server release. Bump when a new 3.x lands.
         surrealdb: [ 'v3.3.4' ]
         include:
-          # The server version matching the embedded crate (Cargo.toml).
+          # Latest stable patch of earlier 3.x minor branches.
           - java: '17'
-            surrealdb: 'v3.1.5'
-          # Tip of the server's main branch.
+            surrealdb: 'v3.1.6'
           - java: '17'
-            surrealdb: 'nightly'
+            surrealdb: 'v3.2.6'
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
