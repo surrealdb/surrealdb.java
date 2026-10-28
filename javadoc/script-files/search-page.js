@@ -17,7 +17,7 @@ $(function() {
         if (redirect.is(":checked")) {
             href += "&r=1";
         }
-        searchLink.text(href);
+        searchLink.html(href);
         copy[0].onmouseenter();
     }
     function copyLink(e) {
@@ -55,11 +55,11 @@ $(window).on("load", function() {
     const MIN_TABBED_RESULTS = 10;
     function renderResults(result) {
         if (!result.length) {
-            notify.text(messages.noResult);
+            notify.html(messages.noResult);
         } else if (result.length === 1) {
-            notify.text(messages.oneResult);
+            notify.html(messages.oneResult);
         } else {
-            notify.text(messages.manyResults.replace("{0}", result.length));
+            notify.html(messages.manyResults.replace("{0}", result.length));
         }
         resultContainer.empty();
         var r = {
@@ -78,7 +78,7 @@ $(window).on("load", function() {
             activeTab = Object.keys(r).find(category => r[category].length > 0);
         }
         if (feelingLucky && activeTab) {
-            notify.text(messages.redirecting)
+            notify.html(messages.redirecting)
             var firstItem = r[activeTab][0];
             window.location = getURL(firstItem.indexItem, firstItem.category);
             return;
@@ -105,10 +105,10 @@ $(window).on("load", function() {
                         .attr("tabIndex", "-1")
                         .addClass("page-search-header")
                         .append($("<span/>")
-                            .text(categories[key])
+                            .html(categories[key])
                             .append($("<span/>")
                                 .attr("style", "font-weight:normal;")
-                                .text(" (" + count + ")")))
+                                .html(" (" + count + ")")))
                         .on("click", null, key, function(e) {
                             fixedTab = true;
                             renderResult(e.data, $(this));
@@ -155,8 +155,8 @@ $(window).on("load", function() {
         }
         col2 = descDesc;
         $("<div class='table-header'/>")
-            .append($("<span class='table-header'/>").text(col1))
-            .append($("<span class='table-header'/>").text(col2))
+            .append($("<span class='table-header'/>").html(col1))
+            .append($("<span class='table-header'/>").html(col2))
             .appendTo(table);
         $.each(items, function(index, item) {
             renderItem(item, table);
@@ -185,7 +185,7 @@ $(window).on("load", function() {
             .on("mouseleave", unselect.bind(link[0]))
             .on("blur", unselect.bind(link[0]))
             .append($("<span/>").addClass("search-result-label").html(label))
-            .append($("<span/>").addClass("search-result-desc").text(desc))
+            .append($("<span/>").addClass("search-result-desc").html(desc))
             .appendTo(table);
     }
     var timeout;
@@ -201,13 +201,13 @@ $(window).on("load", function() {
         setSearchUrl();
         var term = searchTerm = input.val().trim();
         if (term === "") {
-            notify.text(messages.enterTerm);
+            notify.html(messages.enterTerm);
             activeTab = "";
             fixedTab = false;
             resultContainer.empty();
             resultSection.hide();
         } else {
-            notify.text(messages.searching);
+            notify.html(messages.searching);
             var module = modules.val();
             doSearch({ term: term, maxResults: 1200, module: module}, renderResults);
         }
@@ -295,7 +295,7 @@ $(window).on("load", function() {
         }
     });
     reset.on("click", function() {
-        notify.text(messages.enterTerm);
+        notify.html(messages.enterTerm);
         resultSection.hide();
         activeTab = "";
         fixedTab = false;
@@ -342,7 +342,7 @@ $(window).on("load", function() {
     if (input.val()) {
         doPageSearch();
     } else {
-        notify.text(messages.enterTerm);
+        notify.html(messages.enterTerm);
     }
     input.select().focus();
 });
