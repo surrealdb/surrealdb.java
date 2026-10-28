@@ -88,27 +88,31 @@ static TOKIO_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
         .expect("Cannot start Tokio runtime")
 });
 
-/// Runs `future` to completion on a thread with a [`STACK_SIZE`] stack.
+/// Runs `future` to completion on a Tokio worker thread, which has a
+/// [`STACK_SIZE`] stack, and blocks the calling thread until it finishes.
 ///
 /// The calling Java thread may have as little as 1 MiB of stack (the Linux
-/// default), which SurrealDB can overflow. A scoped thread can borrow from the
-/// caller, so the session handle is used as is rather than cloned (a clone is a
-/// new session). A panic is re-raised on the calling thread.
+/// default), which SurrealDB can overflow, so the work does not run on it.
+///
+/// The `&'static` session and transaction references returned by
+/// `get_instance` are only valid while Java holds the object. Handing them to
+/// a spawned task is sound only because this function does not return until
+/// the task has completed. Do not add any path that returns before the
+/// `JoinHandle` resolves (no timeout, `select` or early return).
+///
+/// A panic in the future is re-raised on the calling thread.
 fn block_on<F>(future: F) -> F::Output
 where
-    F: std::future::Future + Send,
-    F::Output: Send,
+    F: std::future::Future + Send + 'static,
+    F::Output: Send + 'static,
 {
-    std::thread::scope(|scope| {
-        let worker = std::thread::Builder::new()
-            .stack_size(STACK_SIZE)
-            .spawn_scoped(scope, || TOKIO_RUNTIME.block_on(future))
-            .expect("Cannot start a SurrealDB thread");
-        match worker.join() {
-            Ok(output) => output,
-            Err(panic) => std::panic::resume_unwind(panic),
-        }
-    })
+    match TOKIO_RUNTIME.block_on(TOKIO_RUNTIME.spawn(future)) {
+        Ok(output) => output,
+        Err(err) => match err.try_into_panic() {
+            Ok(panic) => std::panic::resume_unwind(panic),
+            Err(err) => unreachable!("SurrealDB task was cancelled: {err}"),
+        },
+    }
 }
 
 #[cfg(debug_assertions)]
