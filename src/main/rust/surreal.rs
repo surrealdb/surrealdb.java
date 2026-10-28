@@ -386,6 +386,117 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
     })
 }
 
+/// Builds a crate token pair from the Java `Token`'s parts.
+fn token_pair(access: String, refresh: String) -> surrealdb::opt::auth::Token {
+    surrealdb::opt::auth::Token::from((
+        surrealdb::opt::auth::AccessToken::from(access),
+        surrealdb::opt::auth::RefreshToken::from(refresh),
+    ))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_refresh<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    access: JString<'local>,
+    refresh: JString<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let access = get_rust_string!(env, access, null_mut);
+        let refresh = get_rust_string!(env, refresh, null_mut);
+        let token = token_pair(access, refresh);
+        // Exchanges the refresh token for a new pair and authenticates the session
+        // with the new access token. The old refresh token is consumed.
+        match TOKIO_RUNTIME.block_on(async { surreal.authenticate(token).refresh().await }) {
+            Ok(token) => {
+                let access = token.access.into_insecure_token();
+                let refresh = token.refresh.map(|r| r.into_insecure_token());
+                match new_token_object(env, access, refresh) {
+                    Ok(obj) => obj,
+                    Err(e) => e.exception(env, null_mut),
+                }
+            }
+            Err(err) => SurrealError::from(err).exception(env, null_mut),
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_revoke<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    access: JString<'local>,
+    refresh: JString<'local>,
+) {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || ());
+        let access = get_rust_string!(env, access, || ());
+        let refresh = get_rust_string!(env, refresh, || ());
+        let token = token_pair(access, refresh);
+        if let Err(err) =
+            TOKIO_RUNTIME.block_on(async { surreal.invalidate().refresh(token).await })
+        {
+            SurrealError::from(err).exception(env, || ())
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_set<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    name: JString<'local>,
+    value_ptr: jlong,
+) {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || ());
+        let name = get_rust_string!(env, name, || ());
+        let value = get_value_mut_instance!(env, value_ptr, || ()).clone();
+        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.set(name, value).await }) {
+            SurrealError::from(err).exception(env, || ())
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_unset<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    name: JString<'local>,
+) {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || ());
+        let name = get_rust_string!(env, name, || ());
+        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.unset(name).await }) {
+            SurrealError::from(err).exception(env, || ())
+        }
+    })
+}
+
+/// The record of the signed-in record user, as the `info` RPC returns it, or 0 when
+/// the session is not authenticated as a record user.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_info<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || 0);
+        let res = surrealdb_query::<()>(surreal, "RETURN $auth.*", None);
+        let mut res = check_query_result!(env, res, || 0);
+        match take_one_result!(env, res, || 0) {
+            Value::None | Value::Null => 0,
+            value => JniTypes::new_value(Arc::new(value)),
+        }
+    })
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     mut env: EnvUnowned<'local>,
