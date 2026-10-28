@@ -629,7 +629,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_run<'local>(
     })
 }
 
-/// JNI implementation of `Surreal.selectLive(long ptr, String table)`.
+/// JNI implementation of `Surreal.selectLive(long ptr, String table, boolean diff)`.
 ///
 /// Starts a live query on `table` and returns a fully-constructed Java
 /// `LiveStream` object carrying both the native `LiveStreamChannel` handle and
@@ -667,16 +667,22 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectLive<'local>(
     _class: JClass<'local>,
     ptr: jlong,
     table: JString<'local>,
+    diff: jboolean,
 ) -> jobject {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, ptr, null_mut);
         let table = get_rust_string!(env, &table, null_mut);
 
         // Run the LIVE SELECT synchronously on the calling thread. The table name
-        // is bound, never spliced into the query.
+        // is bound, never spliced into the query. In DIFF mode each notification
+        // carries JSON Patch operations instead of the record.
         let mut params = BTreeMap::new();
         let tb = check_table_binding!(env, bind_table(&mut params, "tb", table), null_mut);
-        let query = format!("LIVE SELECT * FROM {tb}");
+        let query = if diff {
+            format!("LIVE SELECT DIFF FROM {tb}")
+        } else {
+            format!("LIVE SELECT * FROM {tb}")
+        };
         let res = surrealdb_query::<Value>(surreal, &query, Some(params));
         let mut res = check_query_result!(env, res, null_mut);
 
