@@ -59,13 +59,16 @@ loadScripts(document, 'script');</script>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,com.surrealdb.Id)" tabindex="0">RecordIdRange(String, Id, Id)</a></li>
+<li><a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,boolean,com.surrealdb.Id,boolean)" tabindex="0">RecordIdRange(String, Id, boolean, Id, boolean)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#getTable()" tabindex="0">getTable()</a></li>
 <li><a href="#getStart()" tabindex="0">getStart()</a></li>
+<li><a href="#isStartInclusive()" tabindex="0">isStartInclusive()</a></li>
 <li><a href="#getEnd()" tabindex="0">getEnd()</a></li>
+<li><a href="#isEndInclusive()" tabindex="0">isEndInclusive()</a></li>
 </ol>
 </li>
 </ol>
@@ -84,12 +87,18 @@ loadScripts(document, 'script');</script>
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">RecordIdRange</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
 <div class="block">Represents a range of record IDs on a table for range queries (e.g.
-select/update/delete/upsert over IDs in [start..end] or unbounded on either
-side).
+select/update/delete/upsert over IDs between a start and an end bound, either
+of which may be unbounded).
 <p>
 Use <a href="Id.html#from(long)"><code>Id.from(long)</code></a>, <a href="Id.html#from(java.lang.String)"><code>Id.from(String)</code></a>, or
 <a href="Id.html#from(java.util.UUID)"><code>Id.from(java.util.UUID)</code></a> for bounds. Pass <code>null</code> for start or
-end to make that bound unbounded.</div>
+end to make that bound unbounded.
+<p>
+<a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,com.surrealdb.Id)"><code>RecordIdRange(String, Id, Id)</code></a> includes both bounds
+(<code>table:start..=end</code>). Use
+<a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,boolean,com.surrealdb.Id,boolean)"><code>RecordIdRange(String, Id, boolean, Id, boolean)</code></a> to exclude either
+bound, for example <code>new RecordIdRange("t", a, true, b, false)</code> is
+SurrealQL's <code>t:a..b</code>.</div>
 </div>
 </section>
 <section class="summary">
@@ -102,11 +111,21 @@ end to make that bound unbounded.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,com.surrealdb.Id)" class="member-name-link">RecordIdRange</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,boolean,com.surrealdb.Id,boolean)" class="member-name-link">RecordIdRange</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
+ <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;start,
+ boolean&nbsp;startInclusive,
+ <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;end,
+ boolean&nbsp;endInclusive)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates a range over the given table, choosing whether each bound is
+inclusive or exclusive.</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(java.lang.String,com.surrealdb.Id,com.surrealdb.Id)" class="member-name-link">RecordIdRange</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;start,
  <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;end)</code></div>
-<div class="col-last even-row-color">
-<div class="block">Creates a range over the given table with optional start and end bounds.</div>
+<div class="col-last odd-row-color">
+<div class="block">Creates a range over the given table with optional start and end bounds, both
+inclusive.</div>
 </div>
 </div>
 </section>
@@ -125,16 +144,26 @@ end to make that bound unbounded.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Id.html" title="class in com.surrealdb">Id</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getEnd()" class="member-name-link">getEnd</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Upper bound (inclusive), or <code>null</code> if unbounded.</div>
+<div class="block">Upper bound, or <code>null</code> if unbounded.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Id.html" title="class in com.surrealdb">Id</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getStart()" class="member-name-link">getStart</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Lower bound (inclusive), or <code>null</code> if unbounded.</div>
+<div class="block">Lower bound, or <code>null</code> if unbounded.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTable()" class="member-name-link">getTable</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isEndInclusive()" class="member-name-link">isEndInclusive</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Whether the upper bound is inclusive.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isStartInclusive()" class="member-name-link">isStartInclusive</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Whether the lower bound is inclusive.</div>
+</div>
 </div>
 </div>
 </div>
@@ -159,12 +188,35 @@ end to make that bound unbounded.</div>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RecordIdRange</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;start,
  <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;end)</span></div>
-<div class="block">Creates a range over the given table with optional start and end bounds.</div>
+<div class="block">Creates a range over the given table with optional start and end bounds, both
+inclusive.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>table</code> - table name</dd>
 <dd><code>start</code> - lower bound (inclusive), or <code>null</code> for unbounded</dd>
 <dd><code>end</code> - upper bound (inclusive), or <code>null</code> for unbounded</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(java.lang.String,com.surrealdb.Id,boolean,com.surrealdb.Id,boolean)">
+<h3>RecordIdRange</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RecordIdRange</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
+ <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;start,
+ boolean&nbsp;startInclusive,
+ <a href="Id.html" title="class in com.surrealdb">Id</a>&nbsp;end,
+ boolean&nbsp;endInclusive)</span></div>
+<div class="block">Creates a range over the given table, choosing whether each bound is
+inclusive or exclusive.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>table</code> - table name</dd>
+<dd><code>start</code> - lower bound, or <code>null</code> for unbounded</dd>
+<dd><code>startInclusive</code> - whether records whose ID equals <code>start</code> are included</dd>
+<dd><code>end</code> - upper bound, or <code>null</code> for unbounded</dd>
+<dd><code>endInclusive</code> - whether records whose ID equals <code>end</code> are included</dd>
 </dl>
 </div>
 </section>
@@ -190,7 +242,17 @@ end to make that bound unbounded.</div>
 <h3>getStart</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Id.html" title="class in com.surrealdb">Id</a></span>&nbsp;<span class="element-name">getStart</span>()</div>
-<div class="block">Lower bound (inclusive), or <code>null</code> if unbounded.</div>
+<div class="block">Lower bound, or <code>null</code> if unbounded.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isStartInclusive()">
+<h3>isStartInclusive</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isStartInclusive</span>()</div>
+<div class="block">Whether the lower bound is inclusive. Meaningless when the range has no lower
+bound.</div>
 </div>
 </section>
 </li>
@@ -199,7 +261,17 @@ end to make that bound unbounded.</div>
 <h3>getEnd</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Id.html" title="class in com.surrealdb">Id</a></span>&nbsp;<span class="element-name">getEnd</span>()</div>
-<div class="block">Upper bound (inclusive), or <code>null</code> if unbounded.</div>
+<div class="block">Upper bound, or <code>null</code> if unbounded.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isEndInclusive()">
+<h3>isEndInclusive</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isEndInclusive</span>()</div>
+<div class="block">Whether the upper bound is inclusive. Meaningless when the range has no upper
+bound.</div>
 </div>
 </section>
 </li>

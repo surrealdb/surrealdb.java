@@ -76,6 +76,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#createGeometry(com.surrealdb.Geometry)" tabindex="0">createGeometry(Geometry)</a></li>
 <li><a href="#createArray(com.surrealdb.Array)" tabindex="0">createArray(Array)</a></li>
 <li><a href="#createArray(java.util.List)" tabindex="0">createArray(List)</a></li>
+<li><a href="#createSet(java.util.Collection)" tabindex="0">createSet(Collection)</a></li>
 <li><a href="#createObject(com.surrealdb.Object)" tabindex="0">createObject(Object)</a></li>
 <li><a href="#createObject(java.util.List)" tabindex="0">createObject(List)</a></li>
 <li><a href="#createFile(java.lang.String,java.lang.String)" tabindex="0">createFile(String, String)</a></li>
@@ -183,14 +184,20 @@ UTC.</div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createRecordId(com.surrealdb.RecordId)" class="member-name-link">createRecordId</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;recordId)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createString(java.lang.String)" class="member-name-link">createString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;s)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createSet(java.util.Collection)" class="member-name-link">createSet</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a>&lt;?&gt;&nbsp;elements)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Creates a set value: a sorted collection without duplicates, SurrealQL's
+<code>set</code> type.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createTable(java.lang.String)" class="member-name-link">createTable</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createString(java.lang.String)" class="member-name-link">createString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;s)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createUuid(java.util.UUID)" class="member-name-link">createUuid</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;uuid)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createTable(java.lang.String)" class="member-name-link">createTable</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createUuid(java.util.UUID)" class="member-name-link">createUuid</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;uuid)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -381,6 +388,27 @@ epoch-millisecond value instead.</div>
 <h3>createArray</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createArray</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a>&gt;&nbsp;values)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="createSet(java.util.Collection)">
+<h3>createSet</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="ValueMut.html" title="class in com.surrealdb">ValueMut</a></span>&nbsp;<span class="element-name">createSet</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a>&lt;?&gt;&nbsp;elements)</span></div>
+<div class="block">Creates a set value: a sorted collection without duplicates, SurrealQL's
+<code>set</code> type. Elements are converted like query bindings, so a
+<code>ValueMut</code> element is copied and stays usable by the caller.
+<p>
+A <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Set.html" title="class or interface in java.util" class="external-link"><code>Set</code></a> passed as a binding or POJO field is still sent as an
+array, because a set does not coerce into an <code>array</code> field. Use this
+method where a SurrealQL set is wanted.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>elements</code> - the elements of the set</dd>
+<dt>Returns:</dt>
+<dd>the set value</dd>
+</dl>
 </div>
 </section>
 </li>

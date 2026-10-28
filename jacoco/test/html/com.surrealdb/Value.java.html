@@ -85,6 +85,14 @@ public class Value extends Native implements AutoCloseable {
 
 	private native long getRangeEnd(long ptr);
 
+	private native boolean isRangeStartInclusive(long ptr);
+
+	private native boolean isRangeEndInclusive(long ptr);
+
+	private native boolean isSet(long ptr);
+
+	private native long getSet(long ptr);
+
 	private native boolean isTable(long ptr);
 
 	private native String getTable(long ptr);
@@ -102,165 +110,196 @@ public class Value extends Native implements AutoCloseable {
 
 	@Override
 	final NativeCleaner.Deleter deleter() {
-<span class="fc" id="L105">		return Value::deleteInstance;</span>
+<span class="fc" id="L113">		return Value::deleteInstance;</span>
 	}
 
 	public boolean isArray() {
-<span class="fc" id="L109">		return isArray(getPtr());</span>
+<span class="fc" id="L117">		return isArray(getPtr());</span>
 	}
 
 	public Array getArray() {
-<span class="fc" id="L113">		return new Array(getArray(getPtr()));</span>
+<span class="fc" id="L121">		return new Array(getArray(getPtr()));</span>
 	}
 
 	public boolean isObject() {
-<span class="fc" id="L117">		return isObject(getPtr());</span>
+<span class="fc" id="L125">		return isObject(getPtr());</span>
 	}
 
 	public Object getObject() {
-<span class="fc" id="L121">		return new Object(getObject(getPtr()));</span>
+<span class="fc" id="L129">		return new Object(getObject(getPtr()));</span>
 	}
 
 	public boolean isBoolean() {
-<span class="fc" id="L125">		return isBoolean(getPtr());</span>
+<span class="fc" id="L133">		return isBoolean(getPtr());</span>
 	}
 
 	public boolean getBoolean() {
-<span class="fc" id="L129">		return getBoolean(getPtr());</span>
+<span class="fc" id="L137">		return getBoolean(getPtr());</span>
 	}
 
 	public boolean isDouble() {
-<span class="fc" id="L133">		return isDouble(getPtr());</span>
+<span class="fc" id="L141">		return isDouble(getPtr());</span>
 	}
 
 	public double getDouble() {
-<span class="fc" id="L137">		return getDouble(getPtr());</span>
+<span class="fc" id="L145">		return getDouble(getPtr());</span>
 	}
 
 	public boolean isLong() {
-<span class="fc" id="L141">		return isLong(getPtr());</span>
+<span class="fc" id="L149">		return isLong(getPtr());</span>
 	}
 
 	public long getLong() {
-<span class="fc" id="L145">		return getLong(getPtr());</span>
+<span class="fc" id="L153">		return getLong(getPtr());</span>
 	}
 
 	public boolean isBigDecimal() {
-<span class="fc" id="L149">		return isBigDecimal(getPtr());</span>
+<span class="fc" id="L157">		return isBigDecimal(getPtr());</span>
 	}
 
 	public BigDecimal getBigDecimal() {
-<span class="fc" id="L153">		return new BigDecimal(getBigDecimal(getPtr()));</span>
+<span class="fc" id="L161">		return new BigDecimal(getBigDecimal(getPtr()));</span>
 	}
 
 	public boolean isNull() {
-<span class="fc" id="L157">		return isNull(getPtr());</span>
+<span class="fc" id="L165">		return isNull(getPtr());</span>
 	}
 
 	public boolean isNone() {
-<span class="fc" id="L161">		return isNone(getPtr());</span>
+<span class="fc" id="L169">		return isNone(getPtr());</span>
 	}
 
 	public boolean isString() {
-<span class="fc" id="L165">		return isString(getPtr());</span>
+<span class="fc" id="L173">		return isString(getPtr());</span>
 	}
 
 	public String getString() {
-<span class="fc" id="L169">		return getString(getPtr());</span>
+<span class="fc" id="L177">		return getString(getPtr());</span>
 	}
 
 	public boolean isUuid() {
-<span class="fc" id="L173">		return isUuid(getPtr());</span>
+<span class="fc" id="L181">		return isUuid(getPtr());</span>
 	}
 
 	public UUID getUuid() {
-<span class="fc" id="L177">		return UUID.fromString(getUuid(getPtr()));</span>
+<span class="fc" id="L185">		return UUID.fromString(getUuid(getPtr()));</span>
 	}
 
 	public boolean isRecordId() {
-<span class="fc" id="L181">		return isRecordId(getPtr());</span>
+<span class="fc" id="L189">		return isRecordId(getPtr());</span>
 	}
 
 	public RecordId getRecordId() {
-<span class="fc" id="L185">		return new RecordId(getRecordId(getPtr()));</span>
+<span class="fc" id="L193">		return new RecordId(getRecordId(getPtr()));</span>
 	}
 
 	public boolean isFile() {
-<span class="fc" id="L189">		return isFile(getPtr());</span>
+<span class="fc" id="L197">		return isFile(getPtr());</span>
 	}
 
 	public FileRef getFile() {
-<span class="fc" id="L193">		return new FileRef(getFile(getPtr()));</span>
+<span class="fc" id="L201">		return new FileRef(getFile(getPtr()));</span>
 	}
 
 	public boolean isRange() {
-<span class="fc" id="L197">		return isRange(getPtr());</span>
+<span class="fc" id="L205">		return isRange(getPtr());</span>
 	}
 
 	/**
 	 * Start bound of the range (included or excluded), or empty if unbounded.
 	 */
 	public Optional&lt;Value&gt; getRangeStart() {
-<span class="fc" id="L204">		final long p = getRangeStart(getPtr());</span>
-<span class="pc bpc" id="L205" title="1 of 2 branches missed.">		return p == 0 ? Optional.empty() : Optional.of(new Value(p));</span>
+<span class="fc" id="L212">		final long p = getRangeStart(getPtr());</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">		return p == 0 ? Optional.empty() : Optional.of(new Value(p));</span>
 	}
 
 	/**
 	 * End bound of the range (included or excluded), or empty if unbounded.
 	 */
 	public Optional&lt;Value&gt; getRangeEnd() {
-<span class="fc" id="L212">		final long p = getRangeEnd(getPtr());</span>
-<span class="pc bpc" id="L213" title="1 of 2 branches missed.">		return p == 0 ? Optional.empty() : Optional.of(new Value(p));</span>
+<span class="fc" id="L220">		final long p = getRangeEnd(getPtr());</span>
+<span class="fc bfc" id="L221" title="All 2 branches covered.">		return p == 0 ? Optional.empty() : Optional.of(new Value(p));</span>
+	}
+
+	/**
+	 * Whether the start bound of the range is inclusive ({@code a..} rather than
+	 * {@code a&gt;..}). Also false when the range has no start bound.
+	 */
+	public boolean isRangeStartInclusive() {
+<span class="fc" id="L229">		return isRangeStartInclusive(getPtr());</span>
+	}
+
+	/**
+	 * Whether the end bound of the range is inclusive ({@code ..=b} rather than
+	 * {@code ..b}). Also false when the range has no end bound.
+	 */
+	public boolean isRangeEndInclusive() {
+<span class="fc" id="L237">		return isRangeEndInclusive(getPtr());</span>
+	}
+
+	/**
+	 * Whether this value is a set: a sorted collection without duplicates. Sets are
+	 * distinct from arrays, so {@link #isArray()} is false for them.
+	 */
+	public boolean isSet() {
+<span class="fc" id="L245">		return isSet(getPtr());</span>
+	}
+
+	/**
+	 * Returns the elements of this set, in the set's (sorted) order.
+	 */
+	public Array getSet() {
+<span class="fc" id="L252">		return new Array(getSet(getPtr()));</span>
 	}
 
 	public boolean isTable() {
-<span class="fc" id="L217">		return isTable(getPtr());</span>
+<span class="fc" id="L256">		return isTable(getPtr());</span>
 	}
 
 	/**
 	 * Table name when this value is a table type.
 	 */
 	public String getTable() {
-<span class="fc" id="L224">		return getTable(getPtr());</span>
+<span class="fc" id="L263">		return getTable(getPtr());</span>
 	}
 
 	public boolean isBytes() {
-<span class="fc" id="L228">		return isBytes(getPtr());</span>
+<span class="fc" id="L267">		return isBytes(getPtr());</span>
 	}
 
 	public byte[] getBytes() {
-<span class="fc" id="L232">		return getBytes(getPtr());</span>
+<span class="fc" id="L271">		return getBytes(getPtr());</span>
 	}
 
 	public boolean isGeometry() {
-<span class="fc" id="L236">		return isGeometry(getPtr());</span>
+<span class="fc" id="L275">		return isGeometry(getPtr());</span>
 	}
 
 	public Geometry getGeometry() {
-<span class="fc" id="L240">		return new Geometry(getGeometry(getPtr()));</span>
+<span class="fc" id="L279">		return new Geometry(getGeometry(getPtr()));</span>
 	}
 
 	public boolean isDateTime() {
-<span class="fc" id="L244">		return isDateTime(getPtr());</span>
+<span class="fc" id="L283">		return isDateTime(getPtr());</span>
 	}
 
 	public ZonedDateTime getDateTime() {
-<span class="fc" id="L248">		final long[] timestamps = getDateTime(getPtr());</span>
-<span class="fc" id="L249">		final Instant instant = Instant.ofEpochSecond(timestamps[0], timestamps[1]);</span>
-<span class="fc" id="L250">		return ZonedDateTime.ofInstant(instant, ZoneId.of(&quot;UTC&quot;));</span>
+<span class="fc" id="L287">		final long[] timestamps = getDateTime(getPtr());</span>
+<span class="fc" id="L288">		final Instant instant = Instant.ofEpochSecond(timestamps[0], timestamps[1]);</span>
+<span class="fc" id="L289">		return ZonedDateTime.ofInstant(instant, ZoneId.of(&quot;UTC&quot;));</span>
 	}
 
 	public boolean isDuration() {
-<span class="fc" id="L254">		return isDuration(getPtr());</span>
+<span class="fc" id="L293">		return isDuration(getPtr());</span>
 	}
 
 	public Duration getDuration() {
-<span class="fc" id="L258">		final long[] duration = getDuration(getPtr());</span>
-<span class="fc" id="L259">		return Duration.ofSeconds(duration[0], duration[1]);</span>
+<span class="fc" id="L297">		final long[] duration = getDuration(getPtr());</span>
+<span class="fc" id="L298">		return Duration.ofSeconds(duration[0], duration[1]);</span>
 	}
 
 	public &lt;T&gt; T get(Class&lt;T&gt; type) {
-<span class="fc" id="L263">		return new ValueClassConverter&lt;&gt;(type).convert(this);</span>
+<span class="fc" id="L302">		return new ValueClassConverter&lt;&gt;(type).convert(this);</span>
 	}
 
 	/**
@@ -269,9 +308,9 @@ public class Value extends Native implements AutoCloseable {
 	 */
 	final &lt;T&gt; T getAndClose(Class&lt;T&gt; type) {
 		try {
-<span class="fc" id="L272">			return get(type);</span>
+<span class="fc" id="L311">			return get(type);</span>
 		} finally {
-<span class="fc" id="L274">			close();</span>
+<span class="fc" id="L313">			close();</span>
 		}
 	}
 }

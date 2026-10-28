@@ -224,6 +224,11 @@ UTC.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createRecordId(com.surrealdb.RecordId)" class="member-name-link">createRecordId(RecordId)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/ValueMut.html#createSet(java.util.Collection)" class="member-name-link">createSet(Collection)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
+<dd>
+<div class="block">Creates a set value: a sorted collection without duplicates, SurrealQL's
+<code>set</code> type.</div>
+</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createString(java.lang.String)" class="member-name-link">createString(String)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/ValueMut.html#createTable(java.lang.String)" class="member-name-link">createTable(String)</a> - Static method in class com.surrealdb.<a href="com/surrealdb/ValueMut.html" title="class in com.surrealdb">ValueMut</a></dt>
@@ -411,7 +416,7 @@ response), or inherited from the parent by <a href="com/surrealdb/Surreal.html#n
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/RecordIdRange.html#getEnd()" class="member-name-link">getEnd()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
 <dd>
-<div class="block">Upper bound (inclusive), or <code>null</code> if unbounded.</div>
+<div class="block">Upper bound, or <code>null</code> if unbounded.</div>
 </dd>
 <dt><a href="com/surrealdb/Value.html#getFile()" class="member-name-link">getFile()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
@@ -546,9 +551,13 @@ error.</div>
 <dd>
 <div class="block">Returns the session id, if this is a session-not-found error.</div>
 </dd>
+<dt><a href="com/surrealdb/Value.html#getSet()" class="member-name-link">getSet()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">Returns the elements of this set, in the set's (sorted) order.</div>
+</dd>
 <dt><a href="com/surrealdb/RecordIdRange.html#getStart()" class="member-name-link">getStart()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
 <dd>
-<div class="block">Lower bound (inclusive), or <code>null</code> if unbounded.</div>
+<div class="block">Lower bound, or <code>null</code> if unbounded.</div>
 </dd>
 <dt><a href="com/surrealdb/Id.html#getString()" class="member-name-link">getString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
@@ -748,6 +757,10 @@ opposed to serialization).</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isDuration()" class="member-name-link">isDuration()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/RecordIdRange.html#isEndInclusive()" class="member-name-link">isEndInclusive()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
+<dd>
+<div class="block">Whether the upper bound is inclusive.</div>
+</dd>
 <dt><a href="com/surrealdb/Value.html#isFile()" class="member-name-link">isFile()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isGeometry()" class="member-name-link">isGeometry()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
@@ -797,11 +810,29 @@ supported.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Value.html#isRange()" class="member-name-link">isRange()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Value.html#isRangeEndInclusive()" class="member-name-link">isRangeEndInclusive()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">Whether the end bound of the range is inclusive (<code>..=b</code> rather than
+<code>..b</code>).</div>
+</dd>
+<dt><a href="com/surrealdb/Value.html#isRangeStartInclusive()" class="member-name-link">isRangeStartInclusive()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">Whether the start bound of the range is inclusive (<code>a..</code> rather than
+<code>a&gt;..</code>).</div>
+</dd>
 <dt><a href="com/surrealdb/Value.html#isRecordId()" class="member-name-link">isRecordId()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/NotAllowedException.html#isScriptingBlocked()" class="member-name-link">isScriptingBlocked()</a> - Method in exception class com.surrealdb.<a href="com/surrealdb/NotAllowedException.html" title="class in com.surrealdb">NotAllowedException</a></dt>
 <dd>
 <div class="block">Returns <code>true</code> when scripting is blocked.</div>
+</dd>
+<dt><a href="com/surrealdb/Value.html#isSet()" class="member-name-link">isSet()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Value.html" title="class in com.surrealdb">Value</a></dt>
+<dd>
+<div class="block">Whether this value is a set: a sorted collection without duplicates.</div>
+</dd>
+<dt><a href="com/surrealdb/RecordIdRange.html#isStartInclusive()" class="member-name-link">isStartInclusive()</a> - Method in class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
+<dd>
+<div class="block">Whether the lower bound is inclusive.</div>
 </dd>
 <dt><a href="com/surrealdb/Id.html#isString()" class="member-name-link">isString()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Id.html" title="class in com.surrealdb">Id</a></dt>
 <dd>&nbsp;</dd>
@@ -1061,9 +1092,15 @@ method).</div>
 <dd>
 <div class="block">Represents a range of record IDs on a table for range queries (e.g.</div>
 </dd>
+<dt><a href="com/surrealdb/RecordIdRange.html#%3Cinit%3E(java.lang.String,com.surrealdb.Id,boolean,com.surrealdb.Id,boolean)" class="member-name-link">RecordIdRange(String, Id, boolean, Id, boolean)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
+<dd>
+<div class="block">Creates a range over the given table, choosing whether each bound is
+inclusive or exclusive.</div>
+</dd>
 <dt><a href="com/surrealdb/RecordIdRange.html#%3Cinit%3E(java.lang.String,com.surrealdb.Id,com.surrealdb.Id)" class="member-name-link">RecordIdRange(String, Id, Id)</a> - Constructor for class com.surrealdb.<a href="com/surrealdb/RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a></dt>
 <dd>
-<div class="block">Creates a range over the given table with optional start and end bounds.</div>
+<div class="block">Creates a range over the given table with optional start and end bounds, both
+inclusive.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#refresh(com.surrealdb.signin.Token)" class="member-name-link">refresh(Token)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
