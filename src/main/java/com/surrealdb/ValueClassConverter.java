@@ -12,9 +12,12 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 class ValueClassConverter<T> {
 
@@ -171,10 +174,13 @@ class ValueClassConverter<T> {
 		if (Value.class.equals(type)) {
 			return value;
 		}
-		if (value.isArray()) {
+		if (value.isArray() || value.isSet()) {
 			final Class<?> elementType = firstTypeArgumentRaw(genericType);
 			final Type elementGenericType = firstTypeArgument(genericType);
 			final List<java.lang.Object> list = convertArray(value, elementType, elementGenericType);
+			if (Set.class.isAssignableFrom(type)) {
+				return newSet(type, list);
+			}
 			if (type == byte[].class) {
 				final byte[] bytes = new byte[list.size()];
 				for (int i = 0; i < list.size(); i++) {
@@ -242,11 +248,37 @@ class ValueClassConverter<T> {
 			}
 			return convertObject(elementType, value);
 		}
-		if (value.isArray()) {
-			return convertArray(value, elementType, elementGenericType);
+		if (value.isArray() || value.isSet()) {
+			// A nested collection is converted to the collection type declared for the
+			// element (List<Set<T>>, Set<Set<T>>, List<List<Pojo>>), with the generic
+			// type of that element, not of the outer collection.
+			if (elementType == null || Value.class.equals(elementType)) {
+				return convertArray(value, elementType, elementGenericType);
+			}
+			return convertValueToType(value, elementType, elementGenericType);
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
 		return convertSingleValue(value);
+	}
+
+	// Builds a set the declared type accepts: LinkedHashSet for Set/HashSet,
+	// TreeSet for SortedSet/NavigableSet, or the declared class itself if it is
+	// concrete.
+	@SuppressWarnings("unchecked")
+	private static Set<java.lang.Object> newSet(final Class<?> type, final List<java.lang.Object> elements)
+			throws ReflectiveOperationException {
+		final Set<java.lang.Object> set;
+		if (type.isAssignableFrom(LinkedHashSet.class)) {
+			set = new LinkedHashSet<>();
+		} else if (type.isAssignableFrom(TreeSet.class)) {
+			set = new TreeSet<>();
+		} else if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
+			set = (Set<java.lang.Object>) type.getDeclaredConstructor().newInstance();
+		} else {
+			throw new SurrealException("Unsupported set type: " + type.getName());
+		}
+		set.addAll(elements);
+		return set;
 	}
 
 	// The helpers below close every native wrapper they create once its data has
@@ -255,10 +287,12 @@ class ValueClassConverter<T> {
 	// result: a Value field receives the Value itself, and RecordId, Id and
 	// Geometry fields receive the wrappers created for them.
 
+	// Converts the elements of an array or set value.
 	private static List<java.lang.Object> convertArray(final Value value, final Class<?> elementType,
 			final Type elementGenericType) throws ReflectiveOperationException {
 		final List<java.lang.Object> list = new ArrayList<>();
-		try (final Array array = value.getArray(); final ValueIterator elements = elements(array)) {
+		try (final Array array = value.isSet() ? value.getSet() : value.getArray();
+				final ValueIterator elements = elements(array)) {
 			while (elements.hasNext()) {
 				try (final Value element = elements.next()) {
 					list.add(convertArrayElement(element, elementType, elementGenericType));

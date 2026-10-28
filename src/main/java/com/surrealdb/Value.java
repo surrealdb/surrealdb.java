@@ -65,7 +65,7 @@ public class Value extends Native implements AutoCloseable {
 
 	private native boolean isDuration(long ptr);
 
-	private native long getDuration(long ptr);
+	private native long[] getDuration(long ptr);
 
 	private native boolean isBytes(long ptr);
 
@@ -84,6 +84,14 @@ public class Value extends Native implements AutoCloseable {
 	private native long getRangeStart(long ptr);
 
 	private native long getRangeEnd(long ptr);
+
+	private native boolean isRangeStartInclusive(long ptr);
+
+	private native boolean isRangeEndInclusive(long ptr);
+
+	private native boolean isSet(long ptr);
+
+	private native long getSet(long ptr);
 
 	private native boolean isTable(long ptr);
 
@@ -213,6 +221,37 @@ public class Value extends Native implements AutoCloseable {
 		return p == 0 ? Optional.empty() : Optional.of(new Value(p));
 	}
 
+	/**
+	 * Whether the start bound of the range is inclusive ({@code a..} rather than
+	 * {@code a>..}). Also false when the range has no start bound.
+	 */
+	public boolean isRangeStartInclusive() {
+		return isRangeStartInclusive(getPtr());
+	}
+
+	/**
+	 * Whether the end bound of the range is inclusive ({@code ..=b} rather than
+	 * {@code ..b}). Also false when the range has no end bound.
+	 */
+	public boolean isRangeEndInclusive() {
+		return isRangeEndInclusive(getPtr());
+	}
+
+	/**
+	 * Whether this value is a set: a sorted collection without duplicates. Sets are
+	 * distinct from arrays, so {@link #isArray()} is false for them.
+	 */
+	public boolean isSet() {
+		return isSet(getPtr());
+	}
+
+	/**
+	 * Returns the elements of this set, in the set's (sorted) order.
+	 */
+	public Array getSet() {
+		return new Array(getSet(getPtr()));
+	}
+
 	public boolean isTable() {
 		return isTable(getPtr());
 	}
@@ -255,8 +294,8 @@ public class Value extends Native implements AutoCloseable {
 	}
 
 	public Duration getDuration() {
-		final long durationMillis = getDuration(getPtr());
-		return Duration.ofMillis(durationMillis);
+		final long[] duration = getDuration(getPtr());
+		return Duration.ofSeconds(duration[0], duration[1]);
 	}
 
 	public <T> T get(Class<T> type) {

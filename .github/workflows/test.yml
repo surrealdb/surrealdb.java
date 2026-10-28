@@ -38,12 +38,21 @@ jobs:
           ./gradlew spotlessJavaCheck
 
   build:
+    name: Test (Java ${{ matrix.java }}, SurrealDB ${{ matrix.surrealdb }})
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         java: [ '8', '11', '17', '21', '25' ]
+        # Latest 3.x server release. Bump when a new 3.x lands.
+        surrealdb: [ 'v3.3.4' ]
+        include:
+          # Latest stable patch of earlier 3.x minor branches.
+          - java: '17'
+            surrealdb: 'v3.1.6'
+          - java: '17'
+            surrealdb: 'v3.2.6'
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -67,9 +76,10 @@ jobs:
         run: cargo build
 
       - name: Start SurrealDB
-        uses: surrealdb/setup-surreal@7c103070ba4f544240cd287432ba70d6f50163a5 # v2
+        id: surrealdb
+        uses: surrealdb/setup-surreal@5795ce3773d2fec644ef5ce6b549f4872d4b33be # v3.0.0
         with:
-          surrealdb_version: v3.3.4
+          surrealdb_version: ${{ matrix.surrealdb }}
           surrealdb_port: 8000
           surrealdb_auth: false
           surrealdb_strict: false
@@ -78,6 +88,9 @@ jobs:
           surrealdb_retry_count: 30
 
       - name: Test
+        env:
+          SURREALDB_URL: ws://localhost:8000
         run: |
+          echo "Testing against SurrealDB ${{ steps.surrealdb.outputs.version }}"
           chmod +x gradlew
           ./gradlew -i test recordTest jacocoTestReport

@@ -348,31 +348,11 @@ macro_rules! check_query_result {
 }
 
 #[macro_export]
-macro_rules! parse_value {
-    ($env:expr, $val:expr, $default_fn:expr) => {
-        match surrealdb::parse::value($val) {
-            Ok(v) => v,
-            Err(e) => {
-                return $crate::SurrealError::SurrealDBJni(e.to_string())
-                    .exception($env, $default_fn)
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! check_value_table {
-    ($env:expr, $val:expr, $default_fn:expr) => {
-        match &$val {
-            surrealdb::types::Value::Table(_) => $val,
-            surrealdb::types::Value::String(_) => $val,
-            _ => {
-                return $crate::SurrealError::SurrealDBJni(format!(
-                    "The expression is not a table: {}",
-                    $val.to_sql()
-                ))
-                .exception($env, $default_fn);
-            }
+macro_rules! check_table_binding {
+    ($env:expr, $res:expr, $default_fn:expr) => {
+        match $res {
+            Ok(res) => res,
+            Err(e) => return e.exception($env, $default_fn),
         }
     };
 }
@@ -394,6 +374,8 @@ macro_rules! convert_up_type {
             "MERGE"
         } else if $up_type == 3 {
             "PATCH"
+        } else if $up_type == 4 {
+            "REPLACE"
         } else {
             return $crate::SurrealError::SurrealDBJni(format!("Unexpected up type: {}", $up_type))
                 .exception($env, $default_fn);

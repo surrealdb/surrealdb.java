@@ -29,14 +29,14 @@ public class ConnectionTests {
 				Future<Void> future = executor.submit(new Callable<Void>() {
 					@Override
 					public Void call() throws SurrealException {
-						surreal.connect("ws://localhost:8000").useNs("test").useDb("test");
+						surreal.connect(TestServer.WS_URL).useNs("test").useDb("test");
 						assertNotNull(surreal.version());
 						return null;
 					}
 				});
 				future.get(10, TimeUnit.SECONDS);
 			} catch (TimeoutException e) {
-				fail("connect() blocked for 10s (is a SurrealDB server running at ws://localhost:8000?)");
+				fail("connect() blocked for 10s (is a SurrealDB server running at " + TestServer.WS_URL + "?)");
 			} finally {
 				executor.shutdownNow();
 				executor.awaitTermination(2, TimeUnit.SECONDS);
