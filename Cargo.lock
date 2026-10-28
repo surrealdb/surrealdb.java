@@ -4733,7 +4733,7 @@ dependencies = [
 
 [[package]]
 name = "surrealdb-java"
-version = "3.1.5"
+version = "3.3.4"
 dependencies = [
  "async-channel",
  "cargo-lock",

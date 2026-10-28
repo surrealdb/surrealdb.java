@@ -4,8 +4,8 @@ package com.surrealdb;
  * Reference to a file stored in a SurrealDB bucket. Obtained from
  * {@link Value#getFile()} when {@link Value#isFile()} is true.
  *
- * Valid only for the lifetime of the {@link Value} it was obtained from; do not
- * retain a reference after that Value is no longer in use.
+ * Holds its own reference to the file data, so it stays valid independently of
+ * the {@link Value} it was obtained from.
  */
 public class FileRef extends Native {
 
@@ -13,9 +13,9 @@ public class FileRef extends Native {
 		super(ptr);
 	}
 
-	private static native String getBucket(long ptr);
+	private native String getBucket(long ptr);
 
-	private static native String getKey(long ptr);
+	private native String getKey(long ptr);
 
 	@Override
 	final native String toString(long ptr);
@@ -30,8 +30,12 @@ public class FileRef extends Native {
 		return getBucket(ptr1).equals(getBucket(ptr2)) && getKey(ptr1).equals(getKey(ptr2));
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return FileRef::deleteInstance;
+	}
 
 	/**
 	 * Returns the bucket name.

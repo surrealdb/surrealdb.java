@@ -45,18 +45,9 @@ public class Id extends Native {
 	 * distinctly from {@code from(...)} to avoid a null-call overload ambiguity.
 	 */
 	public static Id fromList(List<?> elements) {
-		Objects.requireNonNull(elements, "elements");
-		final long[] ptrs = new long[elements.size()];
-		final ValueMut[] muts = new ValueMut[elements.size()];
-		for (int i = 0; i < elements.size(); i++) {
-			muts[i] = ValueBoxing.box(elements.get(i));
-			ptrs[i] = muts[i].getPtr();
-		}
-		final Id id = new Id(newArrayId(ptrs));
-		for (final ValueMut m : muts) {
-			m.moved();
-		}
-		return id;
+		// Everything is boxed first, so a failure leaves nothing half handed over.
+		// The native side then takes ownership of the boxed values.
+		return new Id(newArrayId(ValueBoxing.boxAndTakePtrs(elements)));
 	}
 
 	private static native long newLongId(long id);
@@ -67,25 +58,25 @@ public class Id extends Native {
 
 	private static native long newArrayId(long[] valueMutPtrs);
 
-	private static native boolean isLong(long ptr);
+	private native boolean isLong(long ptr);
 
-	private static native long getLong(long ptr);
+	private native long getLong(long ptr);
 
-	private static native boolean isString(long ptr);
+	private native boolean isString(long ptr);
 
-	private static native String getString(long ptr);
+	private native String getString(long ptr);
 
-	private static native boolean isUuid(long ptr);
+	private native boolean isUuid(long ptr);
 
-	private static native String getUuid(long ptr);
+	private native String getUuid(long ptr);
 
-	private static native boolean isArray(long ptr);
+	private native boolean isArray(long ptr);
 
-	private static native long getArray(long ptr);
+	private native long getArray(long ptr);
 
-	private static native boolean isObject(long ptr);
+	private native boolean isObject(long ptr);
 
-	private static native long getObject(long ptr);
+	private native long getObject(long ptr);
 
 	@Override
 	final native int hashCode(long ptr);
@@ -96,8 +87,12 @@ public class Id extends Native {
 	@Override
 	final native boolean equals(long ptr1, long ptr2);
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Id::deleteInstance;
+	}
 
 	final public boolean isLong() {
 		return isLong(getPtr());

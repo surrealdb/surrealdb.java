@@ -73,3 +73,12 @@ pub extern "system" fn Java_com_surrealdb_Entry_equals<'local>(
         (key1.eq(key2) && value1.eq(value2)) as jboolean
     })
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Entry_deleteInstance<'local>(
+    _env: jni::EnvUnowned<'local>,
+    _class: jni::objects::JClass<'local>,
+    ptr: jni::sys::jlong,
+) {
+    crate::JniTypes::release_key_value(ptr);
+}

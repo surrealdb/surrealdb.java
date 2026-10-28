@@ -6,9 +6,17 @@ import java.util.Objects;
 /**
  * Client-side transaction. Use {@link Surreal#beginTransaction()} to start a
  * transaction. Operations (e.g. {@link #query(String)}) run within the
- * transaction until {@link #commit()} or {@link #cancel()} is called.
+ * transaction until {@link #commit()} or {@link #cancel()} is called. With
+ * try-with-resources, a transaction that was not committed is cancelled:
+ *
+ * <pre>{@code
+ * try (Transaction txn = db.beginTransaction()) {
+ * 	txn.query("CREATE person:tobie");
+ * 	txn.commit();
+ * }
+ * }</pre>
  */
-public class Transaction extends Native {
+public class Transaction extends Native implements AutoCloseable {
 
 	Transaction(long ptr) {
 		super(ptr);
@@ -16,13 +24,13 @@ public class Transaction extends Native {
 
 	private static native void nativeDeleteInstance(long ptr);
 
-	private static native boolean commit(long ptr);
+	private native boolean commit(long ptr);
 
-	private static native boolean cancel(long ptr);
+	private native boolean cancel(long ptr);
 
-	private static native long query(long ptr, String sql);
+	private native long query(long ptr, String sql);
 
-	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+	private native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
 	/**
 	 * Commits the transaction. After this call, the transaction is completed and
@@ -30,11 +38,7 @@ public class Transaction extends Native {
 	 * only true on success.
 	 */
 	public void commit() {
-		try {
-			commit(getPtr());
-		} finally {
-			moved();
-		}
+		commit(takePtr());
 	}
 
 	/**
@@ -43,10 +47,19 @@ public class Transaction extends Native {
 	 * return value is only true on success.
 	 */
 	public void cancel() {
-		try {
-			cancel(getPtr());
-		} finally {
-			moved();
+		cancel(takePtr());
+	}
+
+	/**
+	 * Cancels the transaction if it was neither committed nor cancelled, so a
+	 * try-with-resources block rolls back unless {@link #commit()} was called.
+	 * After {@link #commit()} or {@link #cancel()}, this does nothing.
+	 */
+	@Override
+	public void close() {
+		final long ptr = takePtr();
+		if (ptr != 0) {
+			cancel(ptr);
 		}
 	}
 
@@ -72,17 +85,21 @@ public class Transaction extends Native {
 	 */
 	public Response query(String sql, Map<String, ?> params) {
 		final Map<String, ValueMut> valueMuts = ValueBuilder.convertParams(params);
-		final String[] keys = valueMuts.keySet().toArray(new String[0]);
-		final long[] values = new long[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			values[i] = valueMuts.get(keys[i]).getPtr();
+		try {
+			final String[] keys = valueMuts.keySet().toArray(new String[0]);
+			final long[] values = new long[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				values[i] = valueMuts.get(keys[i]).getPtr();
+			}
+			return new Response(queryWithBindings(getPtr(), sql, keys, values));
+		} finally {
+			ValueBuilder.releaseParams(valueMuts, params);
 		}
-		return new Response(queryWithBindings(getPtr(), sql, keys, values));
 	}
 
 	@Override
-	final void deleteInstance(long ptr) {
-		nativeDeleteInstance(ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Transaction::nativeDeleteInstance;
 	}
 
 	@Override

@@ -23,13 +23,31 @@ import com.surrealdb.signin.Token;
  * database. It includes functionality to connect to the database, sign in with
  * different scopes, set the namespace and database, execute queries, and
  * perform CRUD operations on records.
+ *
+ * <p>
+ * Methods that take a {@code String} target or table treat it as a table name
+ * and nothing else: the name is sent to the server as a bound table value, so
+ * it is never parsed as SurrealQL. An empty table name, an empty list of
+ * tables, and a table name containing {@code ':'}, such as
+ * {@code "person:tobie"}, are rejected with a {@link SurrealException}. A name
+ * with {@code ':'} is almost always a record id passed by mistake: use
+ * {@link RecordId} to address a single record. Record contents are always sent
+ * as bound parameters. The table inside a {@link RecordId} or
+ * {@link RecordIdRange} is part of that value and is sent bound as well.
  */
 public class Surreal extends Native implements AutoCloseable {
 
 	// Current namespace and database set by useNs() / useDb() / useDefaults() (from
-	// server return value).
+	// server return value), or inherited by newSession() from the parent session.
 	private String namespace;
 	private String database;
+
+	// Server version of this connection, fetched on first use by diff-mode live
+	// queries and then reused so that each subscription does not cost an extra
+	// version() round-trip. Reset by connect(...) and copied to sessions created
+	// with newSession(). Volatile: racing first fills both store the same value.
+	// Package-private for tests.
+	volatile String cachedVersion;
 
 	/**
 	 * Constructs a new Surreal object.
@@ -40,116 +58,126 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Constructor for a Surreal instance backed by an existing native pointer (e.g.
-	 * from {@link #newSession()}).
+	 * from {@link #newSession()}), whose session uses {@code namespace} and
+	 * {@code database}.
 	 */
-	private Surreal(long ptr) {
+	private Surreal(long ptr, String namespace, String database) {
 		super(ptr);
-		this.namespace = null;
-		this.database = null;
+		this.namespace = namespace;
+		this.database = database;
 	}
 
 	private static native long newInstance();
 
-	private static native long cloneSession(long ptr);
+	private native long cloneSession(long ptr);
 
-	private static native boolean connect(long ptr, String connect);
+	private native boolean connect(long ptr, String connect);
 
-	private static native Token signinRoot(long ptr, String username, String password);
+	private native Token signinRoot(long ptr, String username, String password);
 
-	private static native Token signinNamespace(long ptr, String username, String password, String ns);
+	private native Token signinNamespace(long ptr, String username, String password, String ns);
 
-	private static native Token signinDatabase(long ptr, String username, String password, String ns, String db);
+	private native Token signinDatabase(long ptr, String username, String password, String ns, String db);
 
-	private static native Token signup(long ptr, String namespace, String database, String access, long paramsValuePtr);
+	private native Token signup(long ptr, String namespace, String database, String access, long paramsValuePtr);
 
-	private static native Token signinRecord(long ptr, String namespace, String database, String access,
-			long paramsValuePtr);
+	private native Token signinRecord(long ptr, String namespace, String database, String access, long paramsValuePtr);
 
-	private static native boolean authenticate(long ptr, String token);
+	private native boolean authenticate(long ptr, String token);
 
-	private static native boolean invalidate(long ptr);
+	private native boolean invalidate(long ptr);
 
-	private static native NsDb useNs(long ptr, String ns);
+	private native Token refresh(long ptr, String access, String refresh);
 
-	private static native NsDb useDb(long ptr, String db);
+	private native void revoke(long ptr, String access, String refresh);
 
-	private static native NsDb useDefaults(long ptr);
+	private native void set(long ptr, String name, long valuePtr);
 
-	private static native long query(long ptr, String sql);
+	private native void unset(long ptr, String name);
 
-	private static native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
+	private native long info(long ptr);
 
-	private static native long createRecordIdValue(long ptr, long recordIdPtr, long valuePtr);
+	private native NsDb useNs(long ptr, String ns);
 
-	private static native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
+	private native NsDb useDb(long ptr, String db);
 
-	private static native long[] insertTargetValues(long ptr, String target, long[] valuePtrs);
+	private native NsDb useDefaults(long ptr);
 
-	private static native long insertRelationTargetValue(long ptr, String target, long valuePtr);
+	private native long query(long ptr, String sql);
 
-	private static native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
+	private native long queryWithBindings(long ptr, String sql, String[] paramsKey, long[] valuePtrs);
 
-	private static native long relate(long ptr, long from, String table, long to);
+	private native long createRecordIdValue(long ptr, long recordIdPtr, long valuePtr);
 
-	private static native long relateContent(long ptr, long from, String table, long to, long valuePtr);
+	private native long[] createTargetValues(long ptr, String target, long[] valuePtrs);
 
-	private static native long updateRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
+	private native long[] insertTargetValues(long ptr, String target, long[] valuePtrs);
 
-	private static native long updateTargetValue(long ptr, String target, int update, long valuePtr);
+	private native long insertRelationTargetValue(long ptr, String target, long valuePtr);
 
-	private static native long updateTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+	private native long[] insertRelationTargetValues(long ptr, String target, long[] valuePtrs);
 
-	private static native long updateTargetValueSync(long ptr, String target, int update, long valuePtr);
+	private native long relate(long ptr, long from, String table, long to);
 
-	private static native long updateTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
+	private native long relateContent(long ptr, long from, String table, long to, long valuePtr);
 
-	private static native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
+	private native long updateRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
-	private static native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr,
+	private native long updateTargetValue(long ptr, String target, int update, long valuePtr);
+
+	private native long updateTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+
+	private native long updateTargetValueSync(long ptr, String target, int update, long valuePtr);
+
+	private native long updateTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
+
+	private native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
+
+	private native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int bounds,
 			int update, long valuePtr);
 
-	private static native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr,
+	private native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int bounds,
 			int update, long valuePtr);
 
-	private static native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
+	private native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
-	private static native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
+	private native long upsertTargetsValue(long ptr, String[] targets, int update, long valuePtr);
 
-	private static native long upsertTargetValueSync(long ptr, String target, int update, long valuePtr);
+	private native long upsertTargetValueSync(long ptr, String target, int update, long valuePtr);
 
-	private static native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
+	private native long upsertTargetsValueSync(long ptr, String[] targets, int update, long valuePtr);
 
-	private static native long selectRecordId(long ptr, long recordId);
+	private native long selectRecordId(long ptr, long recordId);
 
-	private static native long[] selectRecordIds(long ptr, long[] recordIds);
+	private native long[] selectRecordIds(long ptr, long[] recordIds);
 
-	private static native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr, int bounds);
 
-	private static native long selectTargetsValues(long ptr, String... targets);
+	private native long selectTargetsValues(long ptr, String... targets);
 
-	private static native long selectTargetsValuesSync(long ptr, String... targets);
+	private native long selectTargetsValuesSync(long ptr, String... targets);
 
-	private static native boolean deleteRecordId(long ptr, long recordId);
+	private native boolean deleteRecordId(long ptr, long recordId);
 
-	private static native boolean deleteRecordIds(long ptr, long[] recordIds);
+	private native boolean deleteRecordIds(long ptr, long[] recordIds);
 
-	private static native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr, int bounds);
 
-	private static native boolean deleteTarget(long ptr, String target);
+	private native boolean deleteTarget(long ptr, String target);
 
-	private static native String version(long ptr);
+	private native String version(long ptr);
 
-	private static native boolean health(long ptr);
+	private native boolean health(long ptr);
 
-	private static native long run(long ptr, String name, long[] argsValuePtrs);
+	private native long run(long ptr, String name, long[] argsValuePtrs);
 
-	private static native boolean exportSql(long ptr, String path);
+	private native boolean exportSql(long ptr, String path);
 
-	private static native boolean importSql(long ptr, String path);
+	private native boolean importSql(long ptr, String path);
 
-	private static native LiveStream selectLive(long ptr, String table);
+	private native LiveStream selectLive(long ptr, String table, boolean diff);
 
-	private static native void kill(long ptr, String queryId);
+	private native void kill(long ptr, String queryId);
 
 	@Override
 	final String toString(long ptr) {
@@ -166,8 +194,12 @@ public class Surreal extends Native implements AutoCloseable {
 		return ptr1 == ptr2;
 	}
 
+	private static native void deleteInstance(long ptr);
+
 	@Override
-	final native void deleteInstance(long ptr);
+	final NativeCleaner.Deleter deleter() {
+		return Surreal::deleteInstance;
+	}
 
 	/**
 	 * Establishes a connection to the Surreal database using the provided
@@ -179,6 +211,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Surreal connect(String connect) {
 		connect(getPtr(), connect);
+		cachedVersion = null;
 		namespace = null;
 		database = null;
 		return this;
@@ -213,7 +246,8 @@ public class Surreal extends Native implements AutoCloseable {
 	 *
 	 * @param name
 	 *            the function name (e.g. "array::add" or "array::add&lt;1.0.0&gt;"
-	 *            for a version)
+	 *            for a version). Only identifier segments joined by {@code ::} are
+	 *            accepted; anything else is rejected rather than sent.
 	 * @param args
 	 *            the arguments to pass to the function (converted to Surreal
 	 *            values)
@@ -227,11 +261,15 @@ public class Surreal extends Native implements AutoCloseable {
 		}
 		ValueMut[] valueMuts = new ValueMut[args.length];
 		long[] ptrs = new long[args.length];
-		for (int i = 0; i < args.length; i++) {
-			valueMuts[i] = ValueBuilder.convert(args[i]);
-			ptrs[i] = valueMuts[i].getPtr();
+		try {
+			for (int i = 0; i < args.length; i++) {
+				valueMuts[i] = ValueBuilder.convert(args[i]);
+				ptrs[i] = valueMuts[i].getPtr();
+			}
+			return new Value(run(getPtr(), name, ptrs));
+		} finally {
+			ValueBuilder.releaseAll(valueMuts, args);
 		}
-		return new Value(run(getPtr(), name, ptrs));
 	}
 
 	/**
@@ -286,7 +324,74 @@ public class Surreal extends Native implements AutoCloseable {
 	 *             the subscription fails
 	 */
 	public LiveStream selectLive(String table) {
-		return selectLive(getPtr(), table);
+		return selectLive(getPtr(), table, false);
+	}
+
+	/**
+	 * Starts a live query on the given table, optionally in diff mode.
+	 * <p>
+	 * In diff mode ({@code LIVE SELECT DIFF}) each notification's
+	 * {@link LiveNotification#getValue() value} is an array of JSON Patch
+	 * operations ({@code op}, {@code path}, {@code value}) describing how the
+	 * record changed, rather than the record itself. Otherwise this behaves like
+	 * {@link #selectLive(String)}.
+	 *
+	 * @param table
+	 *            table name to watch (must already exist)
+	 * @param diff
+	 *            whether notifications carry JSON Patch operations instead of
+	 *            records
+	 * @return a LiveStream; the caller must call {@link LiveStream#close()} when
+	 *         done
+	 *         <p>
+	 *         Diff mode needs SurrealDB 3.3.0 or later, for the server and for the
+	 *         embedded engine. Earlier versions can leak fields hidden by
+	 *         field-level {@code SELECT} permissions through diff patches (advisory
+	 *         GHSA-pm6c-q8rh-92m8), so it is refused there.
+	 *
+	 * @throws SurrealException
+	 *             if live queries are not supported, the table does not exist, the
+	 *             subscription fails, or diff mode is requested on SurrealDB before
+	 *             3.3.0
+	 */
+	public LiveStream selectLive(String table, boolean diff) {
+		if (diff) {
+			final String version = cachedServerVersion();
+			if (!atLeast(version, 3, 3)) {
+				throw new SurrealException("Live queries in diff mode need SurrealDB 3.3.0 or later, but this is "
+						+ version + ": earlier versions can leak fields hidden by field-level SELECT"
+						+ " permissions (GHSA-pm6c-q8rh-92m8)");
+			}
+		}
+		return selectLive(getPtr(), table, diff);
+	}
+
+	// The server version, fetched once per connection and cached. A null result is
+	// not cached.
+	private String cachedServerVersion() {
+		String version = cachedVersion;
+		if (version == null) {
+			version = version();
+			cachedVersion = version;
+		}
+		return version;
+	}
+
+	// Whether a version string such as "3.3.4", "v3.3.4", "surrealdb-3.3.4",
+	// "surrealdb-v3.3.4" or "3.4.0-nightly" is at least major.minor. Surrounding
+	// whitespace is ignored. A null or unparseable version counts as too old.
+	static boolean atLeast(String version, int major, int minor) {
+		if (version == null) {
+			return false;
+		}
+		final String[] parts = version.trim().replaceFirst("^(?:surrealdb-)?v?", "").split("[.+-]");
+		try {
+			final int actualMajor = Integer.parseInt(parts[0]);
+			final int actualMinor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+			return actualMajor > major || (actualMajor == major && actualMinor >= minor);
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	/**
@@ -303,14 +408,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 * id of (e.g. one started elsewhere or read from a notification).
 	 *
 	 * <p>
-	 * This is best-effort: the SurrealDB client does not report a server-side KILL
-	 * rejection (e.g. a live query owned by another session), so only an invalid
-	 * UUID or a connection failure raises.
+	 * A kill the server rejects raises a {@link QueryException} ("Cannot execute
+	 * KILL statement using id: ..."), as for an id that names no live query, one
+	 * that was already killed, or one this session may not kill.
 	 *
 	 * @param queryId
 	 *            the live query UUID to terminate
 	 * @throws SurrealException
-	 *             if the id is not a valid UUID or the request cannot be sent
+	 *             if the id is not a valid UUID, the request cannot be sent, or the
+	 *             server rejects the kill
 	 */
 	public void kill(String queryId) {
 		kill(getPtr(), queryId);
@@ -363,7 +469,11 @@ public class Surreal extends Native implements AutoCloseable {
 						"RecordCredential signin requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
 			}
 			final ValueMut paramsValue = ValueBuilder.convert(rec.getParams());
-			return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
+			try {
+				return signinRecord(getPtr(), ns, db, rec.getAccess(), paramsValue.getPtr());
+			} finally {
+				ValueBuilder.releaseConverted(paramsValue, rec.getParams());
+			}
 		} else if (credential instanceof BearerCredential) {
 			BearerCredential bearer = (BearerCredential) credential;
 			authenticate(getPtr(), bearer.getToken());
@@ -394,7 +504,11 @@ public class Surreal extends Native implements AutoCloseable {
 					"RecordCredential signup requires namespace and database. Set them explicitly on RecordCredential or call useNs() and useDb() first.");
 		}
 		final ValueMut paramsValue = ValueBuilder.convert(record.getParams());
-		return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
+		try {
+			return signup(getPtr(), ns, db, record.getAccess(), paramsValue.getPtr());
+		} finally {
+			ValueBuilder.releaseConverted(paramsValue, record.getParams());
+		}
 	}
 
 	/**
@@ -421,17 +535,123 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	/**
-	 * Creates a new session that shares the same connection but has its own
-	 * namespace, database, and authentication state. Use this for multi-session
-	 * support.
+	 * Exchanges a refresh token for a new access/refresh pair and authenticates
+	 * this session with the new access token. The refresh token passed in is
+	 * consumed: use the one in the returned {@link Token} next time.
+	 * <p>
+	 * Refresh tokens are issued by record access methods defined
+	 * {@code WITH REFRESH}.
+	 *
+	 * @param token
+	 *            a token pair from {@link #signin}, {@link #signup} or a previous
+	 *            refresh
+	 * @return the new token pair
+	 * @throws IllegalArgumentException
+	 *             if the token has no refresh part
+	 */
+	public Token refresh(Token token) {
+		final String refreshToken = requireRefresh(token);
+		return refresh(getPtr(), token.getAccess(), refreshToken);
+	}
+
+	/**
+	 * Revokes the refresh token of a token pair, so it can no longer be exchanged
+	 * with {@link #refresh(Token)}. This does not sign the session out; use
+	 * {@link #invalidate()} for that.
+	 *
+	 * @param token
+	 *            the token pair whose refresh token to revoke
+	 * @return the current instance
+	 * @throws IllegalArgumentException
+	 *             if the token has no refresh part
+	 */
+	public Surreal revoke(Token token) {
+		final String refreshToken = requireRefresh(token);
+		revoke(getPtr(), token.getAccess(), refreshToken);
+		return this;
+	}
+
+	private static String requireRefresh(Token token) {
+		Objects.requireNonNull(token, "token");
+		if (token.getRefresh() == null) {
+			throw new IllegalArgumentException(
+					"The token has no refresh part; refresh tokens come from record access defined WITH REFRESH");
+		}
+		return token.getRefresh();
+	}
+
+	/**
+	 * Defines a variable on this session. It is available as {@code $name} in every
+	 * later query on this session, until {@link #unset(String)}.
+	 *
+	 * @param name
+	 *            the variable name, without the {@code $}
+	 * @param value
+	 *            the value; converted like a query binding
+	 * @return the current instance
+	 */
+	public Surreal set(String name, java.lang.Object value) {
+		final ValueMut valueMut = ValueBuilder.convert(value);
+		try {
+			set(getPtr(), name, valueMut.getPtr());
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, value);
+		}
+		return this;
+	}
+
+	/**
+	 * Removes a variable defined with {@link #set(String, java.lang.Object)}.
+	 *
+	 * @param name
+	 *            the variable name, without the {@code $}
+	 * @return the current instance
+	 */
+	public Surreal unset(String name) {
+		unset(getPtr(), name);
+		return this;
+	}
+
+	/**
+	 * Returns the record of the signed-in record user ({@code $auth}).
+	 *
+	 * @return the user's record, or empty when the session is not signed in as a
+	 *         record user
+	 */
+	public Optional<Value> info() {
+		final long ptr = info(getPtr());
+		return ptr == 0 ? Optional.empty() : Optional.of(new Value(ptr));
+	}
+
+	/**
+	 * Returns the record of the signed-in record user, converted to {@code type}.
+	 *
+	 * @param type
+	 *            the class to convert the record to
+	 * @return the user's record, or empty when the session is not signed in as a
+	 *         record user
+	 */
+	public <T> Optional<T> info(Class<T> type) {
+		return info().map(v -> v.getAndClose(type));
+	}
+
+	/**
+	 * Creates a new session that shares the same connection. The new session starts
+	 * as a copy of this one (namespace, database, variables and authentication) and
+	 * changes to either session after that do not affect the other. Use this for
+	 * multi-session support.
 	 *
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-		return new Surreal(cloneSession(getPtr()));
+		// The native clone copies the session's namespace and database, so the new
+		// instance starts with this one's.
+		final Surreal session = new Surreal(cloneSession(getPtr()), namespace, database);
+		session.cachedVersion = cachedVersion;
+		return session;
 	}
 
-	private static native long beginTransaction(long ptr);
+	private native long beginTransaction(long ptr);
 
 	/**
 	 * Starts a client-side transaction. Use {@link Transaction#query(String)} for
@@ -493,8 +713,9 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Returns the current namespace set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current namespace, or null
 	 */
@@ -505,8 +726,9 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Returns the current database set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current database, or null
 	 */
@@ -544,12 +766,16 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public Response query(String sql, Map<String, ?> params) {
 		final Map<String, ValueMut> valueMuts = ValueBuilder.convertParams(params);
-		final String[] keys = valueMuts.keySet().toArray(new String[0]);
-		final long[] values = new long[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			values[i] = valueMuts.get(keys[i]).getPtr();
+		try {
+			final String[] keys = valueMuts.keySet().toArray(new String[0]);
+			final long[] values = new long[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				values[i] = valueMuts.get(keys[i]).getPtr();
+			}
+			return new Response(queryWithBindings(getPtr(), sql, keys, values));
+		} finally {
+			ValueBuilder.releaseParams(valueMuts, params);
 		}
-		return new Response(queryWithBindings(getPtr(), sql, keys, values));
 	}
 
 	/**
@@ -592,8 +818,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value create(RecordId recordId, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = createRecordIdValue(getPtr(), recordId.getPtr(), valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(recordId);
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -614,7 +845,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return An instance of the specified type
 	 */
 	public <T> T create(Class<T> type, RecordId recordId, T content) {
-		return create(recordId, content).get(type);
+		return create(recordId, content).getAndClose(type);
 	}
 
 	/**
@@ -636,9 +867,14 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final <T> List<Value> create(String target, T... contents) {
-		final long[] valueMutPtrs = contents2longs(contents);
-		final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
-		return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		final ValueMut[] valueMuts = convertAll(contents);
+		try {
+			final long[] valueMutPtrs = getPtrs(valueMuts);
+			final long[] valuePtrs = createTargetValues(getPtr(), target, valueMutPtrs);
+			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		} finally {
+			ValueBuilder.releaseAll(valueMuts, contents);
+		}
 	}
 
 	/**
@@ -663,7 +899,7 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T> List<T> create(Class<T> type, String target, T... contents) {
 		try (final Stream<Value> s = create(target, contents).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -686,9 +922,14 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final <T> List<Value> insert(String target, T... contents) {
-		final long[] valueMutPtrs = contents2longs(contents);
-		final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
-		return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		final ValueMut[] valueMuts = convertAll(contents);
+		try {
+			final long[] valueMutPtrs = getPtrs(valueMuts);
+			final long[] valuePtrs = insertTargetValues(getPtr(), target, valueMutPtrs);
+			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		} finally {
+			ValueBuilder.releaseAll(valueMuts, contents);
+		}
 	}
 
 	/**
@@ -713,7 +954,7 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T> List<T> insert(Class<T> type, String target, T... contents) {
 		try (final Stream<Value> s = insert(target, contents).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -735,8 +976,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T extends InsertRelation> Value insertRelation(String target, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = insertRelationTargetValue(getPtr(), target, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -758,7 +1003,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the inserted relation of type T
 	 */
 	public <T extends InsertRelation> T insertRelation(Class<T> type, String target, T content) {
-		return insertRelation(target, content).get(type);
+		return insertRelation(target, content).getAndClose(type);
 	}
 
 	/**
@@ -779,9 +1024,14 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	@SafeVarargs
 	public final <T extends InsertRelation> List<Value> insertRelations(String target, T... contents) {
-		final long[] valueMutPtrs = contents2longs(contents);
-		final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
-		return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		final ValueMut[] valueMuts = convertAll(contents);
+		try {
+			final long[] valueMutPtrs = getPtrs(valueMuts);
+			final long[] valuePtrs = insertRelationTargetValues(getPtr(), target, valueMutPtrs);
+			return Arrays.stream(valuePtrs).mapToObj(Value::new).collect(Collectors.toList());
+		} finally {
+			ValueBuilder.releaseAll(valueMuts, contents);
+		}
 	}
 
 	/**
@@ -805,7 +1055,7 @@ public class Surreal extends Native implements AutoCloseable {
 	@SafeVarargs
 	public final <T extends InsertRelation> List<T> insertRelations(Class<T> type, String target, T... contents) {
 		try (final Stream<Value> s = insertRelations(target, contents).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -827,8 +1077,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a new {@code Value} instance representing the relation
 	 */
 	public Value relate(RecordId from, String table, RecordId to) {
-		final long valuePtr = relate(getPtr(), from.getPtr(), table, to.getPtr());
-		return new Value(valuePtr);
+		try {
+			return new Value(relate(getPtr(), from.getPtr(), table, to.getPtr()));
+		} finally {
+			reachabilityFence(from);
+			reachabilityFence(to);
+		}
 	}
 
 	/**
@@ -852,7 +1106,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The established relation of the specified type.
 	 */
 	public <T extends Relation> T relate(Class<T> type, RecordId from, String table, RecordId to) {
-		return relate(from, table, to).get(type);
+		return relate(from, table, to).getAndClose(type);
 	}
 
 	/**
@@ -877,8 +1131,14 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value relate(RecordId from, String table, RecordId to, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = relateContent(getPtr(), from.getPtr(), table, to.getPtr(), valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(from);
+			reachabilityFence(to);
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -906,7 +1166,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the established relation of the specified type
 	 */
 	public <R extends Relation, T> R relate(Class<R> type, RecordId from, String table, RecordId to, T content) {
-		return relate(from, table, to, content).get(type);
+		return relate(from, table, to, content).getAndClose(type);
 	}
 
 	/**
@@ -928,8 +1188,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value update(RecordId recordId, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = updateRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(recordId);
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -946,11 +1211,20 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value update(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-				valueMut.getPtr());
-		return new Value(valuePtr);
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
+		try {
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
+			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, range.bounds(),
+					upType.code, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -973,7 +1247,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return the updated record of the specified type
 	 */
 	public <T> T update(Class<T> type, RecordId recordId, UpType upType, T content) {
-		return update(recordId, upType, content).get(type);
+		return update(recordId, upType, content).getAndClose(type);
 	}
 
 	/**
@@ -996,7 +1270,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> update(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(updateTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1020,7 +1298,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> update(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(updateTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1092,7 +1374,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> updateSync(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					updateTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1116,7 +1403,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> updateSync(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					updateTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1188,8 +1480,13 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value upsert(RecordId recordId, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
-		return new Value(valuePtr);
+		try {
+			final long valuePtr = upsertRecordIdValue(getPtr(), recordId.getPtr(), upType.code, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(recordId);
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1205,11 +1502,20 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Value upsert(RecordIdRange range, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-				valueMut.getPtr());
-		return new Value(valuePtr);
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
+		try {
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
+			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, range.bounds(),
+					upType.code, valueMut.getPtr());
+			return new Value(valuePtr);
+		} finally {
+			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1232,7 +1538,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return The upserted entity of the specified type.
 	 */
 	public <T> T upsert(Class<T> type, RecordId recordId, UpType upType, T content) {
-		return upsert(recordId, upType, content).get(type);
+		return upsert(recordId, upType, content).getAndClose(type);
 	}
 
 	/**
@@ -1255,7 +1561,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsert(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(upsertTargetValue(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1277,7 +1587,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsert(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new ValueIterator(upsertTargetsValue(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1351,7 +1665,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsertSync(String target, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					upsertTargetValueSync(getPtr(), target, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1374,7 +1693,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> Iterator<Value> upsertSync(String[] targets, UpType upType, T content) {
 		final ValueMut valueMut = ValueBuilder.convert(content);
-		return new SynchronizedValueIterator(upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		try {
+			return new SynchronizedValueIterator(
+					upsertTargetsValueSync(getPtr(), targets, upType.code, valueMut.getPtr()));
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, content);
+		}
 	}
 
 	/**
@@ -1427,13 +1751,19 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	@SafeVarargs
-	private final <T> long[] contents2longs(T... contents) {
-		final long[] ptrs = new long[contents.length];
-		int index = 0;
-		for (final T c : contents) {
-			ptrs[index++] = ValueBuilder.convert(c).getPtr();
+	private static <T> ValueMut[] convertAll(T... contents) {
+		final ValueMut[] valueMuts = new ValueMut[contents.length];
+		try {
+			for (int i = 0; i < contents.length; i++) {
+				valueMuts[i] = ValueBuilder.convert(contents[i]);
+			}
+			return valueMuts;
+		} catch (Throwable t) {
+			// Free what was converted before the failure (elements not converted yet are
+			// null and skipped).
+			ValueBuilder.releaseAll(valueMuts, contents);
+			throw t;
 		}
-		return ptrs;
 	}
 
 	/**
@@ -1449,7 +1779,12 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         Optional if not found
 	 */
 	public Optional<Value> select(RecordId recordId) {
-		final long valuePtr = selectRecordId(getPtr(), recordId.getPtr());
+		final long valuePtr;
+		try {
+			valuePtr = selectRecordId(getPtr(), recordId.getPtr());
+		} finally {
+			reachabilityFence(recordId);
+		}
 		if (valuePtr == 0) {
 			return Optional.empty();
 		}
@@ -1475,7 +1810,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 *         present, otherwise an empty Optional
 	 */
 	public <T> Optional<T> select(Class<T> type, RecordId recordId) {
-		return select(recordId).map(v -> v.get(type));
+		return select(recordId).map(v -> v.getAndClose(type));
 	}
 
 	/**
@@ -1490,20 +1825,16 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return a list of Value objects corresponding to the selected RecordIds.
 	 */
 	public List<Value> select(RecordId... recordIds) {
-		final long[] recordIdsPtr = recordIds2longs(recordIds);
-		final long[] valuePtrs = selectRecordIds(getPtr(), recordIdsPtr);
+		final long[] valuePtrs;
+		try {
+			valuePtrs = selectRecordIds(getPtr(), getPtrs(recordIds));
+		} finally {
+			// Fencing the array keeps every RecordId in it reachable.
+			reachabilityFence(recordIds);
+		}
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
 		}
-	}
-
-	private long[] recordIds2longs(RecordId... recordIds) {
-		final long[] ptrs = new long[recordIds.length];
-		int index = 0;
-		for (final RecordId r : recordIds) {
-			ptrs[index++] = r.getPtr();
-		}
-		return ptrs;
 	}
 
 	/**
@@ -1526,7 +1857,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> List<T> select(Class<T> type, RecordId... recordIds) {
 		try (final Stream<Value> s = select(recordIds).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -1538,9 +1869,18 @@ public class Surreal extends Native implements AutoCloseable {
 	 * @return list of values for records in the range
 	 */
 	public List<Value> select(RecordIdRange range) {
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		final long[] valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
+		final long[] valuePtrs;
+		try {
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
+			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
+		} finally {
+			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
+		}
 		try (final LongStream s = Arrays.stream(valuePtrs)) {
 			return s.mapToObj(Value::new).collect(Collectors.toList());
 		}
@@ -1559,7 +1899,7 @@ public class Surreal extends Native implements AutoCloseable {
 	 */
 	public <T> List<T> select(Class<T> type, RecordIdRange range) {
 		try (final Stream<Value> s = select(range).stream()) {
-			return s.map(v -> v.get(type)).collect(Collectors.toList());
+			return s.map(v -> v.getAndClose(type)).collect(Collectors.toList());
 		}
 	}
 
@@ -1648,7 +1988,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the identifier of the record to be deleted
 	 */
 	public void delete(RecordId recordId) {
-		deleteRecordId(getPtr(), recordId.getPtr());
+		try {
+			deleteRecordId(getPtr(), recordId.getPtr());
+		} finally {
+			reachabilityFence(recordId);
+		}
 	}
 
 	/**
@@ -1663,8 +2007,11 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            deleted.
 	 */
 	public void delete(RecordId... recordIds) {
-		final long[] recordIdsPtr = recordIds2longs(recordIds);
-		deleteRecordIds(getPtr(), recordIdsPtr);
+		try {
+			deleteRecordIds(getPtr(), getPtrs(recordIds));
+		} finally {
+			reachabilityFence(recordIds);
+		}
 	}
 
 	/**
@@ -1674,9 +2021,17 @@ public class Surreal extends Native implements AutoCloseable {
 	 *            the table and optional start/end bounds
 	 */
 	public void delete(RecordIdRange range) {
-		final long startPtr = range.getStart() != null ? range.getStart().getPtr() : 0;
-		final long endPtr = range.getEnd() != null ? range.getEnd().getPtr() : 0;
-		deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+		final Id start = range.getStart();
+		final Id end = range.getEnd();
+		try {
+			final long startPtr = start != null ? start.getPtr() : 0;
+			final long endPtr = end != null ? end.getPtr() : 0;
+			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
+		} finally {
+			reachabilityFence(range);
+			reachabilityFence(start);
+			reachabilityFence(end);
+		}
 	}
 
 	/**
@@ -1693,13 +2048,4 @@ public class Surreal extends Native implements AutoCloseable {
 		deleteTarget(getPtr(), target);
 	}
 
-	/**
-	 * Closes and releases any resources associated with this instance. This method
-	 * is typically called when the instance is no longer needed. The underlying
-	 * resources are safely cleaned up.
-	 */
-	@Override
-	public void close() {
-		deleteInstance();
-	}
 }

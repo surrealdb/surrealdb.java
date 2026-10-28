@@ -12,9 +12,12 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 class ValueClassConverter<T> {
 
@@ -121,7 +124,12 @@ class ValueClassConverter<T> {
 		}
 		if (value.isRecordId()) {
 			if (type == Id.class) {
-				return value.getRecordId().getId();
+				final RecordId recordId = value.getRecordId();
+				try {
+					return recordId.getId();
+				} finally {
+					recordId.close();
+				}
 			}
 			return value.getRecordId();
 		}
@@ -166,12 +174,12 @@ class ValueClassConverter<T> {
 		if (Value.class.equals(type)) {
 			return value;
 		}
-		if (value.isArray()) {
+		if (value.isArray() || value.isSet()) {
 			final Class<?> elementType = firstTypeArgumentRaw(genericType);
 			final Type elementGenericType = firstTypeArgument(genericType);
-			final List<java.lang.Object> list = new ArrayList<>();
-			for (final Value element : value.getArray()) {
-				list.add(convertArrayElement(element, elementType, elementGenericType));
+			final List<java.lang.Object> list = convertArray(value, elementType, elementGenericType);
+			if (Set.class.isAssignableFrom(type)) {
+				return newSet(type, list);
 			}
 			if (type == byte[].class) {
 				final byte[] bytes = new byte[list.size()];
@@ -198,14 +206,16 @@ class ValueClassConverter<T> {
 					throw new SurrealException("Unsupported map type for: " + genericType);
 				}
 				final Map<String, java.lang.Object> map = new HashMap<>();
-				for (final Entry mapEntry : value.getObject()) {
-					final String entryKey = mapEntry.getKey();
-					final Value entryValue = mapEntry.getValue();
-					// todo - array support inside maps
-					if (entryValue.isObject()) {
-						map.put(entryKey, convert(valueType, entryValue.getObject()));
-					} else {
-						map.put(entryKey, convertSingleValue(entryValue));
+				try (final Object object = value.getObject(); final EntryIterator entries = entries(object)) {
+					while (entries.hasNext()) {
+						try (final Entry mapEntry = entries.next(); final Value entryValue = mapEntry.getValue()) {
+							// todo - array support inside maps
+							if (entryValue.isObject()) {
+								map.put(mapEntry.getKey(), convertObject(valueType, entryValue));
+							} else {
+								map.put(mapEntry.getKey(), convertSingleValue(entryValue));
+							}
+						}
 					}
 				}
 				return map;
@@ -215,9 +225,9 @@ class ValueClassConverter<T> {
 				if (innerType == null) {
 					throw new SurrealException("Unsupported Optional type for: " + genericType);
 				}
-				return Optional.of(convert(innerType, value.getObject()));
+				return Optional.of(convertObject(innerType, value));
 			}
-			return convert(type, value.getObject());
+			return convertObject(type, value);
 		}
 		// scalar value
 		if (Optional.class.equals(type)) {
@@ -236,17 +246,74 @@ class ValueClassConverter<T> {
 			if (elementType == null) {
 				throw new SurrealException("Unsupported element type for array");
 			}
-			return convert(elementType, value.getObject());
+			return convertObject(elementType, value);
 		}
-		if (value.isArray()) {
-			final List<java.lang.Object> nested = new ArrayList<>();
-			for (final Value v : value.getArray()) {
-				nested.add(convertArrayElement(v, elementType, elementGenericType));
+		if (value.isArray() || value.isSet()) {
+			// A nested collection is converted to the collection type declared for the
+			// element (List<Set<T>>, Set<Set<T>>, List<List<Pojo>>), with the generic
+			// type of that element, not of the outer collection.
+			if (elementType == null || Value.class.equals(elementType)) {
+				return convertArray(value, elementType, elementGenericType);
 			}
-			return nested;
+			return convertValueToType(value, elementType, elementGenericType);
 		}
 		// Preserve the historical behaviour: scalar array elements are type-agnostic.
 		return convertSingleValue(value);
+	}
+
+	// Builds a set the declared type accepts: LinkedHashSet for Set/HashSet,
+	// TreeSet for SortedSet/NavigableSet, or the declared class itself if it is
+	// concrete.
+	@SuppressWarnings("unchecked")
+	private static Set<java.lang.Object> newSet(final Class<?> type, final List<java.lang.Object> elements)
+			throws ReflectiveOperationException {
+		final Set<java.lang.Object> set;
+		if (type.isAssignableFrom(LinkedHashSet.class)) {
+			set = new LinkedHashSet<>();
+		} else if (type.isAssignableFrom(TreeSet.class)) {
+			set = new TreeSet<>();
+		} else if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
+			set = (Set<java.lang.Object>) type.getDeclaredConstructor().newInstance();
+		} else {
+			throw new SurrealException("Unsupported set type: " + type.getName());
+		}
+		set.addAll(elements);
+		return set;
+	}
+
+	// The helpers below close every native wrapper they create once its data has
+	// been copied into Java objects, so converting a result does not leave them
+	// for the garbage collector. A wrapper is kept only when it becomes part of the
+	// result: a Value field receives the Value itself, and RecordId, Id and
+	// Geometry fields receive the wrappers created for them.
+
+	// Converts the elements of an array or set value.
+	private static List<java.lang.Object> convertArray(final Value value, final Class<?> elementType,
+			final Type elementGenericType) throws ReflectiveOperationException {
+		final List<java.lang.Object> list = new ArrayList<>();
+		try (final Array array = value.isSet() ? value.getSet() : value.getArray();
+				final ValueIterator elements = elements(array)) {
+			while (elements.hasNext()) {
+				try (final Value element = elements.next()) {
+					list.add(convertArrayElement(element, elementType, elementGenericType));
+				}
+			}
+		}
+		return list;
+	}
+
+	private static <T> T convertObject(final Class<T> clazz, final Value value) throws ReflectiveOperationException {
+		try (final Object object = value.getObject()) {
+			return convert(clazz, object);
+		}
+	}
+
+	private static ValueIterator elements(final Array array) {
+		return (ValueIterator) array.iterator();
+	}
+
+	private static EntryIterator entries(final Object object) {
+		return (EntryIterator) object.iterator();
 	}
 
 	private static Type firstTypeArgument(final Type genericType) {
@@ -293,20 +360,31 @@ class ValueClassConverter<T> {
 		final T target = clazz.getConstructor().newInstance();
 		initOptionalFields(clazz, target);
 		final Map<String, Field> fields = SurrealFieldNames.inheritedFieldsBySurrealName(clazz);
-		for (final Entry entry : source) {
-			final String key = entry.getKey();
-			final Value value = entry.getValue();
-			final Field field = fields.get(key);
-			if (field == null) {
-				// Safe to ignore: source has a key with no matching field.
-				continue;
+		try (final EntryIterator entries = entries(source)) {
+			while (entries.hasNext()) {
+				try (final Entry entry = entries.next()) {
+					final Field field = fields.get(entry.getKey());
+					if (field == null) {
+						// Safe to ignore: source has a key with no matching field.
+						continue;
+					}
+					final Value value = entry.getValue();
+					java.lang.Object converted = null;
+					try {
+						converted = convertValueToType(value, field.getType(), field.getGenericType());
+					} finally {
+						// A Value field keeps the value itself.
+						if (converted != value) {
+							value.close();
+						}
+					}
+					if (converted == null && field.getType().isPrimitive()) {
+						// Leave primitive fields at their default value; setting null would throw.
+						continue;
+					}
+					field.set(target, converted);
+				}
 			}
-			final java.lang.Object converted = convertValueToType(value, field.getType(), field.getGenericType());
-			if (converted == null && field.getType().isPrimitive()) {
-				// Leave primitive fields at their default value; setting null would throw.
-				continue;
-			}
-			field.set(target, converted);
 		}
 		return target;
 	}
@@ -365,29 +443,54 @@ class ValueClassConverter<T> {
 
 		// Build a lookup of incoming entries keyed by name.
 		final Map<String, Value> entries = new HashMap<>();
-		for (final Entry entry : source) {
-			entries.put(entry.getKey(), entry.getValue());
-		}
-
 		final java.lang.Object[] args = new java.lang.Object[count];
-		for (int i = 0; i < count; i++) {
-			final Value value = entries.get(meta.names[i]);
-			final Class<?> type = meta.types[i];
-			if (value == null) {
-				args[i] = defaultForRecordComponent(type);
-				continue;
+		try {
+			try (final EntryIterator iterator = entries(source)) {
+				while (iterator.hasNext()) {
+					try (final Entry entry = iterator.next()) {
+						final Value previous = entries.put(entry.getKey(), entry.getValue());
+						if (previous != null) {
+							previous.close();
+						}
+					}
+				}
 			}
-			final java.lang.Object converted = convertValueToType(value, type, meta.genericTypes[i]);
-			if (converted == null) {
-				args[i] = defaultForRecordComponent(type);
-			} else {
-				args[i] = converted;
+
+			for (int i = 0; i < count; i++) {
+				final Value value = entries.get(meta.names[i]);
+				final Class<?> type = meta.types[i];
+				if (value == null) {
+					args[i] = defaultForRecordComponent(type);
+					continue;
+				}
+				final java.lang.Object converted = convertValueToType(value, type, meta.genericTypes[i]);
+				if (converted == null) {
+					args[i] = defaultForRecordComponent(type);
+				} else {
+					args[i] = converted;
+				}
+			}
+
+			@SuppressWarnings("unchecked")
+			final T instance = (T) meta.constructor.newInstance(args);
+			return instance;
+		} finally {
+			// Close every entry value, except one passed as-is to a Value component.
+			for (final Value value : entries.values()) {
+				if (!containsSame(args, value)) {
+					value.close();
+				}
 			}
 		}
+	}
 
-		@SuppressWarnings("unchecked")
-		final T instance = (T) meta.constructor.newInstance(args);
-		return instance;
+	private static boolean containsSame(final java.lang.Object[] array, final java.lang.Object element) {
+		for (final java.lang.Object e : array) {
+			if (e == element) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static String recordComponentSurrealName(final Class<?> clazz, final String componentName)
@@ -457,7 +560,7 @@ class ValueClassConverter<T> {
 			if (!value.isObject())
 				throw new SurrealException("Unexpected value: " + value);
 
-			return convert(clazz, value.getObject());
+			return convertObject(clazz, value);
 		} catch (ReflectiveOperationException e) {
 			throw new SurrealException("Failed to create instance of " + clazz.getName(), e);
 		}
