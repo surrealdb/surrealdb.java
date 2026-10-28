@@ -374,6 +374,8 @@ macro_rules! convert_up_type {
             "MERGE"
         } else if $up_type == 3 {
             "PATCH"
+        } else if $up_type == 4 {
+            "REPLACE"
         } else {
             return $crate::SurrealError::SurrealDBJni(format!("Unexpected up type: {}", $up_type))
                 .exception($env, $default_fn);
