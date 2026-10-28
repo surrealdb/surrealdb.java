@@ -37,13 +37,23 @@
 	 * documentation&lt;/a&gt;.
 	 * &lt;p&gt;
 	 */
-<span class="fc" id="L40">	PATCH(3);</span>
+<span class="fc" id="L40">	PATCH(3),</span>
+	/**
+	 * Represents a replace operation. This type of operation replaces the whole
+	 * record with the provided data: fields left out are removed.
+	 * &lt;p&gt;
+	 * For more details, check the &lt;a href=
+	 * &quot;https://surrealdb.com/docs/surrealql/statements/update#replace-clause&quot;&gt;SurrealQL
+	 * documentation&lt;/a&gt;.
+	 * &lt;p&gt;
+	 */
+<span class="fc" id="L50">	REPLACE(4);</span>
 
 	final int code;
 
-<span class="fc" id="L44">	UpType(int code) {</span>
-<span class="fc" id="L45">		this.code = code;</span>
-<span class="fc" id="L46">	}</span>
+<span class="fc" id="L54">	UpType(int code) {</span>
+<span class="fc" id="L55">		this.code = code;</span>
+<span class="fc" id="L56">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
