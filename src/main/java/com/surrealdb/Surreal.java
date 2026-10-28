@@ -126,11 +126,11 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
-	private native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update,
-			long valuePtr);
+	private native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int bounds,
+			int update, long valuePtr);
 
-	private native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update,
-			long valuePtr);
+	private native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int bounds,
+			int update, long valuePtr);
 
 	private native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
@@ -144,7 +144,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private native long[] selectRecordIds(long ptr, long[] recordIds);
 
-	private native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr, int bounds);
 
 	private native long selectTargetsValues(long ptr, String... targets);
 
@@ -154,7 +154,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private native boolean deleteRecordIds(long ptr, long[] recordIds);
 
-	private native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr, int bounds);
 
 	private native boolean deleteTarget(long ptr, String target);
 
@@ -1139,10 +1139,11 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-					valueMut.getPtr());
+			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, range.bounds(),
+					upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 			ValueBuilder.releaseConverted(valueMut, content);
@@ -1429,10 +1430,11 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-					valueMut.getPtr());
+			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, range.bounds(),
+					upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 			ValueBuilder.releaseConverted(valueMut, content);
@@ -1796,8 +1798,9 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 		}
@@ -1946,8 +1949,9 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 		}

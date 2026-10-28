@@ -80,13 +80,8 @@ class ValueBuilder {
 			throw new SurrealException("Type not supported: " + object.getClass().getCanonicalName());
 		}
 		if (object instanceof Collection) {
-			final Collection<?> collection = (Collection<?>) object;
-			// Create a ValueMut for each element of the collection
-			final List<ValueMut> values = new ArrayList<>(collection.size());
+			final List<ValueMut> values = convertElements((Collection<?>) object);
 			try {
-				for (final java.lang.Object element : collection) {
-					values.add(convertObject(element, false));
-				}
 				return ValueMut.createArray(values);
 			} catch (Throwable t) {
 				// Whatever was not handed over to the array is still ours to free.
@@ -164,11 +159,34 @@ class ValueBuilder {
 	}
 
 	/**
+	 * Converts each element of {@code collection} to a {@code ValueMut} that the
+	 * caller may hand over to an enclosing array or set. A caller-supplied
+	 * {@code ValueMut} is copied, so it survives and may appear more than once. If
+	 * an element cannot be converted, the ones already converted are freed before
+	 * the failure is rethrown.
+	 */
+	static List<ValueMut> convertElements(final Collection<?> collection) {
+		final List<ValueMut> values = new ArrayList<>(collection.size());
+		try {
+			for (final java.lang.Object element : collection) {
+				values.add(convertObject(element, false));
+			}
+			return values;
+		} catch (IllegalAccessException e) {
+			freeAll(values);
+			throw new SurrealException("Unable to convert object", e);
+		} catch (Throwable t) {
+			freeAll(values);
+			throw t;
+		}
+	}
+
+	/**
 	 * Frees temporaries built here that were not handed over to an enclosing array
 	 * or object. Handing over clears the pointer, so what was already taken is a
 	 * no-op.
 	 */
-	private static void freeAll(final List<? extends Native> natives) {
+	static void freeAll(final List<? extends Native> natives) {
 		for (final Native n : natives) {
 			n.deleteInstance();
 		}
