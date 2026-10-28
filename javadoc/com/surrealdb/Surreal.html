@@ -76,6 +76,12 @@ loadScripts(document, 'script');</script>
 <li><a href="#signup(com.surrealdb.signin.RecordCredential)" tabindex="0">signup(RecordCredential)</a></li>
 <li><a href="#authenticate(java.lang.String)" tabindex="0">authenticate(String)</a></li>
 <li><a href="#invalidate()" tabindex="0">invalidate()</a></li>
+<li><a href="#refresh(com.surrealdb.signin.Token)" tabindex="0">refresh(Token)</a></li>
+<li><a href="#revoke(com.surrealdb.signin.Token)" tabindex="0">revoke(Token)</a></li>
+<li><a href="#set(java.lang.String,java.lang.Object)" tabindex="0">set(String, Object)</a></li>
+<li><a href="#unset(java.lang.String)" tabindex="0">unset(String)</a></li>
+<li><a href="#info()" tabindex="0">info()</a></li>
+<li><a href="#info(java.lang.Class)" tabindex="0">info(Class)</a></li>
 <li><a href="#newSession()" tabindex="0">newSession()</a></li>
 <li><a href="#beginTransaction()" tabindex="0">beginTransaction()</a></li>
 <li><a href="#useNs(java.lang.String)" tabindex="0">useNs(String)</a></li>
@@ -300,6 +306,16 @@ response), or inherited from the parent by <a href="#newSession()"><code>newSess
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Imports the database from a file.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a><wbr>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#info()" class="member-name-link">info</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the record of the signed-in record user (<code>$auth</code>).</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a><wbr>&lt;T&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#info(java.lang.Class)" class="member-name-link">info</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the record of the signed-in record user, converted to <code>type</code>.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final &lt;T&gt;&nbsp;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;T&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#insert(java.lang.Class,java.lang.String,T...)" class="member-name-link">insert</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;target,
@@ -380,40 +396,52 @@ as the values.</div>
 <div class="deprecation-comment">Since 2.0.2.</div>
 </div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#refresh(com.surrealdb.signin.Token)" class="member-name-link">refresh</a><wbr>(<a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a>&nbsp;token)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Exchanges a refresh token for a new access/refresh pair and authenticates
+this session with the new access token.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Establishes a relation between two records identified by `from` and `to`
 within a specified table.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId,T)" class="member-name-link">relate</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
- <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
- <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to,
- T&nbsp;content)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Establishes a relationship between two records within a specified table,
-attaching the provided content to this relationship.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;R extends <a href="Relation.html" title="class in com.surrealdb">Relation</a>, T&gt;<br>R</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(java.lang.Class,com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId,T)" class="member-name-link">relate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;R&gt;&nbsp;type,
- <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId,T)" class="member-name-link">relate</a><wbr>(<a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to,
  T&nbsp;content)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Establishes a relationship between two records within a specified table,
+attaching the provided content to this relationship.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;R extends <a href="Relation.html" title="class in com.surrealdb">Relation</a>, T&gt;<br>R</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(java.lang.Class,com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId,T)" class="member-name-link">relate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;R&gt;&nbsp;type,
+ <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
+ <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to,
+ T&nbsp;content)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Establishes a relation between two records and retrieves it based on the
 specified relation type.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T extends <a href="Relation.html" title="class in com.surrealdb">Relation</a>&gt;<br>T</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(java.lang.Class,com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T extends <a href="Relation.html" title="class in com.surrealdb">Relation</a>&gt;<br>T</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relate(java.lang.Class,com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;from,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;table,
  <a href="RecordId.html" title="class in com.surrealdb">RecordId</a>&nbsp;to)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Establishes and retrieves a relation of a specified type between two records.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#revoke(com.surrealdb.signin.Token)" class="member-name-link">revoke</a><wbr>(<a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a>&nbsp;token)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Revokes the refresh token of a token pair, so it can no longer be exchanged
+with <a href="#refresh(com.surrealdb.signin.Token)"><code>refresh(Token)</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#run(java.lang.String,java.lang.Object...)" class="member-name-link">run</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
@@ -487,15 +515,26 @@ the specified type from the given targets.</div>
 <div class="block">Selects and returns a thread-safe iterator to traverse values associated with
 the given targets.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signin(com.surrealdb.signin.Credential)" class="member-name-link">signin</a><wbr>(<a href="signin/Credential.html" title="interface in com.surrealdb.signin">Credential</a>&nbsp;credential)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(java.lang.String,java.lang.Object)" class="member-name-link">set</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;value)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Signs in with the given credential.</div>
+<div class="block">Defines a variable on this session.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signup(com.surrealdb.signin.RecordCredential)" class="member-name-link">signup</a><wbr>(<a href="signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a>&nbsp;record)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signin(com.surrealdb.signin.Credential)" class="member-name-link">signin</a><wbr>(<a href="signin/Credential.html" title="interface in com.surrealdb.signin">Credential</a>&nbsp;credential)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Signs in with the given credential.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signup(com.surrealdb.signin.RecordCredential)" class="member-name-link">signup</a><wbr>(<a href="signin/RecordCredential.html" title="class in com.surrealdb.signin">RecordCredential</a>&nbsp;record)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Signs up a record user with the given record access credentials.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#unset(java.lang.String)" class="member-name-link">unset</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Removes a variable defined with <a href="#set(java.lang.String,java.lang.Object)"><code>set(String, java.lang.Object)</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="Value.html" title="class in com.surrealdb">Value</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update(com.surrealdb.RecordIdRange,com.surrealdb.UpType,T)" class="member-name-link">update</a><wbr>(<a href="RecordIdRange.html" title="class in com.surrealdb">RecordIdRange</a>&nbsp;range,
@@ -984,6 +1023,111 @@ from signin).</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the current instance</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="refresh(com.surrealdb.signin.Token)">
+<h3>refresh</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a></span>&nbsp;<span class="element-name">refresh</span><wbr><span class="parameters">(<a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a>&nbsp;token)</span></div>
+<div class="block">Exchanges a refresh token for a new access/refresh pair and authenticates
+this session with the new access token. The refresh token passed in is
+consumed: use the one in the returned <a href="signin/Token.html" title="class in com.surrealdb.signin"><code>Token</code></a> next time.
+<p>
+Refresh tokens are issued by record access methods defined
+<code>WITH REFRESH</code>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>token</code> - a token pair from <a href="#signin(com.surrealdb.signin.Credential)"><code>signin(Credential)</code></a>, <code>signup(long, String, String, String, long)</code> or a previous
+           refresh</dd>
+<dt>Returns:</dt>
+<dd>the new token pair</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class or interface in java.lang" class="external-link">IllegalArgumentException</a></code> - if the token has no refresh part</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="revoke(com.surrealdb.signin.Token)">
+<h3>revoke</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></span>&nbsp;<span class="element-name">revoke</span><wbr><span class="parameters">(<a href="signin/Token.html" title="class in com.surrealdb.signin">Token</a>&nbsp;token)</span></div>
+<div class="block">Revokes the refresh token of a token pair, so it can no longer be exchanged
+with <a href="#refresh(com.surrealdb.signin.Token)"><code>refresh(Token)</code></a>. This does not sign the session out; use
+<a href="#invalidate()"><code>invalidate()</code></a> for that.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>token</code> - the token pair whose refresh token to revoke</dd>
+<dt>Returns:</dt>
+<dd>the current instance</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class or interface in java.lang" class="external-link">IllegalArgumentException</a></code> - if the token has no refresh part</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="set(java.lang.String,java.lang.Object)">
+<h3>set</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></span>&nbsp;<span class="element-name">set</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;value)</span></div>
+<div class="block">Defines a variable on this session. It is available as <code>$name</code> in every
+later query on this session, until <a href="#unset(java.lang.String)"><code>unset(String)</code></a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - the variable name, without the <code>$</code></dd>
+<dd><code>value</code> - the value; converted like a query binding</dd>
+<dt>Returns:</dt>
+<dd>the current instance</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="unset(java.lang.String)">
+<h3>unset</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Surreal.html" title="class in com.surrealdb">Surreal</a></span>&nbsp;<span class="element-name">unset</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Removes a variable defined with <a href="#set(java.lang.String,java.lang.Object)"><code>set(String, java.lang.Object)</code></a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - the variable name, without the <code>$</code></dd>
+<dt>Returns:</dt>
+<dd>the current instance</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="info()">
+<h3>info</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="Value.html" title="class in com.surrealdb">Value</a>&gt;</span>&nbsp;<span class="element-name">info</span>()</div>
+<div class="block">Returns the record of the signed-in record user (<code>$auth</code>).</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the user's record, or empty when the session is not signed in as a
+        record user</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="info(java.lang.Class)">
+<h3>info</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;T&gt;</span>&nbsp;<span class="element-name">info</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</span></div>
+<div class="block">Returns the record of the signed-in record user, converted to <code>type</code>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>type</code> - the class to convert the record to</dd>
+<dt>Returns:</dt>
+<dd>the user's record, or empty when the session is not signed in as a
+        record user</dd>
 </dl>
 </div>
 </section>

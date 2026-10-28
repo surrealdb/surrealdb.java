@@ -652,6 +652,14 @@ or a string.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/Relation.html#in" class="member-name-link">in</a> - Variable in class com.surrealdb.<a href="com/surrealdb/Relation.html" title="class in com.surrealdb">Relation</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#info()" class="member-name-link">info()</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Returns the record of the signed-in record user (<code>$auth</code>).</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#info(java.lang.Class)" class="member-name-link">info(Class)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Returns the record of the signed-in record user, converted to <code>type</code>.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#insert(java.lang.Class,java.lang.String,T...)" class="member-name-link">insert(Class, String, T...)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Insert records in the database with the given table and the provided contents
@@ -1057,6 +1065,11 @@ method).</div>
 <dd>
 <div class="block">Creates a range over the given table with optional start and end bounds.</div>
 </dd>
+<dt><a href="com/surrealdb/Surreal.html#refresh(com.surrealdb.signin.Token)" class="member-name-link">refresh(Token)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Exchanges a refresh token for a new access/refresh pair and authenticates
+this session with the new access token.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#relate(com.surrealdb.RecordId,java.lang.String,com.surrealdb.RecordId)" class="member-name-link">relate(RecordId, String, RecordId)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Establishes a relation between two records identified by `from` and `to`
@@ -1089,6 +1102,11 @@ database.</div>
 <dd>
 <div class="block">The Response class is a specialized wrapper for handling responses from
 SurrealDB.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#revoke(com.surrealdb.signin.Token)" class="member-name-link">revoke(Token)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Revokes the refresh token of a token pair, so it can no longer be exchanged
+with <a href="com/surrealdb/Surreal.html#refresh(com.surrealdb.signin.Token)"><code>Surreal.refresh(Token)</code></a>.</div>
 </dd>
 <dt><a href="com/surrealdb/signin/RootCredential.html" class="type-name-link" title="class in com.surrealdb.signin">RootCredential</a> - Class in <a href="com/surrealdb/signin/package-summary.html">com.surrealdb.signin</a></dt>
 <dd>
@@ -1177,6 +1195,10 @@ the given targets.</div>
 <dd>&nbsp;</dd>
 <dt><a href="com/surrealdb/AuthDetailKind.html#SESSION_EXPIRED" class="member-name-link">SESSION_EXPIRED</a> - Static variable in class com.surrealdb.<a href="com/surrealdb/AuthDetailKind.html" title="class in com.surrealdb">AuthDetailKind</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/surrealdb/Surreal.html#set(java.lang.String,java.lang.Object)" class="member-name-link">set(String, Object)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Defines a variable on this session.</div>
+</dd>
 <dt><a href="com/surrealdb/Surreal.html#signin(com.surrealdb.signin.Credential)" class="member-name-link">signin(Credential)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
 <div class="block">Signs in with the given credential.</div>
@@ -1278,6 +1300,10 @@ exceptional conditions.</div>
 <dd>
 <div class="block">Unknown kind from a newer server; raw string is in
 <a href="com/surrealdb/ServerException.html#getKind()"><code>ServerException.getKind()</code></a>.</div>
+</dd>
+<dt><a href="com/surrealdb/Surreal.html#unset(java.lang.String)" class="member-name-link">unset(String)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
+<dd>
+<div class="block">Removes a variable defined with <a href="com/surrealdb/Surreal.html#set(java.lang.String,java.lang.Object)"><code>Surreal.set(String, java.lang.Object)</code></a>.</div>
 </dd>
 <dt><a href="com/surrealdb/Surreal.html#update(com.surrealdb.RecordIdRange,com.surrealdb.UpType,T)" class="member-name-link">update(RecordIdRange, UpType, T)</a> - Method in class com.surrealdb.<a href="com/surrealdb/Surreal.html" title="class in com.surrealdb">Surreal</a></dt>
 <dd>
