@@ -10,7 +10,7 @@ use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
 use jni::EnvUnowned;
 use rust_decimal::Decimal;
 use surrealdb::types::{
-    Array, Datetime, Duration, File, Number, Object, Table, ToSql, Uuid, Value,
+    Array, Datetime, Duration, File, Number, Object, Set, Table, ToSql, Uuid, Value,
 };
 
 use crate::error::SurrealError;
@@ -97,12 +97,23 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDecimal<'local>(
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_ValueMut_newDuration<'local>(
-    _env: EnvUnowned<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
-    millis: jlong,
+    seconds: jlong,
+    nanos: jint,
 ) -> jlong {
-    let value = Value::Duration(Duration::from_millis(millis as u64));
-    JniTypes::new_value_mut(value)
+    with_env_body!(env, env, {
+        // SurrealDB durations are unsigned. Reject negative values rather than letting
+        // the cast to u64 wrap them into a huge positive duration.
+        if seconds < 0 || !(0..1_000_000_000).contains(&nanos) {
+            return SurrealError::SurrealDBJni(format!(
+                "SurrealDB durations cannot be negative (seconds={seconds}, nanos={nanos})"
+            ))
+            .exception(env, || 0);
+        }
+        let value = Value::Duration(Duration::new(seconds as u64, nanos as u32));
+        JniTypes::new_value_mut(value)
+    })
 }
 
 #[no_mangle]
@@ -227,6 +238,19 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newArrayOf<'local>(
         let values = take_instances!(env, ptrs, crate::ValueMutHandle, JniTypes::ValueMut, || 0);
         let value = Value::Array(Array::from(values));
         JniTypes::new_value_mut(value)
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newSetOf<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptrs: JLongArray<'local>,
+) -> jlong {
+    with_env_body!(env, env, {
+        let ptrs = get_long_array!(env, &ptrs, || 0);
+        let values = take_instances!(env, ptrs, crate::ValueMutHandle, JniTypes::ValueMut, || 0);
+        JniTypes::new_value_mut(Value::Set(Set::from(values)))
     })
 }
 

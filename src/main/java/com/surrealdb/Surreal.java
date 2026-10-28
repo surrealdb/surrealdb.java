@@ -38,7 +38,7 @@ import com.surrealdb.signin.Token;
 public class Surreal extends Native implements AutoCloseable {
 
 	// Current namespace and database set by useNs() / useDb() / useDefaults() (from
-	// server return value).
+	// server return value), or inherited by newSession() from the parent session.
 	private String namespace;
 	private String database;
 
@@ -58,12 +58,13 @@ public class Surreal extends Native implements AutoCloseable {
 
 	/**
 	 * Constructor for a Surreal instance backed by an existing native pointer (e.g.
-	 * from {@link #newSession()}).
+	 * from {@link #newSession()}), whose session uses {@code namespace} and
+	 * {@code database}.
 	 */
-	private Surreal(long ptr) {
+	private Surreal(long ptr, String namespace, String database) {
 		super(ptr);
-		this.namespace = null;
-		this.database = null;
+		this.namespace = namespace;
+		this.database = database;
 	}
 
 	private static native long newInstance();
@@ -85,6 +86,16 @@ public class Surreal extends Native implements AutoCloseable {
 	private native boolean authenticate(long ptr, String token);
 
 	private native boolean invalidate(long ptr);
+
+	private native Token refresh(long ptr, String access, String refresh);
+
+	private native void revoke(long ptr, String access, String refresh);
+
+	private native void set(long ptr, String name, long valuePtr);
+
+	private native void unset(long ptr, String name);
+
+	private native long info(long ptr);
 
 	private native NsDb useNs(long ptr, String ns);
 
@@ -122,11 +133,11 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private native long upsertRecordIdValue(long ptr, long recordIdPtr, int update, long valuePtr);
 
-	private native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update,
-			long valuePtr);
+	private native long updateRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int bounds,
+			int update, long valuePtr);
 
-	private native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int update,
-			long valuePtr);
+	private native long upsertRecordIdRangeValue(long ptr, String table, long startIdPtr, long endIdPtr, int bounds,
+			int update, long valuePtr);
 
 	private native long upsertTargetValue(long ptr, String target, int update, long valuePtr);
 
@@ -140,7 +151,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private native long[] selectRecordIds(long ptr, long[] recordIds);
 
-	private native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native long[] selectRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr, int bounds);
 
 	private native long selectTargetsValues(long ptr, String... targets);
 
@@ -150,7 +161,7 @@ public class Surreal extends Native implements AutoCloseable {
 
 	private native boolean deleteRecordIds(long ptr, long[] recordIds);
 
-	private native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr);
+	private native boolean deleteRecordIdRange(long ptr, String table, long startIdPtr, long endIdPtr, int bounds);
 
 	private native boolean deleteTarget(long ptr, String target);
 
@@ -397,14 +408,15 @@ public class Surreal extends Native implements AutoCloseable {
 	 * id of (e.g. one started elsewhere or read from a notification).
 	 *
 	 * <p>
-	 * This is best-effort: the SurrealDB client does not report a server-side KILL
-	 * rejection (e.g. a live query owned by another session), so only an invalid
-	 * UUID or a connection failure raises.
+	 * A kill the server rejects raises a {@link QueryException} ("Cannot execute
+	 * KILL statement using id: ..."), as for an id that names no live query, one
+	 * that was already killed, or one this session may not kill.
 	 *
 	 * @param queryId
 	 *            the live query UUID to terminate
 	 * @throws SurrealException
-	 *             if the id is not a valid UUID or the request cannot be sent
+	 *             if the id is not a valid UUID, the request cannot be sent, or the
+	 *             server rejects the kill
 	 */
 	public void kill(String queryId) {
 		kill(getPtr(), queryId);
@@ -523,14 +535,118 @@ public class Surreal extends Native implements AutoCloseable {
 	}
 
 	/**
-	 * Creates a new session that shares the same connection but has its own
-	 * namespace, database, and authentication state. Use this for multi-session
-	 * support.
+	 * Exchanges a refresh token for a new access/refresh pair and authenticates
+	 * this session with the new access token. The refresh token passed in is
+	 * consumed: use the one in the returned {@link Token} next time.
+	 * <p>
+	 * Refresh tokens are issued by record access methods defined
+	 * {@code WITH REFRESH}.
+	 *
+	 * @param token
+	 *            a token pair from {@link #signin}, {@link #signup} or a previous
+	 *            refresh
+	 * @return the new token pair
+	 * @throws IllegalArgumentException
+	 *             if the token has no refresh part
+	 */
+	public Token refresh(Token token) {
+		final String refreshToken = requireRefresh(token);
+		return refresh(getPtr(), token.getAccess(), refreshToken);
+	}
+
+	/**
+	 * Revokes the refresh token of a token pair, so it can no longer be exchanged
+	 * with {@link #refresh(Token)}. This does not sign the session out; use
+	 * {@link #invalidate()} for that.
+	 *
+	 * @param token
+	 *            the token pair whose refresh token to revoke
+	 * @return the current instance
+	 * @throws IllegalArgumentException
+	 *             if the token has no refresh part
+	 */
+	public Surreal revoke(Token token) {
+		final String refreshToken = requireRefresh(token);
+		revoke(getPtr(), token.getAccess(), refreshToken);
+		return this;
+	}
+
+	private static String requireRefresh(Token token) {
+		Objects.requireNonNull(token, "token");
+		if (token.getRefresh() == null) {
+			throw new IllegalArgumentException(
+					"The token has no refresh part; refresh tokens come from record access defined WITH REFRESH");
+		}
+		return token.getRefresh();
+	}
+
+	/**
+	 * Defines a variable on this session. It is available as {@code $name} in every
+	 * later query on this session, until {@link #unset(String)}.
+	 *
+	 * @param name
+	 *            the variable name, without the {@code $}
+	 * @param value
+	 *            the value; converted like a query binding
+	 * @return the current instance
+	 */
+	public Surreal set(String name, java.lang.Object value) {
+		final ValueMut valueMut = ValueBuilder.convert(value);
+		try {
+			set(getPtr(), name, valueMut.getPtr());
+		} finally {
+			ValueBuilder.releaseConverted(valueMut, value);
+		}
+		return this;
+	}
+
+	/**
+	 * Removes a variable defined with {@link #set(String, java.lang.Object)}.
+	 *
+	 * @param name
+	 *            the variable name, without the {@code $}
+	 * @return the current instance
+	 */
+	public Surreal unset(String name) {
+		unset(getPtr(), name);
+		return this;
+	}
+
+	/**
+	 * Returns the record of the signed-in record user ({@code $auth}).
+	 *
+	 * @return the user's record, or empty when the session is not signed in as a
+	 *         record user
+	 */
+	public Optional<Value> info() {
+		final long ptr = info(getPtr());
+		return ptr == 0 ? Optional.empty() : Optional.of(new Value(ptr));
+	}
+
+	/**
+	 * Returns the record of the signed-in record user, converted to {@code type}.
+	 *
+	 * @param type
+	 *            the class to convert the record to
+	 * @return the user's record, or empty when the session is not signed in as a
+	 *         record user
+	 */
+	public <T> Optional<T> info(Class<T> type) {
+		return info().map(v -> v.getAndClose(type));
+	}
+
+	/**
+	 * Creates a new session that shares the same connection. The new session starts
+	 * as a copy of this one (namespace, database, variables and authentication) and
+	 * changes to either session after that do not affect the other. Use this for
+	 * multi-session support.
 	 *
 	 * @return a new Surreal instance representing a separate session
 	 */
 	public Surreal newSession() {
-		final Surreal session = new Surreal(cloneSession(getPtr()));
+		// The native clone copies the session's namespace and database, so the new
+		// instance starts with this one's.
+		final Surreal session = new Surreal(cloneSession(getPtr()), namespace, database);
 		session.cachedVersion = cachedVersion;
 		return session;
 	}
@@ -597,8 +713,9 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Returns the current namespace set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current namespace, or null
 	 */
@@ -609,8 +726,9 @@ public class Surreal extends Native implements AutoCloseable {
 	/**
 	 * Returns the current database set by the last {@link #useNs(String)},
 	 * {@link #useDb(String)}, or {@link #useDefaults()} call (from the server
-	 * response). Null if none of those have been called since
-	 * {@link #connect(String)} or for a new session.
+	 * response), or inherited from the parent by {@link #newSession()}. Null if
+	 * none of those have happened since {@link #connect(String)}. A {@code USE}
+	 * statement run through {@link #query(String)} is not reflected here.
 	 *
 	 * @return the current database, or null
 	 */
@@ -1098,10 +1216,11 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-					valueMut.getPtr());
+			final long valuePtr = updateRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, range.bounds(),
+					upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 			ValueBuilder.releaseConverted(valueMut, content);
@@ -1388,10 +1507,11 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, upType.code,
-					valueMut.getPtr());
+			final long valuePtr = upsertRecordIdRangeValue(getPtr(), range.getTable(), startPtr, endPtr, range.bounds(),
+					upType.code, valueMut.getPtr());
 			return new Value(valuePtr);
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 			ValueBuilder.releaseConverted(valueMut, content);
@@ -1755,8 +1875,9 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+			valuePtrs = selectRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 		}
@@ -1905,8 +2026,9 @@ public class Surreal extends Native implements AutoCloseable {
 		try {
 			final long startPtr = start != null ? start.getPtr() : 0;
 			final long endPtr = end != null ? end.getPtr() : 0;
-			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr);
+			deleteRecordIdRange(getPtr(), range.getTable(), startPtr, endPtr, range.bounds());
 		} finally {
+			reachabilityFence(range);
 			reachabilityFence(start);
 			reachabilityFence(end);
 		}

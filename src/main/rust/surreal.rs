@@ -386,6 +386,117 @@ pub extern "system" fn Java_com_surrealdb_Surreal_invalidate<'local>(
     })
 }
 
+/// Builds a crate token pair from the Java `Token`'s parts.
+fn token_pair(access: String, refresh: String) -> surrealdb::opt::auth::Token {
+    surrealdb::opt::auth::Token::from((
+        surrealdb::opt::auth::AccessToken::from(access),
+        surrealdb::opt::auth::RefreshToken::from(refresh),
+    ))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_refresh<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    access: JString<'local>,
+    refresh: JString<'local>,
+) -> jobject {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, null_mut);
+        let access = get_rust_string!(env, access, null_mut);
+        let refresh = get_rust_string!(env, refresh, null_mut);
+        let token = token_pair(access, refresh);
+        // Exchanges the refresh token for a new pair and authenticates the session
+        // with the new access token. The old refresh token is consumed.
+        match TOKIO_RUNTIME.block_on(async { surreal.authenticate(token).refresh().await }) {
+            Ok(token) => {
+                let access = token.access.into_insecure_token();
+                let refresh = token.refresh.map(|r| r.into_insecure_token());
+                match new_token_object(env, access, refresh) {
+                    Ok(obj) => obj,
+                    Err(e) => e.exception(env, null_mut),
+                }
+            }
+            Err(err) => SurrealError::from(err).exception(env, null_mut),
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_revoke<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    access: JString<'local>,
+    refresh: JString<'local>,
+) {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || ());
+        let access = get_rust_string!(env, access, || ());
+        let refresh = get_rust_string!(env, refresh, || ());
+        let token = token_pair(access, refresh);
+        if let Err(err) =
+            TOKIO_RUNTIME.block_on(async { surreal.invalidate().refresh(token).await })
+        {
+            SurrealError::from(err).exception(env, || ())
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_set<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    name: JString<'local>,
+    value_ptr: jlong,
+) {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || ());
+        let name = get_rust_string!(env, name, || ());
+        let value = get_value_mut_instance!(env, value_ptr, || ()).clone();
+        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.set(name, value).await }) {
+            SurrealError::from(err).exception(env, || ())
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_unset<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+    name: JString<'local>,
+) {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || ());
+        let name = get_rust_string!(env, name, || ());
+        if let Err(err) = TOKIO_RUNTIME.block_on(async { surreal.unset(name).await }) {
+            SurrealError::from(err).exception(env, || ())
+        }
+    })
+}
+
+/// The record of the signed-in record user, as the `info` RPC returns it, or 0 when
+/// the session is not authenticated as a record user.
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Surreal_info<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jlong {
+    with_env_body!(env, env, {
+        let surreal = get_surreal_ref!(env, ptr, || 0);
+        let res = surrealdb_query::<()>(surreal, "RETURN $auth.*", None);
+        let mut res = check_query_result!(env, res, || 0);
+        match take_one_result!(env, res, || 0) {
+            Value::None | Value::Null => 0,
+            value => JniTypes::new_value(Arc::new(value)),
+        }
+    })
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Surreal_useNs<'local>(
     mut env: EnvUnowned<'local>,
@@ -681,13 +792,29 @@ pub extern "system" fn Java_com_surrealdb_Surreal_kill<'local>(
         };
         let mut params = BTreeMap::new();
         params.insert("id".to_string(), Value::Uuid(uuid));
-        // Best-effort: the surrealdb client SDK discards the KILL statement result
-        // (`QueryType::Kill => {}` when building IndexedResults) and its typed kill is
-        // `pub(crate)`, so a server-side KILL rejection (e.g. a live query owned by
-        // another session) is not observable from the client. Only transport/connection
-        // errors surface here, via check_query_result!.
-        let res = surrealdb_query::<Value>(surreal, "KILL $id", Some(params));
-        let _ = check_query_result!(env, res, || ());
+        // The surrealdb client drops the result of every KILL statement
+        // (`QueryType::Kill => {}` when it builds IndexedResults) and its typed kill is
+        // `pub(crate)`, so a plain `KILL $id` cannot report a rejection. Running it in a
+        // transaction makes a rejection observable: a failed KILL aborts the
+        // transaction, so the COMMIT that follows returns an error ("Cannot COMMIT: the
+        // transaction was aborted due to a prior error"). Results keep the index of their
+        // statement even though KILL's is dropped: BEGIN=0, KILL=1 (dropped), COMMIT=2.
+        // The client drops the KILL row, so its own error cannot be reached; a query
+        // error naming the live query id is raised instead, with the aborted COMMIT as
+        // its cause.
+        let res = surrealdb_query::<Value>(surreal, "BEGIN; KILL $id; COMMIT;", Some(params));
+        let mut res = check_query_result!(env, res, || ());
+        if let Err(err) = res.take::<Value>(0) {
+            return SurrealError::SurrealDB(err).exception(env, || ());
+        }
+        if let Err(err) = res.take::<Value>(2) {
+            let err = surrealdb::Error::query(
+                format!("Cannot execute KILL statement using id: u'{uuid}'"),
+                None,
+            )
+            .with_cause(err);
+            return SurrealError::SurrealDB(err).exception(env, || ());
+        }
     })
 }
 
@@ -1297,11 +1424,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_selectRecordIdRange<'local>(
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
 ) -> jlongArray {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, surreal_ptr, null_mut);
         let table_str = get_rust_string!(env, table, null_mut);
-        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr) {
+        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr, bounds)
+        {
             Ok(v) => v,
             Err(e) => return e.exception(env, null_mut),
         };
@@ -1331,11 +1460,13 @@ pub extern "system" fn Java_com_surrealdb_Surreal_deleteRecordIdRange<'local>(
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
 ) -> jboolean {
     with_env_body!(env, env, {
         let surreal = get_surreal_ref!(env, surreal_ptr, || false as jboolean);
         let table_str = get_rust_string!(env, table, || false as jboolean);
-        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr) {
+        let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr, bounds)
+        {
             Ok(v) => v,
             Err(e) => return e.exception(env, || false as jboolean),
         };
@@ -1381,27 +1512,37 @@ fn value_to_record_id_key(value: &Value) -> std::result::Result<RecordIdKey, Sur
     }
 }
 
+/// `bounds` flag (mirrors RecordIdRange.START_EXCLUSIVE): the start bound is exclusive.
+const RANGE_START_EXCLUSIVE: jint = 1;
+/// `bounds` flag (mirrors RecordIdRange.END_EXCLUSIVE): the end bound is exclusive.
+const RANGE_END_EXCLUSIVE: jint = 2;
+
+fn range_bound(
+    ptr: jlong,
+    exclusive: bool,
+) -> std::result::Result<Bound<RecordIdKey>, SurrealError> {
+    if ptr == 0 {
+        return Ok(Bound::Unbounded);
+    }
+    let value = crate::get_instance::<crate::ValueHandle>(ptr, crate::JniTypes::Value)?;
+    let key = value_to_record_id_key(value.as_ref())?;
+    Ok(if exclusive {
+        Bound::Excluded(key)
+    } else {
+        Bound::Included(key)
+    })
+}
+
 /// Builds the range record id value for SELECT/DELETE/UPDATE/UPSERT $_range.
 fn build_range_value(
     _env: &mut Env,
     table: &str,
     start_ptr: jlong,
     end_ptr: jlong,
+    bounds: jint,
 ) -> std::result::Result<Value, SurrealError> {
-    let start_bound = if start_ptr == 0 {
-        Bound::Unbounded
-    } else {
-        let value = crate::get_instance::<crate::ValueHandle>(start_ptr, crate::JniTypes::Value)?;
-        let key = value_to_record_id_key(value.as_ref())?;
-        Bound::Included(key)
-    };
-    let end_bound = if end_ptr == 0 {
-        Bound::Unbounded
-    } else {
-        let value = crate::get_instance::<crate::ValueHandle>(end_ptr, crate::JniTypes::Value)?;
-        let key = value_to_record_id_key(value.as_ref())?;
-        Bound::Included(key)
-    };
+    let start_bound = range_bound(start_ptr, bounds & RANGE_START_EXCLUSIVE != 0)?;
+    let end_bound = range_bound(end_ptr, bounds & RANGE_END_EXCLUSIVE != 0)?;
     let range = RecordIdKeyRange {
         start: start_bound,
         end: end_bound,
@@ -1492,13 +1633,14 @@ fn up_record_id_range_value(
     table: JString,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
     up_type: jint,
     value_ptr: jlong,
     up: &str,
 ) -> jlong {
     let surreal = get_surreal_ref!(env, surreal_ptr, || 0);
     let table_str = get_rust_string!(env, table, || 0);
-    let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr) {
+    let range_value = match build_range_value(env, &table_str, start_id_ptr, end_id_ptr, bounds) {
         Ok(v) => v,
         Err(e) => return e.exception(env, || 0),
     };
@@ -1530,6 +1672,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdRangeValue<'loca
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
@@ -1540,6 +1683,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_updateRecordIdRangeValue<'loca
             table,
             start_id_ptr,
             end_id_ptr,
+            bounds,
             up_type,
             value_ptr,
             "update",
@@ -1555,6 +1699,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdRangeValue<'loca
     table: JString<'local>,
     start_id_ptr: jlong,
     end_id_ptr: jlong,
+    bounds: jint,
     up_type: jint,
     value_ptr: jlong,
 ) -> jlong {
@@ -1565,6 +1710,7 @@ pub extern "system" fn Java_com_surrealdb_Surreal_upsertRecordIdRangeValue<'loca
             table,
             start_id_ptr,
             end_id_ptr,
+            bounds,
             up_type,
             value_ptr,
             "upsert",
