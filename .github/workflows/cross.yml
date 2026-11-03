@@ -57,7 +57,8 @@ jobs:
         run: cargo install cargo-ndk
 
       - name: Build
-        run: cargo ndk -t ${{ matrix.ndk }} build --release
+        # RocksDB does not build for Android, so build without the kv-rocksdb feature.
+        run: cargo ndk -t ${{ matrix.ndk }} build --release --no-default-features --features portable
 
       - name: Upload so lib
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -73,15 +74,19 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             linker: CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc
             apt-get: gcc
+            features: ''
           - target: aarch64-unknown-linux-gnu
             linker: CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
             apt-get: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            features: ''
           - target: i686-unknown-linux-gnu
             linker: CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc
             apt-get: gcc-multilib
+            features: --no-default-features --features portable
           - target: armv7-unknown-linux-gnueabihf
             linker: CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
             apt-get: gcc-arm-linux-gnueabihf
+            features: --no-default-features --features portable
 
     runs-on: ubuntu-latest
     steps:
@@ -109,7 +114,7 @@ jobs:
       - name: Build
         run: |
           export ${{ matrix.linker }}
-          cargo build --target ${{ matrix.target }} --release
+          cargo build --target ${{ matrix.target }} --release ${{ matrix.features }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -120,7 +125,11 @@ jobs:
   windows:
     strategy:
       matrix:
-        arch: [ x86_64, i686 ]
+        include:
+          - arch: x86_64
+            features: ''
+          - arch: i686
+            features: --no-default-features --features portable
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -141,7 +150,7 @@ jobs:
           targets: ${{ matrix.arch }}-pc-windows-msvc
 
       - name: Build
-        run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release
+        run: cargo build --target ${{ matrix.arch }}-pc-windows-msvc --release ${{ matrix.features }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

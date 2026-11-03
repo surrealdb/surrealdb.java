@@ -34,17 +34,16 @@ dashmap = "6.1.0"
 futures = "0.3.32"
 async-channel = "2.5.0"
 
-# RocksDB uses 128-bit integers, so it only builds for 64-bit targets, and the
-# Android NDK headers lack the posix_madvise constants it needs. It is enabled
-# by default on 64-bit desktop targets; 32-bit and Android targets build without it.
-[target.'cfg(all(target_pointer_width = "64", not(target_os = "android")))'.dependencies]
-surrealdb = { version = "3.3.5", default-features = false, features = ["kv-rocksdb"] }
-
 [build-dependencies]
 cargo-lock = "11.0.1"
 
 [features]
-default = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "protocol-grpc", "http", "jwks"]
+# `portable` is every default feature that builds on all targets. RocksDB uses
+# 128-bit integers, so it does not build for 32-bit targets, and the Android NDK
+# lacks the posix_madvise constants it needs: build those with
+# `--no-default-features --features portable`.
+default = ["portable", "kv-rocksdb"]
+portable = ["rustls", "kv-mem", "kv-surrealkv", "protocol-ws", "protocol-http", "protocol-grpc", "http", "jwks"]
 rustls = ["surrealdb/rustls"]
 jwks = ["surrealdb/jwks"]
 http = ["surrealdb/http"]
