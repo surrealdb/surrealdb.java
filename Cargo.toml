@@ -11,6 +11,9 @@ path = "src/main/rust/lib.rs"
 
 [profile.release]
 opt-level = 3
+# Symbols are stripped to keep the multi-platform jar small; the JNI entry points
+# stay in the dynamic symbol table.
+strip = true
 
 # Shared dependencies (surrealdb, serde, serde_json, rust_decimal, tokio, parking_lot,
 # chrono, dashmap, futures, async-channel) should be kept aligned with the versions used
