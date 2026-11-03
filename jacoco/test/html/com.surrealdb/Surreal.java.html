@@ -357,7 +357,7 @@ public class Surreal extends Native implements AutoCloseable {
 	public LiveStream selectLive(String table, boolean diff) {
 <span class="fc bfc" id="L358" title="All 2 branches covered.">		if (diff) {</span>
 <span class="fc" id="L359">			final String version = cachedServerVersion();</span>
-<span class="pc bpc" id="L360" title="1 of 2 branches missed.">			if (!atLeast(version, 3, 3)) {</span>
+<span class="fc bfc" id="L360" title="All 2 branches covered.">			if (!atLeast(version, 3, 3)) {</span>
 <span class="fc" id="L361">				throw new SurrealException(&quot;Live queries in diff mode need SurrealDB 3.3.0 or later, but this is &quot;</span>
 						+ version + &quot;: earlier versions can leak fields hidden by field-level SELECT&quot;
 						+ &quot; permissions (GHSA-pm6c-q8rh-92m8)&quot;);
