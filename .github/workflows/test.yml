@@ -46,7 +46,7 @@ jobs:
       matrix:
         java: [ '8', '11', '17', '21', '25' ]
         # Latest 3.x server release. Bump when a new 3.x lands.
-        surrealdb: [ 'v3.3.4' ]
+        surrealdb: [ 'v3.3.5' ]
         include:
           # Latest stable patch of earlier 3.x minor branches.
           - java: '17'
