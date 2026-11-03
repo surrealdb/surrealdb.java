@@ -7,10 +7,71 @@ use crate::with_env_body;
 use jni::objects::{AsJArrayRaw, JClass};
 use jni::sys::{jboolean, jbyteArray, jdouble, jint, jlong, jlongArray, jstring};
 use jni::EnvUnowned;
-use surrealdb::types::{Array, Number, ToSql, Value};
+use surrealdb::types::{Array, Number, NumberKind, ToSql, Value};
 
 use crate::error::SurrealError;
 use crate::{get_value_instance, new_jlong_array, new_string, JniTypes};
+
+/// The exact value of an integer-kind number as an `i64`, or `None` when the number is not an
+/// integer kind or does not fit (only a `u64` above `i64::MAX` can fail to fit).
+fn number_as_long(n: &Number) -> Option<i64> {
+    // Every variant is listed on purpose: a new `Number` variant must fail to compile here.
+    match n {
+        Number::Int(i) => Some(*i),
+        Number::I8(i) => Some(i64::from(*i)),
+        Number::U8(i) => Some(i64::from(*i)),
+        Number::I16(i) => Some(i64::from(*i)),
+        Number::U16(i) => Some(i64::from(*i)),
+        Number::I32(i) => Some(i64::from(*i)),
+        Number::U32(i) => Some(i64::from(*i)),
+        Number::U64(u) => i64::try_from(*u).ok(),
+        Number::Float(_) | Number::F16(_) | Number::F32(_) | Number::Decimal(_) => None,
+    }
+}
+
+/// The exact value of a float-kind number as an `f64` (`f16` and `f32` widen losslessly).
+fn number_as_double(n: &Number) -> Option<f64> {
+    match n {
+        Number::Float(f) => Some(*f),
+        Number::F16(f) => Some(f.to_f64()),
+        Number::F32(f) => Some(f64::from(*f)),
+        Number::Int(_)
+        | Number::I8(_)
+        | Number::U8(_)
+        | Number::I16(_)
+        | Number::U16(_)
+        | Number::I32(_)
+        | Number::U32(_)
+        | Number::U64(_)
+        | Number::Decimal(_) => None,
+    }
+}
+
+/// The decimal text of an integer-kind number, or `None` when the number is not an integer kind.
+fn number_as_integer_string(n: &Number) -> Option<String> {
+    match n {
+        Number::U64(u) => Some(u.to_string()),
+        other => number_as_long(other).map(|i| i.to_string()),
+    }
+}
+
+/// The SurrealQL kind name of a number, as returned by `type::of`.
+fn number_kind_name(n: &Number) -> &'static str {
+    match n.number_kind() {
+        NumberKind::I8 => "i8",
+        NumberKind::U8 => "u8",
+        NumberKind::I16 => "i16",
+        NumberKind::U16 => "u16",
+        NumberKind::I32 => "i32",
+        NumberKind::U32 => "u32",
+        NumberKind::Int => "int",
+        NumberKind::U64 => "u64",
+        NumberKind::F16 => "f16",
+        NumberKind::F32 => "f32",
+        NumberKind::Float => "float",
+        NumberKind::Decimal => "decimal",
+    }
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_surrealdb_Value_deleteInstance<'local>(
@@ -145,7 +206,68 @@ pub extern "system" fn Java_com_surrealdb_Value_isLong<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, || false as jboolean);
-        value.is_int() as jboolean
+        matches!(value.as_ref(), Value::Number(n) if number_as_long(n).is_some()) as jboolean
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isBigInteger<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        // Only a u64 above i64::MAX is an integer that does not fit a Java long.
+        matches!(value.as_ref(), Value::Number(Number::U64(u)) if i64::try_from(*u).is_err())
+            as jboolean
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getBigInteger<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        let text = match value.as_ref() {
+            Value::Number(n) => number_as_integer_string(n),
+            _ => None,
+        };
+        match text {
+            Some(text) => new_string!(env, &text, null_mut),
+            None => SurrealError::NullPointerException("BigInteger").exception(env, null_mut),
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_isNumber<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jboolean {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, || false as jboolean);
+        value.is_number() as jboolean
+    })
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_Value_getNumberKind<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    ptr: jlong,
+) -> jstring {
+    with_env_body!(env, env, {
+        let value = get_value_instance!(env, ptr, null_mut);
+        if let Value::Number(n) = value.as_ref() {
+            new_string!(env, number_kind_name(n), null_mut)
+        } else {
+            SurrealError::NullPointerException("Number").exception(env, null_mut)
+        }
     })
 }
 
@@ -157,10 +279,17 @@ pub extern "system" fn Java_com_surrealdb_Value_getLong<'local>(
 ) -> jlong {
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, || 0);
-        if let Value::Number(Number::Int(i)) = value.as_ref() {
-            *i
-        } else {
-            SurrealError::NullPointerException("Long").exception(env, || 0)
+        match value.as_ref() {
+            Value::Number(n) => match number_as_long(n) {
+                Some(i) => i,
+                None if matches!(n, Number::U64(_)) => SurrealError::SurrealDBJni(format!(
+                    "{} does not fit in a long, use getBigInteger()",
+                    n.to_sql()
+                ))
+                .exception(env, || 0),
+                None => SurrealError::NullPointerException("Long").exception(env, || 0),
+            },
+            _ => SurrealError::NullPointerException("Long").exception(env, || 0),
         }
     })
 }
@@ -273,7 +402,7 @@ pub extern "system" fn Java_com_surrealdb_Value_isDouble<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, || false as jboolean);
-        value.is_float() as jboolean
+        matches!(value.as_ref(), Value::Number(n) if number_as_double(n).is_some()) as jboolean
     })
 }
 
@@ -285,10 +414,12 @@ pub extern "system" fn Java_com_surrealdb_Value_getDouble<'local>(
 ) -> jdouble {
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, || 0.0);
-        if let Value::Number(Number::Float(f)) = value.as_ref() {
-            *f
-        } else {
-            SurrealError::NullPointerException("Double").exception(env, || 0.0)
+        match value.as_ref() {
+            Value::Number(n) => match number_as_double(n) {
+                Some(f) => f,
+                None => SurrealError::NullPointerException("Double").exception(env, || 0.0),
+            },
+            _ => SurrealError::NullPointerException("Double").exception(env, || 0.0),
         }
     })
 }

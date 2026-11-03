@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -80,6 +81,8 @@ class ValueClassConverter<T> {
 			return value.getDouble();
 		if (value.isLong())
 			return value.getLong();
+		if (value.isBigInteger())
+			return value.getBigInteger();
 		if (value.isString())
 			return value.getString();
 		if (value.isRecordId())
@@ -105,6 +108,10 @@ class ValueClassConverter<T> {
 		if (value.isNull()) {
 			return null;
 		}
+		// Sized numbers (SurrealDB 4.0) are read through the width-agnostic accessors:
+		// every integer kind arrives as a long (or BigInteger above Long.MAX_VALUE) and
+		// every floating-point kind as a double, then is narrowed or widened to the
+		// declared Java type. Narrowing truncates, as it always did for int and short.
 		if (value.isDouble()) {
 			final double d = value.getDouble();
 			if (type == Float.TYPE || type == Float.class) {
@@ -120,7 +127,33 @@ class ValueClassConverter<T> {
 			if (type == Short.TYPE || type == Short.class) {
 				return (short) l;
 			}
+			if (type == Byte.TYPE || type == Byte.class) {
+				return (byte) l;
+			}
+			if (type == Float.TYPE || type == Float.class) {
+				return (float) l;
+			}
+			if (type == Double.TYPE || type == Double.class) {
+				return (double) l;
+			}
+			if (type == BigInteger.class) {
+				return BigInteger.valueOf(l);
+			}
 			return l;
+		}
+		if (value.isBigInteger()) {
+			// A u64 above Long.MAX_VALUE must not wrap into a negative long.
+			final BigInteger big = value.getBigInteger();
+			if (type == Float.TYPE || type == Float.class) {
+				return big.floatValue();
+			}
+			if (type == Double.TYPE || type == Double.class) {
+				return big.doubleValue();
+			}
+			if (type == BigInteger.class || type.isAssignableFrom(BigInteger.class)) {
+				return big;
+			}
+			throw new SurrealException("Value " + big + " does not fit in " + type.getName());
 		}
 		if (value.isRecordId()) {
 			if (type == Id.class) {
