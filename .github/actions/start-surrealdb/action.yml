@@ -3,12 +3,12 @@ description: >
   Starts an in-memory SurrealDB server on port 8000 (root/root, unauthenticated
   access allowed, --allow-all) and waits until it is healthy. Linux runners use the
   surrealdb/surrealdb Docker Hub image; macOS runners, which have no Docker, use the
-  release tarball from download.surrealdb.com. Unlike setup-surreal, this also works
-  for versions that have no GitHub release, such as 4.0 betas.
+  release tarball from download.surrealdb.com, so every runner starts the server the
+  same way for any published version, prereleases included.
 
 inputs:
   version:
-    description: SurrealDB version, with the leading v (for example v4.0.0-beta.1).
+    description: SurrealDB version, with the leading v (for example v4.0.0).
     required: true
 
 runs:

@@ -1,11 +1,12 @@
 # Changelog
 
 ## [Unreleased] - 3.0.0
-- Build on SurrealDB 4.0.0-beta.1 (the `surrealdb` crate from crates.io). The embedded engine is now SurrealDB 4.0 and the SDK still connects to 3.x and 4.x servers (the crate accepts servers from 3.0.0-alpha.1 up to, but excluding, 5.0.0).
-- Breaking: RocksDB (`rocksdb://`) is no longer available, because the 4.0 beta crate has no RocksDB backend. Use `surrealkv://` for a persistent embedded database. The `kv-rocksdb` and `portable` Cargo features are removed, and the 32-bit and Android native libraries are built with the default features like every other target.
+- Build on SurrealDB 4.0.0 (the `surrealdb` crate from crates.io). The embedded engine is now SurrealDB 4.0 and the SDK still connects to 3.x and 4.x servers (the crate accepts servers from 3.0.0-alpha.1 up to, but excluding, 5.0.0).
+- Breaking: RocksDB (`rocksdb://`) is no longer available, because the 4.0 crate has no RocksDB backend. Use `surrealkv://` for a persistent embedded database. The `kv-rocksdb` and `portable` Cargo features are removed, and the 32-bit and Android native libraries are built with the default features like every other target.
 - Read sized numbers: `Value.isLong()`/`getLong()` work for every integer kind that fits a `long`, and `isDouble()`/`getDouble()` for `f16`, `f32` and `float`. A `u64` above `Long.MAX_VALUE` is never reported as a long (`getLong()` throws); use the new `isBigInteger()`/`getBigInteger()`. The new `Value.isNumber()` and `Value.getNumberType()` (a `NumberType` enum) expose the exact kind. POJO and record conversion fills `byte`, `short`, `int`, `long`, `float`, `double` and `BigInteger` fields from any numeric kind.
+- Read the new SurrealDB 4.0 `bigdecimal` kind: `Value.isBigDecimal()`/`getBigDecimal()` accept it like `decimal`, and `NumberType.BIGDECIMAL` identifies it.
 - Write sized numbers with the explicit `ValueMut.createI8/U8/I16/U16/I32/U32/U64/F16/F32` factories, which validate unsigned ranges. Existing Java types still map to `int` and `float`.
-- Run CI against the SurrealDB 4.0.0-beta.1 server (the `surrealdb/surrealdb` Docker Hub image on Linux, the release tarball from download.surrealdb.com on macOS, since there is no GitHub release for `setup-surreal`) and against the latest 3.x patch of each minor (v3.1.6, v3.2.6, v3.3.5) on JDK 17.
+- Run CI against the SurrealDB 4.0.0 server (the `surrealdb/surrealdb` Docker Hub image on Linux, the release tarball from download.surrealdb.com on macOS) and against the latest 3.x patch of each minor (v3.1.6, v3.2.6, v3.3.5) on JDK 17.
 
 ## [2.2.0] - 2026-11-03
 - Support RocksDB (`rocksdb://`, enabled by default through the `kv-rocksdb` Cargo feature; 32-bit and Android targets must build with `--no-default-features --features portable`) and gRPC (`grpc://`, enabled by default) [#212](https://github.com/surrealdb/surrealdb.java/pull/212).

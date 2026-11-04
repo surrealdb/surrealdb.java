@@ -6,7 +6,6 @@ use jni::sys::jlong;
 use jni::{Env, EnvOutcome, Outcome};
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
-use std::collections::btree_map::IntoIter as BIntoIter;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::vec::IntoIter;
@@ -148,8 +147,8 @@ pub(crate) type ArrayIterHandle = IntoIter<Value>;
 pub(crate) type SyncArrayIterHandle = Arc<Mutex<IntoIter<Value>>>;
 pub(crate) type KeyValueHandle = (String, Arc<Value>);
 pub(crate) type KeyValueMutHandle = (String, Value);
-pub(crate) type ObjectIterHandle = BIntoIter<String, Value>;
-pub(crate) type SyncObjectIterHandle = Arc<Mutex<BIntoIter<String, Value>>>;
+pub(crate) type ObjectIterHandle = IntoIter<(String, Value)>;
+pub(crate) type SyncObjectIterHandle = Arc<Mutex<IntoIter<(String, Value)>>>;
 pub(crate) type ResponseHandle = Arc<Mutex<IndexedResults>>;
 
 impl JniTypes {

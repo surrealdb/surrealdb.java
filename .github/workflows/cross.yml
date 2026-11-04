@@ -312,7 +312,7 @@ jobs:
       - name: Start SurrealDB
         uses: ./.github/actions/start-surrealdb
         with:
-          version: v4.0.0-beta.1
+          version: v4.0.0
 
       - name: Linux Integration Test
         run: ./gradlew -i integrationTest
@@ -351,7 +351,7 @@ jobs:
         if: runner.os != 'Windows'
         uses: ./.github/actions/start-surrealdb
         with:
-          version: v4.0.0-beta.1
+          version: v4.0.0
 
       - name: Tests
         run: ./gradlew -i integrationTest

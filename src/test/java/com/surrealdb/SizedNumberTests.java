@@ -86,6 +86,21 @@ public class SizedNumberTests {
 	}
 
 	@Test
+	void readBigDecimal() {
+		try (final Surreal surreal = connect()) {
+			final String text = "123456789012345678901234567890123456789.5";
+			final Value v = eval(surreal, "<bigdecimal> \"" + text + "\"");
+			assertTrue(v.isNumber());
+			assertEquals(NumberType.BIGDECIMAL, v.getNumberType());
+			assertTrue(v.isBigDecimal());
+			assertFalse(v.isLong());
+			assertFalse(v.isDouble());
+			assertFalse(v.getNumberType().isInteger());
+			assertEquals(new java.math.BigDecimal(text), v.getBigDecimal());
+		}
+	}
+
+	@Test
 	void historicalKindsAreUnchanged() {
 		try (final Surreal surreal = connect()) {
 			final Value i = eval(surreal, "5");

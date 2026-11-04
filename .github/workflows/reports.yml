@@ -44,7 +44,7 @@ jobs:
       - name: Start SurrealDB
         uses: ./.github/actions/start-surrealdb
         with:
-          version: v4.0.0-beta.1
+          version: v4.0.0
 
       - name: Clean
         run: ./gradlew -i clean

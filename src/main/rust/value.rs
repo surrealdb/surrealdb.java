@@ -25,7 +25,11 @@ fn number_as_long(n: &Number) -> Option<i64> {
         Number::I32(i) => Some(i64::from(*i)),
         Number::U32(i) => Some(i64::from(*i)),
         Number::U64(u) => i64::try_from(*u).ok(),
-        Number::Float(_) | Number::F16(_) | Number::F32(_) | Number::Decimal(_) => None,
+        Number::Float(_)
+        | Number::F16(_)
+        | Number::F32(_)
+        | Number::Decimal(_)
+        | Number::BigDecimal(_) => None,
     }
 }
 
@@ -43,7 +47,8 @@ fn number_as_double(n: &Number) -> Option<f64> {
         | Number::I32(_)
         | Number::U32(_)
         | Number::U64(_)
-        | Number::Decimal(_) => None,
+        | Number::Decimal(_)
+        | Number::BigDecimal(_) => None,
     }
 }
 
@@ -70,6 +75,7 @@ fn number_kind_name(n: &Number) -> &'static str {
         NumberKind::F32 => "f32",
         NumberKind::Float => "float",
         NumberKind::Decimal => "decimal",
+        NumberKind::BigDecimal => "bigdecimal",
     }
 }
 
@@ -374,7 +380,10 @@ pub extern "system" fn Java_com_surrealdb_Value_isBigDecimal<'local>(
 ) -> jboolean {
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, || false as jboolean);
-        value.is_decimal() as jboolean
+        matches!(
+            value.as_ref(),
+            Value::Number(Number::Decimal(_) | Number::BigDecimal(_))
+        ) as jboolean
     })
 }
 
@@ -386,10 +395,10 @@ pub extern "system" fn Java_com_surrealdb_Value_getBigDecimal<'local>(
 ) -> jstring {
     with_env_body!(env, env, {
         let value = get_value_instance!(env, ptr, null_mut);
-        if let Value::Number(Number::Decimal(d)) = value.as_ref() {
-            new_string!(env, &d.to_string(), null_mut)
-        } else {
-            SurrealError::NullPointerException("BigDecimal").exception(env, null_mut)
+        match value.as_ref() {
+            Value::Number(Number::Decimal(d)) => new_string!(env, &d.to_string(), null_mut),
+            Value::Number(Number::BigDecimal(d)) => new_string!(env, &d.to_string(), null_mut),
+            _ => SurrealError::NullPointerException("BigDecimal").exception(env, null_mut),
         }
     })
 }

@@ -42,7 +42,13 @@ public enum NumberType {
 	 */
 	FLOAT("float"),
 	/** Arbitrary-precision decimal (<code>decimal</code>). */
-	DECIMAL("decimal");
+	DECIMAL("decimal"),
+	/**
+	 * Arbitrary-precision decimal with a wider range than {@link #DECIMAL}
+	 * (<code>bigdecimal</code>, SurrealDB 4.0). {@link Value#isBigDecimal()} is
+	 * true for it and for {@link #DECIMAL}.
+	 */
+	BIGDECIMAL("bigdecimal");
 
 	private final String surrealName;
 
@@ -67,6 +73,7 @@ public enum NumberType {
 			case F32 :
 			case FLOAT :
 			case DECIMAL :
+			case BIGDECIMAL :
 				return false;
 			default :
 				return true;

@@ -123,6 +123,10 @@ fn number_to_jobject<'a>(env: &mut Env<'a>, n: &Number) -> Option<JObject<'a>> {
             let f: f64 = d.to_string().parse().unwrap_or(0.0);
             double_to_jobject(env, f)
         }
+        Number::BigDecimal(d) => {
+            let f: f64 = d.to_string().parse().unwrap_or(0.0);
+            double_to_jobject(env, f)
+        }
     }
 }
 

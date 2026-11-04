@@ -1,6 +1,6 @@
 [package]
 name = "surrealdb-java"
-version = "4.0.0-beta.1"
+version = "4.0.0"
 authors = ["Emmanuel Keller <emmanuel.keller@surrealdb.com>"]
 edition = "2021"
 
@@ -22,7 +22,7 @@ strip = true
 # Driver-specific dependencies (jni, once_cell, cargo-lock) are independent.
 [dependencies]
 jni = "0.22.4"
-surrealdb = { version = "4.0.0-beta.1", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
+surrealdb = { version = "4.0.0", default-features = false, features = ["rustls", "protocol-http", "protocol-ws"] }
 # Geometry construction (write path). Must match the geo version surrealdb-types uses
 # so the geo::* types unify with surrealdb::types::Geometry's inner geo types.
 geo = { version = "0.32.0", default-features = false }

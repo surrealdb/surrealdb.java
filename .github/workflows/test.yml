@@ -46,7 +46,7 @@ jobs:
       matrix:
         java: [ '8', '11', '17', '21', '25' ]
         # The server matching the embedded engine. Bump with the surrealdb crate.
-        surrealdb: [ 'v4.0.0-beta.1' ]
+        surrealdb: [ 'v4.0.0' ]
         include:
           # The 4.0 client still supports 3.x servers: latest stable patch of each 3.x minor branch.
           - java: '17'
