@@ -45,14 +45,16 @@ jobs:
       fail-fast: false
       matrix:
         java: [ '8', '11', '17', '21', '25' ]
-        # Latest 3.x server release. Bump when a new 3.x lands.
-        surrealdb: [ 'v3.3.5' ]
+        # The server matching the embedded engine. Bump with the surrealdb crate.
+        surrealdb: [ 'v4.0.0' ]
         include:
-          # Latest stable patch of earlier 3.x minor branches.
+          # The 4.0 client still supports 3.x servers: latest stable patch of each 3.x minor branch.
           - java: '17'
             surrealdb: 'v3.1.6'
           - java: '17'
             surrealdb: 'v3.2.6'
+          - java: '17'
+            surrealdb: 'v3.3.5'
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -76,21 +78,14 @@ jobs:
         run: cargo build
 
       - name: Start SurrealDB
-        id: surrealdb
-        uses: surrealdb/setup-surreal@5795ce3773d2fec644ef5ce6b549f4872d4b33be # v3.0.0
+        uses: ./.github/actions/start-surrealdb
         with:
-          surrealdb_version: ${{ matrix.surrealdb }}
-          surrealdb_port: 8000
-          surrealdb_auth: false
-          surrealdb_strict: false
-          surrealdb_log: info
-          surrealdb_additional_args: --allow-all
-          surrealdb_retry_count: 30
+          version: ${{ matrix.surrealdb }}
 
       - name: Test
         env:
           SURREALDB_URL: ws://localhost:8000
         run: |
-          echo "Testing against SurrealDB ${{ steps.surrealdb.outputs.version }}"
+          echo "Testing against SurrealDB ${{ matrix.surrealdb }}"
           chmod +x gradlew
           ./gradlew -i test recordTest jacocoTestReport

@@ -1,6 +1,7 @@
 package com.surrealdb;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -28,6 +29,24 @@ public class ValueMut extends Native {
 	private static native long newDouble(double d);
 
 	private static native long newLong(long l);
+
+	private static native long newI8(int i);
+
+	private static native long newU8(int i);
+
+	private static native long newI16(int i);
+
+	private static native long newU16(int i);
+
+	private static native long newI32(int i);
+
+	private static native long newU32(long l);
+
+	private static native long newU64(long bits);
+
+	private static native long newF16(float f);
+
+	private static native long newF32(float f);
 
 	private static native long newDecimal(String s);
 
@@ -81,6 +100,142 @@ public class ValueMut extends Native {
 
 	public static ValueMut createLong(long l) {
 		return new ValueMut(newLong(l));
+	}
+
+	// Sized numbers (SurrealDB 4.0).
+	//
+	// createLong, createDouble and the boxing done by ValueBuilder keep producing
+	// <code>int</code> (i64) and <code>float</code> (f64), whatever the Java type,
+	// so that schemas and 3.x servers behave as before. The factories below are
+	// the explicit opt-in to a sized kind. Sized kinds only exist on SurrealDB 4.0.
+	// The embedded engine keeps them end to end. A remote connection widens a
+	// sized value bound as a variable (sized integers become int, floats become
+	// float, a u64 above Long.MAX_VALUE becomes a decimal), so there a TYPE i8
+	// (etc.) schema field is what makes the stored kind sized. Results coming back
+	// from a remote 4.0 server keep their kind.
+
+	private static final long U32_MAX = 0xFFFFFFFFL;
+	private static final int U64_BITS = 64;
+	private static final float F16_OVERFLOW = 65520f;
+
+	/**
+	 * Creates an 8-bit signed integer (<code>i8</code>).
+	 */
+	public static ValueMut createI8(byte b) {
+		return new ValueMut(newI8(b));
+	}
+
+	/**
+	 * Creates an 8-bit unsigned integer (<code>u8</code>).
+	 *
+	 * @param i
+	 *            the value, from 0 to 255.
+	 * @throws IllegalArgumentException
+	 *             if the value is outside 0..255.
+	 */
+	public static ValueMut createU8(int i) {
+		if (i < 0 || i > 0xFF) {
+			throw new IllegalArgumentException("u8 value out of range (0..255): " + i);
+		}
+		return new ValueMut(newU8(i));
+	}
+
+	/**
+	 * Creates a 16-bit signed integer (<code>i16</code>).
+	 */
+	public static ValueMut createI16(short s) {
+		return new ValueMut(newI16(s));
+	}
+
+	/**
+	 * Creates a 16-bit unsigned integer (<code>u16</code>).
+	 *
+	 * @param i
+	 *            the value, from 0 to 65535.
+	 * @throws IllegalArgumentException
+	 *             if the value is outside 0..65535.
+	 */
+	public static ValueMut createU16(int i) {
+		if (i < 0 || i > 0xFFFF) {
+			throw new IllegalArgumentException("u16 value out of range (0..65535): " + i);
+		}
+		return new ValueMut(newU16(i));
+	}
+
+	/**
+	 * Creates a 32-bit signed integer (<code>i32</code>).
+	 */
+	public static ValueMut createI32(int i) {
+		return new ValueMut(newI32(i));
+	}
+
+	/**
+	 * Creates a 32-bit unsigned integer (<code>u32</code>).
+	 *
+	 * @param l
+	 *            the value, from 0 to 4294967295.
+	 * @throws IllegalArgumentException
+	 *             if the value is outside 0..4294967295.
+	 */
+	public static ValueMut createU32(long l) {
+		if (l < 0 || l > U32_MAX) {
+			throw new IllegalArgumentException("u32 value out of range (0..4294967295): " + l);
+		}
+		return new ValueMut(newU32(l));
+	}
+
+	/**
+	 * Creates a 64-bit unsigned integer (<code>u64</code>) from a non-negative
+	 * <code>long</code>. Use {@link #createU64(BigInteger)} for values above
+	 * {@link Long#MAX_VALUE}.
+	 *
+	 * @throws IllegalArgumentException
+	 *             if the value is negative.
+	 */
+	public static ValueMut createU64(long l) {
+		if (l < 0) {
+			throw new IllegalArgumentException("u64 value out of range (0..18446744073709551615): " + l);
+		}
+		return new ValueMut(newU64(l));
+	}
+
+	/**
+	 * Creates a 64-bit unsigned integer (<code>u64</code>).
+	 *
+	 * @param i
+	 *            the value, from 0 to 18446744073709551615.
+	 * @throws IllegalArgumentException
+	 *             if the value is outside 0..2^64-1.
+	 */
+	public static ValueMut createU64(BigInteger i) {
+		if (i.signum() < 0 || i.bitLength() > U64_BITS) {
+			throw new IllegalArgumentException("u64 value out of range (0..18446744073709551615): " + i);
+		}
+		// For a value in range, the low 64 bits are the unsigned value.
+		return new ValueMut(newU64(i.longValue()));
+	}
+
+	/**
+	 * Creates a 32-bit IEEE 754 floating-point number (<code>f32</code>).
+	 */
+	public static ValueMut createF32(float f) {
+		return new ValueMut(newF32(f));
+	}
+
+	/**
+	 * Creates a 16-bit IEEE 754 floating-point number (<code>f16</code>). The value
+	 * is rounded to the nearest representable half-precision number.
+	 *
+	 * @throws IllegalArgumentException
+	 *             if a finite value is too large for <code>f16</code> (magnitude of
+	 *             65520 or more, which would round to infinity). NaN and infinities
+	 *             are kept.
+	 */
+	public static ValueMut createF16(float f) {
+		if (!Float.isNaN(f) && !Float.isInfinite(f) && Math.abs(f) >= F16_OVERFLOW) {
+			throw new IllegalArgumentException("f16 value out of range (max magnitude 65504): " + f);
+		}
+		return new ValueMut(newF16(f));
 	}
 
 	public static ValueMut createBigDecimal(BigDecimal d) {

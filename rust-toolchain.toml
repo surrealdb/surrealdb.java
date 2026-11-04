@@ -1,5 +1,6 @@
 # This toolchain should be aligned with the Rust toolchain the matching
-# SurrealDB version is built with — currently 1.95 for SurrealDB 3.3.x.
+# SurrealDB version is built with. The 4.0.0 crates declare no rust-version
+# and use edition 2024 (Rust 1.85 or later); 1.95 is known to build them.
 # Don't add a patch number to the channel (e.g. "1.95.1") — only the minor
 # version, otherwise rust-analyzer and other tooling break.
 [toolchain]

@@ -46,6 +46,7 @@ View the SDK documentation [here](https://surrealdb.com/docs/integration/librari
 - Support of remote connection to SurrealDB.
 - Mutable POJOs (Java 8+) and immutable `record` classes (JDK 16+) for `create` / `select`.
 - All geometry types (Point, LineString, Polygon, their multi-variants, and GeometryCollection) for reading and writing.
+- Sized number kinds (`i8` ... `u64`, `f16`, `f32`) for reading and writing against SurrealDB 4.0.
 - Live queries: subscribe to table changes with `selectLive` and terminate them by id with `kill`.
 - Supported on JAVA JDK 8, 11, 17, 21, 25.
 - Supported architectures:
@@ -106,7 +107,7 @@ repositories {
 }
 
 ext {
-    surrealdbVersion = "2.1.2-SNAPSHOT"
+    surrealdbVersion = "3.0.0-SNAPSHOT"
 }
 
 dependencies {
@@ -129,7 +130,7 @@ Maven:
 <dependency>
     <groupId>com.surrealdb</groupId>
     <artifactId>surrealdb</artifactId>
-    <version>2.1.2-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -227,6 +228,44 @@ try (final Surreal driver = new Surreal()) {
     Geometry geom = value.getGeometry();
     System.out.println(geom.getType());        // LineString
     System.out.println(geom.getLineString());  // [Point2D.Double[...], Point2D.Double[...]]
+}
+```
+
+### Sized numbers (SurrealDB 4.0)
+
+SurrealDB 4.0 adds the sized number kinds `i8`, `u8`, `i16`, `u16`, `i32`, `u32`, `u64`, `f16`
+and `f32` next to `int` (`i64`), `float` (`f64`) and `decimal`.
+
+Reading: `isLong()`/`getLong()` work for every integer kind whose value fits a `long`, and
+`isDouble()`/`getDouble()` work for every floating-point kind. A `u64` above `Long.MAX_VALUE`
+is never reported as a long (it would wrap); use `isBigInteger()`/`getBigInteger()`.
+`getNumberType()` returns the exact kind as a `NumberType`.
+
+Writing: Java `byte`, `short`, `int`, `long`, `float` and `double` still map to `int` and `float`,
+so existing schemas and 3.x servers behave as before. Opt in to a sized kind explicitly with
+`ValueMut.createI8`, `createU8`, `createI16`, `createU16`, `createI32`, `createU32`, `createU64`,
+`createF16` and `createF32`.
+
+Results keep their kind on the embedded engine and over a remote connection to a 4.0 server. Values
+you send are different: the embedded engine keeps the kind of a bound `ValueMut`, but a remote
+connection widens it (sized integers become `int`, floats become `float`, a `u64` above
+`Long.MAX_VALUE` becomes a `decimal`), so over the network a `TYPE u8` (etc.) schema field is what
+makes the stored kind sized.
+
+```java
+try (final Surreal driver = new Surreal()) {
+    driver.connect("memory").useNs("test").useDb("test");
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("small", ValueMut.createU8(200));
+    params.put("big", ValueMut.createU64(new BigInteger("18446744073709551615")));
+    driver.query("CREATE sample:1 SET small = $small, big = $big", params);
+
+    Value row = driver.query("SELECT * FROM sample:1").take(0).getArray().get(0);
+    Value big = row.getObject().get("big");
+    System.out.println(big.getNumberType());  // U64
+    System.out.println(big.isLong());         // false
+    System.out.println(big.getBigInteger());  // 18446744073709551615
 }
 ```
 

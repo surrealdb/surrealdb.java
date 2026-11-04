@@ -63,7 +63,12 @@ public class ConnectionTests {
 				final Value value = response.take(0);
 				assertTrue(value.isObject());
 				final Object object = value.getObject();
-				assertEquals(object.len(), 7);
+				// 4.0.0 added "buckets" to the root info.
+				assertEquals(object.len(), 8);
+				{
+					final Value v = object.get("buckets");
+					assertTrue(v.isObject());
+				}
 				{
 					final Value v = object.get("accesses");
 					assertTrue(v.isObject());

@@ -1,0 +1,58 @@
+name: Start SurrealDB
+description: >
+  Starts an in-memory SurrealDB server on port 8000 (root/root, unauthenticated
+  access allowed, --allow-all) and waits until it is healthy. Linux runners use the
+  surrealdb/surrealdb Docker Hub image; macOS runners, which have no Docker, use the
+  release tarball from download.surrealdb.com, so every runner starts the server the
+  same way for any published version, prereleases included.
+
+inputs:
+  version:
+    description: SurrealDB version, with the leading v (for example v4.0.0).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Start SurrealDB (Docker)
+      if: runner.os == 'Linux'
+      shell: bash
+      env:
+        SURREALDB_VERSION: ${{ inputs.version }}
+      run: |
+        docker run -d --name surrealdb -p 8000:8000 "surrealdb/surrealdb:${SURREALDB_VERSION}" \
+          start -u root -p root --unauthenticated --allow-all --log info --bind 0.0.0.0:8000 memory
+
+    - name: Start SurrealDB (binary)
+      if: runner.os == 'macOS'
+      shell: bash
+      env:
+        SURREALDB_VERSION: ${{ inputs.version }}
+      run: |
+        case "$(uname -m)" in
+          arm64|aarch64) arch=arm64 ;;
+          *) arch=amd64 ;;
+        esac
+        dir="$RUNNER_TEMP/surrealdb"
+        mkdir -p "$dir"
+        curl -fsSL "https://download.surrealdb.com/${SURREALDB_VERSION}/surreal-${SURREALDB_VERSION}.darwin-${arch}.tgz" \
+          | tar -xz -C "$dir"
+        bin="$(find "$dir" -type f -name surreal | head -n 1)"
+        chmod +x "$bin"
+        "$bin" version
+        nohup "$bin" start -u root -p root --unauthenticated --allow-all --log info \
+          --bind 0.0.0.0:8000 memory > "$dir/surreal.log" 2>&1 &
+
+    - name: Wait for SurrealDB
+      shell: bash
+      run: |
+        for i in $(seq 1 60); do
+          if curl -fs http://localhost:8000/health > /dev/null; then
+            echo "SurrealDB is ready"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "SurrealDB did not become healthy in 60 seconds" >&2
+        docker logs surrealdb 2>&1 || cat "$RUNNER_TEMP/surrealdb/surreal.log" 2>&1 || true
+        exit 1

@@ -93,42 +93,65 @@ fn value_to_jobject<'a>(env: &mut Env<'a>, value: &Value) -> Option<JObject<'a>>
 }
 
 fn number_to_jobject<'a>(env: &mut Env<'a>, n: &Number) -> Option<JObject<'a>> {
+    // Every variant is listed on purpose: a new `Number` variant must fail to compile here.
     match n {
-        Number::Int(i) => {
-            let class = env.find_class(jni_str!("java/lang/Long")).ok()?;
-            env.call_static_method(
-                class,
-                jni_str!("valueOf"),
-                jni_sig!("(J)Ljava/lang/Long;"),
-                &[JValue::Long(*i)],
-            )
-            .ok()
-            .and_then(|v| v.l().ok())
-        }
-        Number::Float(f) => {
-            let class = env.find_class(jni_str!("java/lang/Double")).ok()?;
-            env.call_static_method(
-                class,
-                jni_str!("valueOf"),
-                jni_sig!("(D)Ljava/lang/Double;"),
-                &[JValue::Double(*f)],
-            )
-            .ok()
-            .and_then(|v| v.l().ok())
-        }
+        Number::Int(i) => long_to_jobject(env, *i),
+        Number::I8(i) => long_to_jobject(env, i64::from(*i)),
+        Number::U8(i) => long_to_jobject(env, i64::from(*i)),
+        Number::I16(i) => long_to_jobject(env, i64::from(*i)),
+        Number::U16(i) => long_to_jobject(env, i64::from(*i)),
+        Number::I32(i) => long_to_jobject(env, i64::from(*i)),
+        Number::U32(i) => long_to_jobject(env, i64::from(*i)),
+        Number::U64(u) => match i64::try_from(*u) {
+            Ok(i) => long_to_jobject(env, i),
+            Err(_) => {
+                // Above Long.MAX_VALUE: java.math.BigInteger keeps the exact value.
+                let class = env.find_class(jni_str!("java/math/BigInteger")).ok()?;
+                let text = env.new_string(u.to_string()).ok().map(JObject::from)?;
+                env.new_object(
+                    class,
+                    jni_sig!("(Ljava/lang/String;)V"),
+                    &[JValue::Object(&text)],
+                )
+                .ok()
+            }
+        },
+        Number::Float(f) => double_to_jobject(env, *f),
+        Number::F16(f) => double_to_jobject(env, f.to_f64()),
+        Number::F32(f) => double_to_jobject(env, f64::from(*f)),
         Number::Decimal(d) => {
-            let class = env.find_class(jni_str!("java/lang/Double")).ok()?;
             let f: f64 = d.to_string().parse().unwrap_or(0.0);
-            env.call_static_method(
-                class,
-                jni_str!("valueOf"),
-                jni_sig!("(D)Ljava/lang/Double;"),
-                &[JValue::Double(f)],
-            )
-            .ok()
-            .and_then(|v| v.l().ok())
+            double_to_jobject(env, f)
+        }
+        Number::BigDecimal(d) => {
+            let f: f64 = d.to_string().parse().unwrap_or(0.0);
+            double_to_jobject(env, f)
         }
     }
+}
+
+fn long_to_jobject<'a>(env: &mut Env<'a>, i: i64) -> Option<JObject<'a>> {
+    let class = env.find_class(jni_str!("java/lang/Long")).ok()?;
+    env.call_static_method(
+        class,
+        jni_str!("valueOf"),
+        jni_sig!("(J)Ljava/lang/Long;"),
+        &[JValue::Long(i)],
+    )
+    .ok()
+    .and_then(|v| v.l().ok())
+}
+
+fn double_to_jobject<'a>(env: &mut Env<'a>, f: f64) -> Option<JObject<'a>> {
+    let class = env.find_class(jni_str!("java/lang/Double")).ok()?;
+    env.call_static_method(
+        class,
+        jni_str!("valueOf"),
+        jni_sig!("(D)Ljava/lang/Double;"),
+        &[JValue::Double(f)],
+    )
+    .ok()
+    .and_then(|v| v.l().ok())
 }
 
 /// Recursively builds a Java ServerException (or subclass) from a surrealdb::Error,

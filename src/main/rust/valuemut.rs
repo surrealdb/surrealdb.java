@@ -6,11 +6,11 @@ use std::str::FromStr;
 use crate::with_env_body;
 use chrono::DateTime;
 use jni::objects::{JClass, JLongArray, JString};
-use jni::sys::{jboolean, jdouble, jint, jlong, jstring};
+use jni::sys::{jboolean, jdouble, jfloat, jint, jlong, jstring};
 use jni::EnvUnowned;
 use rust_decimal::Decimal;
 use surrealdb::types::{
-    Array, Datetime, Duration, File, Number, Object, Set, Table, ToSql, Uuid, Value,
+    f16, Array, Datetime, Duration, File, Number, Object, Set, Table, ToSql, Uuid, Value,
 };
 
 use crate::error::SurrealError;
@@ -66,6 +66,91 @@ pub extern "system" fn Java_com_surrealdb_ValueMut_newDouble<'local>(
 ) -> jlong {
     let value = Value::Number(Number::Float(d));
     JniTypes::new_value_mut(value)
+}
+
+// Sized number constructors (SurrealDB 4.0). The Java side validates the range of every argument
+// before calling in, so the narrowing casts below never lose information.
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newI8<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    i: jint,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::I8(i as i8)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newU8<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    i: jint,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::U8(i as u8)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newI16<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    i: jint,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::I16(i as i16)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newU16<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    i: jint,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::U16(i as u16)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newI32<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    i: jint,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::I32(i)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newU32<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    l: jlong,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::U32(l as u32)))
+}
+
+/// `bits` carries the 64 bits of the unsigned value (the Java `long` is read as unsigned).
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newU64<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    bits: jlong,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::U64(bits as u64)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newF16<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    f: jfloat,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::F16(f16::from_f32(f))))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_surrealdb_ValueMut_newF32<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    f: jfloat,
+) -> jlong {
+    JniTypes::new_value_mut(Value::Number(Number::F32(f)))
 }
 
 #[no_mangle]
